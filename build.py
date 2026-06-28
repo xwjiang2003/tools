@@ -15,7 +15,7 @@ SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
 
 JS_MODULES = [
-    'core.js', 'json-tools.js', 'encode.js', 'regex.js',
+    'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
     'timestamp.js', 'hash.js', 'formatter.js',
     'string-tools.js', 'generator.js',
 ]

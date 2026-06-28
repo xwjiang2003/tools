@@ -139,6 +139,24 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
 .qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
 .pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
 .footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
 </style>
@@ -151,6 +169,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
   </div>
   <nav class="top-nav" id="topNav">
     <button class="top-nav-item active" data-page="json">JSON 工具</button>
+    <button class="top-nav-item" data-page="diff">文本比对</button>
     <button class="top-nav-item" data-page="encode">编码解码</button>
     <button class="top-nav-item" data-page="regex">正则表达式</button>
     <button class="top-nav-item" data-page="timestamp">时间戳</button>
@@ -256,7 +275,49 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </div>
 </div>
 
-<!-- ========== 2. ENCODE/DECODE PAGE ========== -->
+<!-- ========== 2. TEXT DIFF PAGE ========== -->
+<div class="page" id="page-diff">
+<div class="diff-page-layout">
+  <!-- Toolbar -->
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow-sm)">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <span style="font-weight:600;font-size:14px">文本比对</span>
+        <select class="format-select" id="diffViewMode" onchange="updateDiffView()">
+          <option value="unified">统一视图</option>
+          <option value="sidebyside">左右对照</option>
+        </select>
+        <label class="checkbox-label"><input type="checkbox" id="diffCaseSensitive" checked onchange="doTextDiff()"> 区分大小写</label>
+        <label class="checkbox-label"><input type="checkbox" id="diffIgnoreWS" onchange="doTextDiff()"> 忽略空白</label>
+      </div>
+      <button class="btn btn-primary" onclick="doTextDiff()">比对差异</button>
+    </div>
+  </div>
+  <!-- Main area -->
+  <div class="row" style="flex:1;min-height:0;gap:12px;align-items:stretch">
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px">原始文本 A</div>
+      <textarea class="ta-input diff-textarea" id="textDiffInputA" placeholder="输入原始文本..." oninput="doTextDiff()" style="min-height:300px;flex:1"></textarea>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px">对比文本 B</div>
+      <textarea class="ta-input diff-textarea" id="textDiffInputB" placeholder="输入对比文本..." oninput="doTextDiff()" style="min-height:300px;flex:1"></textarea>
+    </div>
+  </div>
+  <!-- Diff result -->
+  <div class="result-panel" style="flex:1;min-height:200px">
+    <div class="result-panel-header">
+      <span class="result-panel-title" id="diffStatsLabel">差异结果</span>
+      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextDiffResult()">复制</button></div>
+    </div>
+    <div class="result-content" id="textDiffResult" style="font-family:'JetBrains Mono',monospace;font-size:12px">
+      <span style="color:var(--text-muted)">在左右两侧输入文本，自动实时比对</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 3. ENCODE/DECODE PAGE ========== -->
 <div class="page" id="page-encode">
 <div class="tool-layout">
   <div class="input-panel">
@@ -600,6 +661,7 @@ function initPage(name) {
   pageInited[name] = true;
   switch (name) {
     case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
     case 'encode': initEncodePage(); break;
     case 'regex': initRegexPage(); break;
     case 'timestamp': initTimestampPage(); break;
@@ -1177,6 +1239,203 @@ function evalJsonFilter(item, expr) {
   return false;
 }
 
+
+</script>
+<script>
+// text-diff.js
+// text-diff.js — Generic text diff (like Beyond Compare)
+
+function initDiffPage() {
+  // Load demo data
+  document.getElementById('textDiffInputA').value =
+    'function hello(name) {\n  console.log("Hello, " + name);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Bye!");\n  return false;\n}\n\nvar x = 100;\nvar y = 200;';
+  document.getElementById('textDiffInputB').value =
+    'function hello(name, age) {\n  console.log("Hello, " + name);\n  console.log("Age: " + age);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Goodbye!");\n  return false;\n}\n\nvar x = 100;\nvar z = 300;';
+  setTimeout(doTextDiff, 200);
+}
+
+function doTextDiff() {
+  const a = document.getElementById('textDiffInputA').value;
+  const b = document.getElementById('textDiffInputB').value;
+  const resultEl = document.getElementById('textDiffResult');
+  const statsEl = document.getElementById('diffStatsLabel');
+
+  if (!a.trim() && !b.trim()) {
+    resultEl.innerHTML = '<span style="color:var(--text-muted)">请输入文本</span>';
+    statsEl.textContent = '差异结果';
+    return;
+  }
+
+  const caseSensitive = document.getElementById('diffCaseSensitive').checked;
+  const ignoreWS = document.getElementById('diffIgnoreWS').checked;
+  const viewMode = document.getElementById('diffViewMode').value;
+
+  let linesA = a.split(NL);
+  let linesB = b.split(NL);
+
+  if (!caseSensitive) { linesA = linesA.map(l => l.toLowerCase()); linesB = linesB.map(l => l.toLowerCase()); }
+  if (ignoreWS) { linesA = linesA.map(l => l.replace(/\s+/g, ' ').trim()); linesB = linesB.map(l => l.replace(/\s+/g, ' ').trim()); }
+
+  const diff = computeDiff(linesA, linesB);
+  const adds = diff.filter(d => d.type === 'add').length;
+  const rems = diff.filter(d => d.type === 'remove').length;
+  statsEl.textContent = '差异结果 — 新增 ' + adds + ' 行, 删除 ' + rems + ' 行';
+
+  if (adds === 0 && rems === 0) {
+    resultEl.innerHTML = '<div style="padding:12px;color:var(--success);font-weight:500">✅ 两个文本完全一致</div>';
+    return;
+  }
+
+  if (viewMode === 'sidebyside') {
+    resultEl.innerHTML = renderSideBySide(diff, a, b);
+  } else {
+    resultEl.innerHTML = renderUnified(diff);
+  }
+}
+
+function computeDiff(la, lb) {
+  const n = la.length, m = lb.length;
+  const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = la[i - 1] === lb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+
+  const result = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && la[i - 1] === lb[j - 1]) {
+      result.unshift({ type: 'equal', value: la[i - 1], lineA: i, lineB: j });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      result.unshift({ type: 'add', value: lb[j - 1], lineB: j });
+      j--;
+    } else {
+      result.unshift({ type: 'remove', value: la[i - 1], lineA: i });
+      i--;
+    }
+  }
+  return result;
+}
+
+function renderUnified(diff) {
+  let html = '<div class="diff-unified">';
+  let lineA = 1, lineB = 1;
+  let hunkStarted = false;
+
+  for (let i = 0; i < diff.length; i++) {
+    const d = diff[i];
+
+    // Show context: 3 lines before/after changes
+    const hasChangeNearby = diff.slice(Math.max(0, i - 3), Math.min(diff.length, i + 4))
+      .some(x => x.type !== 'equal');
+
+    if (d.type === 'equal' && !hasChangeNearby) {
+      if (!hunkStarted) {
+        html += '<div class="diff-unified-header">... 跳过 ' + (lineB - (d.lineB || 1)) + ' 行 ...</div>';
+        hunkStarted = true;
+      }
+      lineA++; lineB++;
+      continue;
+    }
+    hunkStarted = false;
+
+    if (d.type === 'add') {
+      html += '<div class="diff-unified-line diff-unified-add">+ ' + escHtml(d.value) + '</div>';
+      lineB++;
+    } else if (d.type === 'remove') {
+      html += '<div class="diff-unified-line diff-unified-remove">- ' + escHtml(d.value) + '</div>';
+      lineA++;
+    } else {
+      html += '<div class="diff-unified-line diff-unified-equal">  ' + escHtml(d.value) + '</div>';
+      lineA++; lineB++;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderSideBySide(diff, originalA, originalB) {
+  let html = '<table class="diff-side-table"><colgroup><col style="width:3%"><col style="width:43%"><col style="width:4%"><col style="width:3%"><col style="width:43%"></colgroup>';
+  let i = 0;
+  while (i < diff.length) {
+    const d = diff[i];
+
+    if (d.type === 'equal') {
+      const nA = d.lineA || 0, nB = d.lineB || 0;
+      html += '<tr><td class="diff-side-num">' + nA + '</td><td>' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num">' + nB + '</td><td>' + escHtml(d.value) + '</td></tr>';
+      i++;
+    } else if (d.type === 'remove' && i + 1 < diff.length && diff[i + 1].type === 'add') {
+      // Paired change: show word diff
+      const rem = d, add = diff[i + 1];
+      const wordDiff = computeWordDiff(rem.value, add.value);
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (rem.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + formatWordDiff(wordDiff, 'remove') + '</td>';
+      html += '<td class="diff-side-num">' + (add.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + formatWordDiff(wordDiff, 'add') + '</td>';
+      html += '</tr>';
+      i += 2;
+    } else if (d.type === 'remove') {
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (d.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '</tr>';
+      i++;
+    } else if (d.type === 'add') {
+      html += '<tr>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '<td class="diff-side-num">' + (d.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + escHtml(d.value) + '</td>';
+      html += '</tr>';
+      i++;
+    }
+  }
+  html += '</table>';
+  return html;
+}
+
+function computeWordDiff(a, b) {
+  // Simple character-level diff for inline highlighting
+  const wordsA = a.split(/(\s+)/g);
+  const wordsB = b.split(/(\s+)/g);
+  const result = [];
+  let i = 0, j = 0;
+  while (i < wordsA.length || j < wordsB.length) {
+    if (i < wordsA.length && j < wordsB.length && wordsA[i] === wordsB[j]) {
+      result.push({ type: 'equal', value: wordsA[i] });
+      i++; j++;
+    } else if (i < wordsA.length) {
+      result.push({ type: 'remove', value: wordsA[i] });
+      i++;
+      if (j < wordsB.length) { result.push({ type: 'add', value: wordsB[j] }); j++; }
+    } else if (j < wordsB.length) {
+      result.push({ type: 'add', value: wordsB[j] });
+      j++;
+    }
+  }
+  return result;
+}
+
+function formatWordDiff(wordDiff, side) {
+  return wordDiff.map(w => {
+    if (w.type === 'equal') return escHtml(w.value);
+    if (w.type === side) return '<span class="word-' + side + '">' + escHtml(w.value) + '</span>';
+    return '';
+  }).join('');
+}
+
+function updateDiffView() {
+  doTextDiff();
+}
+
+function copyTextDiffResult() {
+  const el = document.getElementById('textDiffResult');
+  navigator.clipboard.writeText(el.textContent || '').then(
+    () => toast('已复制'), () => toast('复制失败', 'error')
+  );
+}
 
 </script>
 <script>

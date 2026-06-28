@@ -110,6 +110,7 @@ function initPage(name) {
   pageInited[name] = true;
   switch (name) {
     case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
     case 'encode': initEncodePage(); break;
     case 'regex': initRegexPage(); break;
     case 'timestamp': initTimestampPage(); break;
