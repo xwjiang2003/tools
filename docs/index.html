@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevTools - JSON格式化 | 正则测试 | 时间戳 | Base64 | MD5 | 在线工具集</title>
+<meta name="description" content="免费在线开发工具集，支持JSON格式化压缩校验、正则表达式测试、Unix时间戳转换、Base64编码解码、MD5/SHA哈希加密、HTML/CSS/JS代码格式化、字符串处理、UUID/密码/二维码生成等。所有数据本地处理，安全可靠。">
+<meta name="keywords" content="JSON格式化,JSON校验,正则表达式测试,时间戳转换,Base64编码,MD5加密,SHA256,代码格式化,HTML格式化,CSS格式化,SQL格式化,UUID生成,二维码生成,随机密码,在线工具,开发工具">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://tools.example.com">
+<meta property="og:title" content="DevTools - 在线开发工具集 | JSON格式化 正则测试 时间戳">
+<meta property="og:description" content="免费在线开发工具集，JSON格式化、正则测试、时间戳转换、Base64编码、哈希加密、代码格式化等。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tools.example.com">
+<meta property="og:site_name" content="DevTools">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </div>
+  <nav class="top-nav" id="topNav">
+    <button class="top-nav-item active" data-page="json">JSON 工具</button>
+    <button class="top-nav-item" data-page="diff">文本比对</button>
+    <button class="top-nav-item" data-page="encode">编码解码</button>
+    <button class="top-nav-item" data-page="regex">正则表达式</button>
+    <button class="top-nav-item" data-page="timestamp">时间戳</button>
+    <button class="top-nav-item" data-page="hash">加密哈希</button>
+    <button class="top-nav-item" data-page="formatter">代码格式化</button>
+    <button class="top-nav-item" data-page="string">字符串</button>
+    <button class="top-nav-item" data-page="generator">生成器</button>
+  </nav>
+  <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<!-- 广告位: 顶部横幅 970x90 / 728x90 -->
+<div class="ad-container" id="adTop">
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+    <!-- 接入广告平台后，将下面的占位替换为广告代码 -->
+    <!-- 示例: <script async src="//platform-ad.com/ad.js" data-ad="YOUR-ID"></script> -->
+  </div>
+</div>
+
+<main class="main">
+<!-- ========== 1. JSON TOOLS PAGE ========== -->
+<div class="page active" id="page-json">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header">
+      <div class="input-panel-title"><span class="dot"></span> JSON 输入</div>
+      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearInput('mainJsonInput')">清空</button><button class="btn btn-sm" onclick="setVal('mainJsonInput', demoJson);switchJsonTab('basic');runJsonOp('format')">示例</button></div>
+    </div>
+    <div class="input-editor-wrap"><textarea id="mainJsonInput"></textarea></div>
+  </div>
+  <div class="ops-panel">
+    <!-- JSON tool tabs -->
+    <div class="json-tabs" id="jsonTabs">
+      <button class="json-tab active" data-tab="basic">基础操作</button>
+      <button class="json-tab" data-tab="diff">比对</button>
+      <button class="json-tab" data-tab="convert">转换</button>
+      <button class="json-tab" data-tab="jsonpath">JSONPath</button>
+    </div>
+
+    <!-- Tab: Basic -->
+    <div class="json-tab-content active" id="jsonTabBasic">
+      <div class="op-buttons" id="jsonOpBtns">
+        <button class="op-btn active" data-op="format">格式化</button><button class="op-btn" data-op="compress">压缩</button>
+        <button class="op-btn" data-op="validate">校验</button><button class="op-btn" data-op="sort">排序</button>
+        <button class="op-btn" data-op="escape">转义</button><button class="op-btn" data-op="tree">树视图</button>
+      </div>
+      <div class="op-options" id="jsonOpOptions"></div>
+      <div class="result-panel">
+        <div class="result-panel-header"><span class="result-panel-title" id="jsonResultTitle">格式化结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyJsonResult()">复制</button></div></div>
+        <div class="result-content" id="jsonResultContent"><span style="color:var(--text-muted)">在左侧输入 JSON，然后点击上方操作按钮</span></div>
+      </div>
+      <div class="info-stats" id="jsonInfoStats" style="display:none"></div>
+    </div>
+
+    <!-- Tab: Diff -->
+    <div class="json-tab-content" id="jsonTabDiff">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div style="display:flex;gap:8px;flex:1;min-height:0">
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON A</div>
+            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputA"></textarea></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON B</div>
+            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputB"></textarea></div>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <label class="checkbox-label"><input type="checkbox" id="semanticDiff"> 语义比对</label>
+          <button class="btn btn-primary btn-sm" onclick="doJsonDiff()">比对差异</button>
+        </div>
+        <div id="diffResult" style="max-height:40%;overflow:auto;font-size:12px;flex-shrink:0">输入 JSON A 和 B 后点击"比对差异"</div>
+      </div>
+    </div>
+
+    <!-- Tab: Convert -->
+    <div class="json-tab-content" id="jsonTabConvert">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div class="row">
+          <select class="format-select" id="convertFrom"><option value="json" selected>JSON</option><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option></select>
+          <span style="color:var(--primary);font-weight:bold">→</span>
+          <select class="format-select" id="convertTo"><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option><option value="json">JSON</option></select>
+          <button class="btn btn-sm" onclick="swapConvert()">⇄</button>
+          <button class="btn btn-sm" onclick="setVal('convertInput',demoJson)">示例</button>
+          <button class="btn btn-primary btn-sm" onclick="doConvert()">转换</button>
+        </div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="convertInput"></textarea></div>
+        <div style="font-size:11px;color:var(--text-secondary)">输出</div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="convertOutput" readonly></textarea></div>
+      </div>
+    </div>
+
+    <!-- Tab: JSONPath -->
+    <div class="json-tab-content" id="jsonTabJsonpath">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div class="row"><input type="text" class="expr-input" id="jsonpathExpr" placeholder="$.store.book[0].title" onkeydown="if(event.key==='Enter')doJsonPath()" style="flex:1"><button class="btn btn-sm" onclick="setVal('jsonpathInput',jsonPathDemoData);document.getElementById('jsonpathExpr').value='$.store.books[0].title'">示例</button><button class="btn btn-primary btn-sm" onclick="doJsonPath()">查询</button></div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="jsonpathInput"></textarea></div>
+        <div id="jsonpathResult" style="flex:1;overflow:auto;font-size:12px">输入 JSON 和 JSONPath 表达式，点击"查询"</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 2. TEXT DIFF PAGE ========== -->
+<div class="page" id="page-diff">
+<div class="diff-page-layout">
+  <!-- Toolbar -->
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow-sm)">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <span style="font-weight:600;font-size:14px">文本比对</span>
+        <select class="format-select" id="diffViewMode" onchange="updateDiffView()">
+          <option value="unified">统一视图</option>
+          <option value="sidebyside">左右对照</option>
+        </select>
+        <label class="checkbox-label"><input type="checkbox" id="diffCaseSensitive" checked onchange="doTextDiff()"> 区分大小写</label>
+        <label class="checkbox-label"><input type="checkbox" id="diffIgnoreWS" onchange="doTextDiff()"> 忽略空白</label>
+      </div>
+      <button class="btn btn-primary" onclick="doTextDiff()">比对差异</button>
+    </div>
+  </div>
+  <!-- Main area -->
+  <div class="row" style="flex:1;min-height:0;gap:12px;align-items:stretch">
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px">原始文本 A</div>
+      <textarea class="ta-input diff-textarea" id="textDiffInputA" placeholder="输入原始文本..." oninput="doTextDiff()" style="min-height:300px;flex:1"></textarea>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px">对比文本 B</div>
+      <textarea class="ta-input diff-textarea" id="textDiffInputB" placeholder="输入对比文本..." oninput="doTextDiff()" style="min-height:300px;flex:1"></textarea>
+    </div>
+  </div>
+  <!-- Diff result -->
+  <div class="result-panel" style="flex:1;min-height:200px">
+    <div class="result-panel-header">
+      <span class="result-panel-title" id="diffStatsLabel">差异结果</span>
+      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextDiffResult()">复制</button></div>
+    </div>
+    <div class="result-content" id="textDiffResult" style="font-family:'JetBrains Mono',monospace;font-size:12px">
+      <span style="color:var(--text-muted)">在左右两侧输入文本，自动实时比对</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 3. ENCODE/DECODE PAGE ========== -->
+<div class="page" id="page-encode">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入文本</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('encodeInput')">清空</button></div></div>
+    <textarea class="ta-input" id="encodeInput" placeholder="在此输入要编码/解码的文本..."></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="encodeOpBtns">
+      <button class="op-btn active" data-op="base64">Base64</button><button class="op-btn" data-op="url">URL</button>
+      <button class="op-btn" data-op="unicode">Unicode</button><button class="op-btn" data-op="htmlentity">HTML实体</button>
+      <button class="op-btn" data-op="hex">Hex</button>
+    </div>
+    <div class="op-options" id="encodeOpOptions">
+      <button class="btn btn-sm btn-primary" onclick="runEncodeOp('encode')">编码 (Encode)</button>
+      <button class="btn btn-sm btn-primary" onclick="runEncodeOp('decode')">解码 (Decode)</button>
+    </div>
+    <div class="result-panel">
+      <div class="result-panel-header"><span class="result-panel-title" id="encodeResultTitle">Base64 结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('encodeResult')">复制</button></div></div>
+      <div class="result-content" id="encodeResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 3. REGEX PAGE ========== -->
+<div class="page" id="page-regex">
+<div style="display:flex;gap:16px;flex-direction:column">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">
+    <div class="row" style="margin-bottom:12px">
+      <span style="font-weight:600;font-size:14px;white-space:nowrap">正则表达式:</span>
+      <span style="font-family:monospace;font-size:16px;color:var(--text-secondary)">/</span>
+      <input type="text" class="expr-input" id="regexPattern" placeholder="正则模式" style="flex:1;min-width:200px" oninput="liveRegex()">
+      <span style="font-family:monospace;font-size:16px;color:var(--text-secondary)">/</span>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagG" checked onchange="liveRegex()" title="全局">g</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagI" onchange="liveRegex()" title="忽略大小写">i</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagM" onchange="liveRegex()" title="多行">m</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagS" onchange="liveRegex()" title="点匹配换行">s</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagU" onchange="liveRegex()" title="Unicode">u</label>
+    </div>
+    <div class="row" style="margin-bottom:12px;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="liveRegex()">测试匹配</button>
+      <button class="btn btn-sm" onclick="document.getElementById('regexPattern').value='';document.getElementById('regexInput').value='';document.getElementById('regexResult').innerHTML='';document.getElementById('regexReplaceResult').style.display='none'">清空</button>
+      <span style="font-size:12px;color:var(--text-secondary);margin-left:auto">常用:</span>
+      <button class="btn btn-sm" onclick="setRegexPattern('[\\\\w.-]+@[\\\\w.-]+\\\\.[a-z]{2,}')">邮箱</button>
+      <button class="btn btn-sm" onclick="setRegexPattern('1[3-9]\\\\d{9}')">手机号</button>
+      <button class="btn btn-sm" onclick="setRegexPattern('https?://[\\\\w.-]+\\\\.[a-z]{2,}(/\\\\S*)?')">URL</button>
+    </div>
+  </div>
+  <div class="tool-layout" style="height:auto;max-height:none;min-height:400px">
+    <div class="input-panel">
+      <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 测试文本</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('regexInput');document.getElementById('regexResult').innerHTML=''">清空</button><button class="btn btn-sm" onclick="document.getElementById('regexInput').value='test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path'">示例</button></div></div>
+      <textarea class="ta-input" id="regexInput" placeholder="输入要匹配的文本，匹配结果会在右侧高亮显示..." oninput="liveRegex()"></textarea>
+    </div>
+    <div class="ops-panel">
+      <div class="result-panel" style="flex:1">
+        <div class="result-panel-header"><span class="result-panel-title">匹配结果 <span id="regexMatchCount" style="color:var(--text-secondary)"></span></span></div>
+        <div class="result-content" id="regexResult"><span style="color:var(--text-muted)">输入正则表达式和测试文本</span></div>
+      </div>
+      <div class="result-panel" id="regexReplacePanel" style="display:none;flex:0 0 auto;max-height:200px">
+        <div class="result-panel-header"><span class="result-panel-title">替换测试</span></div>
+        <div style="padding:8px 12px;display:flex;gap:8px">
+          <input type="text" class="expr-input" id="regexReplaceWith" placeholder="替换为 ($1可引用分组)" style="flex:1" oninput="liveRegex()">
+          <button class="btn btn-sm btn-primary" onclick="liveRegex()">预览</button>
+        </div>
+        <div class="result-content" id="regexReplaceResult" style="max-height:100px"></div>
+      </div>
+      <button class="btn btn-sm" style="align-self:flex-start" onclick="toggleReplacePanel()">🔀 替换模式</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 4. TIMESTAMP PAGE ========== -->
+<div class="page" id="page-timestamp">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 时间戳 / 日期输入</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div class="live-clock" id="liveClock">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (秒)</div>
+      <div class="live-clock" style="font-size:18px" id="liveClockMs">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (毫秒)</div>
+      <div style="border-top:1px solid var(--border);padding-top:16px">
+        <label class="form-label">时间戳 → 日期</label>
+        <div class="row"><input type="text" class="expr-input" id="tsInput" placeholder="输入时间戳，如 1700000000" style="flex:1"><button class="btn btn-primary btn-sm" onclick="tsToDate()">转换</button></div>
+        <div class="hash-output" id="tsToDateResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
+      <div>
+        <label class="form-label">日期 → 时间戳</label>
+        <div class="row"><input type="datetime-local" class="format-select" id="dtInput" style="flex:1"><button class="btn btn-primary btn-sm" onclick="dateToTs()">转换</button></div>
+        <div class="hash-output" id="dateToTsResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="tsOpBtns">
+      <button class="op-btn active" data-op="iso">ISO 8601</button>
+      <button class="op-btn" data-op="rfc">RFC 2822</button>
+      <button class="op-btn" data-op="local">本地格式</button>
+      <button class="op-btn" data-op="utc">UTC 格式</button>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="tsResultTitle">ISO 8601 格式</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tsResult')">复制</button></div></div>
+      <div class="result-content" id="tsResult"><span style="color:var(--text-muted)">当前时间: <span id="tsCurrentTime">--</span></span></div>
+    </div>
+    <div class="row" style="gap:8px"><span style="font-size:12px;color:var(--text-secondary)">常用时区:</span><select class="format-select" id="tsTimezone" onchange="updateTsDisplay()"><option value="local">本地时间</option><option value="UTC">UTC</option><option value="Asia/Shanghai">北京时间 (UTC+8)</option><option value="America/New_York">纽约 (UTC-5)</option><option value="Europe/London">伦敦</option><option value="Asia/Tokyo">东京</option></select></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 5. HASH/CRYPTO PAGE ========== -->
+<div class="page" id="page-hash">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('hashInput');document.getElementById('hashFileInput').value=''">清空</button></div></div>
+    <textarea class="ta-input" id="hashInput" placeholder="输入要计算哈希的文本，或使用下方文件上传..." style="min-height:250px"></textarea>
+    <div style="padding:12px 16px;border-top:1px solid var(--border)">
+      <label class="form-label">文件哈希</label>
+      <div class="row"><input type="file" id="hashFileInput" style="font-size:12px;flex:1" onchange="hashFile()"><button class="btn btn-sm" onclick="document.getElementById('hashFileInput').value='';document.getElementById('hashFileResult').innerHTML=''">清除</button></div>
+      <div class="hash-output" id="hashFileResult" style="margin-top:8px;font-size:12px;color:var(--text-secondary)">选择文件后自动计算哈希值</div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="hashOpBtns">
+      <button class="op-btn active" data-op="md5">MD5</button><button class="op-btn" data-op="sha1">SHA-1</button>
+      <button class="op-btn" data-op="sha256">SHA-256</button><button class="op-btn" data-op="sha512">SHA-512</button>
+      <button class="op-btn" data-op="hmac">HMAC</button><button class="op-btn" data-op="aes">AES</button>
+    </div>
+    <div class="op-options" id="hashOpOptions"></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="hashResultTitle">MD5 哈希</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('hashResult')">复制</button></div></div>
+      <div style="padding:16px">
+        <div class="hash-output" id="hashResult">请输入文本或选择文件</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-secondary)">💡 MD5/SHA-1 仅用于校验，不应用于安全场景</div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 6. CODE FORMATTER PAGE ========== -->
+<div class="page" id="page-formatter">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 源代码输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('codeInput')">清空</button><button class="btn btn-sm" onclick="loadCodeDemo()">示例</button></div></div>
+    <textarea class="ta-input" id="codeInput" placeholder="粘贴代码..."></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="codeOpBtns">
+      <button class="op-btn active" data-op="html">HTML</button><button class="op-btn" data-op="css">CSS</button>
+      <button class="op-btn" data-op="js">JavaScript</button><button class="op-btn" data-op="sql">SQL</button>
+      <button class="op-btn" data-op="xml">XML</button>
+    </div>
+    <div class="op-options" id="codeOpOptions">
+      <button class="btn btn-sm btn-primary" onclick="runCodeOp('format')">格式化</button>
+      <button class="btn btn-sm btn-primary" onclick="runCodeOp('compress')">压缩</button>
+      <select class="format-select" id="codeIndent"><option value="2">2 空格</option><option value="4" selected>4 空格</option><option value="tab">Tab</option></select>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="codeResultTitle">HTML 格式化</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('codeResult')">复制</button></div></div>
+      <div class="result-content" id="codeResult"><span style="color:var(--text-muted)">粘贴代码并选择操作</span></div>
+    </div>
+    <div class="info-stats" id="codeStats" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 7. STRING TOOLS PAGE ========== -->
+<div class="page" id="page-string">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 文本输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('strInput')">清空</button><button class="btn btn-sm" onclick="document.getElementById('strInput').value='Hello World\nhello javascript\nHello World\n  \n你好 世界\nHello World!'">示例</button></div></div>
+    <textarea class="ta-input" id="strInput" placeholder="输入文本..." oninput="autoStrCount()"></textarea>
+    <div class="info-stats" id="strStats" style="display:flex">字符: 0 | 单词: 0 | 行: 0 | 字节: 0</div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="strOpBtns">
+      <button class="op-btn active" data-op="case">大小写</button><button class="op-btn" data-op="sort">排序</button>
+      <button class="op-btn" data-op="dedup">去重</button><button class="op-btn" data-op="replace">替换</button>
+      <button class="op-btn" data-op="splitjoin">分割/合并</button><button class="op-btn" data-op="liner">行操作</button>
+    </div>
+    <div class="op-options" id="strOpOptions"></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="strResultTitle">大小写转换</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('strResult')">复制</button></div></div>
+      <div class="result-content" id="strResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== 8. GENERATOR PAGE ========== -->
+<div class="page" id="page-generator">
+<div class="tool-layout">
+  <div class="input-panel" style="overflow-y:auto">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 参数配置</div></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:20px" id="genConfig"></div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="genOpBtns">
+      <button class="op-btn active" data-op="uuid">UUID</button><button class="op-btn" data-op="password">随机密码</button>
+      <button class="op-btn" data-op="qrcode">二维码</button><button class="op-btn" data-op="lorem">Lorem Ipsum</button>
+      <button class="op-btn" data-op="sequence">数字序列</button><button class="op-btn" data-op="randomdata">随机数据</button>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="genResultTitle">UUID 生成</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyGenResult()">复制</button><button class="btn btn-sm btn-primary" onclick="runGenOp()">生成</button></div></div>
+      <div style="padding:16px">
+        <div class="gen-result-box" id="genResult">点击"生成"按钮</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</main>
+
+<footer class="footer">所有数据仅在浏览器本地处理，不会上传到服务器</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+const pageInited = {};
+function initNav() {
+  document.querySelectorAll('.top-nav-item').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.top-nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const page = document.getElementById('page-' + btn.dataset.page);
+      if (page) page.classList.add('active');
+      setTimeout(() => { refreshEditors(); resizeAllEditors(); initPage(btn.dataset.page); }, 150);
+    };
+  });
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  initNav();
+  setTimeout(() => { initPage('json'); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<script>
+// json-tools.js
+// json-tools.js — JSON format, compress, validate, diff, convert, JSONPath, tree
+// ============================================================
+// DEMO DATA
+// ============================================================
+const demoJson = JSON.stringify({"name":"JSON Tools","version":"1.0.0","author":{"name":"Dev","email":"dev@example.com"},"tags":["json","formatter"],"settings":{"theme":"light","indent":4}}, null, 2);
+const demoJson2 = JSON.stringify({"name":"JSON Tools Pro","version":"2.0.0","author":{"name":"Dev Team","email":"team@example.com"},"tags":["json","formatter","diff"],"settings":{"theme":"dark","indent":2}}, null, 2);
+const jsonPathDemoData = JSON.stringify({"store":{"name":"图书商店","books":[{"title":"JS高级编程","price":89.9,"author":"Nicholas"},{"title":"Node.js深入浅出","price":69.9,"author":"朴灵"}],"location":{"city":"北京","address":"海淀区"}}}, null, 2);
+
+// ============================================================
+// 1. JSON TOOLS PAGE
+// ============================================================
+let jsonCurrentOp = 'format';
+let jsonTreeCollapsed = {}, jsonTreeData = null;
+
+function switchJsonTab(tabName) {
+  document.querySelectorAll('.json-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.json-tab-content').forEach(c => c.classList.remove('active'));
+  const tabBtn = document.querySelector(`.json-tab[data-tab="${tabName}"]`);
+  const tabContent = document.getElementById('jsonTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+  // Refresh editors after switching (they may have been 0-height when hidden)
+  setTimeout(() => {
+    if (tabName === 'diff') { editors['diffInputA']?.refresh(); editors['diffInputB']?.refresh(); }
+    if (tabName === 'convert') { editors['convertInput']?.refresh(); editors['convertOutput']?.refresh(); }
+    if (tabName === 'jsonpath') { editors['jsonpathInput']?.refresh(); }
+    resizeAllEditors();
+  }, 100);
+}
+
+function initJsonPage() {
+  // Create all editors
+  createCM('mainJsonInput');
+  createCM('diffInputA'); createCM('diffInputB');
+  createCM('convertInput'); createCM('convertOutput', true);
+  createCM('jsonpathInput');
+
+  // Tab click handlers
+  document.querySelectorAll('.json-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchJsonTab(tab.dataset.tab));
+  });
+
+  // Basic ops button handlers
+  document.querySelectorAll('#jsonOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#jsonOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      jsonCurrentOp = btn.dataset.op;
+      updateJsonOptions();
+      runJsonOp(jsonCurrentOp);
+    };
+  });
+  updateJsonOptions();
+
+  // Load demo data
+  setTimeout(() => {
+    setVal('mainJsonInput', demoJson); runJsonOp('format');
+    setVal('diffInputA', demoJson); setVal('diffInputB', demoJson2);
+    setVal('convertInput', demoJson);
+    setVal('jsonpathInput', jsonPathDemoData);
+    document.getElementById('jsonpathExpr').value = '$.store.books[0].title';
+  }, 300);
+}
+
+function updateJsonOptions() {
+  const o = document.getElementById('jsonOpOptions');
+  const titles = {format:'格式化结果',compress:'压缩结果',validate:'校验结果',sort:'排序结果',escape:'转义结果',tree:'树形视图'};
+  document.getElementById('jsonResultTitle').textContent = titles[jsonCurrentOp] || '结果';
+  switch (jsonCurrentOp) {
+    case 'format': o.innerHTML = '<span style="color:var(--text-secondary)">缩进:</span><select id="jsonIndent" onchange="runJsonOp(\'format\')"><option value="2">2空格</option><option value="4" selected>4空格</option><option value="tab">Tab</option></select>'; break;
+    case 'compress': case 'validate': o.innerHTML = ''; break;
+    case 'sort': o.innerHTML = '<span style="color:var(--text-secondary)">顺序:</span><select id="jsonSortOrder" onchange="runJsonOp(\'sort\')"><option value="asc">升序 A-Z</option><option value="desc">降序 Z-A</option></select>'; break;
+    case 'escape': o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runJsonOp(\'escape\')">转义</button><button class="btn btn-sm btn-primary" onclick="runJsonOp(\'unescape\')">去转义</button>'; break;
+    case 'tree': o.innerHTML = '<button class="btn btn-sm" onclick="jsonTreeExpandAll()">展开全部</button><button class="btn btn-sm" onclick="jsonTreeCollapseAll()">折叠全部</button>'; break;
+  }
+}
+
+function runJsonOp(op) {
+  const input = getVal('mainJsonInput');
+  if (!input.trim()) { toast('请先输入 JSON','error'); return; }
+  switch (op) {
+    case 'format': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const ind = document.getElementById('jsonIndent')?.value || '4';
+      const istr = ind === 'tab' ? '\t' : parseInt(ind);
+      const out = JSON.stringify(r.data, null, istr);
+      showJsonResult(out);
+      showJsonStats('📝 ' + formatBytes(new TextEncoder().encode(out).length));
+      toast('格式化完成'); break;
+    }
+    case 'compress': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const out = JSON.stringify(r.data);
+      const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(out).length;
+      showJsonResult(out);
+      showJsonStats('📊 ' + formatBytes(inS) + ' → ' + formatBytes(outS) + ' · 减小 ' + (inS>0?((1-outS/inS)*100).toFixed(1):0) + '%');
+      toast('压缩完成'); break;
+    }
+    case 'validate': {
+      const r = safeParse(input);
+      if (r.success) {
+        const d = r.data;
+        const t = Array.isArray(d) ? 'array[' + d.length + ']' : d === null ? 'null' : typeof d === 'object' ? 'object{' + Object.keys(d).length + ' keys}' : typeof d;
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card success"><div style="font-size:16px">✅ JSON 格式正确</div><div class="struct-badges"><span class="struct-badge">📦 ' + t + '</span><span class="struct-badge">📝 ' + formatBytes(new TextEncoder().encode(input).length) + '</span></div></div>';
+        hideJsonStats(); toast('✅ 校验通过');
+      } else {
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card error"><div style="font-size:16px">❌ JSON 格式错误</div><div>' + escHtml(r.error) + '</div></div>';
+        hideJsonStats(); toast('校验失败','error');
+      }
+      break;
+    }
+    case 'sort': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const ord = document.getElementById('jsonSortOrder')?.value || 'asc';
+      const sorted = deepSortKeys(r.data, ord);
+      showJsonResult(JSON.stringify(sorted, null, 2));
+      showJsonStats('🔤 已按 key <b>' + (ord==='asc'?'升序':'降序') + '</b> 递归排序');
+      toast('排序完成'); break;
+    }
+    case 'escape':
+      showJsonResult(JSON.stringify(input).slice(1, -1));
+      showJsonStats('🔒 已转义特殊字符');
+      toast('转义完成'); break;
+    case 'unescape': {
+      let res = '';
+      for (let i = 0; i < input.length; i++) {
+        if (input[i] === '\\' && i + 1 < input.length) {
+          switch (input[i + 1]) {
+            case 'n': res += '\n'; i++; break; case 't': res += '\t'; i++; break;
+            case 'r': res += '\r'; i++; break; case 'f': res += '\f'; i++; break;
+            case 'b': res += '\b'; i++; break; case '"': res += '"'; i++; break;
+            case "'": res += "'"; i++; break; case '\\': res += '\\'; i++; break;
+            case '/': res += '/'; i++; break;
+            case 'u':
+              if (i + 5 < input.length) {
+                const h = input.substring(i + 2, i + 6);
+                if (/^[0-9a-fA-F]{4}$/.test(h)) { res += String.fromCharCode(parseInt(h, 16)); i += 5; break; }
+              }
+              res += input[i]; break;
+            default: res += input[i];
+          }
+        } else { res += input[i]; }
+      }
+      showJsonResult(res); showJsonStats('🔓 已去除转义'); toast('去转义完成'); break;
+    }
+    case 'tree': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      jsonTreeData = r.data; jsonTreeCollapsed = {}; hideJsonStats();
+      renderJsonTree(); toast('树形视图已生成'); break;
+    }
+  }
+}
+
+function showJsonResult(t) { document.getElementById('jsonResultContent').innerHTML = '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(t) + '</pre>'; }
+function showJsonError(r) { document.getElementById('jsonResultContent').innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(r.error) + '</span>'; hideJsonStats(); toast('JSON格式错误','error'); }
+function showJsonStats(h) { const e = document.getElementById('jsonInfoStats'); e.innerHTML = h; e.style.display = 'flex'; }
+function hideJsonStats() { document.getElementById('jsonInfoStats').style.display = 'none'; }
+function copyJsonResult() { copyTextById('jsonResultContent'); }
+
+function deepSortKeys(obj, order) {
+  if (Array.isArray(obj)) return obj.map(i => deepSortKeys(i, order));
+  if (obj !== null && typeof obj === 'object') {
+    const keys = Object.keys(obj).sort();
+    if (order === 'desc') keys.reverse();
+    const o = {};
+    keys.forEach(k => o[k] = deepSortKeys(obj[k], order));
+    return o;
+  }
+  return obj;
+}
+
+function renderJsonTree() {
+  const el = document.getElementById('jsonResultContent');
+  el.innerHTML = '<div class="tree-view tree-root">' + buildJsonTree(jsonTreeData, '') + '</div>';
+  el.querySelectorAll('.tree-toggle').forEach(t => {
+    t.onclick = function() {
+      jsonTreeCollapsed[this.dataset.path] = !jsonTreeCollapsed[this.dataset.path];
+      renderJsonTree();
+    };
+  });
+}
+
+function buildJsonTree(obj, path) {
+  if (obj === null) return '<span class="tree-value-null">null</span>';
+  if (Array.isArray(obj)) {
+    if (!obj.length) return '<span class="tree-bracket">[]</span>';
+    const c = jsonTreeCollapsed[path];
+    let h = '<span class="tree-toggle" data-path="' + path + '">' + (c ? '▶' : '▼') + '</span><span class="tree-bracket">[</span>';
+    if (c) { h += '<span class="tree-value-null"> … (' + obj.length + ')</span>'; }
+    else {
+      h += '<div class="tree-node">';
+      obj.forEach((v, i) => { h += '<div><span class="tree-key">' + i + '</span>: ' + buildJsonTree(v, path + '[' + i + ']') + '</div>'; });
+      h += '</div>';
+    }
+    h += '<span class="tree-bracket">]</span>'; return h;
+  }
+  if (typeof obj === 'object') {
+    const keys = Object.keys(obj);
+    if (!keys.length) return '<span class="tree-bracket">{}</span>';
+    const c = jsonTreeCollapsed[path];
+    let h = '<span class="tree-toggle" data-path="' + path + '">' + (c ? '▶' : '▼') + '</span><span class="tree-bracket">{</span>';
+    if (c) { h += '<span class="tree-value-null"> … (' + keys.length + ')</span>'; }
+    else {
+      h += '<div class="tree-node">';
+      keys.forEach(k => {
+        h += '<div><span class="tree-key">"' + escHtml(k) + '"</span>: ' + buildJsonTree(obj[k], (path ? path + '.' : '') + k) + '</div>';
+      });
+      h += '</div>';
+    }
+    h += '<span class="tree-bracket">}</span>'; return h;
+  }
+  if (typeof obj === 'string') return '<span class="tree-value-string">"' + escHtml(obj) + '"</span>';
+  if (typeof obj === 'number') return '<span class="tree-value-number">' + obj + '</span>';
+  if (typeof obj === 'boolean') return '<span class="tree-value-boolean">' + obj + '</span>';
+  return '<span>' + escHtml(String(obj)) + '</span>';
+}
+
+function jsonTreeExpandAll() { jsonTreeCollapsed = {}; if (jsonTreeData) renderJsonTree(); }
+function jsonTreeCollapseAll() {
+  if (!jsonTreeData) return;
+  jsonTreeCollapsed = {};
+  (function collect(o, p) {
+    jsonTreeCollapsed[p] = true;
+    if (Array.isArray(o)) o.forEach((v, i) => { if (v && typeof v === 'object') collect(v, p + '[' + i + ']'); });
+    else if (o && typeof o === 'object') Object.entries(o).forEach(([k, v]) => { if (v && typeof v === 'object') collect(v, (p ? p + '.' : '') + k); });
+  })(jsonTreeData, '');
+  renderJsonTree();
+}
+
+// JSON Diff
+function doJsonDiff() {
+  const a = getVal('diffInputA'), b = getVal('diffInputB'), el = document.getElementById('diffResult');
+  if (!a.trim() && !b.trim()) { el.innerHTML = '请输入 JSON'; return; }
+  const sem = document.getElementById('semanticDiff').checked;
+  let la, lb;
+  if (sem) {
+    const pa = safeParse(a), pb = safeParse(b);
+    if (pa.success && pb.success) {
+      la = JSON.stringify(deepSortKeys(pa.data, 'asc'), null, 2).split(NL);
+      lb = JSON.stringify(deepSortKeys(pb.data, 'asc'), null, 2).split(NL);
+    } else { la = a.split(NL); lb = b.split(NL); }
+  } else { la = a.split(NL); lb = b.split(NL); }
+  const diff = lcsDiff(la, lb);
+  let html = '', ch = 0;
+  diff.forEach(d => {
+    if (d.type === 'equal') html += '<div class="diff-line diff-equal">  ' + escHtml(d.value) + '</div>';
+    else if (d.type === 'remove') { html += '<div class="diff-line diff-remove">- ' + escHtml(d.value) + '</div>'; ch++; }
+    else { html += '<div class="diff-line diff-add">+ ' + escHtml(d.value) + '</div>'; ch++; }
+  });
+  el.innerHTML = ch === 0 ? '<div style="color:var(--success)">✅ 两个 JSON 完全一致</div>' + html : '<div style="color:var(--warning);margin-bottom:6px">🔍 发现 ' + ch + ' 处差异</div>' + html;
+}
+
+function lcsDiff(la, lb) {
+  const n = la.length, m = lb.length;
+  const dp = Array.from({length: n + 1}, () => Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = la[i - 1] === lb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+  const res = []; let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && la[i - 1] === lb[j - 1]) { res.unshift({type: 'equal', value: la[i - 1]}); i--; j--; }
+    else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) { res.unshift({type: 'add', value: lb[j - 1]}); j--; }
+    else { res.unshift({type: 'remove', value: la[i - 1]}); i--; }
+  }
+  return res;
+}
+
+// JSON Convert
+function doConvert() {
+  const input = getVal('convertInput'), from = document.getElementById('convertFrom').value, to = document.getElementById('convertTo').value;
+  if (!input.trim()) { toast('请输入内容','error'); return; }
+  if (from === to) { setVal('convertOutput', input); return; }
+  try {
+    let r;
+    switch (from + '->' + to) {
+      case 'json->csv': r = jsonToCsv(input); break;
+      case 'json->xml': r = jsonToXml(input); break;
+      case 'json->yaml': r = jsonToYaml(input); break;
+      case 'csv->json': r = csvToJson(input); break;
+      case 'xml->json': r = xmlToJson(input); break;
+      case 'yaml->json': r = yamlToJson(input); break;
+      default: r = {success: false, error: '不支持 ' + from + ' → ' + to};
+    }
+    setVal('convertOutput', r.success ? r.data : '// ' + r.error);
+    toast(r.success ? '转换完成' : r.error, r.success ? 'success' : 'error');
+  } catch (e) { setVal('convertOutput', '// ' + e.message); }
+}
+function swapConvert() { const f = document.getElementById('convertFrom'), t = document.getElementById('convertTo'); [f.value, t.value] = [t.value, f.value]; }
+
+function jsonToCsv(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  const arr = Array.isArray(r.data) ? r.data : [r.data];
+  if (!arr.length) return {success: true, data: ''};
+  const keys = Object.keys(arr[0]);
+  const rows = arr.map(obj => keys.map(k => {
+    const v = obj[k]; if (v === null || v === undefined) return '';
+    const st = String(v);
+    return st.includes(',') || st.includes('"') || st.includes(NL) ? '"' + st.replace(/"/g, '""') + '"' : st;
+  }).join(','));
+  return {success: true, data: [keys.join(','), ...rows].join(NL)};
+}
+
+function jsonToXml(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  function tx(n, o) {
+    if (o === null) return '<' + n + '>null</' + n + '>';
+    if (typeof o === 'string' || typeof o === 'number' || typeof o === 'boolean')
+      return '<' + n + '>' + String(o).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</' + n + '>';
+    if (Array.isArray(o)) return o.map((v, i) => tx('item', v)).join(NL);
+    let x = '<' + n + '>';
+    for (const [k, v] of Object.entries(o)) x += NL + '  ' + tx(k, v).split(NL).join(NL + '  ');
+    x += NL + '</' + n + '>'; return x;
+  }
+  return {success: true, data: tx('root', r.data)};
+}
+
+function jsonToYaml(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  function ty(o, ind) {
+    const p = '  '.repeat(ind);
+    if (o === null) return 'null';
+    if (typeof o === 'string') return o.includes(':') || o.includes('#') ? '"' + o.replace(/"/g, '\\"') + '"' : o;
+    if (typeof o === 'number' || typeof o === 'boolean') return String(o);
+    if (Array.isArray(o)) { if (!o.length) return '[]'; return o.map(v => p + '- ' + ty(v, ind + 1).trimStart()).join(NL); }
+    const keys = Object.keys(o); if (!keys.length) return '{}';
+    return keys.map(k => p + k + ': ' + ty(o[k], ind + 1).trimStart()).join(NL);
+  }
+  return {success: true, data: ty(r.data, 0)};
+}
+
+function csvToJson(s) {
+  try {
+    const lines = s.trim().split(NL);
+    if (lines.length < 2) return {success: false, error: 'CSV至少需要标题行和一行数据'};
+    const parse = l => {
+      const r = []; let c = '', q = false;
+      for (let i = 0; i < l.length; i++) {
+        if (q) { if (l[i]==='"') { if (l[i+1]==='"') { c+='"'; i++; } else q = false; } else c += l[i]; }
+        else { if (l[i]==='"') q = true; else if (l[i]===',') { r.push(c.trim()); c = ''; } else c += l[i]; }
+      }
+      r.push(c.trim()); return r;
+    };
+    const h = parse(lines[0]), d = [];
+    for (let i = 1; i < lines.length; i++) {
+      const v = parse(lines[i]), o = {};
+      h.forEach((hk, idx) => {
+        let vv = v[idx] || '';
+        if (vv === 'true') vv = true; else if (vv === 'false') vv = false;
+        else if (vv === 'null' || vv === '') vv = null;
+        else if (!isNaN(vv) && vv !== '') vv = Number(vv);
+        o[hk] = vv;
+      });
+      d.push(o);
+    }
+    return {success: true, data: JSON.stringify(d, null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function xmlToJson(s) {
+  try {
+    const p = new DOMParser(), d = p.parseFromString(s, 'text/xml'), err = d.querySelector('parsererror');
+    if (err) return {success: false, error: 'XML解析失败'};
+    function nt(n) {
+      const o = {};
+      if (n.attributes) for (const a of n.attributes) o['@' + a.name] = a.value;
+      const ch = Array.from(n.childNodes).filter(cn => cn.nodeType === 1);
+      if (!ch.length) {
+        const t = n.textContent.trim();
+        const tv = t === 'true' ? true : t === 'false' ? false : t === 'null' ? null : isNaN(Number(t)) || t === '' ? t : Number(t);
+        return Object.keys(o).length ? (o['#text'] = tv, o) : tv;
+      }
+      const g = {};
+      ch.forEach(cn => { const nm = cn.tagName; if (!g[nm]) g[nm] = []; g[nm].push(nt(cn)); });
+      for (const [k, v] of Object.entries(g)) o[k] = v.length === 1 ? v[0] : v;
+      return o;
+    }
+    return {success: true, data: JSON.stringify(nt(d.documentElement), null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function yamlToJson(s) {
+  try {
+    const lines = s.split(NL);
+    function pv(idx, bi) {
+      if (idx >= lines.length) return {value: null, nextIdx: idx};
+      const l = lines[idx];
+      if (!l || !l.trim() || l.trim().startsWith('#')) return pv(idx + 1, bi);
+      const tr = l.trim(), ind = l.search(/\S/);
+      if (ind < bi) return {value: null, nextIdx: idx};
+      if (tr.startsWith('- ')) {
+        const items = []; let i = idx;
+        while (i < lines.length) {
+          const cl = lines[i];
+          if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+          if (cl.search(/\S/) < ind) break;
+          if (cl.trim().startsWith('- ')) {
+            const rest = cl.trim().substring(2).trim(), ci2 = cl.search('- ') + 2;
+            if (rest && !rest.endsWith(':')) { items.push(ps(rest)); i++; }
+            else { const sub = pv(i + 1, ci2); items.push(sub.value); i = sub.nextIdx; }
+          } else break;
+        }
+        return {value: items, nextIdx: i};
+      }
+      const ci = tr.indexOf(':');
+      if (ci >= 0) {
+        const key = tr.substring(0, ci).trim(), rest = tr.substring(ci + 1).trim(), obj = {};
+        if (rest) {
+          obj[key] = ps(rest);
+          let i = idx + 1;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) !== ind) break;
+            const sub = pv(i, ind);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(obj, sub.value);
+            i = sub.nextIdx;
+          }
+          return {value: obj, nextIdx: i};
+        } else {
+          const nested = {}; let i = idx + 1, ci2 = ind + 2;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) < ci2) break;
+            if (cl.search(/\S/) > ci2) { i++; continue; }
+            const sub = pv(i, ci2);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(nested, sub.value);
+            if (sub.nextIdx === i) break;
+            i = sub.nextIdx;
+          }
+          obj[key] = nested;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) !== ind) break;
+            const sub = pv(i, ind);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(obj, sub.value);
+            if (sub.nextIdx === i) break;
+            i = sub.nextIdx;
+          }
+          return {value: obj, nextIdx: i};
+        }
+      }
+      return {value: ps(tr), nextIdx: idx + 1};
+    }
+    return {success: true, data: JSON.stringify(pv(0, 0).value, null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function ps(s) {
+  if (!s || s === 'null' || s === '~') return null;
+  if (s === 'true') return true; if (s === 'false') return false;
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.slice(1, -1);
+  const n = Number(s); return !isNaN(n) && s !== '' ? n : s;
+}
+
+// JSONPath
+function doJsonPath() {
+  const input = getVal('jsonpathInput'), expr = document.getElementById('jsonpathExpr').value.trim(), el = document.getElementById('jsonpathResult');
+  if (!input.trim()) { toast('请输入JSON','error'); return; }
+  if (!expr) { toast('请输入表达式','error'); return; }
+  const r = safeParse(input);
+  if (!r.success) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + r.error + '</span>'; return; }
+  try {
+    const results = evalJsonPath(r.data, expr);
+    if (!results.length) { el.innerHTML = '<span style="color:var(--text-secondary)">未找到匹配结果</span>'; }
+    else {
+      let html = '<div>找到 <b>' + results.length + '</b> 个结果:</div>';
+      results.forEach((res, i) => {
+        html += '<div style="margin:4px 0;padding:8px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px"><div style="font-size:11px;color:var(--text-secondary)">[' + i + '] ' + escHtml(res.path) + '</div><pre style="margin:0;white-space:pre-wrap">' + escHtml(JSON.stringify(res.value, null, 2)) + '</pre></div>';
+      });
+      el.innerHTML = html;
+    }
+    toast('找到 ' + results.length + ' 个结果');
+  } catch (e) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(e.message) + '</span>'; }
+}
+
+function evalJsonPath(root, expr) {
+  const norm = expr.startsWith('$') ? expr.substring(1) : expr;
+  const results = [];
+  walkJsonPath(root, norm, root, '$', results);
+  return results;
+}
+
+function walkJsonPath(cur, expr, root, cpath, results) {
+  if (!expr) { results.push({path: cpath, value: cur}); return; }
+  if (expr.startsWith('..')) {
+    const rest = expr.substring(2);
+    if (rest) walkJsonPath(cur, rest, root, cpath, results);
+    else results.push({path: cpath, value: cur});
+    if (Array.isArray(cur)) cur.forEach((v, i) => walkJsonPath(v, expr, root, cpath + '[' + i + ']', results));
+    else if (cur && typeof cur === 'object') Object.entries(cur).forEach(([k, v]) => walkJsonPath(v, expr, root, cpath + '.' + k, results));
+    return;
+  }
+  if (expr.startsWith('.')) {
+    const m = expr.match(/^\.(\w+)(.*)/);
+    if (m && cur && typeof cur === 'object' && m[1] in cur) walkJsonPath(cur[m[1]], m[2], root, cpath + '.' + m[1], results);
+    return;
+  }
+  if (expr.startsWith('[')) {
+    let d = 0, close = -1;
+    for (let i = 0; i < expr.length; i++) { if (expr[i] === '[') d++; else if (expr[i] === ']') { d--; if (d === 0) { close = i; break; } } }
+    const inner = expr.substring(1, close), rest = expr.substring(close + 1);
+    if (inner.startsWith('?(') && inner.endsWith(')')) {
+      const fexpr = inner.substring(2, inner.length - 1);
+      if (Array.isArray(cur)) cur.forEach((v, i) => { if (evalJsonFilter(v, fexpr)) walkJsonPath(v, rest, root, cpath + '[' + i + ']', results); });
+      return;
+    }
+    if (inner === '*') {
+      if (Array.isArray(cur)) cur.forEach((v, i) => walkJsonPath(v, rest, root, cpath + '[' + i + ']', results));
+      else if (cur && typeof cur === 'object') Object.entries(cur).forEach(([k, v]) => walkJsonPath(v, rest, root, cpath + '.' + k, results));
+      return;
+    }
+    if (/^-?\d+$/.test(inner)) {
+      const idx = parseInt(inner), actual = idx < 0 && Array.isArray(cur) ? cur.length + idx : idx;
+      if (Array.isArray(cur) && actual >= 0 && actual < cur.length) walkJsonPath(cur[actual], rest, root, cpath + '[' + idx + ']', results);
+      return;
+    }
+    if ((inner.startsWith("'") && inner.endsWith("'")) || (inner.startsWith('"') && inner.endsWith('"'))) {
+      const k = inner.slice(1, -1);
+      if (cur && typeof cur === 'object' && k in cur) walkJsonPath(cur[k], rest, root, cpath + '["' + k + '"]', results);
+      return;
+    }
+    if (inner.includes(',')) {
+      inner.split(',').map(s => parseInt(s.trim())).forEach(i => {
+        if (Array.isArray(cur) && i >= 0 && i < cur.length) walkJsonPath(cur[i], rest, root, cpath + '[' + i + ']', results);
+      });
+      return;
+    }
+    if (inner.includes(':')) {
+      const parts = inner.split(':'), start = parseInt(parts[0]) || 0, end = parts[1] ? parseInt(parts[1]) : undefined;
+      if (Array.isArray(cur)) { const e = end !== undefined ? end : cur.length; for (let i = start; i < e; i++) if (i >= 0 && i < cur.length) walkJsonPath(cur[i], rest, root, cpath + '[' + i + ']', results); }
+      return;
+    }
+  }
+}
+
+function evalJsonFilter(item, expr) {
+  const m = expr.match(/@\.(\w+)\s*(==|!=|>=|<=|>|<)\s*(.+)/);
+  if (!m) return true;
+  const field = m[1], op = m[2];
+  let cmp = m[3].trim();
+  if (cmp === 'true') cmp = true; else if (cmp === 'false') cmp = false;
+  else if (cmp === 'null') cmp = null;
+  else if (/^-?\d+(\.\d+)?$/.test(cmp)) cmp = Number(cmp);
+  else if ((cmp.startsWith("'") && cmp.endsWith("'")) || (cmp.startsWith('"') && cmp.endsWith('"'))) cmp = cmp.slice(1, -1);
+  const v = item[field];
+  switch (op) { case '==': return v == cmp; case '!=': return v != cmp; case '>': return v > cmp; case '<': return v < cmp; case '>=': return v >= cmp; case '<=': return v <= cmp; }
+  return false;
+}
+
+
+</script>
+<script>
+// text-diff.js
+// text-diff.js — Generic text diff (like Beyond Compare)
+
+function initDiffPage() {
+  // Load demo data
+  document.getElementById('textDiffInputA').value =
+    'function hello(name) {\n  console.log("Hello, " + name);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Bye!");\n  return false;\n}\n\nvar x = 100;\nvar y = 200;';
+  document.getElementById('textDiffInputB').value =
+    'function hello(name, age) {\n  console.log("Hello, " + name);\n  console.log("Age: " + age);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Goodbye!");\n  return false;\n}\n\nvar x = 100;\nvar z = 300;';
+  setTimeout(doTextDiff, 200);
+}
+
+function doTextDiff() {
+  const a = document.getElementById('textDiffInputA').value;
+  const b = document.getElementById('textDiffInputB').value;
+  const resultEl = document.getElementById('textDiffResult');
+  const statsEl = document.getElementById('diffStatsLabel');
+
+  if (!a.trim() && !b.trim()) {
+    resultEl.innerHTML = '<span style="color:var(--text-muted)">请输入文本</span>';
+    statsEl.textContent = '差异结果';
+    return;
+  }
+
+  const caseSensitive = document.getElementById('diffCaseSensitive').checked;
+  const ignoreWS = document.getElementById('diffIgnoreWS').checked;
+  const viewMode = document.getElementById('diffViewMode').value;
+
+  let linesA = a.split(NL);
+  let linesB = b.split(NL);
+
+  if (!caseSensitive) { linesA = linesA.map(l => l.toLowerCase()); linesB = linesB.map(l => l.toLowerCase()); }
+  if (ignoreWS) { linesA = linesA.map(l => l.replace(/\s+/g, ' ').trim()); linesB = linesB.map(l => l.replace(/\s+/g, ' ').trim()); }
+
+  const diff = computeDiff(linesA, linesB);
+  const adds = diff.filter(d => d.type === 'add').length;
+  const rems = diff.filter(d => d.type === 'remove').length;
+  statsEl.textContent = '差异结果 — 新增 ' + adds + ' 行, 删除 ' + rems + ' 行';
+
+  if (adds === 0 && rems === 0) {
+    resultEl.innerHTML = '<div style="padding:12px;color:var(--success);font-weight:500">✅ 两个文本完全一致</div>';
+    return;
+  }
+
+  if (viewMode === 'sidebyside') {
+    resultEl.innerHTML = renderSideBySide(diff, a, b);
+  } else {
+    resultEl.innerHTML = renderUnified(diff);
+  }
+}
+
+function computeDiff(la, lb) {
+  const n = la.length, m = lb.length;
+  const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = la[i - 1] === lb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+
+  const result = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && la[i - 1] === lb[j - 1]) {
+      result.unshift({ type: 'equal', value: la[i - 1], lineA: i, lineB: j });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      result.unshift({ type: 'add', value: lb[j - 1], lineB: j });
+      j--;
+    } else {
+      result.unshift({ type: 'remove', value: la[i - 1], lineA: i });
+      i--;
+    }
+  }
+  return result;
+}
+
+function renderUnified(diff) {
+  let html = '<div class="diff-unified">';
+  let lineA = 1, lineB = 1;
+  let hunkStarted = false;
+
+  for (let i = 0; i < diff.length; i++) {
+    const d = diff[i];
+
+    // Show context: 3 lines before/after changes
+    const hasChangeNearby = diff.slice(Math.max(0, i - 3), Math.min(diff.length, i + 4))
+      .some(x => x.type !== 'equal');
+
+    if (d.type === 'equal' && !hasChangeNearby) {
+      if (!hunkStarted) {
+        html += '<div class="diff-unified-header">... 跳过 ' + (lineB - (d.lineB || 1)) + ' 行 ...</div>';
+        hunkStarted = true;
+      }
+      lineA++; lineB++;
+      continue;
+    }
+    hunkStarted = false;
+
+    if (d.type === 'add') {
+      html += '<div class="diff-unified-line diff-unified-add">+ ' + escHtml(d.value) + '</div>';
+      lineB++;
+    } else if (d.type === 'remove') {
+      html += '<div class="diff-unified-line diff-unified-remove">- ' + escHtml(d.value) + '</div>';
+      lineA++;
+    } else {
+      html += '<div class="diff-unified-line diff-unified-equal">  ' + escHtml(d.value) + '</div>';
+      lineA++; lineB++;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderSideBySide(diff, originalA, originalB) {
+  let html = '<table class="diff-side-table"><colgroup><col style="width:3%"><col style="width:43%"><col style="width:4%"><col style="width:3%"><col style="width:43%"></colgroup>';
+  let i = 0;
+  while (i < diff.length) {
+    const d = diff[i];
+
+    if (d.type === 'equal') {
+      const nA = d.lineA || 0, nB = d.lineB || 0;
+      html += '<tr><td class="diff-side-num">' + nA + '</td><td>' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num">' + nB + '</td><td>' + escHtml(d.value) + '</td></tr>';
+      i++;
+    } else if (d.type === 'remove' && i + 1 < diff.length && diff[i + 1].type === 'add') {
+      // Paired change: show word diff
+      const rem = d, add = diff[i + 1];
+      const wordDiff = computeWordDiff(rem.value, add.value);
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (rem.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + formatWordDiff(wordDiff, 'remove') + '</td>';
+      html += '<td class="diff-side-num">' + (add.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + formatWordDiff(wordDiff, 'add') + '</td>';
+      html += '</tr>';
+      i += 2;
+    } else if (d.type === 'remove') {
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (d.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '</tr>';
+      i++;
+    } else if (d.type === 'add') {
+      html += '<tr>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '<td class="diff-side-num">' + (d.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + escHtml(d.value) + '</td>';
+      html += '</tr>';
+      i++;
+    }
+  }
+  html += '</table>';
+  return html;
+}
+
+function computeWordDiff(a, b) {
+  // Simple character-level diff for inline highlighting
+  const wordsA = a.split(/(\s+)/g);
+  const wordsB = b.split(/(\s+)/g);
+  const result = [];
+  let i = 0, j = 0;
+  while (i < wordsA.length || j < wordsB.length) {
+    if (i < wordsA.length && j < wordsB.length && wordsA[i] === wordsB[j]) {
+      result.push({ type: 'equal', value: wordsA[i] });
+      i++; j++;
+    } else if (i < wordsA.length) {
+      result.push({ type: 'remove', value: wordsA[i] });
+      i++;
+      if (j < wordsB.length) { result.push({ type: 'add', value: wordsB[j] }); j++; }
+    } else if (j < wordsB.length) {
+      result.push({ type: 'add', value: wordsB[j] });
+      j++;
+    }
+  }
+  return result;
+}
+
+function formatWordDiff(wordDiff, side) {
+  return wordDiff.map(w => {
+    if (w.type === 'equal') return escHtml(w.value);
+    if (w.type === side) return '<span class="word-' + side + '">' + escHtml(w.value) + '</span>';
+    return '';
+  }).join('');
+}
+
+function updateDiffView() {
+  doTextDiff();
+}
+
+function copyTextDiffResult() {
+  const el = document.getElementById('textDiffResult');
+  navigator.clipboard.writeText(el.textContent || '').then(
+    () => toast('已复制'), () => toast('复制失败', 'error')
+  );
+}
+
+</script>
+<script>
+// encode.js
+// encode.js — Base64, URL, Unicode, HTML entity, Hex encode/decode
+// ============================================================
+// 2. ENCODE/DECODE PAGE
+// ============================================================
+let encodeCurrentOp = 'base64', encodeMode = 'encode';
+
+function initEncodePage() {
+  document.querySelectorAll('#encodeOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#encodeOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      encodeCurrentOp = btn.dataset.op;
+      updateEncodeTitle();
+      runEncodeOp(encodeMode);
+    };
+  });
+  updateEncodeTitle();
+}
+
+function updateEncodeTitle() {
+  const names = {base64:'Base64', url:'URL', unicode:'Unicode', htmlentity:'HTML实体', hex:'Hex'};
+  document.getElementById('encodeResultTitle').textContent = names[encodeCurrentOp] + (encodeMode === 'encode' ? ' 编码' : ' 解码') + ' 结果';
+}
+
+function runEncodeOp(mode) {
+  encodeMode = mode;
+  updateEncodeTitle();
+  const input = document.getElementById('encodeInput').value;
+  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  let result = '';
+  try {
+    switch (encodeCurrentOp) {
+      case 'base64':
+        if (mode === 'encode') result = btoa(String.fromCharCode(...new TextEncoder().encode(input)));
+        else result = new TextDecoder().decode(Uint8Array.from(atob(input), c => c.charCodeAt(0)));
+        break;
+      case 'url':
+        result = mode === 'encode' ? encodeURIComponent(input) : decodeURIComponent(input);
+        break;
+      case 'unicode':
+        if (mode === 'encode') { for (let i = 0; i < input.length; i++) { const c = input.charCodeAt(i); result += c > 127 ? '\\u' + c.toString(16).padStart(4, '0') : input[i]; } }
+        else result = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+        break;
+      case 'htmlentity':
+        if (mode === 'encode') result = input.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        else { const ta = document.createElement('textarea'); ta.innerHTML = input; result = ta.value; }
+        break;
+      case 'hex':
+        if (mode === 'encode') { for (let i = 0; i < input.length; i++) result += input.charCodeAt(i).toString(16).padStart(2, '0') + ' '; }
+        else result = input.replace(/\s/g, '').replace(/([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+        break;
+    }
+    document.getElementById('encodeResult').textContent = result;
+    toast(mode === 'encode' ? '编码完成' : '解码完成');
+  } catch (e) {
+    document.getElementById('encodeResult').textContent = '❌ 错误: ' + e.message;
+    toast('操作失败，请检查输入','error');
+  }
+}
+
+
+</script>
+<script>
+// regex.js
+// regex.js — Regular expression tester
+// ============================================================
+// 3. REGEX PAGE
+// ============================================================
+function setRegexPattern(pattern) {
+  document.getElementById('regexPattern').value = pattern;
+  liveRegex();
+}
+
+function initRegexPage() {
+  document.getElementById('regexInput').value = 'test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path';
+  document.getElementById('regexPattern').value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
+  setTimeout(liveRegex, 200);
+}
+
+function liveRegex() {
+  const pattern = document.getElementById('regexPattern').value;
+  const input = document.getElementById('regexInput').value;
+  const resultEl = document.getElementById('regexResult');
+  const countEl = document.getElementById('regexMatchCount');
+  const replaceEl = document.getElementById('regexReplaceResult');
+  const replacePanel = document.getElementById('regexReplacePanel');
+
+  if (!pattern.trim()) { resultEl.innerHTML = '<span style="color:var(--text-muted)">输入正则表达式</span>'; countEl.textContent = ''; replaceEl.innerHTML = ''; return; }
+  try {
+    let flags = '';
+    if (document.getElementById('regexFlagG').checked) flags += 'g';
+    if (document.getElementById('regexFlagI').checked) flags += 'i';
+    if (document.getElementById('regexFlagM').checked) flags += 'm';
+    if (document.getElementById('regexFlagS').checked) flags += 's';
+    if (document.getElementById('regexFlagU').checked) flags += 'u';
+    const re = new RegExp(pattern, flags);
+    const matches = [...input.matchAll(re)];
+    countEl.textContent = matches.length > 0 ? '(' + matches.length + ' 个匹配)' : '(无匹配)';
+
+    if (matches.length === 0) {
+      resultEl.innerHTML = '<span style="color:var(--text-secondary)">无匹配结果</span>';
+    } else {
+      const hasGroups = matches[0].length > 1;
+      let html = '';
+      matches.forEach((m, idx) => {
+        html += '<div class="match-group"><span class="group-label">匹配 ' + (idx + 1) + ':</span> <span class="group-val">' + escHtml(m[0]) + '</span>';
+        html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px">位置 ' + m.index + ', 长度 ' + m[0].length + '</span>';
+        if (hasGroups) {
+          for (let g = 1; g < m.length; g++) {
+            html += '<div style="margin:2px 0 0 12px"><span class="group-label">组 ' + g + ':</span> <span class="group-val">' + (m[g] !== undefined ? escHtml(m[g]) : '&lt;未匹配&gt;') + '</span></div>';
+          }
+        }
+        html += '</div>';
+      });
+      resultEl.innerHTML = html;
+    }
+
+    if (replacePanel.style.display !== 'none') {
+      const replaceWith = document.getElementById('regexReplaceWith').value;
+      try {
+        const replaced = input.replace(re, replaceWith);
+        replaceEl.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(replaced) + '</pre>';
+      } catch (e) { replaceEl.innerHTML = '<span style="color:var(--danger)">替换错误: ' + escHtml(e.message) + '</span>'; }
+    }
+  } catch (e) {
+    resultEl.innerHTML = '<span style="color:var(--danger)">正则表达式错误: ' + escHtml(e.message) + '</span>';
+    countEl.textContent = '(错误)';
+  }
+}
+
+function toggleReplacePanel() {
+  const panel = document.getElementById('regexReplacePanel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  if (panel.style.display !== 'none') liveRegex();
+}
+
+
+</script>
+<script>
+// timestamp.js
+// timestamp.js — Unix timestamp converter
+// ============================================================
+// 4. TIMESTAMP PAGE
+// ============================================================
+let tsCurrentFmt = 'iso';
+
+function initTimestampPage() {
+  document.querySelectorAll('#tsOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#tsOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tsCurrentFmt = btn.dataset.op;
+      document.getElementById('tsResultTitle').textContent = {iso:'ISO 8601 格式', rfc:'RFC 2822 格式', local:'本地格式', utc:'UTC 格式'}[tsCurrentFmt];
+      updateTsDisplay();
+    };
+  });
+  document.getElementById('dtInput').value = new Date().toISOString().slice(0, 16);
+  updateTsDisplay();
+  setInterval(updateTsClock, 1000);
+}
+
+function updateTsClock() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent = Math.floor(now.getTime() / 1000).toLocaleString();
+  document.getElementById('liveClockMs').textContent = now.getTime().toLocaleString();
+  updateTsDisplay();
+}
+
+function updateTsDisplay() {
+  const now = new Date();
+  const tz = document.getElementById('tsTimezone').value;
+  let d;
+  try {
+    if (tz === 'local' || tz === 'UTC') {
+      d = tz === 'UTC' ? new Date(now.toUTCString()) : now;
+    } else {
+      d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    }
+  } catch (e) { d = now; }
+  let result = '';
+  switch (tsCurrentFmt) {
+    case 'iso': result = d.toISOString(); break;
+    case 'rfc': result = d.toUTCString().replace('GMT', '+0000'); break;
+    case 'local': result = d.toString(); break;
+    case 'utc': result = d.toUTCString(); break;
+  }
+  document.getElementById('tsCurrentTime').textContent = result;
+}
+
+function tsToDate() {
+  const input = document.getElementById('tsInput').value.trim();
+  if (!input) { document.getElementById('tsToDateResult').textContent = '请输入时间戳'; return; }
+  let ts = parseInt(input);
+  if (ts > 1e15) ts = Math.floor(ts / 1000);
+  const d = new Date(ts * 1000);
+  if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = '无效的时间戳'; return; }
+  document.getElementById('tsToDateResult').innerHTML =
+    '<b>本地:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
+    '<b>年:</b> ' + d.getFullYear() + ' <b>月:</b> ' + (d.getMonth()+1) + ' <b>日:</b> ' + d.getDate() + ' ' +
+    '<b>时:</b> ' + d.getHours() + ' <b>分:</b> ' + d.getMinutes() + ' <b>秒:</b> ' + d.getSeconds() + ' ' +
+    '<b>星期:</b> ' + ['日','一','二','三','四','五','六'][d.getDay()];
+}
+
+function dateToTs() {
+  const input = document.getElementById('dtInput').value;
+  if (!input) { document.getElementById('dateToTsResult').textContent = '请选择日期时间'; return; }
+  const d = new Date(input);
+  document.getElementById('dateToTsResult').innerHTML =
+    '<b>秒:</b> ' + Math.floor(d.getTime()/1000) + '<br><b>毫秒:</b> ' + d.getTime() + '<br><b>ISO8601:</b> ' + d.toISOString();
+}
+
+
+</script>
+<script>
+// hash.js
+// hash.js — MD5, SHA, HMAC, AES encryption/hashing
+// ============================================================
+// 5. HASH/CRYPTO PAGE
+// ============================================================
+let hashCurrentOp = 'md5';
+
+function initHashPage() {
+  document.querySelectorAll('#hashOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#hashOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      hashCurrentOp = btn.dataset.op;
+      updateHashOptions();
+      doHash();
+    };
+  });
+  updateHashOptions();
+}
+
+function updateHashOptions() {
+  const o = document.getElementById('hashOpOptions');
+  const titles = {md5:'MD5 哈希', sha1:'SHA-1 哈希', sha256:'SHA-256 哈希', sha512:'SHA-512 哈希', hmac:'HMAC 哈希', aes:'AES 加解密'};
+  document.getElementById('hashResultTitle').textContent = titles[hashCurrentOp] || '哈希结果';
+  if (hashCurrentOp === 'hmac') {
+    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="hmacKey" placeholder="输入HMAC密钥" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select>';
+  } else if (hashCurrentOp === 'aes') {
+    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="aesKey" placeholder="AES密钥" style="width:180px"><select class="format-select" id="aesMode"><option value="encrypt">加密</option><option value="decrypt">解密</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">执行</button>';
+  } else {
+    o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="doHash()">计算哈希</button>';
+  }
+}
+
+async function doHash() {
+  const input = document.getElementById('hashInput').value;
+  const resEl = document.getElementById('hashResult');
+  if (!input.trim() && hashCurrentOp !== 'aes') { resEl.textContent = '请输入文本'; return; }
+  try {
+    let result;
+    switch (hashCurrentOp) {
+      case 'md5': result = md5(input); break;
+      case 'sha1': result = await shaHash('SHA-1', input); break;
+      case 'sha256': result = await shaHash('SHA-256', input); break;
+      case 'sha512': result = await shaHash('SHA-512', input); break;
+      case 'hmac':
+        const key = document.getElementById('hmacKey').value;
+        const algo = document.getElementById('hmacAlgo').value;
+        if (!key) { resEl.textContent = '请输入 HMAC 密钥'; return; }
+        result = await hmacHash(algo, key, input);
+        break;
+      case 'aes':
+        const aesKey = document.getElementById('aesKey').value;
+        const mode = document.getElementById('aesMode').value;
+        if (!aesKey) { resEl.textContent = '请输入 AES 密钥'; return; }
+        result = await aesCrypt(aesKey, input, mode);
+        break;
+    }
+    resEl.textContent = result;
+    toast('计算完成');
+  } catch (e) {
+    resEl.textContent = '错误: ' + e.message;
+    toast('计算失败','error');
+  }
+}
+
+function md5(s) {
+  function R(t,e,n,r,o,f){return((g=t+(e&r|~e&n)+o+f)<<(h=void 0)|g>>>32-h)+e}
+  function F(t,e,n,r,o,f,g){return((g=t+(e&n|~e&r)+o+f)<<(h=void 0)|g>>>32-h)+e}
+  function G(t,e,n,r,o,f,g){return((g=t+(e^r^n)+o+f)<<(h=void 0)|g>>>32-h)+e}
+  function H(t,e,n,r,o,f,g){return((g=t+(r^(e|~n))+o+f)<<(h=void 0)|g>>>32-h)+e}
+  var a=s.length+8>>6,b=(a<<4)-1,i,j,k,l,m,n,o,p=[],u=1732584193,v=4023233417,w=2562383102,x=271733878;
+  for(i=0;i<=b;i+=1)p[i]=0;for(i=0;i<s.length;i++)p[i>>2]|=s.charCodeAt(i)<<(i%4<<3);p[i>>2]|=0x80<<(i%4<<3);
+  p[a<<4]=s.length*8;
+  for(i=0;i<=b;i+=16){j=u;k=v;l=w;m=x;
+  u=R(u,v,w,x,p[i],7,3614090360);x=R(x,u,v,w,p[i+1],12,3905402710);w=R(w,x,u,v,p[i+2],17,606105819);v=R(v,w,x,u,p[i+3],22,3250441966);u=R(u,v,w,x,p[i+4],7,4118548399);x=R(x,u,v,w,p[i+5],12,1200080426);w=R(w,x,u,v,p[i+6],17,2821735955);v=R(v,w,x,u,p[i+7],22,4249261313);u=R(u,v,w,x,p[i+8],7,1770035416);x=R(x,u,v,w,p[i+9],12,2336552879);w=R(w,x,u,v,p[i+10],17,4294925233);v=R(v,w,x,u,p[i+11],22,2304563134);u=R(u,v,w,x,p[i+12],7,1804603682);x=R(x,u,v,w,p[i+13],12,4254626195);w=R(w,x,u,v,p[i+14],17,2792965006);v=R(v,w,x,u,p[i+15],22,1236535329);
+  u=F(u,v,w,x,p[i+1],5,4129170786);x=F(x,u,v,w,p[i+6],9,3225465664);w=F(w,x,u,v,p[i+11],14,643717713);v=F(v,w,x,u,p[i],20,3921069994);u=F(u,v,w,x,p[i+5],5,3593408605);x=F(x,u,v,w,p[i+10],9,38016083);w=F(w,x,u,v,p[i+15],14,3634488961);v=F(v,w,x,u,p[i+4],20,3889429448);u=F(u,v,w,x,p[i+9],5,568446438);x=F(x,u,v,w,p[i+14],9,3275163606);w=F(w,x,u,v,p[i+3],14,4107603335);v=F(v,w,x,u,p[i+8],20,1163531501);u=F(u,v,w,x,p[i+13],5,2850285829);x=F(x,u,v,w,p[i+2],9,4243563512);w=F(w,x,u,v,p[i+7],14,1735328473);v=F(v,w,x,u,p[i+12],20,2368359562);
+  u=G(u,v,w,x,p[i+5],4,4294588738);x=G(x,u,v,w,p[i+8],11,2272392833);w=G(w,x,u,v,p[i+11],16,1839030562);v=G(v,w,x,u,p[i+14],23,4259657740);u=G(u,v,w,x,p[i+1],4,2763915233);x=G(x,u,v,w,p[i+4],11,1272893353);w=G(w,x,u,v,p[i+7],16,413946966);v=G(v,w,x,u,p[i+10],23,3200236656);u=G(u,v,w,x,p[i+13],4,681279174);x=G(x,u,v,w,p[i],11,3936430074);w=G(w,x,u,v,p[i+3],16,3572445317);v=G(v,w,x,u,p[i+6],23,76029189);u=G(u,v,w,x,p[i+9],4,3654602809);x=G(x,u,v,w,p[i+12],11,3873151461);w=G(w,x,u,v,p[i+15],16,530742520);v=G(v,w,x,u,p[i+2],23,3299628645);
+  u=H(u,v,w,x,p[i],6,4096336452);x=H(x,u,v,w,p[i+7],10,1126891415);w=H(w,x,u,v,p[i+14],15,2878612391);v=H(v,w,x,u,p[i+5],21,4237533241);u=H(u,v,w,x,p[i+12],6,1700485571);x=H(x,u,v,w,p[i+3],10,2399980690);w=H(w,x,u,v,p[i+10],15,4293915773);v=H(v,w,x,u,p[i+1],21,2240044497);u=H(u,v,w,x,p[i+8],6,1873313359);x=H(x,u,v,w,p[i+15],10,4264355552);w=H(w,x,u,v,p[i+6],15,2734768916);v=H(v,w,x,u,p[i+13],21,1309151649);u=H(u,v,w,x,p[i+4],6,4149444226);x=H(x,u,v,w,p[i+11],10,3174756917);w=H(w,x,u,v,p[i+2],15,718787259);v=H(v,w,x,u,p[i+9],21,3951481745);
+  u=(u+j)>>>0;v=(v+k)>>>0;w=(w+l)>>>0;x=(x+m)>>>0}
+  return (toHex(u)+toHex(v)+toHex(w)+toHex(x)).toLowerCase();
+}
+function toHex(n){var s='';for(var i=0;i<4;i++)s+=((n>>>(i*8+4))&0x0F).toString(16)+((n>>>(i*8))&0x0F).toString(16);return s}
+
+async function shaHash(algo, input) {
+  const enc = new TextEncoder().encode(input);
+  const buf = await crypto.subtle.digest(algo, enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacHash(algo, key, input) {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: algo }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', k, enc.encode(input));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function aesCrypt(keyStr, input, mode) {
+  const enc = new TextEncoder();
+  const keyBytes = enc.encode(keyStr.padEnd(16).slice(0, 16));
+  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  if (mode === 'encrypt') {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(input));
+    const ct = new Uint8Array(encrypted);
+    return 'IV:' + Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('') + NL + '密文:' + Array.from(ct).map(b => b.toString(16).padStart(2, '0')).join('');
+  } else {
+    const lines = input.trim().split(NL);
+    if (lines.length < 2 || !lines[0].startsWith('IV:') || !lines[1].startsWith('密文:')) return '请输入完整的加密输出（含IV行和密文行）';
+    const iv = new Uint8Array(lines[0].replace('IV:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const ct = new Uint8Array(lines[1].replace('密文:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+    return new TextDecoder().decode(decrypted);
+  }
+}
+
+async function hashFile() {
+  const file = document.getElementById('hashFileInput').files[0];
+  const el = document.getElementById('hashFileResult');
+  if (!file) { el.innerHTML = '请选择文件'; return; }
+  try {
+    const buf = await file.arrayBuffer();
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    el.innerHTML = '<b>文件名:</b> ' + escHtml(file.name) + ' (' + formatBytes(file.size) + ')<br><b>SHA-256:</b> ' + hex;
+  } catch (e) { el.innerHTML = '文件哈希计算失败: ' + e.message; }
+}
+
+
+</script>
+<script>
+// formatter.js
+// formatter.js — HTML, CSS, JS, SQL, XML code formatter
+codeDemos.js = 'function hello(name){if(name){console.log("Hello, "+name+"!");return{greeted:true,name:name}}else{console.log("Hello!");return{greeted:false}}';
+codeDemos.sql = 'SELECT u.id,u.name,u.email,o.total,o.created_at FROM users u INNER JOIN orders o ON u.id=o.user_id WHERE u.status=\'active\' AND o.total>100 GROUP BY u.id HAVING COUNT(o.id)>3 ORDER BY o.created_at DESC LIMIT 10';
+codeDemos.xml = '<root><users><user id="1"><name>张三</name><email>zhangsan@example.com</email></user><user id="2"><name>李四</name><email>lisi@example.com</email></user></users></root>';
+
+// ============================================================
+// 6. CODE FORMATTER PAGE
+// ============================================================
+let codeCurrentOp = 'html', codeCurrentMode = 'format';
+
+function initFormatterPage() {
+  document.querySelectorAll('#codeOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#codeOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      codeCurrentOp = btn.dataset.op;
+      updateCodeTitle();
+    };
+  });
+}
+
+function updateCodeTitle() {
+  const names = {html:'HTML', css:'CSS', js:'JavaScript', sql:'SQL', xml:'XML'};
+  document.getElementById('codeResultTitle').textContent = names[codeCurrentOp] + (codeCurrentMode === 'format' ? ' 格式化' : ' 压缩');
+}
+
+function runCodeOp(mode) {
+  codeCurrentMode = mode;
+  updateCodeTitle();
+  const input = document.getElementById('codeInput').value;
+  if (!input.trim()) { toast('请先输入代码','error'); return; }
+  const indent = document.getElementById('codeIndent')?.value || '4';
+  const istr = indent === 'tab' ? '\t' : ' '.repeat(parseInt(indent));
+  let result = '';
+  try {
+    if (mode === 'compress') {
+      result = input.replace(/\s+/g, ' ').trim();
+      if (codeCurrentOp === 'css') result = result.replace(/\s*([{}:;,])\s*/g, '$1');
+      else if (codeCurrentOp === 'html' || codeCurrentOp === 'xml') result = result.replace(/>\s+</g, '><');
+      else if (codeCurrentOp === 'js') result = result.replace(/\s*([{}();,:])\s*/g, '$1');
+      else if (codeCurrentOp === 'sql') result = result.replace(/\s+/g, ' ');
+    } else {
+      result = formatCode(input, codeCurrentOp, istr);
+    }
+    document.getElementById('codeResult').textContent = result;
+    const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(result).length;
+    document.getElementById('codeStats').innerHTML = '📝 ' + formatBytes(inS) + ' → ' + formatBytes(outS);
+    document.getElementById('codeStats').style.display = 'flex';
+    toast(mode === 'format' ? '格式化完成' : '压缩完成');
+  } catch (e) {
+    document.getElementById('codeResult').textContent = '❌ 错误: ' + e.message;
+    toast('格式化失败','error');
+  }
+}
+
+function loadCodeDemo() { document.getElementById('codeInput').value = codeDemos[codeCurrentOp] || codeDemos.html; }
+
+function formatCode(input, type, indent) {
+  switch (type) {
+    case 'html': return formatHtml(input, indent);
+    case 'css': return formatCss(input, indent);
+    case 'js': return formatJs(input, indent);
+    case 'sql': return formatSql(input, indent);
+    case 'xml': return formatXml(input, indent);
+    default: return input;
+  }
+}
+
+function formatHtml(input, indent) {
+  let result = '', depth = 0;
+  const tags = input.replace(/<!--[\s\S]*?-->/g, '').replace(/>\s+</g, '><').split(/(<[^>]+>)/g).filter(Boolean);
+  const selfClosing = /^(<area|<base|<br|<col|<embed|<hr|<img|<input|<link|<meta|<param|<source|<track|<wbr)/i;
+  for (let tag of tags) {
+    tag = tag.trim(); if (!tag) continue;
+    if (tag.startsWith('</')) { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + tag + NL; }
+    else if (tag.startsWith('<') && !selfClosing.test(tag) && !tag.endsWith('/>')) { result += indent.repeat(depth) + tag + NL; depth++; }
+    else if (tag.startsWith('<')) { result += indent.repeat(depth) + tag + NL; }
+    else { result += indent.repeat(depth) + tag + NL; }
+  }
+  return result.trim();
+}
+
+function formatCss(input, indent) {
+  let result = '', depth = 0;
+  const tokens = input.replace(/\/\*[\s\S]*?\*\//g, '').split(/([{;}])/g);
+  for (const token of tokens) {
+    const t = token.trim(); if (!t) continue;
+    if (t === '{') { result += ' {' + NL; depth++; }
+    else if (t === '}') { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + '}' + NL; }
+    else if (t === ';') { result += ';' + NL; }
+    else if (t.includes(':')) { result += indent.repeat(depth) + t; }
+    else { result += t; }
+  }
+  return result.trim();
+}
+
+function formatJs(input, indent) {
+  let result = '', depth = 0, i = 0;
+  while (i < input.length) {
+    const ch = input[i];
+    if (ch === '{' || ch === '[' || ch === '(') {
+      result += ch + NL; depth++;
+      result += indent.repeat(depth); i++;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      depth = Math.max(0, depth - 1);
+      result = result.trimEnd();
+      result += NL + indent.repeat(depth) + ch; i++;
+    } else if (ch === ';') {
+      result += ';' + NL + indent.repeat(depth); i++;
+    } else if (ch === ',' && depth > 0) {
+      result += ', '; i++;
+    } else { result += ch; i++; }
+  }
+  return result;
+}
+
+function formatSql(input, indent) {
+  const keywords = ['SELECT','FROM','WHERE','AND','OR','JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','ON','GROUP BY','HAVING','ORDER BY','LIMIT','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','CREATE TABLE','ALTER TABLE','DROP','UNION','ALL','AS','IN','NOT IN','BETWEEN','LIKE','IS NULL','IS NOT NULL','EXISTS','CASE','WHEN','THEN','ELSE','END'];
+  let result = input.replace(/\s+/g, ' ').trim();
+  keywords.forEach(kw => {
+    const re = new RegExp('\\b' + kw.replace(/ /g, '\\s+') + '\\b', 'gi');
+    result = result.replace(re, NL + kw.toUpperCase());
+  });
+  result = result.replace(/,\s*/g, ',' + NL + '  ');
+  return result.replace(/^\n/, '').trim();
+}
+
+function formatXml(input, indent) {
+  let result = '', depth = 0;
+  const tags = input.replace(/>\s+</g, '><').split(/(<[^?][^>]*>)/g).filter(Boolean);
+  for (let tag of tags) {
+    tag = tag.trim(); if (!tag) continue;
+    if (tag.startsWith('</')) { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + tag + NL; }
+    else if (tag.startsWith('<?')) { result += tag + NL; }
+    else if (tag.endsWith('/>')) { result += indent.repeat(depth) + tag + NL; }
+    else { result += indent.repeat(depth) + tag + NL; depth++; }
+  }
+  return result.trim();
+}
+
+
+</script>
+<script>
+// string-tools.js
+// string-tools.js — String case, sort, dedup, replace, split/join tools
+// ============================================================
+// 7. STRING TOOLS PAGE
+// ============================================================
+let strCurrentOp = 'case';
+
+function initStringPage() {
+  document.querySelectorAll('#strOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#strOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      strCurrentOp = btn.dataset.op;
+      updateStrOptions();
+    };
+  });
+  updateStrOptions();
+}
+
+function updateStrOptions() {
+  const o = document.getElementById('strOpOptions');
+  const titles = {case:'大小写转换', sort:'排序结果', dedup:'去重结果', replace:'替换结果', splitjoin:'分割/合并', liner:'行操作'};
+  document.getElementById('strResultTitle').textContent = titles[strCurrentOp] || '结果';
+  switch (strCurrentOp) {
+    case 'case':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'upper\')">大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'lower\')">小写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'title\')">首字母大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'camel\')">驼峰命名</button>';
+      break;
+    case 'sort':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-asc\')">按行升序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-desc\')">按行降序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-len\')">按长度</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'shuffle\')">随机打乱</button>';
+      break;
+    case 'dedup':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'dedup\')">行去重</button><label class="checkbox-label"><input type="checkbox" id="strKeepEmpty">保留空行</label>';
+      break;
+    case 'replace':
+      o.innerHTML = '<span style="font-size:12px">查找:</span><input type="text" class="format-select" id="strFind" placeholder="文本或正则" style="width:150px"><span style="font-size:12px">替换:</span><input type="text" class="format-select" id="strReplace" placeholder="替换为" style="width:150px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'replace\')">替换</button>';
+      break;
+    case 'splitjoin':
+      o.innerHTML = '<span style="font-size:12px">分隔符:</span><input type="text" class="format-select" id="strSep" value="," style="width:80px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'split\')">分割</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'join\')">合并</button>';
+      break;
+    case 'liner':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'addnum\')">添加行号</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'prefix\')">添加前缀</button><span style="font-size:12px"><input type="text" class="format-select" id="strLinerVal" placeholder="前缀/起始号" style="width:80px"></span><button class="btn btn-sm btn-primary" onclick="runStrOp(\'suffix\')">添加后缀</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'trim\')">去除首尾空格</button>';
+      break;
+  }
+}
+
+function autoStrCount() {
+  const t = document.getElementById('strInput').value;
+  document.getElementById('strStats').innerHTML = '字符: ' + t.length + ' | 单词: ' + t.split(/\s+/).filter(w => w.length).length + ' | 行: ' + t.split(NL).length + ' | 字节: ' + new TextEncoder().encode(t).length;
+}
+
+function runStrOp(op) {
+  const input = document.getElementById('strInput').value;
+  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  const el = document.getElementById('strResult');
+  let result = '';
+  switch (op) {
+    case 'upper': result = input.toUpperCase(); break;
+    case 'lower': result = input.toLowerCase(); break;
+    case 'title': result = input.replace(/\b\w/g, c => c.toUpperCase()); break;
+    case 'camel': result = input.replace(/[-_\s]+(.)/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toLowerCase()); break;
+    case 'sort-asc': result = input.split(NL).sort().join(NL); break;
+    case 'sort-desc': result = input.split(NL).sort().reverse().join(NL); break;
+    case 'sort-len': result = input.split(NL).sort((a, b) => a.length - b.length).join(NL); break;
+    case 'shuffle':
+      const arr = input.split(NL);
+      for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+      result = arr.join(NL); break;
+    case 'dedup':
+      const keep = document.getElementById('strKeepEmpty')?.checked;
+      const lines = input.split(NL);
+      const seen = new Set();
+      result = lines.filter(l => { if (!keep && !l.trim()) return true; if (seen.has(l)) return false; seen.add(l); return true; }).join(NL);
+      break;
+    case 'replace':
+      const find = document.getElementById('strFind')?.value || '';
+      if (!find) { toast('请输入查找内容','error'); return; }
+      const repl = document.getElementById('strReplace')?.value || '';
+      try { result = input.replace(new RegExp(find, 'g'), repl); } catch (e) { result = input.split(find).join(repl); }
+      break;
+    case 'split':
+      const sep = document.getElementById('strSep')?.value || ',';
+      result = input.split(sep).map(s => s.trim()).join(NL); break;
+    case 'join':
+      const sep2 = document.getElementById('strSep')?.value || ',';
+      result = input.split(NL).filter(l => l.trim()).join(sep2); break;
+    case 'addnum':
+      const start = parseInt(document.getElementById('strLinerVal')?.value) || 1;
+      result = input.split(NL).map((l, i) => (start + i) + '. ' + l).join(NL); break;
+    case 'prefix':
+      const p = document.getElementById('strLinerVal')?.value || '';
+      result = input.split(NL).map(l => p + l).join(NL); break;
+    case 'suffix':
+      const s = document.getElementById('strLinerVal')?.value || '';
+      result = input.split(NL).map(l => l + s).join(NL); break;
+    case 'trim': result = input.split(NL).map(l => l.trim()).join(NL); break;
+  }
+  el.textContent = result;
+  toast('操作完成');
+}
+
+
+</script>
+<script>
+// generator.js
+// generator.js — UUID, password, QR code, Lorem Ipsum, sequence, random data
+// ============================================================
+// 8. GENERATOR PAGE
+// ============================================================
+let genCurrentOp = 'uuid';
+
+function initGeneratorPage() {
+  document.querySelectorAll('#genOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#genOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      genCurrentOp = btn.dataset.op;
+      updateGenConfig();
+    };
+  });
+  updateGenConfig();
+}
+
+function updateGenConfig() {
+  const cfg = document.getElementById('genConfig');
+  const titles = {uuid:'UUID 生成', password:'随机密码', qrcode:'二维码生成', lorem:'Lorem Ipsum', sequence:'数字序列', randomdata:'随机数据'};
+  document.getElementById('genResultTitle').textContent = titles[genCurrentOp] || '生成器';
+  switch (genCurrentOp) {
+    case 'uuid':
+      cfg.innerHTML = '<label class="form-label">版本</label><select class="format-select" id="uuidVersion"><option value="4">UUID v4 (随机)</option><option value="1">UUID v1 (时间戳)</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="uuidCount" value="5" min="1" max="100">';
+      break;
+    case 'password':
+      cfg.innerHTML = '<label class="form-label">长度</label><input type="number" class="num-input" id="pwdLen" value="16" min="4" max="128"><label class="form-label">数量</label><input type="number" class="num-input" id="pwdCount" value="5" min="1" max="50"><div class="row"><label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> 大写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> 小写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdDigits" checked> 数字</label><label class="checkbox-label"><input type="checkbox" id="pwdSymbols"> 特殊字符</label></div>';
+      break;
+    case 'qrcode':
+      cfg.innerHTML = '<label class="form-label">内容 (文本或URL)</label><input type="text" class="expr-input" id="qrContent" value="https://www.example.com" style="width:100%"><label class="form-label">尺寸 (px)</label><input type="number" class="num-input" id="qrSize" value="200" min="100" max="600">';
+      break;
+    case 'lorem':
+      cfg.innerHTML = '<label class="form-label">类型</label><select class="format-select" id="loremType"><option value="paragraphs">段落</option><option value="sentences">句子</option><option value="words">单词</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="loremCount" value="3" min="1" max="100">';
+      break;
+    case 'sequence':
+      cfg.innerHTML = '<label class="form-label">起始值</label><input type="number" class="num-input" id="seqStart" value="1"><label class="form-label">结束值</label><input type="number" class="num-input" id="seqEnd" value="100"><label class="form-label">步长</label><input type="number" class="num-input" id="seqStep" value="1" min="1">';
+      break;
+    case 'randomdata':
+      cfg.innerHTML = '<label class="form-label">数据类型</label><select class="format-select" id="rdType"><option value="name">中文姓名</option><option value="email">邮箱</option><option value="phone">手机号</option><option value="idcard">身份证号</option><option value="address">地址</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="rdCount" value="10" min="1" max="100">';
+      break;
+  }
+}
+
+function runGenOp() {
+  const el = document.getElementById('genResult');
+  try {
+    let result = '';
+    switch (genCurrentOp) {
+      case 'uuid':
+        const ver = document.getElementById('uuidVersion')?.value;
+        const cnt = parseInt(document.getElementById('uuidCount')?.value) || 5;
+        if (ver === '1') { for (let i = 0; i < cnt; i++) result += uuidV1() + NL; }
+        else { for (let i = 0; i < cnt; i++) result += crypto.randomUUID() + NL; }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'password':
+        const plen = parseInt(document.getElementById('pwdLen')?.value) || 16;
+        const pcnt = parseInt(document.getElementById('pwdCount')?.value) || 5;
+        let chars = '';
+        if (document.getElementById('pwdUpper')?.checked) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        if (document.getElementById('pwdLower')?.checked) chars += 'abcdefghjkmnpqrstuvwxyz';
+        if (document.getElementById('pwdDigits')?.checked) chars += '23456789';
+        if (document.getElementById('pwdSymbols')?.checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        if (!chars) chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+        const pwdArr = new Uint32Array(plen);
+        for (let j = 0; j < pcnt; j++) {
+          crypto.getRandomValues(pwdArr);
+          result += Array.from(pwdArr, n => chars[n % chars.length]).join('') + NL;
+        }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'qrcode':
+        const qrContent = document.getElementById('qrContent')?.value || '';
+        const qrSize = parseInt(document.getElementById('qrSize')?.value) || 200;
+        if (!qrContent) { el.innerHTML = '请输入二维码内容'; return; }
+        el.innerHTML = '<div class="qr-container">生成中...</div>';
+        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=' + qrSize + 'x' + qrSize + '&data=' + encodeURIComponent(qrContent);
+        el.innerHTML = '<div class="qr-container"><img src="' + qrUrl + '" alt="QR Code" style="max-width:100%"><span style="font-size:11px;color:var(--text-secondary)">' + escHtml(qrContent) + '</span><a href="' + qrUrl + '" download="qrcode.png" class="btn btn-sm">下载 PNG</a></div>';
+        toast('生成完成');
+        return;
+      case 'lorem':
+        const ltype = document.getElementById('loremType')?.value || 'paragraphs';
+        const lcnt = parseInt(document.getElementById('loremCount')?.value) || 3;
+        const loremWords = ['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','ut','aliquip','ex','ea','commodo','consequat','duis','aute','irure','dolor','in','reprehenderit','voluptate','velit','esse','cillum','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','qui','officia','deserunt','mollit','anim','id','est','laborum'];
+        if (ltype === 'words') { for (let i = 0; i < lcnt; i++) result += loremWords[i % loremWords.length] + ' '; }
+        else if (ltype === 'sentences') { for (let i = 0; i < lcnt; i++) { let s = ''; for (let j = 0; j < 8 + Math.floor(Math.random() * 12); j++) s += loremWords[Math.floor(Math.random() * loremWords.length)] + ' '; result += s.charAt(0).toUpperCase() + s.slice(1).trim() + '. '; } }
+        else { for (let i = 0; i < lcnt; i++) { let p = ''; for (let j = 0; j < 4 + Math.floor(Math.random() * 6); j++) { let s = ''; for (let k = 0; k < 6 + Math.floor(Math.random() * 10); k++) s += loremWords[Math.floor(Math.random() * loremWords.length)] + ' '; p += s.charAt(0).toUpperCase() + s.slice(1).trim() + '. '; } result += p.trim() + NL + NL; } }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'sequence':
+        const start = parseInt(document.getElementById('seqStart')?.value) || 1;
+        const end = parseInt(document.getElementById('seqEnd')?.value) || 100;
+        const step = parseInt(document.getElementById('seqStep')?.value) || 1;
+        const nums = [];
+        for (let i = start; i <= end; i += step) nums.push(i);
+        result = nums.join(NL);
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'randomdata':
+        const rdType = document.getElementById('rdType')?.value || 'name';
+        const rdcnt = parseInt(document.getElementById('rdCount')?.value) || 10;
+        result = generateRandomData(rdType, rdcnt);
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+    }
+    toast('生成完成');
+  } catch (e) {
+    el.innerHTML = '❌ 错误: ' + escHtml(e.message);
+    toast('生成失败','error');
+  }
+}
+
+function copyGenResult() { copyTextById('genResult'); }
+
+function uuidV1() {
+  const now = Date.now();
+  return 'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (now + Math.random() * 16) % 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function generateRandomData(type, count) {
+  const surnames = ['张','王','李','赵','陈','杨','黄','周','吴','徐','孙','马','胡','朱','郭','何','罗','高','林','郑','梁'];
+  const names = ['伟','芳','秀英','敏','静','丽','强','磊','洋','勇','艳','杰','娟','涛','明','超','秀兰','霞','平','刚','桂英'];
+  const cities = ['北京','上海','广州','深圳','杭州','成都','武汉','南京','西安','重庆','苏州','天津','长沙','郑州','东莞','青岛','合肥','佛山','宁波','昆明'];
+  const streets = ['中山路','人民路','建设路','解放路','文化路','和平路','新华路','长江路','黄河路','长城路'];
+  const emails = ['@qq.com','@163.com','@gmail.com','@outlook.com','@sina.com','@126.com'];
+  let result = '';
+  for (let i = 0; i < count; i++) {
+    switch (type) {
+      case 'name': result += surnames[Math.floor(Math.random()*surnames.length)] + names[Math.floor(Math.random()*names.length)] + (Math.random()>0.5?names[Math.floor(Math.random()*names.length)]:'') + NL; break;
+      case 'email': result += Math.random().toString(36).substring(2,8) + emails[Math.floor(Math.random()*emails.length)] + NL; break;
+      case 'phone': result += '1' + ['3','5','7','8'][Math.floor(Math.random()*4)] + Math.random().toString().slice(2,11) + NL; break;
+      case 'idcard': result += Math.floor(110000+Math.random()*330000) + (1970+Math.floor(Math.random()*40)).toString() + String(Math.floor(Math.random()*12)+1).padStart(2,'0') + String(Math.floor(Math.random()*28)+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0') + NL; break;
+      case 'address': result += cities[Math.floor(Math.random()*cities.length)] + '市' + ['朝阳区','海淀区','浦东新区','天河区','西湖区','武侯区'][Math.floor(Math.random()*6)] + streets[Math.floor(Math.random()*streets.length)] + Math.floor(Math.random()*300+1) + '号' + NL; break;
+    }
+  }
+  return result.trim();
+}
+
+
+</script>
+</body>
+</html>
