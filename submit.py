@@ -27,25 +27,24 @@ ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / 'src'))
 
 from content import SITE, TOOLS                       # noqa: E402
-from site_config import INDEXNOW_KEY, ENDPOINTS           # noqa: E402
+from site_config import INDEXNOW_KEY, KEY_LOCATION, ENDPOINTS, ROOT_SITE_URL  # noqa: E402
 
 EN_DIR = 'en/'
 PRIVACY = 'privacy.html'
 
 
 def all_urls():
-    """与 sitemap.xml 保持一致：10 个中文页 + 10 个英文页。"""
-    paths = [t['path'] for t in TOOLS] + [PRIVACY]
-    urls = []
-    for p in paths:
+    """主机根页面 + tools 站点的 10 个中文页与 10 个英文页。"""
+    urls = [ROOT_SITE_URL]
+    for p in [t['path'] for t in TOOLS] + [PRIVACY]:
         urls.append(SITE['base_url'] + p)
         urls.append(SITE['base_url'] + EN_DIR + p)
     return urls
 
 
 def main():
-    host = SITE['base_url'].split('//', 1)[1].rstrip('/').split('/')[0]
-    key_location = f"{SITE['base_url']}{INDEXNOW_KEY}.txt"
+    host = ROOT_SITE_URL.split('//', 1)[1].rstrip('/').split('/')[0]
+    key_location = KEY_LOCATION
     urls = all_urls()
     payload = {
         'host': host,

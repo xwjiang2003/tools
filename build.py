@@ -35,7 +35,6 @@ sys.path.insert(0, str(ROOT / 'src'))
 from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
 from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
 from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
-from site_config import INDEXNOW_KEY                        # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
@@ -365,7 +364,6 @@ def build():
     pages[Path('sitemap.xml')] = sitemap_xml()
     pages[Path('robots.txt')] = robots_txt()
     pages[Path('llms.txt')] = llms_txt()
-    pages[Path(f'{INDEXNOW_KEY}.txt')] = INDEXNOW_KEY      # IndexNow 归属校验文件
     pages[Path('.nojekyll')] = ''
 
     for outdir in (DIST, DOCS):
@@ -423,7 +421,9 @@ def robots_txt():
     ]
     lines = [
         '# DevTools — 在线开发工具集',
-        '# 本站是纯静态工具站，欢迎搜索引擎与 AI 检索爬虫抓取。',
+        '#',
+        '# ⚠️ 爬虫只会读取主机根目录的 /robots.txt，本文件（/tools/robots.txt）不影响抓取，',
+        f'#    权威版本在 {SITE["base_url"].rsplit("/", 2)[0]}/robots.txt，两份放行清单保持同步。',
         '',
         'User-agent: *',
         'Allow: /',

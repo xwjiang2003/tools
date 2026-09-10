@@ -118,8 +118,12 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 
 - **文件验证**和 **HTML 标记验证**现在都能用（此前根路径 404，只能标记验证）。
   文件验证：把 `baidu_verify_xxx.html` / `googleXXXX.html` 放进 `xwjiang2003.github.io` 仓库根目录即可。
-- IndexNow 的 key 文件仍放在 `/tools/` 下（Option 2），已在四家引擎验证通过；
-  等新增第二个项目站点时再挪到根仓库（Option 1，覆盖整站），改动只有 `keyLocation` 一行。
+- **主机级文件已移交根仓库**（`robots.txt` / `sitemap.xml` / IndexNow key）。
+  这一点很关键：**`robots.txt` 只有放在主机根目录才会被爬虫读取**，
+  此前生成的 `/tools/robots.txt` 实际上从未被任何爬虫读到。权威版本现在在
+  <https://xwjiang2003.github.io/robots.txt>。
+- IndexNow 已切到官方推荐的 **Option 1**：key 文件在主机根目录，一份 key 覆盖整站，
+  可提交的 URL 不再受目录限制。
 
 ### 需要你自己登录账号操作
 

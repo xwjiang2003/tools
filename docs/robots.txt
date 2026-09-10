@@ -1,5 +1,7 @@
 # DevTools — 在线开发工具集
-# 本站是纯静态工具站，欢迎搜索引擎与 AI 检索爬虫抓取。
+#
+# ⚠️ 爬虫只会读取主机根目录的 /robots.txt，本文件（/tools/robots.txt）不影响抓取，
+#    权威版本在 https://xwjiang2003.github.io/robots.txt，两份放行清单保持同步。
 
 User-agent: *
 Allow: /
