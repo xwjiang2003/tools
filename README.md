@@ -111,16 +111,26 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 
 > 改动 key 会让已有校验失效，需要重新提交，所以不要随意更换。
 
+### 用户站点已建立，根目录可用
+
+`xwjiang2003.github.io` 用户站点仓库已创建并发布（<https://xwjiang2003.github.io/>），
++它拿回了**域名根目录的控制权**，因此：
+
+- **文件验证**和 **HTML 标记验证**现在都能用（此前根路径 404，只能标记验证）。
+  文件验证：把 `baidu_verify_xxx.html` / `googleXXXX.html` 放进 `xwjiang2003.github.io` 仓库根目录即可。
+- IndexNow 的 key 文件仍放在 `/tools/` 下（Option 2），已在四家引擎验证通过；
+  等新增第二个项目站点时再挪到根仓库（Option 1，覆盖整站），改动只有 `keyLocation` 一行。
+
 ### 需要你自己登录账号操作
 
 | 平台 | 入口 | 说明 |
 |------|------|------|
-| Google Search Console | <https://search.google.com/search-console> | 用「网址前缀」添加 `https://xwjiang2003.github.io/tools/`，选 **HTML 标记** 验证，把验证码填进 `src/index.html` 预留的 `google-site-verification` 注释行 |
+| Google Search Console | <https://search.google.com/search-console> | 用「网址前缀」添加 `https://xwjiang2003.github.io/tools/`，验证码填进 `src/index.html` 预留的 `google-site-verification` 注释行 |
 | Bing 网站管理员工具 | <https://www.bing.com/webmasters> | 同上，用 `msvalidate.01`；也可直接导入 Search Console |
-| 百度搜索资源平台 | <https://ziyuan.baidu.com> | 用 `baidu-site-verification`；百度对 `github.io` 收录一向很差，不要期待太高 |
+| 百度搜索资源平台 | <https://ziyuan.baidu.com> | 用 `baidu-site-verification`，或直接把验证文件放进根仓库 |
 
-三个平台都**只能用 HTML 标记验证**——根路径 404，文件验证放不上去。
 验证码拿到后，把 `src/index.html` 里对应那行注释取消并填入即可，重新 `python3 build.py` 后推送。
+百度对 `github.io` 收录一向很差，不要期待太高。
 
 ### 关于「提交给大模型厂商」
 
