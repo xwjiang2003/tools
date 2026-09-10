@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page="timestamp">
+<html lang="en" data-page="regex">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unix 时间戳在线转换工具 - 时间戳与日期互转、多时区对照 | DevTools</title>
-<meta name="description" content="在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。">
-<meta name="keywords" content="Unix时间戳,时间戳转换,时间戳在线,时间戳转日期,日期转时间戳,毫秒时间戳,ISO8601,RFC2822,UTC时间">
+<title>Regex Tester Online — Live Highlight &amp; Replace | DevTools</title>
+<meta name="description" content="Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.">
+<meta name="keywords" content="regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/timestamp/">
-<meta property="og:title" content="Unix 时间戳在线转换工具 - 时间戳与日期互转、多时区对照 | DevTools">
-<meta property="og:description" content="在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。">
+<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/regex/">
+<meta property="og:title" content="Regex Tester Online — Live Highlight &amp; Replace | DevTools">
+<meta property="og:description" content="Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/timestamp/">
+<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/regex/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/timestamp/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/timestamp/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/timestamp/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://xwjiang2003.github.io/tools/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/">
+<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/">
+<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Regex Tester & Replacement Preview", "url": "https://xwjiang2003.github.io/tools/en/regex/", "description": "Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which regex engine does this use?", "acceptedAnswer": {"@type": "Answer", "text": "The browser native JavaScript RegExp engine, following ECMAScript syntax. It is broadly compatible with Python, PCRE and Java, but features such as (?P<name>...) named groups and variable-length lookbehind differ, so keep that in mind when moving a pattern between languages."}}, {"@type": "Question", "name": "Why does my pattern match nothing?", "acceptedAnswer": {"@type": "Answer", "text": "Three common causes: the g flag is off, so only the first occurrence can be found; special characters are unescaped — matching a literal dot requires \\.; or m and s are unchecked, so ^, $ and . behave differently from what you expect."}}, {"@type": "Question", "name": "What is the difference between greedy and lazy matching?", "acceptedAnswer": {"@type": "Answer", "text": "The quantifiers * and + are greedy by default and consume as much as possible. Appending a question mark makes them lazy (*? or +?), consuming as little as possible. Against <a><b>, the pattern <.+> matches the whole string while <.+?> matches only <a>."}}, {"@type": "Question", "name": "Does the page record the patterns and text I enter?", "acceptedAnswer": {"@type": "Answer", "text": "No. Matching and replacement both run inside your browser, and your input is never sent to a server."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -219,30 +219,30 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
       if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
     }
     var want = preferZh ? 'zh' : 'en';
-    var target = {"zh": "./", "en": "../en/timestamp/"}[want];
-    if (target && want !== 'zh') location.replace(target);
+    var target = {"zh": "../../regex/", "en": "./"}[want];
+    if (target && want !== 'en') location.replace(target);
   } catch (e) {}
 })();
 </script>
 </head>
 <body>
 <header class="header">
-  <a class="logo" href="../" aria-label="DevTools 首页">
+  <a class="logo" href="../../en/" aria-label="DevTools home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <a class="top-nav-item" href="../">JSON 工具</a>
-    <a class="top-nav-item" href="../diff/">文本比对</a>
-    <a class="top-nav-item" href="../encode/">编码解码</a>
-    <a class="top-nav-item" href="../regex/">正则表达式</a>
-    <a class="top-nav-item active" href="../timestamp/">时间戳</a>
-    <a class="top-nav-item" href="../hash/">加密哈希</a>
-    <a class="top-nav-item" href="../formatter/">代码格式化</a>
-    <a class="top-nav-item" href="../string/">字符串</a>
-    <a class="top-nav-item" href="../generator/">生成器</a>
+    <a class="top-nav-item" href="../../en/">JSON</a>
+    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../en/encode/">Encode</a>
+    <a class="top-nav-item active" href="../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../en/generator/">Generators</a>
   </nav>
-  <div class="header-actions"><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/timestamp/" data-lang-set="en">English</a></div>
+  <div class="header-actions"><div class="lang-switch"><a class="lang-link" href="../../regex/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
 <script>
 // 记住手动选择：下次访问不再自动跳转
 document.addEventListener("click", function (e) {
@@ -250,7 +250,7 @@ document.addEventListener("click", function (e) {
   if (!a) return;
   try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
 }, true);
-</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
 </header>
 
 <!-- Ad slot: top banner 970x90 / 728x90.
@@ -263,79 +263,89 @@ document.addEventListener("click", function (e) {
 </div>
 
 <main class="main">
-<div class="page active" id="page-timestamp">
-<div class="tool-layout">
-  <div class="input-panel">
-    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 时间戳 / 日期输入</div></div>
-    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
-      <div class="live-clock" id="liveClock">--</div>
-      <div class="live-clock-sub">当前 Unix 时间戳 (秒)</div>
-      <div class="live-clock" style="font-size:18px" id="liveClockMs">--</div>
-      <div class="live-clock-sub">当前 Unix 时间戳 (毫秒)</div>
-      <div style="border-top:1px solid var(--border);padding-top:16px">
-        <label class="form-label">时间戳 → 日期</label>
-        <div class="row"><input type="text" class="expr-input" id="tsInput" placeholder="输入时间戳，如 1700000000" style="flex:1"><button class="btn btn-primary btn-sm" onclick="tsToDate()">转换</button></div>
-        <div class="hash-output" id="tsToDateResult" style="margin-top:8px;font-size:14px">等待输入...</div>
-      </div>
-      <div>
-        <label class="form-label">日期 → 时间戳</label>
-        <div class="row"><input type="datetime-local" class="format-select" id="dtInput" style="flex:1"><button class="btn btn-primary btn-sm" onclick="dateToTs()">转换</button></div>
-        <div class="hash-output" id="dateToTsResult" style="margin-top:8px;font-size:14px">等待输入...</div>
-      </div>
+<div class="page active" id="page-regex">
+<div style="display:flex;gap:16px;flex-direction:column">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)">
+    <div class="row" style="margin-bottom:12px">
+      <span style="font-weight:600;font-size:14px;white-space:nowrap">Regex:</span>
+      <span style="font-family:monospace;font-size:16px;color:var(--text-secondary)">/</span>
+      <input type="text" class="expr-input" id="regexPattern" placeholder="Pattern" style="flex:1;min-width:200px" oninput="liveRegex()">
+      <span style="font-family:monospace;font-size:16px;color:var(--text-secondary)">/</span>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagG" checked onchange="liveRegex()" title="global">g</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagI" onchange="liveRegex()" title="ignore case">i</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagM" onchange="liveRegex()" title="multiline">m</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagS" onchange="liveRegex()" title="dotall">s</label>
+      <label class="checkbox-label"><input type="checkbox" id="regexFlagU" onchange="liveRegex()" title="Unicode">u</label>
+    </div>
+    <div class="row" style="margin-bottom:12px;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="liveRegex()">Test</button>
+      <button class="btn btn-sm" onclick="document.getElementById('regexPattern').value='';document.getElementById('regexInput').value='';document.getElementById('regexResult').innerHTML='';document.getElementById('regexReplaceResult').style.display='none'">Clear</button>
+      <span style="font-size:12px;color:var(--text-secondary);margin-left:auto">Common:</span>
+      <button class="btn btn-sm" onclick="setRegexPattern('[\\\\w.-]+@[\\\\w.-]+\\\\.[a-z]{2,}')">Email</button>
+      <button class="btn btn-sm" onclick="setRegexPattern('1[3-9]\\\\d{9}')">Phone</button>
+      <button class="btn btn-sm" onclick="setRegexPattern('https?://[\\\\w.-]+\\\\.[a-z]{2,}(/\\\\S*)?')">URL</button>
     </div>
   </div>
-  <div class="ops-panel">
-    <div class="op-buttons" id="tsOpBtns">
-      <button class="op-btn active" data-op="iso">ISO 8601</button>
-      <button class="op-btn" data-op="rfc">RFC 2822</button>
-      <button class="op-btn" data-op="local">本地格式</button>
-      <button class="op-btn" data-op="utc">UTC 格式</button>
+  <div class="tool-layout" style="height:auto;max-height:none;min-height:400px">
+    <div class="input-panel">
+      <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> Test text</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('regexInput');document.getElementById('regexResult').innerHTML=''">Clear</button><button class="btn btn-sm" onclick="document.getElementById('regexInput').value='test@example.com\nadmin@site.cn\n\nPhone: 13812345678\nWebsite: https://www.example.com/path'">Example</button></div></div>
+      <textarea class="ta-input" id="regexInput" placeholder="Type the text to match — matches are highlighted on the right..." oninput="liveRegex()"></textarea>
     </div>
-    <div class="result-panel" style="flex:1">
-      <div class="result-panel-header"><span class="result-panel-title" id="tsResultTitle">ISO 8601 格式</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tsResult')">复制</button></div></div>
-      <div class="result-content" id="tsResult"><span style="color:var(--text-muted)">当前时间: <span id="tsCurrentTime">--</span></span></div>
+    <div class="ops-panel">
+      <div class="result-panel" style="flex:1">
+        <div class="result-panel-header"><span class="result-panel-title">Matches <span id="regexMatchCount" style="color:var(--text-secondary)"></span></span></div>
+        <div class="result-content" id="regexResult"><span style="color:var(--text-muted)">Enter a regular expression and some test text</span></div>
+      </div>
+      <div class="result-panel" id="regexReplacePanel" style="display:none;flex:0 0 auto;max-height:200px">
+        <div class="result-panel-header"><span class="result-panel-title">Replace preview</span></div>
+        <div style="padding:8px 12px;display:flex;gap:8px">
+          <input type="text" class="expr-input" id="regexReplaceWith" placeholder="Replace with ($1 for groups)" style="flex:1" oninput="liveRegex()">
+          <button class="btn btn-sm btn-primary" onclick="liveRegex()">Preview</button>
+        </div>
+        <div class="result-content" id="regexReplaceResult" style="max-height:100px"></div>
+      </div>
+      <button class="btn btn-sm" style="align-self:flex-start" onclick="toggleReplacePanel()">🔀 Replace mode</button>
     </div>
-    <div class="row" style="gap:8px"><span style="font-size:12px;color:var(--text-secondary)">常用时区:</span><select class="format-select" id="tsTimezone" onchange="updateTsDisplay()"><option value="local">本地时间</option><option value="UTC">UTC</option><option value="Asia/Shanghai">北京时间 (UTC+8)</option><option value="America/New_York">纽约 (UTC-5)</option><option value="Europe/London">伦敦</option><option value="Asia/Tokyo">东京</option></select></div>
   </div>
 </div>
 </div>
 
 <section class="seo-content">
-  <h1>Unix 时间戳与日期互转</h1>
-  <p>页面上半部分是实时刷新的当前时间戳（秒与毫秒），下半部分提供两个方向的转换：输入时间戳得到可读日期，或选择日期时间得到对应时间戳。</p>
-  <p>结果同时给出 ISO 8601、RFC 2822、本地格式与 UTC 格式，并可切换查看多个常用时区。</p>
-  <h2>主要功能</h2>
+  <h1>Regex Tester &amp; Replacement Preview</h1>
+  <p>Write the pattern and watch the matches appear: enter your expression and flags at the top, put the test text on the left, and see every match highlighted on the right along with its position and capture groups.</p>
+  <p>Below that you can preview a replacement using $1 and $2 backreferences, so you can iterate without switching tools.</p>
+  <h2>Features</h2>
   <ul class="seo-features">
-    <li><b>秒 / 毫秒自动识别</b>：输入 10 位按秒解析，13 位按毫秒解析，不需要手动选择单位。</li>
-    <li><b>双向转换</b>：时间戳 → 日期、日期 → 时间戳，两个方向在同一个页面完成。</li>
-    <li><b>实时时钟</b>：持续显示当前 Unix 时间戳（秒与毫秒），可用来核对服务器与本地时钟偏差。</li>
-    <li><b>多时区对照</b>：本地时间、UTC、北京时间、纽约、伦敦、东京随时切换。</li>
-    <li><b>标准格式输出</b>：一次性给出 ISO 8601 与 RFC 2822 两种常用于日志与 HTTP 头的格式。</li>
+    <li><b>Live Highlighting</b> — Matches are computed as you type and every hit is marked directly in the test text.</li>
+    <li><b>Flag Toggles</b> — g for global, i for case-insensitive, m for multiline, s for dot-matches-newline and u for Unicode, each switched independently.</li>
+    <li><b>Match Details</b> — Every match lists its text, start position and the value captured by each group.</li>
+    <li><b>Replace Preview</b> — Enter a replacement template and see the result immediately, with $1, $&amp; and the rest of the substitution syntax.</li>
+    <li><b>Common Patterns</b> — Ready-made expressions for email addresses, phone numbers and URLs that you can drop in and adjust.</li>
   </ul>
-  <h2>使用步骤</h2>
+  <h2>How to use</h2>
   <ol class="seo-steps">
-    <li>在&quot;时间戳 → 日期&quot;中输入 10 位或 13 位数字，点击转换。</li>
-    <li>在&quot;日期 → 时间戳&quot;中选择日期时间，点击转换得到秒级与毫秒级结果。</li>
-    <li>用下方时区下拉框切换查看换算到不同时区的表示。</li>
-    <li>在上方操作按钮间切换 ISO 8601、RFC 2822、本地格式与 UTC 格式。</li>
+    <li>Type the expression into the regex field and tick the g / i / m / s / u flags as needed.</li>
+    <li>Paste the content to search into &quot;Test text&quot; on the left.</li>
+    <li>Review the highlights and capture group details under &quot;Matches&quot; on the right.</li>
+    <li>Switch to replace mode, enter a replacement template and check the preview.</li>
   </ol>
-  <h2>常见问题</h2>
+  <h2>FAQ</h2>
   <div class="faq">
-    <details><summary>10 位和 13 位时间戳有什么区别？</summary><p>10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。</p></details>
-    <details><summary>什么是 2038 年问题？</summary><p>32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。</p></details>
-    <details><summary>Unix 时间戳包含闰秒吗？</summary><p>不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。</p></details>
-    <details><summary>为什么转换出来的日期和服务器日志差了几个小时？</summary><p>多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。</p></details>
+    <details><summary>Which regex engine does this use?</summary><p>The browser native JavaScript RegExp engine, following ECMAScript syntax. It is broadly compatible with Python, PCRE and Java, but features such as (?P&lt;name&gt;...) named groups and variable-length lookbehind differ, so keep that in mind when moving a pattern between languages.</p></details>
+    <details><summary>Why does my pattern match nothing?</summary><p>Three common causes: the g flag is off, so only the first occurrence can be found; special characters are unescaped — matching a literal dot requires \.; or m and s are unchecked, so ^, $ and . behave differently from what you expect.</p></details>
+    <details><summary>What is the difference between greedy and lazy matching?</summary><p>The quantifiers * and + are greedy by default and consume as much as possible. Appending a question mark makes them lazy (*? or +?), consuming as little as possible. Against &lt;a&gt;&lt;b&gt;, the pattern &lt;.+&gt; matches the whole string while &lt;.+?&gt; matches only &lt;a&gt;.</p></details>
+    <details><summary>Does the page record the patterns and text I enter?</summary><p>No. Matching and replacement both run inside your browser, and your input is never sent to a server.</p></details>
   </div>
 </section>
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../">首页</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../privacy.html">隐私政策</a></nav>
-  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/privacy.html">Privacy Policy</a></nav>
+  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
-    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
     <span class="stat-dot" aria-hidden="true">·</span>
-    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
   </div>
 </footer>
 <div class="toast-container" id="toastContainer"></div>
@@ -439,7 +449,7 @@ function toast(msg, type) {
 function copyTextById(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
 }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
@@ -488,7 +498,7 @@ document.addEventListener('DOMContentLoaded', init);
 // ============================================================
 const demoJson = JSON.stringify({"name":"JSON Tools","version":"1.0.0","author":{"name":"Dev","email":"dev@example.com"},"tags":["json","formatter"],"settings":{"theme":"light","indent":4}}, null, 2);
 const demoJson2 = JSON.stringify({"name":"JSON Tools Pro","version":"2.0.0","author":{"name":"Dev Team","email":"team@example.com"},"tags":["json","formatter","diff"],"settings":{"theme":"dark","indent":2}}, null, 2);
-const jsonPathDemoData = JSON.stringify({"store":{"name":"图书商店","books":[{"title":"JS高级编程","price":89.9,"author":"Nicholas"},{"title":"Node.js深入浅出","price":69.9,"author":"朴灵"}],"location":{"city":"北京","address":"海淀区"}}}, null, 2);
+const jsonPathDemoData = JSON.stringify({"store":{"name":"Book Store","books":[{"title":"Professional JavaScript","price":89.9,"author":"Nicholas"},{"title":"Node.js in Action","price":69.9,"author":"Lin Pu"}],"location":{"city":"Beijing","address":"Haidian"}}}, null, 2);
 
 // ============================================================
 // 1. JSON TOOLS PAGE
@@ -548,20 +558,20 @@ function initJsonPage() {
 
 function updateJsonOptions() {
   const o = document.getElementById('jsonOpOptions');
-  const titles = {format:'格式化结果',compress:'压缩结果',validate:'校验结果',sort:'排序结果',escape:'转义结果',tree:'树形视图'};
-  document.getElementById('jsonResultTitle').textContent = titles[jsonCurrentOp] || '结果';
+  const titles = {format:'Formatted result',compress:'Compressed result',validate:'Validation result',sort:'Sorted result',escape:'Escaped result',tree:'Tree view'};
+  document.getElementById('jsonResultTitle').textContent = titles[jsonCurrentOp] || 'Result';
   switch (jsonCurrentOp) {
-    case 'format': o.innerHTML = '<span style="color:var(--text-secondary)">缩进:</span><select id="jsonIndent" onchange="runJsonOp(\'format\')"><option value="2">2空格</option><option value="4" selected>4空格</option><option value="tab">Tab</option></select>'; break;
+    case 'format': o.innerHTML = '<span style="color:var(--text-secondary)">Indent:</span><select id="jsonIndent" onchange="runJsonOp(\'format\')"><option value="2">2 spaces</option><option value="4" selected>4 spaces</option><option value="tab">Tab</option></select>'; break;
     case 'compress': case 'validate': o.innerHTML = ''; break;
-    case 'sort': o.innerHTML = '<span style="color:var(--text-secondary)">顺序:</span><select id="jsonSortOrder" onchange="runJsonOp(\'sort\')"><option value="asc">升序 A-Z</option><option value="desc">降序 Z-A</option></select>'; break;
-    case 'escape': o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runJsonOp(\'escape\')">转义</button><button class="btn btn-sm btn-primary" onclick="runJsonOp(\'unescape\')">去转义</button>'; break;
-    case 'tree': o.innerHTML = '<button class="btn btn-sm" onclick="jsonTreeExpandAll()">展开全部</button><button class="btn btn-sm" onclick="jsonTreeCollapseAll()">折叠全部</button>'; break;
+    case 'sort': o.innerHTML = '<span style="color:var(--text-secondary)">Order:</span><select id="jsonSortOrder" onchange="runJsonOp(\'sort\')"><option value="asc">Ascending A-Z</option><option value="desc">Descending Z-A</option></select>'; break;
+    case 'escape': o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runJsonOp(\'escape\')">Escape</button><button class="btn btn-sm btn-primary" onclick="runJsonOp(\'unescape\')">Unescape</button>'; break;
+    case 'tree': o.innerHTML = '<button class="btn btn-sm" onclick="jsonTreeExpandAll()">Expand all</button><button class="btn btn-sm" onclick="jsonTreeCollapseAll()">Collapse all</button>'; break;
   }
 }
 
 function runJsonOp(op) {
   const input = getVal('mainJsonInput');
-  if (!input.trim()) { toast('请先输入 JSON','error'); return; }
+  if (!input.trim()) { toast('Please enter JSON first','error'); return; }
   switch (op) {
     case 'format': {
       const r = safeParse(input);
@@ -571,7 +581,7 @@ function runJsonOp(op) {
       const out = JSON.stringify(r.data, null, istr);
       showJsonResult(out);
       showJsonStats('📝 ' + formatBytes(new TextEncoder().encode(out).length));
-      toast('格式化完成'); break;
+      toast('Formatted'); break;
     }
     case 'compress': {
       const r = safeParse(input);
@@ -579,19 +589,19 @@ function runJsonOp(op) {
       const out = JSON.stringify(r.data);
       const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(out).length;
       showJsonResult(out);
-      showJsonStats('📊 ' + formatBytes(inS) + ' → ' + formatBytes(outS) + ' · 减小 ' + (inS>0?((1-outS/inS)*100).toFixed(1):0) + '%');
-      toast('压缩完成'); break;
+      showJsonStats('📊 ' + formatBytes(inS) + ' → ' + formatBytes(outS) + ' · ' + (inS>0?((1-outS/inS)*100).toFixed(1):0) + '% smaller');
+      toast('Compressed'); break;
     }
     case 'validate': {
       const r = safeParse(input);
       if (r.success) {
         const d = r.data;
         const t = Array.isArray(d) ? 'array[' + d.length + ']' : d === null ? 'null' : typeof d === 'object' ? 'object{' + Object.keys(d).length + ' keys}' : typeof d;
-        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card success"><div style="font-size:16px">✅ JSON 格式正确</div><div class="struct-badges"><span class="struct-badge">📦 ' + t + '</span><span class="struct-badge">📝 ' + formatBytes(new TextEncoder().encode(input).length) + '</span></div></div>';
-        hideJsonStats(); toast('✅ 校验通过');
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card success"><div style="font-size:16px">✅ Valid JSON</div><div class="struct-badges"><span class="struct-badge">📦 ' + t + '</span><span class="struct-badge">📝 ' + formatBytes(new TextEncoder().encode(input).length) + '</span></div></div>';
+        hideJsonStats(); toast('✅ Valid');
       } else {
-        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card error"><div style="font-size:16px">❌ JSON 格式错误</div><div>' + escHtml(r.error) + '</div></div>';
-        hideJsonStats(); toast('校验失败','error');
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card error"><div style="font-size:16px">❌ Invalid JSON</div><div>' + escHtml(r.error) + '</div></div>';
+        hideJsonStats(); toast('Validatefailed','error');
       }
       break;
     }
@@ -601,13 +611,13 @@ function runJsonOp(op) {
       const ord = document.getElementById('jsonSortOrder')?.value || 'asc';
       const sorted = deepSortKeys(r.data, ord);
       showJsonResult(JSON.stringify(sorted, null, 2));
-      showJsonStats('🔤 已按 key <b>' + (ord==='asc'?'升序':'降序') + '</b> 递归排序');
-      toast('排序完成'); break;
+      showJsonStats('🔤 Sorted by key <b>' + (ord==='asc'?'Ascending':'Descending') + '</b> Recursive sort');
+      toast('Sorted'); break;
     }
     case 'escape':
       showJsonResult(JSON.stringify(input).slice(1, -1));
-      showJsonStats('🔒 已转义特殊字符');
-      toast('转义完成'); break;
+      showJsonStats('🔒 Special characters escaped');
+      toast('Escaped'); break;
     case 'unescape': {
       let res = '';
       for (let i = 0; i < input.length; i++) {
@@ -628,19 +638,19 @@ function runJsonOp(op) {
           }
         } else { res += input[i]; }
       }
-      showJsonResult(res); showJsonStats('🔓 已去除转义'); toast('去转义完成'); break;
+      showJsonResult(res); showJsonStats('🔓 Escapes removed'); toast('Unescaped'); break;
     }
     case 'tree': {
       const r = safeParse(input);
       if (!r.success) { showJsonError(r); return; }
       jsonTreeData = r.data; jsonTreeCollapsed = {}; hideJsonStats();
-      renderJsonTree(); toast('树形视图已生成'); break;
+      renderJsonTree(); toast('Tree view generated'); break;
     }
   }
 }
 
 function showJsonResult(t) { document.getElementById('jsonResultContent').innerHTML = '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(t) + '</pre>'; }
-function showJsonError(r) { document.getElementById('jsonResultContent').innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(r.error) + '</span>'; hideJsonStats(); toast('JSON格式错误','error'); }
+function showJsonError(r) { document.getElementById('jsonResultContent').innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(r.error) + '</span>'; hideJsonStats(); toast('Invalid JSON','error'); }
 function showJsonStats(h) { const e = document.getElementById('jsonInfoStats'); e.innerHTML = h; e.style.display = 'flex'; }
 function hideJsonStats() { document.getElementById('jsonInfoStats').style.display = 'none'; }
 function copyJsonResult() { copyTextById('jsonResultContent'); }
@@ -718,7 +728,7 @@ function jsonTreeCollapseAll() {
 // JSON Diff
 function doJsonDiff() {
   const a = getVal('diffInputA'), b = getVal('diffInputB'), el = document.getElementById('diffResult');
-  if (!a.trim() && !b.trim()) { el.innerHTML = '请输入 JSON'; return; }
+  if (!a.trim() && !b.trim()) { el.innerHTML = 'Please enter JSON'; return; }
   const sem = document.getElementById('semanticDiff').checked;
   let la, lb;
   if (sem) {
@@ -735,7 +745,7 @@ function doJsonDiff() {
     else if (d.type === 'remove') { html += '<div class="diff-line diff-remove">- ' + escHtml(d.value) + '</div>'; ch++; }
     else { html += '<div class="diff-line diff-add">+ ' + escHtml(d.value) + '</div>'; ch++; }
   });
-  el.innerHTML = ch === 0 ? '<div style="color:var(--success)">✅ 两个 JSON 完全一致</div>' + html : '<div style="color:var(--warning);margin-bottom:6px">🔍 发现 ' + ch + ' 处差异</div>' + html;
+  el.innerHTML = ch === 0 ? '<div style="color:var(--success)">✅ The two JSON values are identical</div>' + html : '<div style="color:var(--warning);margin-bottom:6px">🔍 Found ' + ch + ' differences</div>' + html;
 }
 
 function lcsDiff(la, lb) {
@@ -756,7 +766,7 @@ function lcsDiff(la, lb) {
 // JSON Convert
 function doConvert() {
   const input = getVal('convertInput'), from = document.getElementById('convertFrom').value, to = document.getElementById('convertTo').value;
-  if (!input.trim()) { toast('请输入内容','error'); return; }
+  if (!input.trim()) { toast('Please enter some content','error'); return; }
   if (from === to) { setVal('convertOutput', input); return; }
   try {
     let r;
@@ -767,10 +777,10 @@ function doConvert() {
       case 'csv->json': r = csvToJson(input); break;
       case 'xml->json': r = xmlToJson(input); break;
       case 'yaml->json': r = yamlToJson(input); break;
-      default: r = {success: false, error: '不支持 ' + from + ' → ' + to};
+      default: r = {success: false, error: 'Unsupported: ' + from + ' → ' + to};
     }
     setVal('convertOutput', r.success ? r.data : '// ' + r.error);
-    toast(r.success ? '转换完成' : r.error, r.success ? 'success' : 'error');
+    toast(r.success ? 'Converted' : r.error, r.success ? 'success' : 'error');
   } catch (e) { setVal('convertOutput', '// ' + e.message); }
 }
 function swapConvert() { const f = document.getElementById('convertFrom'), t = document.getElementById('convertTo'); [f.value, t.value] = [t.value, f.value]; }
@@ -819,7 +829,7 @@ function jsonToYaml(s) {
 function csvToJson(s) {
   try {
     const lines = s.trim().split(NL);
-    if (lines.length < 2) return {success: false, error: 'CSV至少需要标题行和一行数据'};
+    if (lines.length < 2) return {success: false, error: 'CSV needs at least a header row and one data row'};
     const parse = l => {
       const r = []; let c = '', q = false;
       for (let i = 0; i < l.length; i++) {
@@ -847,7 +857,7 @@ function csvToJson(s) {
 function xmlToJson(s) {
   try {
     const p = new DOMParser(), d = p.parseFromString(s, 'text/xml'), err = d.querySelector('parsererror');
-    if (err) return {success: false, error: 'XML解析失败'};
+    if (err) return {success: false, error: 'XML parsing failed'};
     function nt(n) {
       const o = {};
       if (n.attributes) for (const a of n.attributes) o['@' + a.name] = a.value;
@@ -945,21 +955,21 @@ function ps(s) {
 // JSONPath
 function doJsonPath() {
   const input = getVal('jsonpathInput'), expr = document.getElementById('jsonpathExpr').value.trim(), el = document.getElementById('jsonpathResult');
-  if (!input.trim()) { toast('请输入JSON','error'); return; }
-  if (!expr) { toast('请输入表达式','error'); return; }
+  if (!input.trim()) { toast('Please enter JSON','error'); return; }
+  if (!expr) { toast('Please enter an expression','error'); return; }
   const r = safeParse(input);
   if (!r.success) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + r.error + '</span>'; return; }
   try {
     const results = evalJsonPath(r.data, expr);
-    if (!results.length) { el.innerHTML = '<span style="color:var(--text-secondary)">未找到匹配结果</span>'; }
+    if (!results.length) { el.innerHTML = '<span style="color:var(--text-secondary)">No matches found</span>'; }
     else {
-      let html = '<div>找到 <b>' + results.length + '</b> 个结果:</div>';
+      let html = '<div>Found <b>' + results.length + '</b> results:</div>';
       results.forEach((res, i) => {
         html += '<div style="margin:4px 0;padding:8px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px"><div style="font-size:11px;color:var(--text-secondary)">[' + i + '] ' + escHtml(res.path) + '</div><pre style="margin:0;white-space:pre-wrap">' + escHtml(JSON.stringify(res.value, null, 2)) + '</pre></div>';
       });
       el.innerHTML = html;
     }
-    toast('找到 ' + results.length + ' 个结果');
+    toast('Found ' + results.length + ' results');
   } catch (e) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(e.message) + '</span>'; }
 }
 
@@ -1059,8 +1069,8 @@ function doTextDiff() {
   const statsEl = document.getElementById('diffStatsLabel');
 
   if (!a.trim() && !b.trim()) {
-    resultEl.innerHTML = '<span style="color:var(--text-muted)">请输入文本</span>';
-    statsEl.textContent = '差异结果';
+    resultEl.innerHTML = '<span style="color:var(--text-muted)">Please enter some text</span>';
+    statsEl.textContent = 'Diff';
     return;
   }
 
@@ -1077,10 +1087,10 @@ function doTextDiff() {
   const diff = computeDiff(linesA, linesB);
   const adds = diff.filter(d => d.type === 'add').length;
   const rems = diff.filter(d => d.type === 'remove').length;
-  statsEl.textContent = '差异结果 — 新增 ' + adds + ' 行, 删除 ' + rems + ' 行';
+  statsEl.textContent = 'Diff — ' + adds + ' added, ' + rems + ' removed';
 
   if (adds === 0 && rems === 0) {
-    resultEl.innerHTML = '<div style="padding:12px;color:var(--success);font-weight:500">✅ 两个文本完全一致</div>';
+    resultEl.innerHTML = '<div style="padding:12px;color:var(--success);font-weight:500">✅ The two texts are identical</div>';
     return;
   }
 
@@ -1129,7 +1139,7 @@ function renderUnified(diff) {
 
     if (d.type === 'equal' && !hasChangeNearby) {
       if (!hunkStarted) {
-        html += '<div class="diff-unified-header">... 跳过 ' + (lineB - (d.lineB || 1)) + ' 行 ...</div>';
+        html += '<div class="diff-unified-header">... skipped ' + (lineB - (d.lineB || 1)) + ' line ...</div>';
         hunkStarted = true;
       }
       lineA++; lineB++;
@@ -1231,7 +1241,7 @@ function updateDiffView() {
 function copyTextDiffResult() {
   const el = document.getElementById('textDiffResult');
   navigator.clipboard.writeText(el.textContent || '').then(
-    () => toast('已复制'), () => toast('复制失败', 'error')
+    () => toast('Copied'), () => toast('Copy failed', 'error')
   );
 }
 
@@ -1258,15 +1268,15 @@ function initEncodePage() {
 }
 
 function updateEncodeTitle() {
-  const names = {base64:'Base64', url:'URL', unicode:'Unicode', htmlentity:'HTML实体', hex:'Hex'};
-  document.getElementById('encodeResultTitle').textContent = names[encodeCurrentOp] + (encodeMode === 'encode' ? ' 编码' : ' 解码') + ' 结果';
+  const names = {base64:'Base64', url:'URL', unicode:'Unicode', htmlentity:'HTML Entities', hex:'Hex'};
+  document.getElementById('encodeResultTitle').textContent = names[encodeCurrentOp] + ' — ' + (encodeMode === 'encode' ? 'Encoded' : 'Decoded');
 }
 
 function runEncodeOp(mode) {
   encodeMode = mode;
   updateEncodeTitle();
   const input = document.getElementById('encodeInput').value;
-  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  if (!input.trim()) { toast('Please enter some text first','error'); return; }
   let result = '';
   try {
     switch (encodeCurrentOp) {
@@ -1291,10 +1301,10 @@ function runEncodeOp(mode) {
         break;
     }
     document.getElementById('encodeResult').textContent = result;
-    toast(mode === 'encode' ? '编码完成' : '解码完成');
+    toast(mode === 'encode' ? 'Encoded' : 'Decoded');
   } catch (e) {
-    document.getElementById('encodeResult').textContent = '❌ 错误: ' + e.message;
-    toast('操作失败，请检查输入','error');
+    document.getElementById('encodeResult').textContent = '❌ Error: ' + e.message;
+    toast('Operation failed — please check your input','error');
   }
 }
 
@@ -1312,7 +1322,7 @@ function setRegexPattern(pattern) {
 }
 
 function initRegexPage() {
-  document.getElementById('regexInput').value = 'test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path';
+  document.getElementById('regexInput').value = 'test@example.com\nadmin@site.cn\n\nPhone: 13812345678\nWebsite: https://www.example.com/path';
   document.getElementById('regexPattern').value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
   setTimeout(liveRegex, 200);
 }
@@ -1325,7 +1335,7 @@ function liveRegex() {
   const replaceEl = document.getElementById('regexReplaceResult');
   const replacePanel = document.getElementById('regexReplacePanel');
 
-  if (!pattern.trim()) { resultEl.innerHTML = '<span style="color:var(--text-muted)">输入正则表达式</span>'; countEl.textContent = ''; replaceEl.innerHTML = ''; return; }
+  if (!pattern.trim()) { resultEl.innerHTML = '<span style="color:var(--text-muted)">Enter a regular expression</span>'; countEl.textContent = ''; replaceEl.innerHTML = ''; return; }
   try {
     let flags = '';
     if (document.getElementById('regexFlagG').checked) flags += 'g';
@@ -1335,19 +1345,19 @@ function liveRegex() {
     if (document.getElementById('regexFlagU').checked) flags += 'u';
     const re = new RegExp(pattern, flags);
     const matches = [...input.matchAll(re)];
-    countEl.textContent = matches.length > 0 ? '(' + matches.length + ' 个匹配)' : '(无匹配)';
+    countEl.textContent = matches.length > 0 ? '(' + matches.length + ' matches)' : '(no matches)';
 
     if (matches.length === 0) {
-      resultEl.innerHTML = '<span style="color:var(--text-secondary)">无匹配结果</span>';
+      resultEl.innerHTML = '<span style="color:var(--text-secondary)">No matches</span>';
     } else {
       const hasGroups = matches[0].length > 1;
       let html = '';
       matches.forEach((m, idx) => {
-        html += '<div class="match-group"><span class="group-label">匹配 ' + (idx + 1) + ':</span> <span class="group-val">' + escHtml(m[0]) + '</span>';
-        html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px">位置 ' + m.index + ', 长度 ' + m[0].length + '</span>';
+        html += '<div class="match-group"><span class="group-label">Match ' + (idx + 1) + ':</span> <span class="group-val">' + escHtml(m[0]) + '</span>';
+        html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px">at index ' + m.index + ', length ' + m[0].length + '</span>';
         if (hasGroups) {
           for (let g = 1; g < m.length; g++) {
-            html += '<div style="margin:2px 0 0 12px"><span class="group-label">组 ' + g + ':</span> <span class="group-val">' + (m[g] !== undefined ? escHtml(m[g]) : '&lt;未匹配&gt;') + '</span></div>';
+            html += '<div style="margin:2px 0 0 12px"><span class="group-label">Group ' + g + ':</span> <span class="group-val">' + (m[g] !== undefined ? escHtml(m[g]) : '&lt;no match&gt;') + '</span></div>';
           }
         }
         html += '</div>';
@@ -1360,11 +1370,11 @@ function liveRegex() {
       try {
         const replaced = input.replace(re, replaceWith);
         replaceEl.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(replaced) + '</pre>';
-      } catch (e) { replaceEl.innerHTML = '<span style="color:var(--danger)">替换错误: ' + escHtml(e.message) + '</span>'; }
+      } catch (e) { replaceEl.innerHTML = '<span style="color:var(--danger)">Replace error: ' + escHtml(e.message) + '</span>'; }
     }
   } catch (e) {
-    resultEl.innerHTML = '<span style="color:var(--danger)">正则表达式错误: ' + escHtml(e.message) + '</span>';
-    countEl.textContent = '(错误)';
+    resultEl.innerHTML = '<span style="color:var(--danger)">Regex error: ' + escHtml(e.message) + '</span>';
+    countEl.textContent = '(error)';
   }
 }
 
@@ -1390,7 +1400,7 @@ function initTimestampPage() {
       document.querySelectorAll('#tsOpBtns .op-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       tsCurrentFmt = btn.dataset.op;
-      document.getElementById('tsResultTitle').textContent = {iso:'ISO 8601 格式', rfc:'RFC 2822 格式', local:'本地格式', utc:'UTC 格式'}[tsCurrentFmt];
+      document.getElementById('tsResultTitle').textContent = {iso:'ISO 8601', rfc:'RFC 2822', local:'Local format', utc:'UTC format'}[tsCurrentFmt];
       updateTsDisplay();
     };
   });
@@ -1429,24 +1439,24 @@ function updateTsDisplay() {
 
 function tsToDate() {
   const input = document.getElementById('tsInput').value.trim();
-  if (!input) { document.getElementById('tsToDateResult').textContent = '请输入时间戳'; return; }
+  if (!input) { document.getElementById('tsToDateResult').textContent = 'Please enter a timestamp'; return; }
   let ts = parseInt(input);
   if (ts > 1e15) ts = Math.floor(ts / 1000);
   const d = new Date(ts * 1000);
-  if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = '无效的时间戳'; return; }
+  if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = 'Invalid timestamp'; return; }
   document.getElementById('tsToDateResult').innerHTML =
-    '<b>本地:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
-    '<b>年:</b> ' + d.getFullYear() + ' <b>月:</b> ' + (d.getMonth()+1) + ' <b>日:</b> ' + d.getDate() + ' ' +
-    '<b>时:</b> ' + d.getHours() + ' <b>分:</b> ' + d.getMinutes() + ' <b>秒:</b> ' + d.getSeconds() + ' ' +
-    '<b>星期:</b> ' + ['日','一','二','三','四','五','六'][d.getDay()];
+    '<b>Local:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
+    '<b>year:</b> ' + d.getFullYear() + ' <b>month:</b> ' + (d.getMonth()+1) + ' <b>day:</b> ' + d.getDate() + ' ' +
+    '<b>hour:</b> ' + d.getHours() + ' <b>min:</b> ' + d.getMinutes() + ' <b>sec:</b> ' + d.getSeconds() + ' ' +
+    '<b>Weekday:</b> ' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
 }
 
 function dateToTs() {
   const input = document.getElementById('dtInput').value;
-  if (!input) { document.getElementById('dateToTsResult').textContent = '请选择日期时间'; return; }
+  if (!input) { document.getElementById('dateToTsResult').textContent = 'Please pick a date and time'; return; }
   const d = new Date(input);
   document.getElementById('dateToTsResult').innerHTML =
-    '<b>秒:</b> ' + Math.floor(d.getTime()/1000) + '<br><b>毫秒:</b> ' + d.getTime() + '<br><b>ISO8601:</b> ' + d.toISOString();
+    '<b>sec:</b> ' + Math.floor(d.getTime()/1000) + '<br><b>ms:</b> ' + d.getTime() + '<br><b>ISO8601:</b> ' + d.toISOString();
 }
 
 
@@ -1474,21 +1484,21 @@ function initHashPage() {
 
 function updateHashOptions() {
   const o = document.getElementById('hashOpOptions');
-  const titles = {md5:'MD5 哈希', sha1:'SHA-1 哈希', sha256:'SHA-256 哈希', sha512:'SHA-512 哈希', hmac:'HMAC 哈希', aes:'AES 加解密'};
-  document.getElementById('hashResultTitle').textContent = titles[hashCurrentOp] || '哈希结果';
+  const titles = {md5:'MD5 Hash', sha1:'SHA-1 Hash', sha256:'SHA-256 Hash', sha512:'SHA-512 Hash', hmac:'HMAC Hash', aes:'AES'};
+  document.getElementById('hashResultTitle').textContent = titles[hashCurrentOp] || 'Hash result';
   if (hashCurrentOp === 'hmac') {
-    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="hmacKey" placeholder="输入HMAC密钥" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select>';
+    o.innerHTML = '<span style="font-size:12px">Key:</span><input type="text" class="format-select" id="hmacKey" placeholder="Enter the HMAC key" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select>';
   } else if (hashCurrentOp === 'aes') {
-    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="aesKey" placeholder="AES密钥" style="width:180px"><select class="format-select" id="aesMode"><option value="encrypt">加密</option><option value="decrypt">解密</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">执行</button>';
+    o.innerHTML = '<span style="font-size:12px">Key:</span><input type="text" class="format-select" id="aesKey" placeholder="AES key" style="width:180px"><select class="format-select" id="aesMode"><option value="encrypt">Encrypt</option><option value="decrypt">Decrypt</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">Run</button>';
   } else {
-    o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="doHash()">计算哈希</button>';
+    o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="doHash()">Compute hash</button>';
   }
 }
 
 async function doHash() {
   const input = document.getElementById('hashInput').value;
   const resEl = document.getElementById('hashResult');
-  if (!input.trim() && hashCurrentOp !== 'aes') { resEl.textContent = '请输入文本'; return; }
+  if (!input.trim() && hashCurrentOp !== 'aes') { resEl.textContent = 'Please enter some text'; return; }
   try {
     let result;
     switch (hashCurrentOp) {
@@ -1499,21 +1509,21 @@ async function doHash() {
       case 'hmac':
         const key = document.getElementById('hmacKey').value;
         const algo = document.getElementById('hmacAlgo').value;
-        if (!key) { resEl.textContent = '请输入 HMAC 密钥'; return; }
+        if (!key) { resEl.textContent = 'Please enter the HMAC key'; return; }
         result = await hmacHash(algo, key, input);
         break;
       case 'aes':
         const aesKey = document.getElementById('aesKey').value;
         const mode = document.getElementById('aesMode').value;
-        if (!aesKey) { resEl.textContent = '请输入 AES 密钥'; return; }
+        if (!aesKey) { resEl.textContent = 'Please enter the AES key'; return; }
         result = await aesCrypt(aesKey, input, mode);
         break;
     }
     resEl.textContent = result;
-    toast('计算完成');
+    toast('Done');
   } catch (e) {
-    resEl.textContent = '错误: ' + e.message;
-    toast('计算失败','error');
+    resEl.textContent = 'Error: ' + e.message;
+    toast('Calculation failed','error');
   }
 }
 
@@ -1556,12 +1566,12 @@ async function aesCrypt(keyStr, input, mode) {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(input));
     const ct = new Uint8Array(encrypted);
-    return 'IV:' + Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('') + NL + '密文:' + Array.from(ct).map(b => b.toString(16).padStart(2, '0')).join('');
+    return 'IV:' + Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('') + NL + 'Ciphertext:' + Array.from(ct).map(b => b.toString(16).padStart(2, '0')).join('');
   } else {
     const lines = input.trim().split(NL);
-    if (lines.length < 2 || !lines[0].startsWith('IV:') || !lines[1].startsWith('密文:')) return '请输入完整的加密输出（含IV行和密文行）';
+    if (lines.length < 2 || !lines[0].startsWith('IV:') || !lines[1].startsWith('Ciphertext:')) return 'Please paste the full encrypted output (IV line and ciphertext line)';
     const iv = new Uint8Array(lines[0].replace('IV:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
-    const ct = new Uint8Array(lines[1].replace('密文:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const ct = new Uint8Array(lines[1].replace('Ciphertext:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
     const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
     return new TextDecoder().decode(decrypted);
   }
@@ -1570,13 +1580,13 @@ async function aesCrypt(keyStr, input, mode) {
 async function hashFile() {
   const file = document.getElementById('hashFileInput').files[0];
   const el = document.getElementById('hashFileResult');
-  if (!file) { el.innerHTML = '请选择文件'; return; }
+  if (!file) { el.innerHTML = 'Please choose a file'; return; }
   try {
     const buf = await file.arrayBuffer();
     const hash = await crypto.subtle.digest('SHA-256', buf);
     const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-    el.innerHTML = '<b>文件名:</b> ' + escHtml(file.name) + ' (' + formatBytes(file.size) + ')<br><b>SHA-256:</b> ' + hex;
-  } catch (e) { el.innerHTML = '文件哈希计算失败: ' + e.message; }
+    el.innerHTML = '<b>File:</b> ' + escHtml(file.name) + ' (' + formatBytes(file.size) + ')<br><b>SHA-256:</b> ' + hex;
+  } catch (e) { el.innerHTML = 'File hashing failed: ' + e.message; }
 }
 
 
@@ -1588,11 +1598,11 @@ async function hashFile() {
 // ReferenceError，导致本文件后续所有函数（initFormatterPage / runCodeOp 等）
 // 都没有被定义，代码格式化页整页不可用。
 const codeDemos = {
-  html: '<div class="card"><h2 class="title">标题</h2><p>正文内容</p><ul><li>项目一</li><li>项目二</li></ul></div>',
+  html: '<div class="card"><h2 class="title">Title</h2><p>Body text</p><ul><li>Item one</li><li>Item two</li></ul></div>',
   css: '.card{padding:16px;border:1px solid #e1e5eb;border-radius:8px}.card .title{font-size:18px;color:#4a90d9;margin-bottom:8px}',
   js: 'function hello(name){if(name){console.log("Hello, "+name+"!");return{greeted:true,name:name}}else{console.log("Hello!");return{greeted:false}}',
   sql: 'SELECT u.id,u.name,u.email,o.total,o.created_at FROM users u INNER JOIN orders o ON u.id=o.user_id WHERE u.status=\'active\' AND o.total>100 GROUP BY u.id HAVING COUNT(o.id)>3 ORDER BY o.created_at DESC LIMIT 10',
-  xml: '<root><users><user id="1"><name>张三</name><email>zhangsan@example.com</email></user><user id="2"><name>李四</name><email>lisi@example.com</email></user></users></root>'
+  xml: '<root><users><user id="1"><name>John Doe</name><email>zhangsan@example.com</email></user><user id="2"><name>Jane Roe</name><email>lisi@example.com</email></user></users></root>'
 };
 
 // ============================================================
@@ -1613,14 +1623,14 @@ function initFormatterPage() {
 
 function updateCodeTitle() {
   const names = {html:'HTML', css:'CSS', js:'JavaScript', sql:'SQL', xml:'XML'};
-  document.getElementById('codeResultTitle').textContent = names[codeCurrentOp] + (codeCurrentMode === 'format' ? ' 格式化' : ' 压缩');
+  document.getElementById('codeResultTitle').textContent = names[codeCurrentOp] + (codeCurrentMode === 'format' ? ' Format' : ' Compress');
 }
 
 function runCodeOp(mode) {
   codeCurrentMode = mode;
   updateCodeTitle();
   const input = document.getElementById('codeInput').value;
-  if (!input.trim()) { toast('请先输入代码','error'); return; }
+  if (!input.trim()) { toast('Please enter some code first','error'); return; }
   const indent = document.getElementById('codeIndent')?.value || '4';
   const istr = indent === 'tab' ? '\t' : ' '.repeat(parseInt(indent));
   let result = '';
@@ -1638,10 +1648,10 @@ function runCodeOp(mode) {
     const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(result).length;
     document.getElementById('codeStats').innerHTML = '📝 ' + formatBytes(inS) + ' → ' + formatBytes(outS);
     document.getElementById('codeStats').style.display = 'flex';
-    toast(mode === 'format' ? '格式化完成' : '压缩完成');
+    toast(mode === 'format' ? 'Formatted' : 'Compressed');
   } catch (e) {
-    document.getElementById('codeResult').textContent = '❌ 错误: ' + e.message;
-    toast('格式化失败','error');
+    document.getElementById('codeResult').textContent = '❌ Error: ' + e.message;
+    toast('Formatting failed','error');
   }
 }
 
@@ -1754,38 +1764,38 @@ function initStringPage() {
 
 function updateStrOptions() {
   const o = document.getElementById('strOpOptions');
-  const titles = {case:'大小写转换', sort:'排序结果', dedup:'去重结果', replace:'替换结果', splitjoin:'分割/合并', liner:'行操作'};
-  document.getElementById('strResultTitle').textContent = titles[strCurrentOp] || '结果';
+  const titles = {case:'Case', sort:'Sorted result', dedup:'Dedupe result', replace:'Replace result', splitjoin:'Split / join', liner:'Lines'};
+  document.getElementById('strResultTitle').textContent = titles[strCurrentOp] || 'Result';
   switch (strCurrentOp) {
     case 'case':
-      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'upper\')">大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'lower\')">小写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'title\')">首字母大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'camel\')">驼峰命名</button>';
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'upper\')">UPPER</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'lower\')">lower</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'title\')">Title Case</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'camel\')">camelCase</button>';
       break;
     case 'sort':
-      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-asc\')">按行升序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-desc\')">按行降序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-len\')">按长度</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'shuffle\')">随机打乱</button>';
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-asc\')">Ascending</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-desc\')">Descending</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-len\')">By length</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'shuffle\')">Shuffle</button>';
       break;
     case 'dedup':
-      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'dedup\')">行去重</button><label class="checkbox-label"><input type="checkbox" id="strKeepEmpty">保留空行</label>';
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'dedup\')">Dedupe lines</button><label class="checkbox-label"><input type="checkbox" id="strKeepEmpty">Keep blank lines</label>';
       break;
     case 'replace':
-      o.innerHTML = '<span style="font-size:12px">查找:</span><input type="text" class="format-select" id="strFind" placeholder="文本或正则" style="width:150px"><span style="font-size:12px">替换:</span><input type="text" class="format-select" id="strReplace" placeholder="替换为" style="width:150px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'replace\')">替换</button>';
+      o.innerHTML = '<span style="font-size:12px">Find:</span><input type="text" class="format-select" id="strFind" placeholder="Text or regex" style="width:150px"><span style="font-size:12px">Replace:</span><input type="text" class="format-select" id="strReplace" placeholder="Replace with" style="width:150px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'replace\')">Replace</button>';
       break;
     case 'splitjoin':
-      o.innerHTML = '<span style="font-size:12px">分隔符:</span><input type="text" class="format-select" id="strSep" value="," style="width:80px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'split\')">分割</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'join\')">合并</button>';
+      o.innerHTML = '<span style="font-size:12px">Delimiter:</span><input type="text" class="format-select" id="strSep" value="," style="width:80px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'split\')">Split</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'join\')">Join</button>';
       break;
     case 'liner':
-      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'addnum\')">添加行号</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'prefix\')">添加前缀</button><span style="font-size:12px"><input type="text" class="format-select" id="strLinerVal" placeholder="前缀/起始号" style="width:80px"></span><button class="btn btn-sm btn-primary" onclick="runStrOp(\'suffix\')">添加后缀</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'trim\')">去除首尾空格</button>';
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'addnum\')">Add line numbers</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'prefix\')">Add prefix</button><span style="font-size:12px"><input type="text" class="format-select" id="strLinerVal" placeholder="Prefix / start" style="width:80px"></span><button class="btn btn-sm btn-primary" onclick="runStrOp(\'suffix\')">Add suffix</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'trim\')">Trim lines</button>';
       break;
   }
 }
 
 function autoStrCount() {
   const t = document.getElementById('strInput').value;
-  document.getElementById('strStats').innerHTML = '字符: ' + t.length + ' | 单词: ' + t.split(/\s+/).filter(w => w.length).length + ' | 行: ' + t.split(NL).length + ' | 字节: ' + new TextEncoder().encode(t).length;
+  document.getElementById('strStats').innerHTML = 'Chars: ' + t.length + ' | Words: ' + t.split(/\s+/).filter(w => w.length).length + ' | Lines: ' + t.split(NL).length + ' | Bytes: ' + new TextEncoder().encode(t).length;
 }
 
 function runStrOp(op) {
   const input = document.getElementById('strInput').value;
-  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  if (!input.trim()) { toast('Please enter some text first','error'); return; }
   const el = document.getElementById('strResult');
   let result = '';
   switch (op) {
@@ -1808,7 +1818,7 @@ function runStrOp(op) {
       break;
     case 'replace':
       const find = document.getElementById('strFind')?.value || '';
-      if (!find) { toast('请输入查找内容','error'); return; }
+      if (!find) { toast('Please enter the text to find','error'); return; }
       const repl = document.getElementById('strReplace')?.value || '';
       try { result = input.replace(new RegExp(find, 'g'), repl); } catch (e) { result = input.split(find).join(repl); }
       break;
@@ -1830,7 +1840,7 @@ function runStrOp(op) {
     case 'trim': result = input.split(NL).map(l => l.trim()).join(NL); break;
   }
   el.textContent = result;
-  toast('操作完成');
+  toast('Done');
 }
 
 
@@ -1857,26 +1867,26 @@ function initGeneratorPage() {
 
 function updateGenConfig() {
   const cfg = document.getElementById('genConfig');
-  const titles = {uuid:'UUID 生成', password:'随机密码', qrcode:'二维码生成', lorem:'Lorem Ipsum', sequence:'数字序列', randomdata:'随机数据'};
-  document.getElementById('genResultTitle').textContent = titles[genCurrentOp] || '生成器';
+  const titles = {uuid:'UUID Generator', password:'Random Password', qrcode:'QR Code Generator', lorem:'Lorem Ipsum', sequence:'Number Sequence', randomdata:'Random Data'};
+  document.getElementById('genResultTitle').textContent = titles[genCurrentOp] || 'Generator';
   switch (genCurrentOp) {
     case 'uuid':
-      cfg.innerHTML = '<label class="form-label">版本</label><select class="format-select" id="uuidVersion"><option value="4">UUID v4 (随机)</option><option value="1">UUID v1 (时间戳)</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="uuidCount" value="5" min="1" max="100">';
+      cfg.innerHTML = '<label class="form-label">Version</label><select class="format-select" id="uuidVersion"><option value="4">UUID v4 (random)</option><option value="1">UUID v1 (timestamp)</option></select><label class="form-label">Count</label><input type="number" class="num-input" id="uuidCount" value="5" min="1" max="100">';
       break;
     case 'password':
-      cfg.innerHTML = '<label class="form-label">长度</label><input type="number" class="num-input" id="pwdLen" value="16" min="4" max="128"><label class="form-label">数量</label><input type="number" class="num-input" id="pwdCount" value="5" min="1" max="50"><div class="row"><label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> 大写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> 小写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdDigits" checked> 数字</label><label class="checkbox-label"><input type="checkbox" id="pwdSymbols"> 特殊字符</label></div>';
+      cfg.innerHTML = '<label class="form-label">Length</label><input type="number" class="num-input" id="pwdLen" value="16" min="4" max="128"><label class="form-label">Count</label><input type="number" class="num-input" id="pwdCount" value="5" min="1" max="50"><div class="row"><label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> Uppercase</label><label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> Lowercase</label><label class="checkbox-label"><input type="checkbox" id="pwdDigits" checked> Digits</label><label class="checkbox-label"><input type="checkbox" id="pwdSymbols"> Symbols</label></div>';
       break;
     case 'qrcode':
-      cfg.innerHTML = '<label class="form-label">内容 (文本或URL)</label><input type="text" class="expr-input" id="qrContent" value="https://www.example.com" style="width:100%"><label class="form-label">尺寸 (px)</label><input type="number" class="num-input" id="qrSize" value="200" min="100" max="600">';
+      cfg.innerHTML = '<label class="form-label">Content (text or URL)</label><input type="text" class="expr-input" id="qrContent" value="https://www.example.com" style="width:100%"><label class="form-label">Size (px)</label><input type="number" class="num-input" id="qrSize" value="200" min="100" max="600">';
       break;
     case 'lorem':
-      cfg.innerHTML = '<label class="form-label">类型</label><select class="format-select" id="loremType"><option value="paragraphs">段落</option><option value="sentences">句子</option><option value="words">单词</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="loremCount" value="3" min="1" max="100">';
+      cfg.innerHTML = '<label class="form-label">Type</label><select class="format-select" id="loremType"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select><label class="form-label">Count</label><input type="number" class="num-input" id="loremCount" value="3" min="1" max="100">';
       break;
     case 'sequence':
-      cfg.innerHTML = '<label class="form-label">起始值</label><input type="number" class="num-input" id="seqStart" value="1"><label class="form-label">结束值</label><input type="number" class="num-input" id="seqEnd" value="100"><label class="form-label">步长</label><input type="number" class="num-input" id="seqStep" value="1" min="1">';
+      cfg.innerHTML = '<label class="form-label">Start</label><input type="number" class="num-input" id="seqStart" value="1"><label class="form-label">End</label><input type="number" class="num-input" id="seqEnd" value="100"><label class="form-label">Step</label><input type="number" class="num-input" id="seqStep" value="1" min="1">';
       break;
     case 'randomdata':
-      cfg.innerHTML = '<label class="form-label">数据类型</label><select class="format-select" id="rdType"><option value="name">中文姓名</option><option value="email">邮箱</option><option value="phone">手机号</option><option value="idcard">身份证号</option><option value="address">地址</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="rdCount" value="10" min="1" max="100">';
+      cfg.innerHTML = '<label class="form-label">Data type</label><select class="format-select" id="rdType"><option value="name">Name</option><option value="email">Email</option><option value="phone">Phone</option><option value="idcard">Chinese ID No.</option><option value="address">Address</option></select><label class="form-label">Count</label><input type="number" class="num-input" id="rdCount" value="10" min="1" max="100">';
       break;
   }
 }
@@ -1912,11 +1922,11 @@ function runGenOp() {
       case 'qrcode':
         const qrContent = document.getElementById('qrContent')?.value || '';
         const qrSize = parseInt(document.getElementById('qrSize')?.value) || 200;
-        if (!qrContent) { el.innerHTML = '请输入二维码内容'; return; }
-        el.innerHTML = '<div class="qr-container">生成中...</div>';
+        if (!qrContent) { el.innerHTML = 'Please enter the content to encode'; return; }
+        el.innerHTML = '<div class="qr-container">Generating...</div>';
         const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=' + qrSize + 'x' + qrSize + '&data=' + encodeURIComponent(qrContent);
-        el.innerHTML = '<div class="qr-container"><img src="' + qrUrl + '" alt="QR Code" style="max-width:100%"><span style="font-size:11px;color:var(--text-secondary)">' + escHtml(qrContent) + '</span><a href="' + qrUrl + '" download="qrcode.png" class="btn btn-sm">下载 PNG</a></div>';
-        toast('生成完成');
+        el.innerHTML = '<div class="qr-container"><img src="' + qrUrl + '" alt="QR Code" style="max-width:100%"><span style="font-size:11px;color:var(--text-secondary)">' + escHtml(qrContent) + '</span><a href="' + qrUrl + '" download="qrcode.png" class="btn btn-sm">Download PNG</a></div>';
+        toast('Generated');
         return;
       case 'lorem':
         const ltype = document.getElementById('loremType')?.value || 'paragraphs';
@@ -1943,10 +1953,10 @@ function runGenOp() {
         el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
         break;
     }
-    toast('生成完成');
+    toast('Generated');
   } catch (e) {
-    el.innerHTML = '❌ 错误: ' + escHtml(e.message);
-    toast('生成失败','error');
+    el.innerHTML = '❌ Error: ' + escHtml(e.message);
+    toast('Generation failed','error');
   }
 }
 
@@ -1961,19 +1971,19 @@ function uuidV1() {
 }
 
 function generateRandomData(type, count) {
-  const surnames = ['张','王','李','赵','陈','杨','黄','周','吴','徐','孙','马','胡','朱','郭','何','罗','高','林','郑','梁'];
-  const names = ['伟','芳','秀英','敏','静','丽','强','磊','洋','勇','艳','杰','娟','涛','明','超','秀兰','霞','平','刚','桂英'];
-  const cities = ['北京','上海','广州','深圳','杭州','成都','武汉','南京','西安','重庆','苏州','天津','长沙','郑州','东莞','青岛','合肥','佛山','宁波','昆明'];
-  const streets = ['中山路','人民路','建设路','解放路','文化路','和平路','新华路','长江路','黄河路','长城路'];
-  const emails = ['@qq.com','@163.com','@gmail.com','@outlook.com','@sina.com','@126.com'];
+  const surnames = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Rodriguez','Martinez','Hernandez','Lopez','Gonzalez','Wilson','Anderson','Taylor','Moore','Jackson','Martin','Lee'];
+  const names = ['James','Mary','Robert','Patricia','John','Jennifer','Michael','Linda','David','Elizabeth','William','Barbara','Richard','Susan','Joseph','Jessica','Thomas','Sarah','Charles','Karen'];
+  const cities = ['New York','Los Angeles','Chicago','Houston','Phoenix','Philadelphia','San Antonio','San Diego','Dallas','San Jose','Austin','Jacksonville','Seattle','Denver','Boston','Portland','Atlanta','Miami','Nashville','Detroit'];
+  const streets = ['Main St','Oak Ave','Maple Dr','Cedar Ln','Pine St','Elm St','Washington Ave','Lake View Rd','Highland Ave','Sunset Blvd'];
+  const emails = ['@gmail.com','@outlook.com','@yahoo.com','@icloud.com','@proton.me','@example.com'];
   let result = '';
   for (let i = 0; i < count; i++) {
     switch (type) {
-      case 'name': result += surnames[Math.floor(Math.random()*surnames.length)] + names[Math.floor(Math.random()*names.length)] + (Math.random()>0.5?names[Math.floor(Math.random()*names.length)]:'') + NL; break;
+      case 'name': result += names[Math.floor(Math.random()*names.length)] + ' ' + surnames[Math.floor(Math.random()*surnames.length)] + NL; break;
       case 'email': result += Math.random().toString(36).substring(2,8) + emails[Math.floor(Math.random()*emails.length)] + NL; break;
-      case 'phone': result += '1' + ['3','5','7','8'][Math.floor(Math.random()*4)] + Math.random().toString().slice(2,11) + NL; break;
+      case 'phone': result += '+1 555-' + String(Math.floor(Math.random()*900)+100) + '-' + String(Math.floor(Math.random()*9000)+1000) + NL; break;
       case 'idcard': result += Math.floor(110000+Math.random()*330000) + (1970+Math.floor(Math.random()*40)).toString() + String(Math.floor(Math.random()*12)+1).padStart(2,'0') + String(Math.floor(Math.random()*28)+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0') + NL; break;
-      case 'address': result += cities[Math.floor(Math.random()*cities.length)] + '市' + ['朝阳区','海淀区','浦东新区','天河区','西湖区','武侯区'][Math.floor(Math.random()*6)] + streets[Math.floor(Math.random()*streets.length)] + Math.floor(Math.random()*300+1) + '号' + NL; break;
+      case 'address': result += String(Math.floor(Math.random()*9000)+100) + ' ' + streets[Math.floor(Math.random()*streets.length)] + ', ' + cities[Math.floor(Math.random()*cities.length)] + ' ' + String(Math.floor(Math.random()*90000)+10000) + NL; break;
     }
   }
   return result.trim();

@@ -6,20 +6,30 @@
 
 ## 页面结构
 
-每个工具都是**独立 URL、独立 HTML**，只包含自己的工具界面与正文，互不重复：
+每个工具都是**独立 URL、独立 HTML**，只包含自己的工具界面与正文，互不重复。
+每种语言各有一套完整页面：中文在根目录，英文在 `/en/` 下。
 
-| URL | 工具 |
-|-----|------|
-| `/tools/` | JSON 格式化 / 压缩 / 校验 / 排序 / 转义 / 树视图 / 比对 / 转换 / JSONPath |
-| `/tools/diff/` | 文本差异比对 |
-| `/tools/encode/` | Base64 / URL / Unicode / HTML 实体 / Hex 编解码 |
-| `/tools/regex/` | 正则表达式测试与替换预览 |
-| `/tools/timestamp/` | Unix 时间戳与日期互转、多时区 |
-| `/tools/hash/` | MD5 / SHA / HMAC / AES 与文件哈希 |
-| `/tools/formatter/` | HTML / CSS / JS / SQL / XML 格式化与压缩 |
-| `/tools/string/` | 字符串大小写 / 排序 / 去重 / 替换 / 统计 |
-| `/tools/generator/` | UUID / 随机密码 / 二维码 / Lorem Ipsum / 随机数据 |
-| `/tools/privacy.html` | 隐私政策 |
+| URL | English | 工具 |
+|-----|---------|------|
+| `/tools/` | `/tools/en/` | JSON 格式化 / 压缩 / 校验 / 排序 / 转义 / 树视图 / 比对 / 转换 / JSONPath |
+| `/tools/diff/` | `/tools/en/diff/` | 文本差异比对 |
+| `/tools/encode/` | `/tools/en/encode/` | Base64 / URL / Unicode / HTML 实体 / Hex 编解码 |
+| `/tools/regex/` | `/tools/en/regex/` | 正则表达式测试与替换预览 |
+| `/tools/timestamp/` | `/tools/en/timestamp/` | Unix 时间戳与日期互转、多时区 |
+| `/tools/hash/` | `/tools/en/hash/` | MD5 / SHA / HMAC / AES 与文件哈希 |
+| `/tools/formatter/` | `/tools/en/formatter/` | HTML / CSS / JS / SQL / XML 格式化与压缩 |
+| `/tools/string/` | `/tools/en/string/` | 字符串大小写 / 排序 / 去重 / 替换 / 统计 |
+| `/tools/generator/` | `/tools/en/generator/` | UUID / 随机密码 / 二维码 / Lorem Ipsum / 随机数据 |
+| `/tools/privacy.html` | `/tools/en/privacy.html` | 隐私政策 |
+
+## 多语言
+
+- **自动选择**：首次访问时按浏览器语言判断，中文浏览器留在中文版，其余跳到 `/en/`。
+  已手动选择过（写入 localStorage）或疑似搜索引擎爬虫时不跳转，避免干扰收录。
+- **手动切换**：页眉右上角的 `中文 / English` 分段控件，选择会被记住。
+- **URL 覆盖**：`?lang=zh` / `?lang=en` 可强制指定并记住，适合分享链接。
+- 两种语言各有独立的标题、描述、正文与 `hreflang` 备用链接，爬虫不执行 JS 也能读到完整内容——
+  英文页面在**构建时**就完成了全部文案替换，不存在运行时翻译闪烁。
 
 ## 构建
 
@@ -35,7 +45,9 @@ python3 build.py --watch    # 监听 src/ 变化并重建（需 pip install watc
 - 把 `src/css/style.css` 与 `src/js/*.js` 内联进每个页面，单页自包含、无本地依赖请求。
 - 把 `src/tools/<slug>.html` 的界面与 `src/content.py` 里的说明/步骤/FAQ 组装成完整的工具页。
 - 生成每页独立的 `<title>`、`<meta description>`、`<link canonical>`、Open Graph 与 JSON-LD（WebApplication + FAQPage）。
-- 生成 `sitemap.xml`、`robots.txt`、`.nojekyll`。
+- 生成 `sitemap.xml`（含 `hreflang` 备用链接）、`robots.txt`、`.nojekyll`。
+- 英文版把内联 JS 与 HTML 里的界面文案整体替换为英文（`src/i18n.py` 字典），
+  源码注释保持原样不动。
 
 ### 本地预览
 
@@ -50,7 +62,9 @@ python3 -m http.server 8080 --directory dist
 ```
 src/index.html      工具页模板（内含 {{占位符}}）
 src/privacy.html    隐私政策模板
-src/content.py      各工具页的标题/描述/正文/FAQ 文案
+src/content.py      中文：各工具页的标题/描述/正文/FAQ 文案
+src/content_en.py   英文：同上
+src/i18n.py         中文界面字符串 → 英文（含少量需整行改写的补丁）
 src/tools/*.html    各工具的界面片段（构建时嵌入模板）
 src/css/style.css   全站样式
 src/js/*.js         各工具逻辑
@@ -71,11 +85,12 @@ dist/               构建产物 = 本地预览（已 gitignore）
 
 ## SEO
 
-- 9 个工具各自有唯一标题、描述与正文（构建时烘焙进 HTML，不依赖 JS 渲染）。
-- `sitemap.xml` + `robots.txt`；提交到 [Google Search Console](https://search.google.com/search-console)
+- 9 个工具 × 2 种语言共 20 个页面，各自有唯一标题、描述与正文（构建时烘焙进 HTML，不依赖 JS 渲染）。
+- 中英页面互为 `hreflang` 备用链接（`zh-CN` / `en` / `x-default`），避免被判为重复内容。
+- `sitemap.xml`（带 `xhtml:link` 多语言标注）+ `robots.txt`；提交到 [Google Search Console](https://search.google.com/search-console)
   与 [Bing 网站管理员工具](https://www.bing.com/webmasters) 可加速收录。
 - 每页带 JSON-LD 结构化数据（WebApplication + FAQPage），有机会在搜索结果中展示 FAQ 富摘要。
-- 顶部导航与页脚都是真实 `<a>` 内链，便于爬虫发现 9 个工具页。
+- 顶部导航、页脚与语言切换都是真实 `<a>` 内链，便于爬虫发现全部页面。
 
 ## 访问统计
 

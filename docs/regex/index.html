@@ -15,7 +15,10 @@
 <meta property="og:url" content="https://xwjiang2003.github.io/tools/regex/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "正则表达式在线测试与替换", "url": "https://xwjiang2003.github.io/tools/regex/", "description": "在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这里用的是哪种正则引擎？", "acceptedAnswer": {"@type": "Answer", "text": "用的是浏览器原生的 JavaScript RegExp，遵循 ECMAScript 语法。它与 Python、PCRE、Java 的写法大体相通，但 (?P<name>...) 命名分组、变长后行断言等特性支持情况不同，跨语言使用时需要留意。"}}, {"@type": "Question", "name": "为什么我的正则匹配不到内容？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因有三类：一是忘了勾选 g 标志导致只匹配第一处；二是特殊字符没有转义，例如匹配小数点应当写 \\.；三是没勾选 m 或 s，导致 ^ $ 与 . 的行为和预期不符。"}}, {"@type": "Question", "name": "贪婪匹配和非贪婪匹配有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "量词 * 和 + 默认是贪婪的，会尽可能多地匹配字符；在量词后加问号变成 *? 或 +? 即为非贪婪，尽可能少地匹配。例如对 <a><b> 使用 <.+> 会匹配整串，而 <.+?> 只匹配 <a>。"}}, {"@type": "Question", "name": "页面会记录我输入的正则和文本吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。匹配、替换全部在浏览器内完成，输入内容不会发送到服务器。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/">
+<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/">
+<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "正则表达式在线测试与替换", "url": "https://xwjiang2003.github.io/tools/regex/", "description": "在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这里用的是哪种正则引擎？", "acceptedAnswer": {"@type": "Answer", "text": "用的是浏览器原生的 JavaScript RegExp，遵循 ECMAScript 语法。它与 Python、PCRE、Java 的写法大体相通，但 (?P<name>...) 命名分组、变长后行断言等特性支持情况不同，跨语言使用时需要留意。"}}, {"@type": "Question", "name": "为什么我的正则匹配不到内容？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因有三类：一是忘了勾选 g 标志导致只匹配第一处；二是特殊字符没有转义，例如匹配小数点应当写 \\.；三是没勾选 m 或 s，导致 ^ $ 与 . 的行为和预期不符。"}}, {"@type": "Question", "name": "贪婪匹配和非贪婪匹配有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "量词 * 和 + 默认是贪婪的，会尽可能多地匹配字符；在量词后加问号变成 *? 或 +? 即为非贪婪，尽可能少地匹配。例如对 <a><b> 使用 <.+> 会匹配整串，而 <.+?> 只匹配 <a>。"}}, {"@type": "Question", "name": "页面会记录我输入的正则和文本吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。匹配、替换全部在浏览器内完成，输入内容不会发送到服务器。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -170,6 +173,12 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
 .footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
 .footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
 /* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
 .seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
 .seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
@@ -193,6 +202,28 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
 </style>
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "./", "en": "../en/regex/"}[want];
+    if (target && want !== 'zh') location.replace(target);
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <header class="header">
@@ -211,11 +242,20 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
     <a class="top-nav-item" href="../string/">字符串</a>
     <a class="top-nav-item" href="../generator/">生成器</a>
   </nav>
-  <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+  <div class="header-actions"><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/regex/" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
 
-<!-- 广告位：顶部横幅 970x90 / 728x90。
-     目前留空并隐藏，接入广告平台后去掉 hidden、把占位内容替换为广告代码即可。 -->
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
 <div class="ad-container" id="adTop" hidden>
   <div class="ad-placeholder">
     <span class="ad-label">SPONSORED</span>
@@ -1951,9 +1991,11 @@ function generateRandomData(type, count) {
 
 
 </script>
-<!-- ========== 访问统计：不蒜子 busuanzi ==========
-     仅在线上环境加载；本地 file:// 预览或 localhost 调试时不加载，避免污染线上数据。
-     数据来源：https://busuanzi.ibruce.info/ (免费第三方服务，按域名聚合，无后台报表) -->
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
 <script>
 (function () {
   var host = location.hostname;
@@ -1962,7 +2004,7 @@ function generateRandomData(type, count) {
   s.async = true;
   s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
   s.referrerPolicy = 'no-referrer-when-downgrade';
-  // 服务不可用时直接移除计数器，不留空占位
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
   s.onerror = function () {
     var f = document.getElementById('footerStats');
     if (f && f.parentNode) f.parentNode.removeChild(f);

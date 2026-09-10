@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-把 src/ 构建成可部署的静态站点。
+把 src/ 构建成中英双语的静态站点。
 
 产物（同时写入 dist/ 供本地预览、docs/ 供 GitHub Pages 发布）：
-  index.html              JSON 工具（站点首页）
-  <slug>/index.html       其余 8 个工具，各自独立 URL、独立标题与正文
-  privacy.html            隐私政策
-  sitemap.xml / robots.txt / .nojekyll
 
-每个工具页只包含自己的工具 UI 与自己的正文，因此 9 个页面之间没有重复内容；
-标题、描述、canonical、结构化数据都在构建时烘焙进 HTML，爬虫不执行 JS 也能读到。
+  中文（默认）
+    index.html              JSON 工具（站点首页）
+    <slug>/index.html       其余 8 个工具
+    privacy.html            隐私政策
+  英文（/en/ 前缀）
+    en/index.html  en/<slug>/index.html  en/privacy.html
+  公共
+    sitemap.xml（带 hreflang 备用链接） / robots.txt / .nojekyll
+
+两种语言各自拥有独立的 URL、标题、描述、canonical、hreflang 与正文，
+英文页面在构建时就把界面文案整体替换掉，因此不依赖运行时 JS 翻译。
 
 用法:
   python3 build.py            # 构建一次
@@ -19,14 +24,18 @@
 
 import html
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
-from content import SITE, TOOLS  # noqa: E402
-
 ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT / 'src'))
+
+from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
+from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
+from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
+
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
 DOCS = ROOT / 'docs'
@@ -37,23 +46,218 @@ JS_MODULES = [
     'string-tools.js', 'generator.js',
 ]
 
-PRIVACY_PATH = 'privacy.html'
+EN_DIR = 'en/'
+PRIVACY_FILE = 'privacy.html'
+LANGS = ('zh', 'en')
+HTML_LANG = {'zh': 'zh-CN', 'en': 'en'}
 
 
-# ---------------------------------------------------------------- helpers
+# ---------------------------------------------------------------- 本地化
+
+# 按长度降序拼成一条正则：正则的备选分支从左到右尝试，因此长词优先命中，
+# 不会出现「格式化完成」先被「格式化」切开的情况。
+_PATTERN = re.compile('|'.join(re.escape(k) for k in sorted(EN, key=len, reverse=True)))
+_LOOKUP = EN
+
+# 注释整段跳过：源码注释保持中文原样，比被逐词替换成半中半英更好读。
+# `(?<!:)//` 用来避开 https:// 里的双斜杠。
+_COMMENT = re.compile(r'/\*.*?\*/|<!--.*?-->|(?<!:)//[^\n]*', re.S)
+
+
+def _sub_terms(text):
+    for old, new in JS_PATCHES:      # 语序/数组等需要整行改写的地方
+        text = text.replace(old, new)
+    for old, new in HTML_PATCHES:
+        text = text.replace(old, new)
+    return _PATTERN.sub(lambda m: _LOOKUP[m.group(0)], text)
+
+
+def localize(text):
+    """把整页（HTML + 内联 JS）里的中文界面文案替换成英文，注释保持原样。"""
+    out, last = [], 0
+    for m in _COMMENT.finditer(text):
+        out.append(_sub_terms(text[last:m.start()]))
+        out.append(m.group(0))
+        last = m.end()
+    out.append(_sub_terms(text[last:]))
+    return ''.join(out)
+
 
 def esc(s):
     return html.escape(s, quote=True)
 
 
-def inline_assets(tpl, with_js=True):
-    """把 CSS 与 JS 内联进 HTML，保持单文件分发。"""
-    css = (SRC / 'css' / 'style.css').read_text('utf-8')
-    tpl = tpl.replace(
-        '<link rel="stylesheet" href="css/style.css">',
-        '<style>\n' + css + '\n</style>'
+# ---------------------------------------------------------------- 路径计算
+
+def out_path(lang, path):
+    """path 为工具相对路径（'' 或 'diff/'）或带扩展名的页面（privacy.html）。"""
+    prefix = EN_DIR if lang == 'en' else ''
+    if path.endswith('.html'):          # 独立文件，不再套目录
+        return Path(prefix + path)
+    return Path(prefix + path + 'index.html')
+
+
+def rel_root(lang, path):
+    """从输出文件所在目录回到站点根目录的相对前缀。"""
+    depth = (0 if path == '' else 1) + (1 if lang == 'en' else 0)
+    return '../' * depth
+
+
+def lang_prefix(lang, root):
+    """当前语言内部的链接前缀。"""
+    return root + (EN_DIR if lang == 'en' else '')
+
+
+def other_lang_url(lang, root, path):
+    """同一页在另一种语言下的相对 URL。"""
+    if lang == 'en':
+        return (root + path) or './'
+    return root + EN_DIR + path
+
+
+def canonical_url(lang, path):
+    return SITE['base_url'] + (EN_DIR if lang == 'en' else '') + path
+
+
+# ---------------------------------------------------------------- 页面片段
+
+def hreflang_html(path):
+    zh = SITE['base_url'] + path
+    en = SITE['base_url'] + EN_DIR + path
+    return ('<link rel="alternate" hreflang="zh-CN" href="' + zh + '">\n'
+            '<link rel="alternate" hreflang="en" href="' + en + '">\n'
+            '<link rel="alternate" hreflang="x-default" href="' + zh + '">')
+
+
+def lang_switch_html(lang, other_url):
+    zh_href = './' if lang == 'zh' else other_url
+    en_href = './' if lang == 'en' else other_url
+    zh_cls = 'lang-link active' if lang == 'zh' else 'lang-link'
+    en_cls = 'lang-link active' if lang == 'en' else 'lang-link'
+    return (
+        '<div class="lang-switch">'
+        f'<a class="{zh_cls}" href="{zh_href}" data-lang-set="zh">中文</a>'
+        f'<a class="{en_cls}" href="{en_href}" data-lang-set="en">English</a>'
+        '</div>\n'
+        '<script>\n'
+        '// 记住手动选择：下次访问不再自动跳转\n'
+        'document.addEventListener("click", function (e) {\n'
+        '  var a = e.target.closest && e.target.closest("[data-lang-set]");\n'
+        '  if (!a) return;\n'
+        '  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}\n'
+        '}, true);\n'
+        '</script>'
     )
-    if not with_js:           # 隐私政策页不需要编辑器与工具脚本
+
+
+def autodetect_html(lang, other_url):
+    """首次访问按浏览器语言跳到对应语言版本；已手动选择过或疑似爬虫则不跳。"""
+    targets = json.dumps({'zh': './' if lang == 'zh' else other_url,
+                          'en': './' if lang == 'en' else other_url})
+    return f'''<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {{
+  try {{
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) {{ try {{ localStorage.setItem(KEY, q[1]); }} catch (e) {{}} return; }}
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {{
+      if (/^zh\\b/i.test(langs[i])) {{ preferZh = true; break; }}
+    }}
+    var want = preferZh ? 'zh' : 'en';
+    var target = {targets}[want];
+    if (target && want !== '{lang}') location.replace(target);
+  }} catch (e) {{}}
+}})();
+</script>'''
+
+
+def nav_html(active_slug, base, labels):
+    out = []
+    for t in TOOLS:
+        href = base + t['path'] if t['path'] else (base or './')
+        cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
+        out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
+    return '\n'.join(out)
+
+
+def footer_links_html(base, labels):
+    home = base or './'
+    parts = [f'<a href="{home}">{esc(labels["_home"])}</a>']
+    for t in TOOLS:
+        if not t['path']:
+            continue
+        parts.append(f'<a href="{base}{t["path"]}">{esc(labels[t["slug"]])}</a>')
+    return ''.join(parts)
+
+
+def seo_section(c):
+    """工具页正文：h1 + 简介 + 功能 + 步骤 + FAQ，构建期写死，不依赖 JS。"""
+    sep = '：' if c.get('_lang') == 'zh' else ' — '
+    p = ['<section class="seo-content">']
+    p.append(f'  <h1>{esc(c["h1"])}</h1>')
+    for para in c['intro']:
+        p.append(f'  <p>{esc(para)}</p>')
+    p.append(f'  <h2>{esc(c["_features_heading"])}</h2>')
+    p.append('  <ul class="seo-features">')
+    for name, desc in c['features']:
+        p.append(f'    <li><b>{esc(name)}</b>{sep}{esc(desc)}</li>')
+    p.append('  </ul>')
+    p.append(f'  <h2>{esc(c["_steps_heading"])}</h2>')
+    p.append('  <ol class="seo-steps">')
+    for step in c['steps']:
+        p.append(f'    <li>{esc(step)}</li>')
+    p.append('  </ol>')
+    p.append(f'  <h2>{esc(c["_faq_heading"])}</h2>')
+    p.append('  <div class="faq">')
+    for q, a in c['faq']:
+        p.append(f'    <details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>')
+    p.append('  </div>')
+    p.append('</section>')
+    return '\n'.join(p)
+
+
+def jsonld(c, url, lang):
+    graph = [{
+        '@type': 'WebApplication',
+        'name': c['h1'],
+        'url': url,
+        'description': c['description'],
+        'applicationCategory': 'DeveloperApplication',
+        'operatingSystem': 'Any',
+        'browserRequirements': '需要启用 JavaScript 的现代浏览器' if lang == 'zh'
+                               else 'Requires a modern browser with JavaScript enabled',
+        'inLanguage': HTML_LANG[lang],
+        'isAccessibleForFree': True,
+        'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'},
+    }]
+    if c['faq']:
+        graph.append({
+            '@type': 'FAQPage',
+            'mainEntity': [
+                {'@type': 'Question', 'name': q,
+                 'acceptedAnswer': {'@type': 'Answer', 'text': a}}
+                for q, a in c['faq']
+            ],
+        })
+    data = json.dumps({'@context': 'https://schema.org', '@graph': graph},
+                      ensure_ascii=False)
+    return '<script type="application/ld+json">' + data.replace('</', '<\\/') + '</script>'
+
+
+# ---------------------------------------------------------------- 资源内联
+
+def inline_assets(tpl, with_js=True):
+    css = (SRC / 'css' / 'style.css').read_text('utf-8')
+    tpl = tpl.replace('<link rel="stylesheet" href="css/style.css">',
+                      '<style>\n' + css + '\n</style>')
+    if not with_js:
         return tpl
     for mod in JS_MODULES:
         js = (SRC / 'js' / mod).read_text('utf-8')
@@ -64,146 +268,98 @@ def inline_assets(tpl, with_js=True):
     return tpl
 
 
-def nav_html(active_slug, base):
-    """顶部导航：真实 <a> 链接，让 9 个工具页互相可发现、可抓取。"""
-    out = []
-    for t in TOOLS:
-        href = base + t['path'] if t['path'] else (base or './')
-        cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
-        out.append(f'    <a class="{cls}" href="{href}">{esc(t["nav"])}</a>')
-    return '\n'.join(out)
+# ---------------------------------------------------------------- 组装
+
+HEADINGS = {
+    'zh': {'_features_heading': '主要功能', '_steps_heading': '使用步骤',
+           '_faq_heading': '常见问题', '_home': '首页'},
+    'en': {'_features_heading': 'Features', '_steps_heading': 'How to use',
+           '_faq_heading': 'FAQ', '_home': 'Home'},
+}
+
+# 英文界面文案直接复用 i18n 字典，保证与内联 JS 的翻译一致
+NAV_LABELS = {
+    'zh': {t['slug']: t['nav'] for t in TOOLS},
+    'en': {t['slug']: TOOLS_EN[t['slug']]['nav'] for t in TOOLS},
+}
+for _lang in LANGS:
+    NAV_LABELS[_lang].update(HEADINGS[_lang])
 
 
-def footer_links_html(base):
-    home = base or './'
-    parts = [f'<a href="{home}">首页</a>']
-    for t in TOOLS:
-        if not t['path']:
-            continue
-        parts.append(f'<a href="{base}{t["path"]}">{esc(t["nav"])}</a>')
-    return ''.join(parts)
+def content_for(tool, lang):
+    c = dict(tool) if lang == 'zh' else dict(TOOLS_EN[tool['slug']])
+    c['_lang'] = lang
+    c.update(HEADINGS[lang])
+    return c
 
 
-def seo_section(t):
-    """工具页正文：h1 + 简介 + 功能 + 步骤 + FAQ。构建期写死，不依赖 JS。"""
-    p = ['<section class="seo-content">']
-    p.append(f'  <h1>{esc(t["h1"])}</h1>')
-    for para in t['intro']:
-        p.append(f'  <p>{esc(para)}</p>')
-    p.append('  <h2>主要功能</h2>')
-    p.append('  <ul class="seo-features">')
-    for name, desc in t['features']:
-        p.append(f'    <li><b>{esc(name)}</b>：{esc(desc)}</li>')
-    p.append('  </ul>')
-    p.append('  <h2>使用步骤</h2>')
-    p.append('  <ol class="seo-steps">')
-    for step in t['steps']:
-        p.append(f'    <li>{esc(step)}</li>')
-    p.append('  </ol>')
-    p.append('  <h2>常见问题</h2>')
-    p.append('  <div class="faq">')
-    for q, a in t['faq']:
-        p.append(f'    <details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>')
-    p.append('  </div>')
-    p.append('</section>')
-    return '\n'.join(p)
-
-
-def jsonld(t, url):
-    """WebApplication + FAQPage 结构化数据，帮助搜索引擎展示富摘要。"""
-    graph = [{
-        '@type': 'WebApplication',
-        'name': t['h1'],
-        'url': url,
-        'description': t['description'],
-        'applicationCategory': 'DeveloperApplication',
-        'operatingSystem': 'Any',
-        'browserRequirements': '需要启用 JavaScript 的现代浏览器',
-        'isAccessibleForFree': True,
-        'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'},
-    }]
-    if t['faq']:
-        graph.append({
-            '@type': 'FAQPage',
-            'mainEntity': [
-                {'@type': 'Question', 'name': q,
-                 'acceptedAnswer': {'@type': 'Answer', 'text': a}}
-                for q, a in t['faq']
-            ],
-        })
-    data = json.dumps({'@context': 'https://schema.org', '@graph': graph},
-                      ensure_ascii=False)
-    return '<script type="application/ld+json">' + data.replace('</', '<\\/') + '</script>'
-
-
-def render_tool_page(tpl, t, tool_body):
-    base = '' if not t['path'] else '../'
-    home = base or './'
-    url = SITE['base_url'] + t['path']
-    page = tpl
-    page = page.replace('{{PAGE}}', t['slug'])
-    page = page.replace('{{TITLE}}', esc(t['title']))
-    page = page.replace('{{DESCRIPTION}}', esc(t['description']))
-    page = page.replace('{{KEYWORDS}}', esc(t['keywords']))
-    page = page.replace('{{CANONICAL}}', url)
-    page = page.replace('{{JSONLD}}', jsonld(t, url))
-    page = page.replace('{{NAV}}', nav_html(t['slug'], base))
-    page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base))
-    page = page.replace('{{TOOL}}', tool_body)
-    page = page.replace('{{SEO}}', seo_section(t))
+def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home):
+    other = other_lang_url(lang, rel_root(lang, path), path)
+    page = page.replace('{{PAGE}}', slug)
+    page = page.replace('{{LANG}}', HTML_LANG[lang])
+    page = page.replace('{{TITLE}}', esc(title))
+    page = page.replace('{{DESCRIPTION}}', esc(description))
+    page = page.replace('{{KEYWORDS}}', esc(keywords))
+    page = page.replace('{{CANONICAL}}', canonical_url(lang, path))
+    page = page.replace('{{HREFLANG}}', hreflang_html(path))
+    page = page.replace('{{AUTODETECT}}', autodetect_html(lang, other))
+    page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, other))
+    page = page.replace('{{NAV}}', nav_html(None if path == PRIVACY_FILE else _slug_of(path),
+                                            base, NAV_LABELS[lang]))
+    page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))
+    page = page.replace('{{JSONLD}}', ld)
+    page = page.replace('{{TOOL}}', body)
+    page = page.replace('{{SEO}}', seo)
+    page = page.replace('{{PRIVACY_BODY}}', seo)
     page = page.replace('{{HOME}}', home)
     page = page.replace('{{BASE}}', base)
     return page
 
 
-def render_privacy(tpl):
-    url = SITE['base_url'] + PRIVACY_PATH
-    page = tpl
-    page = page.replace('{{CANONICAL}}', url)
-    page = page.replace('{{NAV}}', nav_html('privacy', ''))
-    page = page.replace('{{FOOTER_LINKS}}', footer_links_html(''))
-    page = page.replace('{{HOME}}', './')
-    page = page.replace('{{BASE}}', '')
-    return page
+_SLUG_BY_PATH = {t['path']: t['slug'] for t in TOOLS}
 
 
-def sitemap_xml():
-    rows = [f'  <url><loc>{SITE["base_url"]}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>']
-    for t in TOOLS:
-        if not t['path']:
-            continue
-        rows.append(
-            f'  <url><loc>{SITE["base_url"] + t["path"]}</loc>'
-            f'<changefreq>monthly</changefreq><priority>0.8</priority></url>'
-        )
-    rows.append(
-        f'  <url><loc>{SITE["base_url"] + PRIVACY_PATH}</loc>'
-        f'<changefreq>yearly</changefreq><priority>0.3</priority></url>'
-    )
-    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-            + '\n'.join(rows) + '\n</urlset>\n')
+def _slug_of(path):
+    return _SLUG_BY_PATH.get(path)
 
-
-def robots_txt():
-    return (f'User-agent: *\nAllow: /\n\nSitemap: {SITE["base_url"]}sitemap.xml\n')
-
-
-# ---------------------------------------------------------------- build
 
 def build():
     tpl = inline_assets((SRC / 'index.html').read_text('utf-8'))
     privacy_tpl = inline_assets((SRC / 'privacy.html').read_text('utf-8'), with_js=False)
 
     pages = {}
-    total_body = 0
+    for lang in LANGS:
+        for t in TOOLS:
+            c = content_for(t, lang)
+            body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
+            base = lang_prefix(lang, rel_root(lang, t['path']))
+            home = base or './'
+            page = apply_common(tpl, lang, t['slug'], t['path'], c['title'], c['description'],
+                                c['keywords'], body, seo_section(c),
+                                jsonld(c, canonical_url(lang, t['path']), lang),
+                                base, home)
+            if lang == 'en':
+                page = localize(page)
+            pages[out_path(lang, t['path'])] = page
 
-    for t in TOOLS:
-        body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
-        total_body += len(body)
-        pages[Path(t['path']) / 'index.html' if t['path'] else Path('index.html')] = \
-            render_tool_page(tpl, t, body)
-    pages[Path(PRIVACY_PATH)] = render_privacy(privacy_tpl)
+        # 隐私政策
+        body = PRIVACY_BODY_ZH if lang == 'zh' else PRIVACY_BODY_EN
+        base = lang_prefix(lang, rel_root(lang, PRIVACY_FILE))
+        home = base or './'
+        title = ('隐私政策 - DevTools 在线开发工具集' if lang == 'zh'
+                 else 'Privacy Policy - DevTools Online Developer Tools')
+        desc = ('DevTools 隐私政策：工具输入的数据全部在浏览器本地处理，不上传服务器；'
+                '说明访问统计、第三方 CDN 与广告的使用情况。' if lang == 'zh' else
+                'DevTools privacy policy: everything you enter into the tools is processed '
+                'locally in your browser and never uploaded. Covers analytics, third-party '
+                'CDNs and advertising.')
+        kw = ('DevTools隐私政策,在线工具隐私,数据本地处理' if lang == 'zh'
+              else 'DevTools privacy policy,online tools privacy,local processing')
+        page = apply_common(privacy_tpl, lang, 'privacy', PRIVACY_FILE, title, desc, kw,
+                            '', body, '', base, home)
+        if lang == 'en':
+            page = localize(page)
+        pages[out_path(lang, PRIVACY_FILE)] = page
 
     pages[Path('sitemap.xml')] = sitemap_xml()
     pages[Path('robots.txt')] = robots_txt()
@@ -217,12 +373,37 @@ def build():
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_text(content, 'utf-8')
 
-    print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块')
+    print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块 × 2 语言')
     for rel in sorted(pages, key=str):
-        size = len(pages[rel])
-        print(f'  ✓ {str(rel):24s} {size / 1024:7.1f} KB')
+        print(f'  ✓ {str(rel):28s} {len(pages[rel]) / 1024:7.1f} KB')
     print(f'\n✅ {len(pages)} 个文件 → dist/ (本地预览) + docs/ (GitHub Pages 发布)')
     return True
+
+
+def sitemap_xml():
+    paths = [t['path'] for t in TOOLS] + [PRIVACY_FILE]
+    rows = []
+    for p in paths:
+        zh = SITE['base_url'] + p
+        en = SITE['base_url'] + EN_DIR + p
+        pri = '1.0' if p == '' else ('0.3' if p == PRIVACY_FILE else '0.8')
+        rows.append(
+            '  <url>\n'
+            f'    <loc>{zh}</loc>\n'
+            f'    <xhtml:link rel="alternate" hreflang="zh-CN" href="{zh}"/>\n'
+            f'    <xhtml:link rel="alternate" hreflang="en" href="{en}"/>\n'
+            f'    <xhtml:link rel="alternate" hreflang="x-default" href="{zh}"/>\n'
+            f'    <changefreq>monthly</changefreq><priority>{pri}</priority>\n'
+            '  </url>'
+        )
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
+            '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+            + '\n'.join(rows) + '\n</urlset>\n')
+
+
+def robots_txt():
+    return f'User-agent: *\nAllow: /\n\nSitemap: {SITE["base_url"]}sitemap.xml\n'
 
 
 def watch():
@@ -239,7 +420,7 @@ def watch():
                 print(f'\n📝 {Path(e.src_path).name} changed')
                 try:
                     build()
-                except Exception as ex:  # 构建失败不要让监听退出
+                except Exception as ex:
                     print(f'❌ 构建失败: {ex}')
 
     ob = Observer()

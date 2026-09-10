@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page="{{PAGE}}">
+<html lang="{{LANG}}" data-page="{{PAGE}}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +15,12 @@
 <meta property="og:url" content="{{CANONICAL}}">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
+{{HREFLANG}}
 {{JSONLD}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <link rel="stylesheet" href="css/style.css">
+{{AUTODETECT}}
 </head>
 <body>
 <header class="header">
@@ -29,11 +31,12 @@
   <nav class="top-nav" id="topNav">
 {{NAV}}
   </nav>
-  <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+  <div class="header-actions">{{LANGSWITCH}}<button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
 
-<!-- 广告位：顶部横幅 970x90 / 728x90。
-     目前留空并隐藏，接入广告平台后去掉 hidden、把占位内容替换为广告代码即可。 -->
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
 <div class="ad-container" id="adTop" hidden>
   <div class="ad-placeholder">
     <span class="ad-label">SPONSORED</span>
@@ -81,9 +84,11 @@
 <script src="js/formatter.js"></script>
 <script src="js/string-tools.js"></script>
 <script src="js/generator.js"></script>
-<!-- ========== 访问统计：不蒜子 busuanzi ==========
-     仅在线上环境加载；本地 file:// 预览或 localhost 调试时不加载，避免污染线上数据。
-     数据来源：https://busuanzi.ibruce.info/ (免费第三方服务，按域名聚合，无后台报表) -->
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
 <script>
 (function () {
   var host = location.hostname;
@@ -92,7 +97,7 @@
   s.async = true;
   s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
   s.referrerPolicy = 'no-referrer-when-downgrade';
-  // 服务不可用时直接移除计数器，不留空占位
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
   s.onerror = function () {
     var f = document.getElementById('footerStats');
     if (f && f.parentNode) f.parentNode.removeChild(f);

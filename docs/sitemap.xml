@@ -1,13 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://xwjiang2003.github.io/tools/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/diff/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/encode/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/regex/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/timestamp/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/hash/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/formatter/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/string/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/generator/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://xwjiang2003.github.io/tools/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/"/>
+    <changefreq>monthly</changefreq><priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/diff/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/diff/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/diff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/diff/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/encode/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/encode/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/encode/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/encode/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/regex/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/timestamp/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/timestamp/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/timestamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/timestamp/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/hash/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/hash/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/hash/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/hash/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/formatter/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/formatter/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/formatter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/formatter/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/string/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/string/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/string/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/string/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/generator/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/generator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/generator/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xwjiang2003.github.io/tools/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/privacy.html"/>
+    <changefreq>monthly</changefreq><priority>0.3</priority>
+  </url>
 </urlset>
