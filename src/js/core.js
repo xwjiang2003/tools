@@ -92,18 +92,11 @@ function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; }
 // ============================================================
 // PAGE NAVIGATION
 // ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
 const pageInited = {};
-function initNav() {
-  document.querySelectorAll('.top-nav-item').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.top-nav-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const page = document.getElementById('page-' + btn.dataset.page);
-      if (page) page.classList.add('active');
-      setTimeout(() => { refreshEditors(); resizeAllEditors(); initPage(btn.dataset.page); }, 150);
-    };
-  });
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
 }
 function initPage(name) {
   if (pageInited[name]) return;
@@ -125,8 +118,8 @@ function initPage(name) {
 // INIT
 // ============================================================
 function init() {
-  initNav();
-  setTimeout(() => { initPage('json'); resizeAllEditors(); }, 300);
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -1,0 +1,21 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入文本</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('encodeInput')">清空</button></div></div>
+    <textarea class="ta-input" id="encodeInput" placeholder="在此输入要编码/解码的文本..."></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="encodeOpBtns">
+      <button class="op-btn active" data-op="base64">Base64</button><button class="op-btn" data-op="url">URL</button>
+      <button class="op-btn" data-op="unicode">Unicode</button><button class="op-btn" data-op="htmlentity">HTML实体</button>
+      <button class="op-btn" data-op="hex">Hex</button>
+    </div>
+    <div class="op-options" id="encodeOpOptions">
+      <button class="btn btn-sm btn-primary" onclick="runEncodeOp('encode')">编码 (Encode)</button>
+      <button class="btn btn-sm btn-primary" onclick="runEncodeOp('decode')">解码 (Decode)</button>
+    </div>
+    <div class="result-panel">
+      <div class="result-panel-header"><span class="result-panel-title" id="encodeResultTitle">Base64 结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('encodeResult')">复制</button></div></div>
+      <div class="result-content" id="encodeResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page="privacy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隐私政策 - DevTools 在线开发工具集</title>
+<meta name="description" content="DevTools 隐私政策：工具输入的数据全部在浏览器本地处理，不上传服务器；说明访问统计、第三方 CDN 与广告的使用情况。">
+<meta name="keywords" content="DevTools隐私政策,在线工具隐私,数据本地处理">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://xwjiang2003.github.io/tools/privacy.html">
+<meta property="og:title" content="隐私政策 - DevTools 在线开发工具集">
+<meta property="og:description" content="工具输入的数据全部在浏览器本地处理，不上传服务器。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xwjiang2003.github.io/tools/privacy.html">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
   --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
@@ -171,3 +188,107 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="./" aria-label="DevTools 首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="./">JSON 工具</a>
+    <a class="top-nav-item" href="diff/">文本比对</a>
+    <a class="top-nav-item" href="encode/">编码解码</a>
+    <a class="top-nav-item" href="regex/">正则表达式</a>
+    <a class="top-nav-item" href="timestamp/">时间戳</a>
+    <a class="top-nav-item" href="hash/">加密哈希</a>
+    <a class="top-nav-item" href="formatter/">代码格式化</a>
+    <a class="top-nav-item" href="string/">字符串</a>
+    <a class="top-nav-item" href="generator/">生成器</a>
+  </nav>
+  <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<main class="main">
+<section class="seo-content legal">
+  <h1>隐私政策</h1>
+  <p class="legal-updated">最后更新：2026 年 9 月 10 日</p>
+
+  <h2>一、工具输入的数据</h2>
+  <p>
+    本站所有开发工具（JSON 格式化与校验、文本比对、编码解码、正则测试、时间戳转换、哈希计算、
+    代码格式化、字符串处理、生成器）的解析、转换与计算，全部在你的浏览器内通过 JavaScript 完成。
+    你在这些工具中输入或粘贴的文本、代码、文件，<strong>不会被发送到本站服务器，本站也没有接收这些内容的服务端接口</strong>。
+  </p>
+  <p>
+    涉及文件的功能（文件哈希、图片转 Base64）通过浏览器本地文件读取 API 处理，
+    文件内容同样不会离开你的设备。
+  </p>
+
+  <h2>二、访问统计</h2>
+  <p>
+    本站使用第三方服务「不蒜子」（busuanzi.ibruce.info）统计页面访问量，
+    用于在页脚展示本站总访问量与访客数。该服务在页面加载时接收你的浏览器标识（User-Agent）、
+    来源页面地址与大致地理位置（由 IP 推导），用于区分访客与统计去重。
+  </p>
+  <p>
+    本站本身不设置任何用于追踪你的 Cookie，也不建立用户账号体系，不收集姓名、邮箱、手机号等个人信息。
+    统计脚本在本地预览（<code>file://</code>）与 <code>localhost</code> 调试时不会加载。
+  </p>
+
+  <h2>三、第三方资源</h2>
+  <p>为了保持页面简洁，本站从公共 CDN 加载以下第三方资源，加载时你的浏览器会与这些服务通信，对方的隐私政策独立适用：</p>
+  <ul>
+    <li><strong>cdnjs.cloudflare.com</strong> — 提供 CodeMirror 代码编辑器与二维码生成库。</li>
+    <li><strong>busuanzi.ibruce.info</strong> — 提供访问量统计。</li>
+  </ul>
+  <p>
+    本站不请求任何其他第三方域名。若你处于对隐私要求极高的环境，
+    可以拦截上述请求，除访问量计数与代码编辑器的高亮功能外，其余工具功能不受影响。
+  </p>
+
+  <h2>四、广告</h2>
+  <p>
+    本站未来可能接入广告以覆盖运营成本。接入广告后，广告服务商可能使用 Cookie 或类似技术投放广告，
+    届时本政策会同步更新，说明服务商名称与其数据用途。本站当前<strong>没有投放任何广告</strong>。
+  </p>
+
+  <h2>五、本地存储</h2>
+  <p>
+    本站使用浏览器 localStorage 保存你的主题偏好（亮色 / 暗色），该数据仅保存在你的设备上，
+    不会同步到任何服务器，清除浏览器数据即可删除。
+  </p>
+
+  <h2>六、政策变更</h2>
+  <p>
+    本政策如有更新，会修改本页顶部的"最后更新"日期。继续使用本站即表示你接受更新后的政策。
+  </p>
+
+  <h2>七、联系方式</h2>
+  <p>
+    对本政策有疑问，或希望反馈数据相关的问题，可以通过项目仓库
+    <a href="https://github.com/xwjiang2003/tools/issues" rel="noopener">提交 Issue</a> 联系。
+  </p>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="./">首页</a><a href="diff/">文本比对</a><a href="encode/">编码解码</a><a href="regex/">正则表达式</a><a href="timestamp/">时间戳</a><a href="hash/">加密哈希</a><a href="formatter/">代码格式化</a><a href="string/">字符串</a><a href="generator/">生成器</a><a href="privacy.html">隐私政策</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+</footer>
+
+<script>
+// 主题切换（与工具页保持一致的 localStorage key）
+(function () {
+  var root = document.documentElement;
+  if (localStorage.getItem('devtools-theme') === 'dark') root.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+  };
+})();
+</script>
+</body>
+</html>

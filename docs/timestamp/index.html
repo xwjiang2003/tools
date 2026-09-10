@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page="json">
+<html lang="zh-CN" data-page="timestamp">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JSON 在线格式化与校验工具 - JSON 压缩/排序/比对/转换 | DevTools</title>
-<meta name="description" content="免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。">
-<meta name="keywords" content="JSON格式化,JSON在线格式化,JSON校验,JSON压缩,JSON排序,JSON转义,JSON树视图,JSON比对,JSON转CSV,JSON转XML,JSON转YAML,JSONPath在线测试">
+<title>Unix 时间戳在线转换工具 - 时间戳与日期互转、多时区对照 | DevTools</title>
+<meta name="description" content="在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。">
+<meta name="keywords" content="Unix时间戳,时间戳转换,时间戳在线,时间戳转日期,日期转时间戳,毫秒时间戳,ISO8601,RFC2822,UTC时间">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/">
-<meta property="og:title" content="JSON 在线格式化与校验工具 - JSON 压缩/排序/比对/转换 | DevTools">
-<meta property="og:description" content="免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。">
+<link rel="canonical" href="https://xwjiang2003.github.io/tools/timestamp/">
+<meta property="og:title" content="Unix 时间戳在线转换工具 - 时间戳与日期互转、多时区对照 | DevTools">
+<meta property="og:description" content="在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/">
+<meta property="og:url" content="https://xwjiang2003.github.io/tools/timestamp/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON 在线格式化、校验与转换工具", "url": "https://xwjiang2003.github.io/tools/", "description": "免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "我的 JSON 数据会被上传吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。解析、格式化、比对、转换全部由浏览器里的 JavaScript 完成，页面没有把 JSON 内容发往任何后端的代码。你可以断网后继续使用本页功能（首次加载需要网络获取编辑器依赖）。"}}, {"@type": "Question", "name": "JSON 校验失败，但看起来没什么问题？", "acceptedAnswer": {"@type": "Answer", "text": "最常见的四个原因是：对象或数组最后一项多了逗号、用了单引号而不是双引号、字符串里出现了未转义的换行、以及文件开头带了 BOM 不可见字符。校验失败时页面会给出出错位置，把光标移到那里通常就能看到问题。"}}, {"@type": "Question", "name": "JSON 和 JavaScript 对象字面量有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "JSON 的 key 必须用双引号，不能有尾随逗号，不能写注释，也不支持 undefined、函数和单引号字符串。对象字面量则允许这些写法，所以直接复制 JS 代码里的对象往往无法通过 JSON 校验。"}}, {"@type": "Question", "name": "能处理多大的 JSON？", "acceptedAnswer": {"@type": "Answer", "text": "取决于浏览器可用内存，一般几十 MB 的文本没问题。如果文件达到数百 MB，建议改用命令行工具（如 jq），浏览器编辑器在那种体量下会明显卡顿。"}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://xwjiang2003.github.io/tools/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -196,20 +196,20 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </head>
 <body>
 <header class="header">
-  <a class="logo" href="./" aria-label="DevTools 首页">
+  <a class="logo" href="../" aria-label="DevTools 首页">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <a class="top-nav-item active" href="./">JSON 工具</a>
-    <a class="top-nav-item" href="diff/">文本比对</a>
-    <a class="top-nav-item" href="encode/">编码解码</a>
-    <a class="top-nav-item" href="regex/">正则表达式</a>
-    <a class="top-nav-item" href="timestamp/">时间戳</a>
-    <a class="top-nav-item" href="hash/">加密哈希</a>
-    <a class="top-nav-item" href="formatter/">代码格式化</a>
-    <a class="top-nav-item" href="string/">字符串</a>
-    <a class="top-nav-item" href="generator/">生成器</a>
+    <a class="top-nav-item" href="../">JSON 工具</a>
+    <a class="top-nav-item" href="../diff/">文本比对</a>
+    <a class="top-nav-item" href="../encode/">编码解码</a>
+    <a class="top-nav-item" href="../regex/">正则表达式</a>
+    <a class="top-nav-item active" href="../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../string/">字符串</a>
+    <a class="top-nav-item" href="../generator/">生成器</a>
   </nav>
   <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
@@ -223,123 +223,74 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </div>
 
 <main class="main">
-<div class="page active" id="page-json">
+<div class="page active" id="page-timestamp">
 <div class="tool-layout">
   <div class="input-panel">
-    <div class="input-panel-header">
-      <div class="input-panel-title"><span class="dot"></span> JSON 输入</div>
-      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearInput('mainJsonInput')">清空</button><button class="btn btn-sm" onclick="setVal('mainJsonInput', demoJson);switchJsonTab('basic');runJsonOp('format')">示例</button></div>
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 时间戳 / 日期输入</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div class="live-clock" id="liveClock">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (秒)</div>
+      <div class="live-clock" style="font-size:18px" id="liveClockMs">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (毫秒)</div>
+      <div style="border-top:1px solid var(--border);padding-top:16px">
+        <label class="form-label">时间戳 → 日期</label>
+        <div class="row"><input type="text" class="expr-input" id="tsInput" placeholder="输入时间戳，如 1700000000" style="flex:1"><button class="btn btn-primary btn-sm" onclick="tsToDate()">转换</button></div>
+        <div class="hash-output" id="tsToDateResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
+      <div>
+        <label class="form-label">日期 → 时间戳</label>
+        <div class="row"><input type="datetime-local" class="format-select" id="dtInput" style="flex:1"><button class="btn btn-primary btn-sm" onclick="dateToTs()">转换</button></div>
+        <div class="hash-output" id="dateToTsResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
     </div>
-    <div class="input-editor-wrap"><textarea id="mainJsonInput"></textarea></div>
   </div>
   <div class="ops-panel">
-    <!-- JSON tool tabs -->
-    <div class="json-tabs" id="jsonTabs">
-      <button class="json-tab active" data-tab="basic">基础操作</button>
-      <button class="json-tab" data-tab="diff">比对</button>
-      <button class="json-tab" data-tab="convert">转换</button>
-      <button class="json-tab" data-tab="jsonpath">JSONPath</button>
+    <div class="op-buttons" id="tsOpBtns">
+      <button class="op-btn active" data-op="iso">ISO 8601</button>
+      <button class="op-btn" data-op="rfc">RFC 2822</button>
+      <button class="op-btn" data-op="local">本地格式</button>
+      <button class="op-btn" data-op="utc">UTC 格式</button>
     </div>
-
-    <!-- Tab: Basic -->
-    <div class="json-tab-content active" id="jsonTabBasic">
-      <div class="op-buttons" id="jsonOpBtns">
-        <button class="op-btn active" data-op="format">格式化</button><button class="op-btn" data-op="compress">压缩</button>
-        <button class="op-btn" data-op="validate">校验</button><button class="op-btn" data-op="sort">排序</button>
-        <button class="op-btn" data-op="escape">转义</button><button class="op-btn" data-op="tree">树视图</button>
-      </div>
-      <div class="op-options" id="jsonOpOptions"></div>
-      <div class="result-panel">
-        <div class="result-panel-header"><span class="result-panel-title" id="jsonResultTitle">格式化结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyJsonResult()">复制</button></div></div>
-        <div class="result-content" id="jsonResultContent"><span style="color:var(--text-muted)">在左侧输入 JSON，然后点击上方操作按钮</span></div>
-      </div>
-      <div class="info-stats" id="jsonInfoStats" style="display:none"></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="tsResultTitle">ISO 8601 格式</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tsResult')">复制</button></div></div>
+      <div class="result-content" id="tsResult"><span style="color:var(--text-muted)">当前时间: <span id="tsCurrentTime">--</span></span></div>
     </div>
-
-    <!-- Tab: Diff -->
-    <div class="json-tab-content" id="jsonTabDiff">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div style="display:flex;gap:8px;flex:1;min-height:0">
-          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON A</div>
-            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputA"></textarea></div>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON B</div>
-            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputB"></textarea></div>
-          </div>
-        </div>
-        <div class="row" style="justify-content:space-between">
-          <label class="checkbox-label"><input type="checkbox" id="semanticDiff"> 语义比对</label>
-          <button class="btn btn-primary btn-sm" onclick="doJsonDiff()">比对差异</button>
-        </div>
-        <div id="diffResult" style="max-height:40%;overflow:auto;font-size:12px;flex-shrink:0">输入 JSON A 和 B 后点击"比对差异"</div>
-      </div>
-    </div>
-
-    <!-- Tab: Convert -->
-    <div class="json-tab-content" id="jsonTabConvert">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div class="row">
-          <select class="format-select" id="convertFrom"><option value="json" selected>JSON</option><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option></select>
-          <span style="color:var(--primary);font-weight:bold">→</span>
-          <select class="format-select" id="convertTo"><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option><option value="json">JSON</option></select>
-          <button class="btn btn-sm" onclick="swapConvert()">⇄</button>
-          <button class="btn btn-sm" onclick="setVal('convertInput',demoJson)">示例</button>
-          <button class="btn btn-primary btn-sm" onclick="doConvert()">转换</button>
-        </div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="convertInput"></textarea></div>
-        <div style="font-size:11px;color:var(--text-secondary)">输出</div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="convertOutput" readonly></textarea></div>
-      </div>
-    </div>
-
-    <!-- Tab: JSONPath -->
-    <div class="json-tab-content" id="jsonTabJsonpath">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div class="row"><input type="text" class="expr-input" id="jsonpathExpr" placeholder="$.store.book[0].title" onkeydown="if(event.key==='Enter')doJsonPath()" style="flex:1"><button class="btn btn-sm" onclick="setVal('jsonpathInput',jsonPathDemoData);document.getElementById('jsonpathExpr').value='$.store.books[0].title'">示例</button><button class="btn btn-primary btn-sm" onclick="doJsonPath()">查询</button></div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="jsonpathInput"></textarea></div>
-        <div id="jsonpathResult" style="flex:1;overflow:auto;font-size:12px">输入 JSON 和 JSONPath 表达式，点击"查询"</div>
-      </div>
-    </div>
+    <div class="row" style="gap:8px"><span style="font-size:12px;color:var(--text-secondary)">常用时区:</span><select class="format-select" id="tsTimezone" onchange="updateTsDisplay()"><option value="local">本地时间</option><option value="UTC">UTC</option><option value="Asia/Shanghai">北京时间 (UTC+8)</option><option value="America/New_York">纽约 (UTC-5)</option><option value="Europe/London">伦敦</option><option value="Asia/Tokyo">东京</option></select></div>
   </div>
 </div>
 </div>
 
 <section class="seo-content">
-  <h1>JSON 在线格式化、校验与转换工具</h1>
-  <p>这是一个纯浏览器端的 JSON 工具箱，把日常处理 JSON 时最常用的几件事放在同一个界面里：格式化、压缩、校验、排序、转义、树视图，以及 JSON 比对、格式转换和 JSONPath 查询。</p>
-  <p>所有解析与转换都在你的浏览器里完成，JSON 内容不会发送到任何服务器。对经常要粘贴接口返回、配置文件或日志片段的场景来说，这一点比功能多寡更重要。</p>
+  <h1>Unix 时间戳与日期互转</h1>
+  <p>页面上半部分是实时刷新的当前时间戳（秒与毫秒），下半部分提供两个方向的转换：输入时间戳得到可读日期，或选择日期时间得到对应时间戳。</p>
+  <p>结果同时给出 ISO 8601、RFC 2822、本地格式与 UTC 格式，并可切换查看多个常用时区。</p>
   <h2>主要功能</h2>
   <ul class="seo-features">
-    <li><b>格式化与压缩</b>：按 2 空格 / 4 空格 / Tab 缩进美化；或压成一行并显示压缩前后体积与压缩率。</li>
-    <li><b>语法校验</b>：解析失败时给出错误信息与出错位置，并附带结构概览，方便快速定位漏写的引号或逗号。</li>
-    <li><b>递归排序</b>：按 key 的字母顺序递归排序整个对象树，支持升序与降序，常用于比对两份配置。</li>
-    <li><b>转义 / 去转义</b>：JSON 字符串的 escape 与 unescape，逐字符处理，避免正则替换带来的边界问题。</li>
-    <li><b>树视图</b>：可折叠展开的树形结构，标注每个节点的数据类型，支持一键展开或折叠全部。</li>
-    <li><b>JSON 比对</b>：左右两份 JSON 做行级差异比对；开启&quot;语义比对&quot;后可忽略 key 顺序带来的假差异。</li>
-    <li><b>格式转换</b>：JSON 与 CSV、XML、YAML 之间双向转换，转换方向可一键互换。</li>
-    <li><b>JSONPath 查询</b>：支持 $.key、[*]、.. 递归、过滤器 [?(@.price&gt;100)]、数组切片与多索引。</li>
+    <li><b>秒 / 毫秒自动识别</b>：输入 10 位按秒解析，13 位按毫秒解析，不需要手动选择单位。</li>
+    <li><b>双向转换</b>：时间戳 → 日期、日期 → 时间戳，两个方向在同一个页面完成。</li>
+    <li><b>实时时钟</b>：持续显示当前 Unix 时间戳（秒与毫秒），可用来核对服务器与本地时钟偏差。</li>
+    <li><b>多时区对照</b>：本地时间、UTC、北京时间、纽约、伦敦、东京随时切换。</li>
+    <li><b>标准格式输出</b>：一次性给出 ISO 8601 与 RFC 2822 两种常用于日志与 HTTP 头的格式。</li>
   </ul>
   <h2>使用步骤</h2>
   <ol class="seo-steps">
-    <li>在左侧编辑器中粘贴或输入 JSON 文本，也可以点&quot;示例&quot;载入一份演示数据。</li>
-    <li>在右侧选择&quot;基础操作 / 比对 / 转换 / JSONPath&quot;标签页。</li>
-    <li>基础操作下点击格式化、压缩、校验等按钮，结果会显示在下方结果面板。</li>
-    <li>比对与转换需要左右两份输入，按提示分别填写后点击执行。</li>
+    <li>在&quot;时间戳 → 日期&quot;中输入 10 位或 13 位数字，点击转换。</li>
+    <li>在&quot;日期 → 时间戳&quot;中选择日期时间，点击转换得到秒级与毫秒级结果。</li>
+    <li>用下方时区下拉框切换查看换算到不同时区的表示。</li>
+    <li>在上方操作按钮间切换 ISO 8601、RFC 2822、本地格式与 UTC 格式。</li>
   </ol>
   <h2>常见问题</h2>
   <div class="faq">
-    <details><summary>我的 JSON 数据会被上传吗？</summary><p>不会。解析、格式化、比对、转换全部由浏览器里的 JavaScript 完成，页面没有把 JSON 内容发往任何后端的代码。你可以断网后继续使用本页功能（首次加载需要网络获取编辑器依赖）。</p></details>
-    <details><summary>JSON 校验失败，但看起来没什么问题？</summary><p>最常见的四个原因是：对象或数组最后一项多了逗号、用了单引号而不是双引号、字符串里出现了未转义的换行、以及文件开头带了 BOM 不可见字符。校验失败时页面会给出出错位置，把光标移到那里通常就能看到问题。</p></details>
-    <details><summary>JSON 和 JavaScript 对象字面量有什么区别？</summary><p>JSON 的 key 必须用双引号，不能有尾随逗号，不能写注释，也不支持 undefined、函数和单引号字符串。对象字面量则允许这些写法，所以直接复制 JS 代码里的对象往往无法通过 JSON 校验。</p></details>
-    <details><summary>能处理多大的 JSON？</summary><p>取决于浏览器可用内存，一般几十 MB 的文本没问题。如果文件达到数百 MB，建议改用命令行工具（如 jq），浏览器编辑器在那种体量下会明显卡顿。</p></details>
+    <details><summary>10 位和 13 位时间戳有什么区别？</summary><p>10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。</p></details>
+    <details><summary>什么是 2038 年问题？</summary><p>32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。</p></details>
+    <details><summary>Unix 时间戳包含闰秒吗？</summary><p>不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。</p></details>
+    <details><summary>为什么转换出来的日期和服务器日志差了几个小时？</summary><p>多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。</p></details>
   </div>
 </section>
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="./">首页</a><a href="diff/">文本比对</a><a href="encode/">编码解码</a><a href="regex/">正则表达式</a><a href="timestamp/">时间戳</a><a href="hash/">加密哈希</a><a href="formatter/">代码格式化</a><a href="string/">字符串</a><a href="generator/">生成器</a><a href="privacy.html">隐私政策</a></nav>
+  <nav class="footer-links"><a href="../">首页</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../privacy.html">隐私政策</a></nav>
   <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>

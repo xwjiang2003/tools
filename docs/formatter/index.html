@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page="json">
+<html lang="zh-CN" data-page="formatter">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JSON 在线格式化与校验工具 - JSON 压缩/排序/比对/转换 | DevTools</title>
-<meta name="description" content="免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。">
-<meta name="keywords" content="JSON格式化,JSON在线格式化,JSON校验,JSON压缩,JSON排序,JSON转义,JSON树视图,JSON比对,JSON转CSV,JSON转XML,JSON转YAML,JSONPath在线测试">
+<title>HTML / CSS / JS / SQL 在线代码格式化工具 | DevTools</title>
+<meta name="description" content="在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。">
+<meta name="keywords" content="HTML格式化,CSS格式化,JS格式化,JavaScript格式化,SQL格式化,XML格式化,代码压缩,在线代码美化">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/">
-<meta property="og:title" content="JSON 在线格式化与校验工具 - JSON 压缩/排序/比对/转换 | DevTools">
-<meta property="og:description" content="免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。">
+<link rel="canonical" href="https://xwjiang2003.github.io/tools/formatter/">
+<meta property="og:title" content="HTML / CSS / JS / SQL 在线代码格式化工具 | DevTools">
+<meta property="og:description" content="在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/">
+<meta property="og:url" content="https://xwjiang2003.github.io/tools/formatter/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON 在线格式化、校验与转换工具", "url": "https://xwjiang2003.github.io/tools/", "description": "免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "我的 JSON 数据会被上传吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。解析、格式化、比对、转换全部由浏览器里的 JavaScript 完成，页面没有把 JSON 内容发往任何后端的代码。你可以断网后继续使用本页功能（首次加载需要网络获取编辑器依赖）。"}}, {"@type": "Question", "name": "JSON 校验失败，但看起来没什么问题？", "acceptedAnswer": {"@type": "Answer", "text": "最常见的四个原因是：对象或数组最后一项多了逗号、用了单引号而不是双引号、字符串里出现了未转义的换行、以及文件开头带了 BOM 不可见字符。校验失败时页面会给出出错位置，把光标移到那里通常就能看到问题。"}}, {"@type": "Question", "name": "JSON 和 JavaScript 对象字面量有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "JSON 的 key 必须用双引号，不能有尾随逗号，不能写注释，也不支持 undefined、函数和单引号字符串。对象字面量则允许这些写法，所以直接复制 JS 代码里的对象往往无法通过 JSON 校验。"}}, {"@type": "Question", "name": "能处理多大的 JSON？", "acceptedAnswer": {"@type": "Answer", "text": "取决于浏览器可用内存，一般几十 MB 的文本没问题。如果文件达到数百 MB，建议改用命令行工具（如 jq），浏览器编辑器在那种体量下会明显卡顿。"}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "HTML / CSS / JS / SQL 代码格式化", "url": "https://xwjiang2003.github.io/tools/formatter/", "description": "在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "格式化会改变代码的行为吗？", "acceptedAnswer": {"@type": "Answer", "text": "对 HTML、CSS、XML 与 SQL 而言，格式化只调整空白，不改变语义。JavaScript 需要额外注意自动分号插入规则：把两行合并到一行、或调整换行位置时，极少数写法可能改变语句边界，格式化后建议简单核对一遍。"}}, {"@type": "Question", "name": "压缩后的代码还能还原吗？", "acceptedAnswer": {"@type": "Answer", "text": "空白层面的压缩可以再由格式化还原；但变量重命名、死代码删除这类压缩优化是不可逆的，本工具只做空白压缩，不会重命名标识符。"}}, {"@type": "Question", "name": "SQL 格式化支持哪些方言？", "acceptedAnswer": {"@type": "Answer", "text": "做的是通用的关键字大写与缩进排版，MySQL、PostgreSQL、SQL Server 的常用语法都能处理，但方言特有的语法（如某些存储过程写法）可能出现排版不理想的情况。"}}, {"@type": "Question", "name": "代码会被上传吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。所有格式化都在浏览器本地完成，不会把代码发送到服务器。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -196,20 +196,20 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </head>
 <body>
 <header class="header">
-  <a class="logo" href="./" aria-label="DevTools 首页">
+  <a class="logo" href="../" aria-label="DevTools 首页">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <a class="top-nav-item active" href="./">JSON 工具</a>
-    <a class="top-nav-item" href="diff/">文本比对</a>
-    <a class="top-nav-item" href="encode/">编码解码</a>
-    <a class="top-nav-item" href="regex/">正则表达式</a>
-    <a class="top-nav-item" href="timestamp/">时间戳</a>
-    <a class="top-nav-item" href="hash/">加密哈希</a>
-    <a class="top-nav-item" href="formatter/">代码格式化</a>
-    <a class="top-nav-item" href="string/">字符串</a>
-    <a class="top-nav-item" href="generator/">生成器</a>
+    <a class="top-nav-item" href="../">JSON 工具</a>
+    <a class="top-nav-item" href="../diff/">文本比对</a>
+    <a class="top-nav-item" href="../encode/">编码解码</a>
+    <a class="top-nav-item" href="../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../hash/">加密哈希</a>
+    <a class="top-nav-item active" href="../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../string/">字符串</a>
+    <a class="top-nav-item" href="../generator/">生成器</a>
   </nav>
   <div class="header-actions"><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
@@ -223,123 +223,63 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </div>
 
 <main class="main">
-<div class="page active" id="page-json">
+<div class="page active" id="page-formatter">
 <div class="tool-layout">
   <div class="input-panel">
-    <div class="input-panel-header">
-      <div class="input-panel-title"><span class="dot"></span> JSON 输入</div>
-      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearInput('mainJsonInput')">清空</button><button class="btn btn-sm" onclick="setVal('mainJsonInput', demoJson);switchJsonTab('basic');runJsonOp('format')">示例</button></div>
-    </div>
-    <div class="input-editor-wrap"><textarea id="mainJsonInput"></textarea></div>
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 源代码输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearTa('codeInput')">清空</button><button class="btn btn-sm" onclick="loadCodeDemo()">示例</button></div></div>
+    <textarea class="ta-input" id="codeInput" placeholder="粘贴代码..."></textarea>
   </div>
   <div class="ops-panel">
-    <!-- JSON tool tabs -->
-    <div class="json-tabs" id="jsonTabs">
-      <button class="json-tab active" data-tab="basic">基础操作</button>
-      <button class="json-tab" data-tab="diff">比对</button>
-      <button class="json-tab" data-tab="convert">转换</button>
-      <button class="json-tab" data-tab="jsonpath">JSONPath</button>
+    <div class="op-buttons" id="codeOpBtns">
+      <button class="op-btn active" data-op="html">HTML</button><button class="op-btn" data-op="css">CSS</button>
+      <button class="op-btn" data-op="js">JavaScript</button><button class="op-btn" data-op="sql">SQL</button>
+      <button class="op-btn" data-op="xml">XML</button>
     </div>
-
-    <!-- Tab: Basic -->
-    <div class="json-tab-content active" id="jsonTabBasic">
-      <div class="op-buttons" id="jsonOpBtns">
-        <button class="op-btn active" data-op="format">格式化</button><button class="op-btn" data-op="compress">压缩</button>
-        <button class="op-btn" data-op="validate">校验</button><button class="op-btn" data-op="sort">排序</button>
-        <button class="op-btn" data-op="escape">转义</button><button class="op-btn" data-op="tree">树视图</button>
-      </div>
-      <div class="op-options" id="jsonOpOptions"></div>
-      <div class="result-panel">
-        <div class="result-panel-header"><span class="result-panel-title" id="jsonResultTitle">格式化结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyJsonResult()">复制</button></div></div>
-        <div class="result-content" id="jsonResultContent"><span style="color:var(--text-muted)">在左侧输入 JSON，然后点击上方操作按钮</span></div>
-      </div>
-      <div class="info-stats" id="jsonInfoStats" style="display:none"></div>
+    <div class="op-options" id="codeOpOptions">
+      <button class="btn btn-sm btn-primary" onclick="runCodeOp('format')">格式化</button>
+      <button class="btn btn-sm btn-primary" onclick="runCodeOp('compress')">压缩</button>
+      <select class="format-select" id="codeIndent"><option value="2">2 空格</option><option value="4" selected>4 空格</option><option value="tab">Tab</option></select>
     </div>
-
-    <!-- Tab: Diff -->
-    <div class="json-tab-content" id="jsonTabDiff">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div style="display:flex;gap:8px;flex:1;min-height:0">
-          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON A</div>
-            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputA"></textarea></div>
-          </div>
-          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
-            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON B</div>
-            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputB"></textarea></div>
-          </div>
-        </div>
-        <div class="row" style="justify-content:space-between">
-          <label class="checkbox-label"><input type="checkbox" id="semanticDiff"> 语义比对</label>
-          <button class="btn btn-primary btn-sm" onclick="doJsonDiff()">比对差异</button>
-        </div>
-        <div id="diffResult" style="max-height:40%;overflow:auto;font-size:12px;flex-shrink:0">输入 JSON A 和 B 后点击"比对差异"</div>
-      </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="codeResultTitle">HTML 格式化</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('codeResult')">复制</button></div></div>
+      <div class="result-content" id="codeResult"><span style="color:var(--text-muted)">粘贴代码并选择操作</span></div>
     </div>
-
-    <!-- Tab: Convert -->
-    <div class="json-tab-content" id="jsonTabConvert">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div class="row">
-          <select class="format-select" id="convertFrom"><option value="json" selected>JSON</option><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option></select>
-          <span style="color:var(--primary);font-weight:bold">→</span>
-          <select class="format-select" id="convertTo"><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option><option value="json">JSON</option></select>
-          <button class="btn btn-sm" onclick="swapConvert()">⇄</button>
-          <button class="btn btn-sm" onclick="setVal('convertInput',demoJson)">示例</button>
-          <button class="btn btn-primary btn-sm" onclick="doConvert()">转换</button>
-        </div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="convertInput"></textarea></div>
-        <div style="font-size:11px;color:var(--text-secondary)">输出</div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="convertOutput" readonly></textarea></div>
-      </div>
-    </div>
-
-    <!-- Tab: JSONPath -->
-    <div class="json-tab-content" id="jsonTabJsonpath">
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
-        <div class="row"><input type="text" class="expr-input" id="jsonpathExpr" placeholder="$.store.book[0].title" onkeydown="if(event.key==='Enter')doJsonPath()" style="flex:1"><button class="btn btn-sm" onclick="setVal('jsonpathInput',jsonPathDemoData);document.getElementById('jsonpathExpr').value='$.store.books[0].title'">示例</button><button class="btn btn-primary btn-sm" onclick="doJsonPath()">查询</button></div>
-        <div class="card-editor-wrap" style="flex:1"><textarea id="jsonpathInput"></textarea></div>
-        <div id="jsonpathResult" style="flex:1;overflow:auto;font-size:12px">输入 JSON 和 JSONPath 表达式，点击"查询"</div>
-      </div>
-    </div>
+    <div class="info-stats" id="codeStats" style="display:none"></div>
   </div>
 </div>
 </div>
 
 <section class="seo-content">
-  <h1>JSON 在线格式化、校验与转换工具</h1>
-  <p>这是一个纯浏览器端的 JSON 工具箱，把日常处理 JSON 时最常用的几件事放在同一个界面里：格式化、压缩、校验、排序、转义、树视图，以及 JSON 比对、格式转换和 JSONPath 查询。</p>
-  <p>所有解析与转换都在你的浏览器里完成，JSON 内容不会发送到任何服务器。对经常要粘贴接口返回、配置文件或日志片段的场景来说，这一点比功能多寡更重要。</p>
+  <h1>HTML / CSS / JS / SQL 代码格式化</h1>
+  <p>把压缩过的、缩进混乱的代码粘贴进来，选择语言后一键格式化成可读的缩进结构；反过来也可以把代码压缩成单行，用于减少传输体积或塞进配置文件。</p>
+  <p>格式化在浏览器内完成，源码不会被上传到服务器，适合处理公司内部代码片段。</p>
   <h2>主要功能</h2>
   <ul class="seo-features">
-    <li><b>格式化与压缩</b>：按 2 空格 / 4 空格 / Tab 缩进美化；或压成一行并显示压缩前后体积与压缩率。</li>
-    <li><b>语法校验</b>：解析失败时给出错误信息与出错位置，并附带结构概览，方便快速定位漏写的引号或逗号。</li>
-    <li><b>递归排序</b>：按 key 的字母顺序递归排序整个对象树，支持升序与降序，常用于比对两份配置。</li>
-    <li><b>转义 / 去转义</b>：JSON 字符串的 escape 与 unescape，逐字符处理，避免正则替换带来的边界问题。</li>
-    <li><b>树视图</b>：可折叠展开的树形结构，标注每个节点的数据类型，支持一键展开或折叠全部。</li>
-    <li><b>JSON 比对</b>：左右两份 JSON 做行级差异比对；开启&quot;语义比对&quot;后可忽略 key 顺序带来的假差异。</li>
-    <li><b>格式转换</b>：JSON 与 CSV、XML、YAML 之间双向转换，转换方向可一键互换。</li>
-    <li><b>JSONPath 查询</b>：支持 $.key、[*]、.. 递归、过滤器 [?(@.price&gt;100)]、数组切片与多索引。</li>
+    <li><b>多语言支持</b>：HTML、CSS、JavaScript、XML、SQL 五种常见格式。</li>
+    <li><b>格式化与压缩</b>：既能把代码展开成易读的缩进结构，也能压成紧凑的单行。</li>
+    <li><b>缩进可选</b>：2 空格、4 空格或 Tab，跟随你所在项目的代码风格。</li>
+    <li><b>体积对比</b>：压缩后显示前后体积变化，便于评估优化效果。</li>
+    <li><b>示例数据</b>：内置示例便于快速试用，不必先找一段代码。</li>
   </ul>
   <h2>使用步骤</h2>
   <ol class="seo-steps">
-    <li>在左侧编辑器中粘贴或输入 JSON 文本，也可以点&quot;示例&quot;载入一份演示数据。</li>
-    <li>在右侧选择&quot;基础操作 / 比对 / 转换 / JSONPath&quot;标签页。</li>
-    <li>基础操作下点击格式化、压缩、校验等按钮，结果会显示在下方结果面板。</li>
-    <li>比对与转换需要左右两份输入，按提示分别填写后点击执行。</li>
+    <li>在左侧粘贴需要处理的代码。</li>
+    <li>在右侧选择语言类型：HTML、CSS、JavaScript、SQL 或 XML。</li>
+    <li>选择缩进方式后点击&quot;格式化&quot;或&quot;压缩&quot;。</li>
+    <li>在结果面板查看输出并点击&quot;复制&quot;。</li>
   </ol>
   <h2>常见问题</h2>
   <div class="faq">
-    <details><summary>我的 JSON 数据会被上传吗？</summary><p>不会。解析、格式化、比对、转换全部由浏览器里的 JavaScript 完成，页面没有把 JSON 内容发往任何后端的代码。你可以断网后继续使用本页功能（首次加载需要网络获取编辑器依赖）。</p></details>
-    <details><summary>JSON 校验失败，但看起来没什么问题？</summary><p>最常见的四个原因是：对象或数组最后一项多了逗号、用了单引号而不是双引号、字符串里出现了未转义的换行、以及文件开头带了 BOM 不可见字符。校验失败时页面会给出出错位置，把光标移到那里通常就能看到问题。</p></details>
-    <details><summary>JSON 和 JavaScript 对象字面量有什么区别？</summary><p>JSON 的 key 必须用双引号，不能有尾随逗号，不能写注释，也不支持 undefined、函数和单引号字符串。对象字面量则允许这些写法，所以直接复制 JS 代码里的对象往往无法通过 JSON 校验。</p></details>
-    <details><summary>能处理多大的 JSON？</summary><p>取决于浏览器可用内存，一般几十 MB 的文本没问题。如果文件达到数百 MB，建议改用命令行工具（如 jq），浏览器编辑器在那种体量下会明显卡顿。</p></details>
+    <details><summary>格式化会改变代码的行为吗？</summary><p>对 HTML、CSS、XML 与 SQL 而言，格式化只调整空白，不改变语义。JavaScript 需要额外注意自动分号插入规则：把两行合并到一行、或调整换行位置时，极少数写法可能改变语句边界，格式化后建议简单核对一遍。</p></details>
+    <details><summary>压缩后的代码还能还原吗？</summary><p>空白层面的压缩可以再由格式化还原；但变量重命名、死代码删除这类压缩优化是不可逆的，本工具只做空白压缩，不会重命名标识符。</p></details>
+    <details><summary>SQL 格式化支持哪些方言？</summary><p>做的是通用的关键字大写与缩进排版，MySQL、PostgreSQL、SQL Server 的常用语法都能处理，但方言特有的语法（如某些存储过程写法）可能出现排版不理想的情况。</p></details>
+    <details><summary>代码会被上传吗？</summary><p>不会。所有格式化都在浏览器本地完成，不会把代码发送到服务器。</p></details>
   </div>
 </section>
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="./">首页</a><a href="diff/">文本比对</a><a href="encode/">编码解码</a><a href="regex/">正则表达式</a><a href="timestamp/">时间戳</a><a href="hash/">加密哈希</a><a href="formatter/">代码格式化</a><a href="string/">字符串</a><a href="generator/">生成器</a><a href="privacy.html">隐私政策</a></nav>
+  <nav class="footer-links"><a href="../">首页</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../privacy.html">隐私政策</a></nav>
   <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>

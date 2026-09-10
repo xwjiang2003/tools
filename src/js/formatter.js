@@ -1,7 +1,14 @@
 // formatter.js — HTML, CSS, JS, SQL, XML code formatter
-codeDemos.js = 'function hello(name){if(name){console.log("Hello, "+name+"!");return{greeted:true,name:name}}else{console.log("Hello!");return{greeted:false}}';
-codeDemos.sql = 'SELECT u.id,u.name,u.email,o.total,o.created_at FROM users u INNER JOIN orders o ON u.id=o.user_id WHERE u.status=\'active\' AND o.total>100 GROUP BY u.id HAVING COUNT(o.id)>3 ORDER BY o.created_at DESC LIMIT 10';
-codeDemos.xml = '<root><users><user id="1"><name>张三</name><email>zhangsan@example.com</email></user><user id="2"><name>李四</name><email>lisi@example.com</email></user></users></root>';
+// 注意：这里必须先声明 codeDemos 对象。此前直接写 codeDemos.js = ... 会抛
+// ReferenceError，导致本文件后续所有函数（initFormatterPage / runCodeOp 等）
+// 都没有被定义，代码格式化页整页不可用。
+const codeDemos = {
+  html: '<div class="card"><h2 class="title">标题</h2><p>正文内容</p><ul><li>项目一</li><li>项目二</li></ul></div>',
+  css: '.card{padding:16px;border:1px solid #e1e5eb;border-radius:8px}.card .title{font-size:18px;color:#4a90d9;margin-bottom:8px}',
+  js: 'function hello(name){if(name){console.log("Hello, "+name+"!");return{greeted:true,name:name}}else{console.log("Hello!");return{greeted:false}}',
+  sql: 'SELECT u.id,u.name,u.email,o.total,o.created_at FROM users u INNER JOIN orders o ON u.id=o.user_id WHERE u.status=\'active\' AND o.total>100 GROUP BY u.id HAVING COUNT(o.id)>3 ORDER BY o.created_at DESC LIMIT 10',
+  xml: '<root><users><user id="1"><name>张三</name><email>zhangsan@example.com</email></user><user id="2"><name>李四</name><email>lisi@example.com</email></user></users></root>'
+};
 
 // ============================================================
 // 6. CODE FORMATTER PAGE

@@ -1,0 +1,34 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 时间戳 / 日期输入</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div class="live-clock" id="liveClock">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (秒)</div>
+      <div class="live-clock" style="font-size:18px" id="liveClockMs">--</div>
+      <div class="live-clock-sub">当前 Unix 时间戳 (毫秒)</div>
+      <div style="border-top:1px solid var(--border);padding-top:16px">
+        <label class="form-label">时间戳 → 日期</label>
+        <div class="row"><input type="text" class="expr-input" id="tsInput" placeholder="输入时间戳，如 1700000000" style="flex:1"><button class="btn btn-primary btn-sm" onclick="tsToDate()">转换</button></div>
+        <div class="hash-output" id="tsToDateResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
+      <div>
+        <label class="form-label">日期 → 时间戳</label>
+        <div class="row"><input type="datetime-local" class="format-select" id="dtInput" style="flex:1"><button class="btn btn-primary btn-sm" onclick="dateToTs()">转换</button></div>
+        <div class="hash-output" id="dateToTsResult" style="margin-top:8px;font-size:14px">等待输入...</div>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="tsOpBtns">
+      <button class="op-btn active" data-op="iso">ISO 8601</button>
+      <button class="op-btn" data-op="rfc">RFC 2822</button>
+      <button class="op-btn" data-op="local">本地格式</button>
+      <button class="op-btn" data-op="utc">UTC 格式</button>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="tsResultTitle">ISO 8601 格式</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tsResult')">复制</button></div></div>
+      <div class="result-content" id="tsResult"><span style="color:var(--text-muted)">当前时间: <span id="tsCurrentTime">--</span></span></div>
+    </div>
+    <div class="row" style="gap:8px"><span style="font-size:12px;color:var(--text-secondary)">常用时区:</span><select class="format-select" id="tsTimezone" onchange="updateTsDisplay()"><option value="local">本地时间</option><option value="UTC">UTC</option><option value="Asia/Shanghai">北京时间 (UTC+8)</option><option value="America/New_York">纽约 (UTC-5)</option><option value="Europe/London">伦敦</option><option value="Asia/Tokyo">东京</option></select></div>
+  </div>
+</div>

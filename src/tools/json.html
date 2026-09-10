@@ -1,0 +1,80 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header">
+      <div class="input-panel-title"><span class="dot"></span> JSON 输入</div>
+      <div class="row" style="gap:4px"><button class="btn btn-sm" onclick="clearInput('mainJsonInput')">清空</button><button class="btn btn-sm" onclick="setVal('mainJsonInput', demoJson);switchJsonTab('basic');runJsonOp('format')">示例</button></div>
+    </div>
+    <div class="input-editor-wrap"><textarea id="mainJsonInput"></textarea></div>
+  </div>
+  <div class="ops-panel">
+    <!-- JSON tool tabs -->
+    <div class="json-tabs" id="jsonTabs">
+      <button class="json-tab active" data-tab="basic">基础操作</button>
+      <button class="json-tab" data-tab="diff">比对</button>
+      <button class="json-tab" data-tab="convert">转换</button>
+      <button class="json-tab" data-tab="jsonpath">JSONPath</button>
+    </div>
+
+    <!-- Tab: Basic -->
+    <div class="json-tab-content active" id="jsonTabBasic">
+      <div class="op-buttons" id="jsonOpBtns">
+        <button class="op-btn active" data-op="format">格式化</button><button class="op-btn" data-op="compress">压缩</button>
+        <button class="op-btn" data-op="validate">校验</button><button class="op-btn" data-op="sort">排序</button>
+        <button class="op-btn" data-op="escape">转义</button><button class="op-btn" data-op="tree">树视图</button>
+      </div>
+      <div class="op-options" id="jsonOpOptions"></div>
+      <div class="result-panel">
+        <div class="result-panel-header"><span class="result-panel-title" id="jsonResultTitle">格式化结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyJsonResult()">复制</button></div></div>
+        <div class="result-content" id="jsonResultContent"><span style="color:var(--text-muted)">在左侧输入 JSON，然后点击上方操作按钮</span></div>
+      </div>
+      <div class="info-stats" id="jsonInfoStats" style="display:none"></div>
+    </div>
+
+    <!-- Tab: Diff -->
+    <div class="json-tab-content" id="jsonTabDiff">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div style="display:flex;gap:8px;flex:1;min-height:0">
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON A</div>
+            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputA"></textarea></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px">JSON B</div>
+            <div class="card-editor-wrap" style="flex:1"><textarea id="diffInputB"></textarea></div>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between">
+          <label class="checkbox-label"><input type="checkbox" id="semanticDiff"> 语义比对</label>
+          <button class="btn btn-primary btn-sm" onclick="doJsonDiff()">比对差异</button>
+        </div>
+        <div id="diffResult" style="max-height:40%;overflow:auto;font-size:12px;flex-shrink:0">输入 JSON A 和 B 后点击"比对差异"</div>
+      </div>
+    </div>
+
+    <!-- Tab: Convert -->
+    <div class="json-tab-content" id="jsonTabConvert">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div class="row">
+          <select class="format-select" id="convertFrom"><option value="json" selected>JSON</option><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option></select>
+          <span style="color:var(--primary);font-weight:bold">→</span>
+          <select class="format-select" id="convertTo"><option value="csv">CSV</option><option value="xml">XML</option><option value="yaml">YAML</option><option value="json">JSON</option></select>
+          <button class="btn btn-sm" onclick="swapConvert()">⇄</button>
+          <button class="btn btn-sm" onclick="setVal('convertInput',demoJson)">示例</button>
+          <button class="btn btn-primary btn-sm" onclick="doConvert()">转换</button>
+        </div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="convertInput"></textarea></div>
+        <div style="font-size:11px;color:var(--text-secondary)">输出</div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="convertOutput" readonly></textarea></div>
+      </div>
+    </div>
+
+    <!-- Tab: JSONPath -->
+    <div class="json-tab-content" id="jsonTabJsonpath">
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+        <div class="row"><input type="text" class="expr-input" id="jsonpathExpr" placeholder="$.store.book[0].title" onkeydown="if(event.key==='Enter')doJsonPath()" style="flex:1"><button class="btn btn-sm" onclick="setVal('jsonpathInput',jsonPathDemoData);document.getElementById('jsonpathExpr').value='$.store.books[0].title'">示例</button><button class="btn btn-primary btn-sm" onclick="doJsonPath()">查询</button></div>
+        <div class="card-editor-wrap" style="flex:1"><textarea id="jsonpathInput"></textarea></div>
+        <div id="jsonpathResult" style="flex:1;overflow:auto;font-size:12px">输入 JSON 和 JSONPath 表达式，点击"查询"</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -165,5 +165,24 @@
 
 ```
 /home/jxw/IdeaProjects/tools/
-└── index.html          # 主文件，包含所有 HTML/CSS/JS
+├── build.py            # 静态站点生成器（内联资源、组装页面、生成 sitemap）
+├── src/
+│   ├── index.html      # 工具页模板（{{占位符}}）
+│   ├── privacy.html    # 隐私政策模板
+│   ├── content.py      # 各工具页的标题/描述/正文/FAQ 文案
+│   ├── tools/*.html    # 9 个工具的界面片段
+│   ├── css/style.css   # 全站样式
+│   └── js/*.js         # 各工具逻辑
+├── docs/               # 构建产物 = GitHub Pages 发布目录（提交到仓库）
+└── dist/               # 构建产物 = 本地预览（gitignore）
 ```
+
+构建后每个工具是一个独立 URL 的独立 HTML（`/tools/`、`/tools/diff/`…），
+页面只包含自己的工具界面与正文，标题/描述/结构化数据在构建时写死。
+
+## 已知问题修复记录
+
+| 日期 | 问题 | 修复 |
+|------|------|------|
+| 2026-09-10 | `formatter.js` 首行 `codeDemos.js = ...` 未先声明 `codeDemos`，抛 ReferenceError 导致该文件后续所有函数未定义，**代码格式化页整页不可用** | 改为先声明 `const codeDemos = {...}`，并补齐 html / css 示例 |
+

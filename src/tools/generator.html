@@ -1,0 +1,19 @@
+<div class="tool-layout">
+  <div class="input-panel" style="overflow-y:auto">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 参数配置</div></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:20px" id="genConfig"></div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons" id="genOpBtns">
+      <button class="op-btn active" data-op="uuid">UUID</button><button class="op-btn" data-op="password">随机密码</button>
+      <button class="op-btn" data-op="qrcode">二维码</button><button class="op-btn" data-op="lorem">Lorem Ipsum</button>
+      <button class="op-btn" data-op="sequence">数字序列</button><button class="op-btn" data-op="randomdata">随机数据</button>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title" id="genResultTitle">UUID 生成</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyGenResult()">复制</button><button class="btn btn-sm btn-primary" onclick="runGenOp()">生成</button></div></div>
+      <div style="padding:16px">
+        <div class="gen-result-box" id="genResult">点击"生成"按钮</div>
+      </div>
+    </div>
+  </div>
+</div>
