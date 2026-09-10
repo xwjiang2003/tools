@@ -35,6 +35,18 @@ python3 -m http.server 8080
 - **原生 JavaScript** — 无框架，纯前端实现
 - **CSS Variables** — 支持亮色/暗色主题切换
 
+## 访问统计
+
+页脚使用 [不蒜子 busuanzi](https://busuanzi.ibruce.info/) 显示本站总访问量（PV）与访客数（UV）：
+
+- 统计脚本只在线上环境加载，`file://` 本地预览和 `localhost` 调试不会上报，避免污染线上数据。
+- 统计服务不可用时，页脚计数器自动移除，不影响页面其它功能。
+- 不蒜子按**域名**聚合：`xwjiang2003.github.io` 下所有项目共用同一份 PV/UV，且没有明细报表。
+  需要分路径 / 来源 / 地区等详细数据时，可另接百度统计或 Google Analytics（见 `src/index.html` 末尾的脚本块）。
+
+修改统计方式：编辑 `src/index.html`（或 `src/css/style.css`），运行 `python3 build.py`，
+构建结果会同步输出到 `dist/index.html`、`docs/index.html` 和根目录 `index.html`。
+
 ## 快捷键
 
 | 快捷键 | 说明 |

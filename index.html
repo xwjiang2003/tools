@@ -158,6 +158,9 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
 .word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
 .footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
 </style>
 </head>
@@ -532,7 +535,14 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 </div>
 </main>
 
-<footer class="footer">所有数据仅在浏览器本地处理，不会上传到服务器</footer>
+<footer class="footer">
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+  </div>
+</footer>
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
@@ -2175,6 +2185,25 @@ function generateRandomData(type, count) {
 }
 
 
+</script>
+<!-- ========== 访问统计：不蒜子 busuanzi ==========
+     仅在线上环境加载；本地 file:// 预览或 localhost 调试时不加载，避免污染线上数据。
+     数据来源：https://busuanzi.ibruce.info/ (免费第三方服务，按域名聚合，无后台报表) -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // 服务不可用时直接移除计数器，不留空占位
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
 </script>
 </body>
 </html>

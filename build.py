@@ -41,9 +41,13 @@ def build():
         print(f'  ✓ JS: {mod} ({len(js)} chars)')
 
     DIST.mkdir(parents=True, exist_ok=True)
-    out = DIST / 'index.html'
-    out.write_text(html, 'utf-8')
-    print(f'\n✅ {out}  ({len(html) / 1024:.1f} KB)')
+    # 部署副本：GitHub Pages 可能指向仓库根目录或 /docs，两处都保持一致
+    targets = [DIST / 'index.html', ROOT / 'docs' / 'index.html', ROOT / 'index.html']
+    for out in targets:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(html, 'utf-8')
+    names = ', '.join(str(t.relative_to(ROOT)) for t in targets)
+    print(f'\n✅ {len(html) / 1024:.1f} KB -> {names}')
     return True
 
 

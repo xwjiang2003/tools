@@ -139,4 +139,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
 .word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
 .footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
