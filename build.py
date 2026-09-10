@@ -220,7 +220,7 @@ def feedback_modal_html():
       '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
       '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
       '时间: ' + new Date().toISOString()
-    ].join('\n');
+    ].join('\\n');
     function done(ok) {
       copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
       setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);

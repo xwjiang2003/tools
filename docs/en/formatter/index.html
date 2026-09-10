@@ -2072,8 +2072,7 @@ function generateRandomData(type, count) {
       'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
       'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
       'Time: ' + new Date().toISOString()
-    ].join('
-');
+    ].join('\n');
     function done(ok) {
       copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
       setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
