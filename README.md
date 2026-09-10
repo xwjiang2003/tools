@@ -1,6 +1,6 @@
 # JSON Tools — 在线 JSON 工具集
 
-类似 [json.cn](https://www.json.cn) 的在线 JSON 工具网站，纯前端实现，所有数据仅在浏览器本地处理。
+在线 JSON 工具网站，纯前端实现，所有数据仅在浏览器本地处理。
 
 ## 功能
 
