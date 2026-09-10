@@ -54,8 +54,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
 .top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
-.theme-toggle{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
-.theme-toggle:hover{background:var(--tab-hover)}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
 .main{max-width:1600px;margin:0 auto;padding:16px 20px}
 .page{display:none}
 .page.active{display:block}
@@ -197,6 +197,25 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
      2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
@@ -247,7 +266,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
     <a class="top-nav-item" href="../string/">字符串</a>
     <a class="top-nav-item" href="../generator/">生成器</a>
   </nav>
-  <div class="header-actions"><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/privacy.html" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/privacy.html" data-lang-set="en">English</a></div>
 <script>
 // 记住手动选择：下次访问不再自动跳转
 document.addEventListener("click", function (e) {
@@ -323,7 +342,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../">首页</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../privacy.html">隐私政策</a></nav>
+  <nav class="footer-links"><a href="../">首页</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
   <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
 </footer>
 
@@ -337,6 +356,66 @@ document.addEventListener("click", function (e) {
     root.setAttribute('data-theme', next);
     localStorage.setItem('devtools-theme', next);
   };
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈统一走 GitHub Issues。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">
+      <b>📋 查看已有反馈</b><span>也许已经有人报过同样的问题</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">提交需要 GitHub 账号。</p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
 })();
 </script>
 </body>

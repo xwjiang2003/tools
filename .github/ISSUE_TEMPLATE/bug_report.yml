@@ -1,0 +1,88 @@
+name: 🐞 问题反馈 / Bug report
+description: 某个工具报错、结果不对、或页面显示异常
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！本站是**纯前端静态站，没有后端、没有服务端日志**，
+        所以下面这些信息基本是唯一能用来定位问题的线索，填得越全越快解决。
+        提交前请先搜一下 [已有 issue](https://github.com/xwjiang2003/tools/issues?q=is%3Aissue)，避免重复。
+
+  - type: dropdown
+    id: tool
+    attributes:
+      label: 涉及哪个工具
+      options:
+        - JSON 工具（格式化/压缩/校验/排序/转义/树视图/比对/转换/JSONPath）
+        - 文本比对
+        - 编码解码（Base64/URL/Unicode/HTML 实体/Hex）
+        - 正则表达式
+        - 时间戳转换
+        - 加密哈希（MD5/SHA/HMAC/AES）
+        - 代码格式化
+        - 字符串工具
+        - 生成器（UUID/密码/二维码/随机数据）
+        - 站点本身（导航、语言切换、主题、页脚统计）
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: 出问题的页面地址
+      placeholder: https://xwjiang2003.github.io/tools/regex/
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 请写清「期望的结果」和「实际的结果」分别是什么
+      placeholder: |
+        期望：
+        实际：
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开 ...
+        2. 在左侧输入 ...
+        3. 点击 ...
+        4. 看到 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: sample-input
+    attributes:
+      label: 触发问题的输入（强烈建议填写）
+      description: 如果问题是「结果不对」，没有这段输入我基本无法复现。请先脱敏，不要贴真实密钥或隐私数据。
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: 诊断信息
+      description: 点页面右上角的 💬 按钮 →「复制诊断信息」，然后粘贴到这里。里面不包含你输入的任何内容。
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已经搜索过已有 issue，没有重复
+          required: true
+        - label: 我确认上面的内容不包含真实的密钥、密码或隐私数据
+          required: true

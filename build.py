@@ -48,6 +48,7 @@ JS_MODULES = [
 
 EN_DIR = 'en/'
 PRIVACY_FILE = 'privacy.html'
+ISSUES_URL = 'https://github.com/xwjiang2003/tools/issues'
 LANGS = ('zh', 'en')
 HTML_LANG = {'zh': 'zh-CN', 'en': 'en'}
 
@@ -148,6 +149,81 @@ def lang_switch_html(lang, other_url):
         '}, true);\n'
         '</script>'
     )
+
+
+def feedback_btn_html():
+    """页眉的反馈按钮。"""
+    return ('<button class="feedback-btn" type="button" data-feedback-open '
+            'title="问题反馈" aria-label="问题反馈">💬</button>')
+
+
+def feedback_modal_html():
+    """反馈弹窗。
+
+    这里刻意没有用 GitHub API 直接建 issue —— 那需要一个 token，放在纯静态站点上
+    必然泄露。可行的做法只有「深链到预选好模板的新建页」，由用户在自己已登录的
+    浏览器里提交，既不需要后端也不需要任何凭据。
+    """
+    return '''<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈统一走 GitHub Issues。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="__ISSUES__/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="__ISSUES__/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="__ISSUES__" target="_blank" rel="noopener">
+      <b>📋 查看已有反馈</b><span>也许已经有人报过同样的问题</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">提交需要 GitHub 账号。</p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('__ISSUES__', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>'''.replace('__ISSUES__', ISSUES_URL)
 
 
 def autodetect_html(lang, other_url):
@@ -304,6 +380,8 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{HREFLANG}}', hreflang_html(path))
     page = page.replace('{{AUTODETECT}}', autodetect_html(lang, other))
     page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, other))
+    page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
+    page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
     page = page.replace('{{NAV}}', nav_html(None if path == PRIVACY_FILE else _slug_of(path),
                                             base, NAV_LABELS[lang]))
     page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))

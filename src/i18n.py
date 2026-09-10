@@ -380,4 +380,27 @@ EN = {
     'DevTools 首页': 'DevTools home',
     '工具输入的数据仅在浏览器本地处理，不会上传到服务器': 'Data you enter is processed locally in your browser and is never uploaded',
     '隐私政策': 'Privacy Policy',
+
+    # ---------- 问题反馈 ----------
+    '问题反馈': 'Feedback',
+    '本站是纯前端静态站，没有后端也没有账号系统，反馈统一走 GitHub Issues。':
+        'This site is front-end only — no backend, no accounts — so all feedback goes through GitHub Issues.',
+    '报告问题': 'Report a bug',
+    '工具报错、结果不对、页面异常': 'Crashes, wrong output, broken layout',
+    '功能建议': 'Request a feature',
+    '想要新工具或改进体验': 'A new tool, or a better experience',
+    '查看已有反馈': 'Browse existing issues',
+    '也许已经有人报过同样的问题': 'Someone may have reported it already',
+    '复制诊断信息': 'Copy diagnostics',
+    '粘贴到 issue 里能帮我更快定位问题，其中不含你输入的任何内容':
+        'Paste it into the issue to help track it down — it never includes anything you typed',
+    '提交需要 GitHub 账号。': 'A GitHub account is required to submit.',
+    '关闭': 'Close',
+    '页面: ': 'Page: ',
+    '浏览器: ': 'Browser: ',
+    '语言: ': 'Language: ',
+    ' / 界面: ': ' / UI: ',
+    '屏幕: ': 'Screen: ',
+    '主题: ': 'Theme: ',
+    '时间: ': 'Time: ',
 }

@@ -148,6 +148,24 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 - 真正的杠杆是：进入 Bing / Google 索引（AI 检索大多基于这两家的索引）+ 每页的
   JSON-LD（`WebApplication` + `FAQPage`，FAQ 结构最容易被直接引用）+ 站外引用。
 
+## 问题反馈
+
+反馈统一走 GitHub Issues（仓库里的 `.github/ISSUE_TEMPLATE/` 提供两个结构化模板）：
+
+| 入口 | 位置 |
+|------|------|
+| 页眉 💬 按钮 | 打开站内弹窗，含三个深链与「复制诊断信息」 |
+| 页脚「问题反馈」 | 同上 |
+| <https://github.com/xwjiang2003/tools/issues/new/choose> | 直接进模板选择页 |
+
+**为什么不用 GitHub API 直接在页面里建 issue**：那需要一个 token，放在纯静态站点上必然泄露。
+可行的做法只有「深链到预选好模板的新建页」，由用户在自己已登录的浏览器里提交——
+既不需要后端，也不需要任何凭据。所以站内弹窗只能做到这一步，这是静态站的硬边界。
+
+「复制诊断信息」会生成一段不含用户输入内容的文本（页面地址、UA、语言、屏幕、主题、时间），
+贴进 issue 能大幅提高定位效率。模板列表由 `build.py` 的 `feedback_modal_html()` 生成，
+改文案后中英两版会同步更新。
+
 ## 访问统计
 
 页脚使用 [不蒜子 busuanzi](https://busuanzi.ibruce.info/) 显示本站总访问量（PV）与访客数（UV）：

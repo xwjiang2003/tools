@@ -1,0 +1,58 @@
+name: 💡 功能建议 / Feature request
+description: 想要新增工具、改进交互或调整界面
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提建议。本站的原则是**纯前端、无后端、数据不出浏览器**，
+        如果一个功能必须把用户数据发到服务器才能实现，那它大概率不会进来。
+        提建议前可以先看看 [已有 issue](https://github.com/xwjiang2003/tools/issues?q=is%3Aissue)。
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 建议类型
+      options:
+        - 新增一个工具
+        - 改进现有工具的能力
+        - 界面 / 交互体验
+        - 性能（大文本、大文件）
+        - 多语言 / 文案
+        - 可访问性（键盘操作、读屏、对比度）
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: want
+    attributes:
+      label: 你希望增加或改变什么
+      description: 尽量具体，比如「JSONPath 支持过滤器中带函数」而不是「JSONPath 更强一点」
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: 使用场景
+      description: 你遇到的实际问题是什么？现在是怎么绕过去的？场景越真实越容易被采纳。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: 参考实现（可选）
+      description: 有别的工具/网站做得好，可以贴链接或截图说明
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已经搜索过已有 issue，没有重复
+          required: true

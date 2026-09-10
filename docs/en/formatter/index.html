@@ -58,8 +58,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
 .top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
-.theme-toggle{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
-.theme-toggle:hover{background:var(--tab-hover)}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
 .main{max-width:1600px;margin:0 auto;padding:16px 20px}
 .page{display:none}
 .page.active{display:block}
@@ -201,6 +201,25 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
      2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
@@ -251,7 +270,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
     <a class="top-nav-item" href="../../en/string/">Strings</a>
     <a class="top-nav-item" href="../../en/generator/">Generators</a>
   </nav>
-  <div class="header-actions"><div class="lang-switch"><a class="lang-link" href="../../formatter/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../formatter/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
 <script>
 // 记住手动选择：下次访问不再自动跳转
 document.addEventListener("click", function (e) {
@@ -328,7 +347,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/privacy.html">Privacy Policy</a></nav>
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
@@ -1998,6 +2017,66 @@ function generateRandomData(type, count) {
     if (f && f.parentNode) f.parentNode.removeChild(f);
   };
   document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Feedback</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+  </div>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so all feedback goes through GitHub Issues.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">
+      <b>📋 Browse existing issues</b><span>Someone may have reported it already</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
+    <span class="fb-hint">Paste it into the issue to help track it down — it never includes anything you typed</span>
+  </div>
+  <p class="fb-note">A GitHub account is required to submit.</p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page: ' + location.href,
+      'Browser: ' + navigator.userAgent,
+      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
+      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Time: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
+      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
 })();
 </script>
 </body>
