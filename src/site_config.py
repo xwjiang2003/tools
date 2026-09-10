@@ -13,5 +13,11 @@
 # key 文件所在目录决定了可提交的 URL 范围 —— 正好覆盖 /tools/ 下的全部页面。
 INDEXNOW_KEY = '9f4c1d7a2e8b5306ac1f7d9e4b2a8c30'
 
-# 默认提交端点。IndexNow 约定：提交给任一参与方即自动共享给其他参与方。
-INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow'
+# 提交端点。IndexNow 约定：提交给任一参与方即自动共享给其他参与方，
+# 这里逐个提交一遍，是为了拿到各家独立的返回码、便于排查。
+ENDPOINTS = [
+    ('IndexNow', 'https://api.indexnow.org/indexnow'),
+    ('Bing', 'https://www.bing.com/indexnow'),
+    ('Yandex', 'https://yandex.com/indexnow'),
+    ('Seznam', 'https://search.seznam.cz/indexnow'),
+]
