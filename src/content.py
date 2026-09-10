@@ -487,7 +487,11 @@ PRIVACY_BODY_ZH = """\
 
 <h2>七、联系方式</h2>
 <p>
-  对本政策有疑问，或希望反馈数据相关的问题，可以通过项目仓库
-  <a href="https://github.com/xwjiang2003/tools/issues" rel="noopener">提交 Issue</a> 联系。
+  对本政策有疑问，或希望反馈数据相关的问题，可以通过以下方式联系：
 </p>
+<ul>
+  <li>在项目仓库 <a href="https://github.com/xwjiang2003/tools/issues" rel="noopener">提交 Issue</a>
+      或到 <a href="https://github.com/xwjiang2003/tools/discussions" rel="noopener">讨论区</a> 发帖；</li>
+  <li>发送邮件至 <a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Privacy">278975598@qq.com</a>。</li>
+</ul>
 """

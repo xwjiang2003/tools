@@ -383,18 +383,22 @@ EN = {
 
     # ---------- 问题反馈 ----------
     '问题反馈': 'Feedback',
-    '本站是纯前端静态站，没有后端也没有账号系统，反馈统一走 GitHub Issues。':
-        'This site is front-end only — no backend, no accounts — so all feedback goes through GitHub Issues.',
+    '本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。':
+        'This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.',
     '报告问题': 'Report a bug',
     '工具报错、结果不对、页面异常': 'Crashes, wrong output, broken layout',
     '功能建议': 'Request a feature',
     '想要新工具或改进体验': 'A new tool, or a better experience',
+    '讨论区': 'Discussions',
+    '使用问题、经验交流、不确定算不算 bug 的反馈':
+        'Usage questions, tips, or anything you are not sure counts as a bug',
+    '其它：': 'Also: ',
+    '邮件反馈（无需 GitHub 账号）：': 'Email feedback (no GitHub account needed): ',
     '查看已有反馈': 'Browse existing issues',
     '也许已经有人报过同样的问题': 'Someone may have reported it already',
     '复制诊断信息': 'Copy diagnostics',
-    '粘贴到 issue 里能帮我更快定位问题，其中不含你输入的任何内容':
-        'Paste it into the issue to help track it down — it never includes anything you typed',
-    '提交需要 GitHub 账号。': 'A GitHub account is required to submit.',
+    '粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容':
+        'Paste it into the issue or email to help track it down — it never includes anything you typed',
     '关闭': 'Close',
     '页面: ': 'Page: ',
     '浏览器: ': 'Browser: ',

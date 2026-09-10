@@ -154,9 +154,14 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 
 | 入口 | 位置 |
 |------|------|
-| 页眉 💬 按钮 | 打开站内弹窗，含三个深链与「复制诊断信息」 |
+| 页眉 💬 按钮 | 打开站内弹窗：报告问题 / 功能建议 / 讨论区 三个入口 +「复制诊断信息」+ 邮件 |
 | 页脚「问题反馈」 | 同上 |
-| <https://github.com/xwjiang2003/tools/issues/new/choose> | 直接进模板选择页 |
+| <https://github.com/xwjiang2003/tools/issues/new/choose> | 模板选择页，附讨论区与邮件两个 contact link |
+| <https://github.com/xwjiang2003/tools/discussions> | 讨论区（Q&A / Ideas / General 等 6 个默认分类） |
+| `278975598@qq.com` | 邮件反馈，**无需 GitHub 账号**，给国内没有 GitHub 的用户兜底 |
+
+> 邮件地址是明文写在页面上的，会被爬虫和垃圾邮件机器人抓取——这是公开邮箱的必然代价。
+> 如果以后垃圾邮件泛滥，可以改成 JS 拼接或图片形式（但会牺牲可访问性与无 JS 环境可用性）。
 
 **为什么不用 GitHub API 直接在页面里建 issue**：那需要一个 token，放在纯静态站点上必然泄露。
 可行的做法只有「深链到预选好模板的新建页」，由用户在自己已登录的浏览器里提交——

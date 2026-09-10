@@ -48,7 +48,10 @@ JS_MODULES = [
 
 EN_DIR = 'en/'
 PRIVACY_FILE = 'privacy.html'
-ISSUES_URL = 'https://github.com/xwjiang2003/tools/issues'
+REPO_URL = 'https://github.com/xwjiang2003/tools'
+ISSUES_URL = REPO_URL + '/issues'
+DISCUSSIONS_URL = REPO_URL + '/discussions'
+FEEDBACK_EMAIL = '278975598@qq.com'
 LANGS = ('zh', 'en')
 HTML_LANG = {'zh': 'zh-CN', 'en': 'en'}
 
@@ -169,7 +172,7 @@ def feedback_modal_html():
     <h3>问题反馈</h3>
     <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
   </div>
-  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈统一走 GitHub Issues。</p>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
   <div class="fb-links">
     <a class="fb-link" href="__ISSUES__/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
       <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
@@ -177,15 +180,19 @@ def feedback_modal_html():
     <a class="fb-link" href="__ISSUES__/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
       <b>💡 功能建议</b><span>想要新工具或改进体验</span>
     </a>
-    <a class="fb-link" href="__ISSUES__" target="_blank" rel="noopener">
-      <b>📋 查看已有反馈</b><span>也许已经有人报过同样的问题</span>
+    <a class="fb-link" href="__DISCUSSIONS__" target="_blank" rel="noopener">
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
     </a>
   </div>
   <div class="fb-diag">
     <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
-    <span class="fb-hint">粘贴到 issue 里能帮我更快定位问题，其中不含你输入的任何内容</span>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
   </div>
-  <p class="fb-note">提交需要 GitHub 账号。</p>
+  <p class="fb-note">
+    <span>其它：</span><a href="__ISSUES__" target="_blank" rel="noopener">查看已有反馈</a>
+    <span>·</span>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:__EMAIL__?subject=%5BDevTools%5D%20Feedback">__EMAIL__</a>
+  </p>
 </dialog>
 <script>
 (function () {
@@ -213,7 +220,7 @@ def feedback_modal_html():
       '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
       '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
       '时间: ' + new Date().toISOString()
-    ].join('\\n');
+    ].join('\n');
     function done(ok) {
       copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
       setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
@@ -223,7 +230,9 @@ def feedback_modal_html():
     } else { done(false); }
   });
 })();
-</script>'''.replace('__ISSUES__', ISSUES_URL)
+</script>'''.replace('__ISSUES__', ISSUES_URL) \
+       .replace('__DISCUSSIONS__', DISCUSSIONS_URL) \
+       .replace('__EMAIL__', FEEDBACK_EMAIL)
 
 
 def autodetect_html(lang, other_url):

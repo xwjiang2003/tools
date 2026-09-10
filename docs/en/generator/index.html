@@ -2021,7 +2021,7 @@ function generateRandomData(type, count) {
     <h3>Feedback</h3>
     <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
   </div>
-  <p class="fb-lead">This site is front-end only — no backend, no accounts — so all feedback goes through GitHub Issues.</p>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
   <div class="fb-links">
     <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
       <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
@@ -2029,15 +2029,19 @@ function generateRandomData(type, count) {
     <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
       <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
     </a>
-    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">
-      <b>📋 Browse existing issues</b><span>Someone may have reported it already</span>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
     </a>
   </div>
   <div class="fb-diag">
     <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
-    <span class="fb-hint">Paste it into the issue to help track it down — it never includes anything you typed</span>
+    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
   </div>
-  <p class="fb-note">A GitHub account is required to submit.</p>
+  <p class="fb-note">
+    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>·</span>
+    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
 </dialog>
 <script>
 (function () {
@@ -2065,7 +2069,8 @@ function generateRandomData(type, count) {
       'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
       'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
       'Time: ' + new Date().toISOString()
-    ].join('\n');
+    ].join('
+');
     function done(ok) {
       copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
       setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);

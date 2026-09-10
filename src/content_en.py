@@ -608,9 +608,8 @@ PRIVACY_BODY_EN = """
 </p>
 
 <h2>7. Contact</h2>
-<p>
-  If you have questions about this policy or want to report a data-related concern, reach us by
-  <a href="https://github.com/xwjiang2003/tools/issues" rel="noopener">opening an issue</a> on the
-  project repository.
-</p>
+<ul>
+  <li>Open an <a href="https://github.com/xwjiang2003/tools/issues" rel="noopener">issue</a> in the project repository, or start a thread in <a href="https://github.com/xwjiang2003/tools/discussions" rel="noopener">Discussions</a>;</li>
+  <li>Or email <a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Privacy">278975598@qq.com</a>.</li>
+</ul>
 """
