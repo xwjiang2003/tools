@@ -35,6 +35,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
 from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
 from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
+from site_config import INDEXNOW_KEY                        # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
@@ -363,6 +364,8 @@ def build():
 
     pages[Path('sitemap.xml')] = sitemap_xml()
     pages[Path('robots.txt')] = robots_txt()
+    pages[Path('llms.txt')] = llms_txt()
+    pages[Path(f'{INDEXNOW_KEY}.txt')] = INDEXNOW_KEY      # IndexNow 归属校验文件
     pages[Path('.nojekyll')] = ''
 
     for outdir in (DIST, DOCS):
@@ -403,7 +406,82 @@ def sitemap_xml():
 
 
 def robots_txt():
-    return f'User-agent: *\nAllow: /\n\nSitemap: {SITE["base_url"]}sitemap.xml\n'
+    """显式放行各搜索引擎与 AI 爬虫。
+
+    通配符 `User-agent: *` 本来就允许所有人，但部分爬虫只认自己名下的分组，
+    显式列出既是声明意图，也方便以后单独收紧某一家。
+    """
+    groups = [
+        ('搜索引擎', ['Googlebot', 'Bingbot', 'Baiduspider', 'YandexBot',
+                      'Sogou web spider', '360Spider', 'DuckDuckBot']),
+        ('AI / 大模型爬虫', ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User',
+                             'ClaudeBot', 'Claude-User', 'Claude-SearchBot',
+                             'PerplexityBot', 'Perplexity-User',
+                             'Google-Extended', 'Applebot', 'Applebot-Extended',
+                             'meta-externalagent', 'Bytespider', 'DeepSeekBot',
+                             'CCBot', 'Amazonbot', 'cohere-ai', 'YouBot']),
+    ]
+    lines = [
+        '# DevTools — 在线开发工具集',
+        '# 本站是纯静态工具站，欢迎搜索引擎与 AI 检索爬虫抓取。',
+        '',
+        'User-agent: *',
+        'Allow: /',
+        '',
+    ]
+    for title, agents in groups:
+        lines.append(f'# --- {title} ---')
+        for a in agents:
+            lines += [f'User-agent: {a}', 'Allow: /']
+        lines.append('')
+    lines += [
+        f'Sitemap: {SITE["base_url"]}sitemap.xml',
+        f'# LLM 站点摘要: {SITE["base_url"]}llms.txt',
+        '',
+    ]
+    return '\n'.join(lines)
+
+
+def llms_txt():
+    """按 llms.txt 约定生成的站点摘要，供大模型读取。
+
+    说明：llms.txt 目前只是社区提案，主流模型厂商并未承诺读取，
+    真正的收录仍取决于常规索引与检索。这份文件成本极低，属于「有比没有好」，
+    但不要指望它是收录开关。
+    """
+    out = [
+        f'# {SITE["name"]} — 在线开发工具集 / Online Developer Tools',
+        '',
+        '> 免注册、免安装的纯浏览器端开发者工具集合，覆盖 JSON、文本比对、编解码、正则、',
+        '> 时间戳、哈希、代码格式化、字符串处理与生成器共 9 个工具。所有解析与计算都在用户',
+        '> 浏览器内完成，输入内容不会上传到任何服务器。中英双语，免费无广告。',
+        '',
+        'Key facts:',
+        '- 9 tools, each on its own URL; every page runs entirely client-side '
+        '(no upload, no signup, no ads).',
+        '- Bilingual: Chinese at the root, English under /en/. Same tools, independent copy.',
+        '- Verification hooks: /sitemap.xml (with hreflang alternates), /robots.txt, '
+        'JSON-LD on every tool page.',
+        '',
+        '## Tools / 工具',
+        '',
+    ]
+    for t in TOOLS:
+        en = TOOLS_EN[t['slug']]
+        zh_url = SITE['base_url'] + t['path']
+        en_url = SITE['base_url'] + EN_DIR + t['path']
+        out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]}')
+        out.append(f'  - English: [{en["h1"]}]({en_url}) — {en["description"]}')
+    out += [
+        '',
+        '## Optional',
+        '',
+        f'- [隐私政策 / Privacy Policy]({SITE["base_url"]}privacy.html): '
+        '工具输入数据本地处理、访问统计与第三方资源说明。',
+        '- [源代码 / Source](https://github.com/xwjiang2003/tools): issues welcome.',
+        '',
+    ]
+    return '\n'.join(out)
 
 
 def watch():
