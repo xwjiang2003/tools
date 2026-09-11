@@ -52,8 +52,9 @@ function initJsonPage() {
   });
   updateJsonOptions();
 
-  // Load demo data
+  // Load demo data（延迟载入：若用户在这 300ms 内已经开始输入，就不要再覆盖他）
   setTimeout(() => {
+    if (getVal('mainJsonInput').trim()) return;
     setVal('mainJsonInput', demoJson); runJsonOp('format');
     setVal('diffInputA', demoJson); setVal('diffInputB', demoJson2);
     setVal('convertInput', demoJson);

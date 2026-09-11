@@ -144,6 +144,7 @@ def main():
             print(f'   - {e}')
         return 1
     print('✅ 全部检查通过')
+    print('   （这里只做静态检查；行为正确性请再跑 python3 test.py）')
     return 0
 
 

@@ -15,14 +15,16 @@ function initTimestampPage() {
     };
   });
   document.getElementById('dtInput').value = new Date().toISOString().slice(0, 16);
-  updateTsDisplay();
+  updateTsClock();                     // 立即刷一次，否则时钟要等 1 秒才从 "--" 变成数字
   setInterval(updateTsClock, 1000);
 }
 
 function updateTsClock() {
   const now = new Date();
-  document.getElementById('liveClock').textContent = Math.floor(now.getTime() / 1000).toLocaleString();
-  document.getElementById('liveClockMs').textContent = now.getTime().toLocaleString();
+  // 不要用 toLocaleString()：它会按本地习惯加千位分隔符（1,700,000,000），
+  // 复制出来不是合法数字，粘进代码就报错。时间戳要的是可直接复制的纯数字。
+  document.getElementById('liveClock').textContent = String(Math.floor(now.getTime() / 1000));
+  document.getElementById('liveClockMs').textContent = String(now.getTime());
   updateTsDisplay();
 }
 
@@ -51,7 +53,11 @@ function tsToDate() {
   const input = document.getElementById('tsInput').value.trim();
   if (!input) { document.getElementById('tsToDateResult').textContent = '请输入时间戳'; return; }
   let ts = parseInt(input);
-  if (ts > 1e15) ts = Math.floor(ts / 1000);
+  // 秒 / 毫秒自动识别。原阈值写成 1e15（16 位），13 位的毫秒时间戳根本触发不到，
+  // 于是被当成秒解析，1700000000000 会算出公元 55840 年。
+  // 改用 1e11 作为分界：1e11 秒是公元 5138 年（现实中不会有人这么输入），
+  // 1e11 毫秒是 1973 年，因此 >= 1e11 一律按毫秒处理。
+  if (Math.abs(ts) >= 1e11) ts = Math.floor(ts / 1000);
   const d = new Date(ts * 1000);
   if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = '无效的时间戳'; return; }
   document.getElementById('tsToDateResult').innerHTML =

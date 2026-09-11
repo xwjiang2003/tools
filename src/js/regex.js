@@ -8,8 +8,12 @@ function setRegexPattern(pattern) {
 }
 
 function initRegexPage() {
-  document.getElementById('regexInput').value = 'test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path';
-  document.getElementById('regexPattern').value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
+  const input = document.getElementById('regexInput');
+  const pattern = document.getElementById('regexPattern');
+  // 用户已经开始输入就不要覆盖
+  if (input.value.trim() || pattern.value.trim()) { setTimeout(liveRegex, 200); return; }
+  input.value = 'test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path';
+  pattern.value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
   setTimeout(liveRegex, 200);
 }
 

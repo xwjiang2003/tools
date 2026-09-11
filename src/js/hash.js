@@ -62,23 +62,72 @@ async function doHash() {
   }
 }
 
-function md5(s) {
-  function R(t,e,n,r,o,f){return((g=t+(e&r|~e&n)+o+f)<<(h=void 0)|g>>>32-h)+e}
-  function F(t,e,n,r,o,f,g){return((g=t+(e&n|~e&r)+o+f)<<(h=void 0)|g>>>32-h)+e}
-  function G(t,e,n,r,o,f,g){return((g=t+(e^r^n)+o+f)<<(h=void 0)|g>>>32-h)+e}
-  function H(t,e,n,r,o,f,g){return((g=t+(r^(e|~n))+o+f)<<(h=void 0)|g>>>32-h)+e}
-  var a=s.length+8>>6,b=(a<<4)-1,i,j,k,l,m,n,o,p=[],u=1732584193,v=4023233417,w=2562383102,x=271733878;
-  for(i=0;i<=b;i+=1)p[i]=0;for(i=0;i<s.length;i++)p[i>>2]|=s.charCodeAt(i)<<(i%4<<3);p[i>>2]|=0x80<<(i%4<<3);
-  p[a<<4]=s.length*8;
-  for(i=0;i<=b;i+=16){j=u;k=v;l=w;m=x;
-  u=R(u,v,w,x,p[i],7,3614090360);x=R(x,u,v,w,p[i+1],12,3905402710);w=R(w,x,u,v,p[i+2],17,606105819);v=R(v,w,x,u,p[i+3],22,3250441966);u=R(u,v,w,x,p[i+4],7,4118548399);x=R(x,u,v,w,p[i+5],12,1200080426);w=R(w,x,u,v,p[i+6],17,2821735955);v=R(v,w,x,u,p[i+7],22,4249261313);u=R(u,v,w,x,p[i+8],7,1770035416);x=R(x,u,v,w,p[i+9],12,2336552879);w=R(w,x,u,v,p[i+10],17,4294925233);v=R(v,w,x,u,p[i+11],22,2304563134);u=R(u,v,w,x,p[i+12],7,1804603682);x=R(x,u,v,w,p[i+13],12,4254626195);w=R(w,x,u,v,p[i+14],17,2792965006);v=R(v,w,x,u,p[i+15],22,1236535329);
-  u=F(u,v,w,x,p[i+1],5,4129170786);x=F(x,u,v,w,p[i+6],9,3225465664);w=F(w,x,u,v,p[i+11],14,643717713);v=F(v,w,x,u,p[i],20,3921069994);u=F(u,v,w,x,p[i+5],5,3593408605);x=F(x,u,v,w,p[i+10],9,38016083);w=F(w,x,u,v,p[i+15],14,3634488961);v=F(v,w,x,u,p[i+4],20,3889429448);u=F(u,v,w,x,p[i+9],5,568446438);x=F(x,u,v,w,p[i+14],9,3275163606);w=F(w,x,u,v,p[i+3],14,4107603335);v=F(v,w,x,u,p[i+8],20,1163531501);u=F(u,v,w,x,p[i+13],5,2850285829);x=F(x,u,v,w,p[i+2],9,4243563512);w=F(w,x,u,v,p[i+7],14,1735328473);v=F(v,w,x,u,p[i+12],20,2368359562);
-  u=G(u,v,w,x,p[i+5],4,4294588738);x=G(x,u,v,w,p[i+8],11,2272392833);w=G(w,x,u,v,p[i+11],16,1839030562);v=G(v,w,x,u,p[i+14],23,4259657740);u=G(u,v,w,x,p[i+1],4,2763915233);x=G(x,u,v,w,p[i+4],11,1272893353);w=G(w,x,u,v,p[i+7],16,413946966);v=G(v,w,x,u,p[i+10],23,3200236656);u=G(u,v,w,x,p[i+13],4,681279174);x=G(x,u,v,w,p[i],11,3936430074);w=G(w,x,u,v,p[i+3],16,3572445317);v=G(v,w,x,u,p[i+6],23,76029189);u=G(u,v,w,x,p[i+9],4,3654602809);x=G(x,u,v,w,p[i+12],11,3873151461);w=G(w,x,u,v,p[i+15],16,530742520);v=G(v,w,x,u,p[i+2],23,3299628645);
-  u=H(u,v,w,x,p[i],6,4096336452);x=H(x,u,v,w,p[i+7],10,1126891415);w=H(w,x,u,v,p[i+14],15,2878612391);v=H(v,w,x,u,p[i+5],21,4237533241);u=H(u,v,w,x,p[i+12],6,1700485571);x=H(x,u,v,w,p[i+3],10,2399980690);w=H(w,x,u,v,p[i+10],15,4293915773);v=H(v,w,x,u,p[i+1],21,2240044497);u=H(u,v,w,x,p[i+8],6,1873313359);x=H(x,u,v,w,p[i+15],10,4264355552);w=H(w,x,u,v,p[i+6],15,2734768916);v=H(v,w,x,u,p[i+13],21,1309151649);u=H(u,v,w,x,p[i+4],6,4149444226);x=H(x,u,v,w,p[i+11],10,3174756917);w=H(w,x,u,v,p[i+2],15,718787259);v=H(v,w,x,u,p[i+9],21,3951481745);
-  u=(u+j)>>>0;v=(v+k)>>>0;w=(w+l)>>>0;x=(x+m)>>>0}
-  return (toHex(u)+toHex(v)+toHex(w)+toHex(x)).toLowerCase();
+// MD5（RFC 1321）。
+//
+// 这里原本是一段被压缩坏掉的实现，有三处缺陷，导致「无论输入什么都返回同一个值」：
+//   1. 块数算成 `s.length+8>>6`，少了 +1 —— 56 字符以下的输入一次主循环都不跑，
+//      直接返回初始状态，输出恒为 0123456789abcdeffedcba9876543210；
+//   2. 循环左移写成 `<<(h=void 0)`，位移量恒为 0，轮函数完全失效；
+//   3. 长度字段写在 `p[a<<4]`（越过最后一个块），而不是末块的第 14 个字。
+// 另外它用 charCodeAt 取 UTF-16 码元，中文会算出与标准 MD5 不一致的结果。
+// 现改为干净可读、按 UTF-8 字节运算的标准实现。
+const MD5_S = [
+  7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+  5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+  4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+  6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+];
+const MD5_K = [
+  0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+  0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+  0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+  0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+  0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+  0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+  0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+  0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
+];
+
+function md5(input) {
+  const bytes = new TextEncoder().encode(input);
+  const bitLen = bytes.length * 8;
+  // 补齐到 64 字节整数倍；末 8 字节存比特长度（小端）
+  const buf = new Uint8Array((((bytes.length + 8) >> 6) + 1) << 6);
+  buf.set(bytes);
+  buf[bytes.length] = 0x80;
+  const dv = new DataView(buf.buffer);
+  dv.setUint32(buf.length - 8, bitLen >>> 0, true);
+  dv.setUint32(buf.length - 4, Math.floor(bitLen / 4294967296), true);
+
+  let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476;
+  const rotl = (x, c) => ((x << c) | (x >>> (32 - c))) >>> 0;
+  const w = new Uint32Array(16);
+
+  for (let off = 0; off < buf.length; off += 64) {
+    for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4, true);
+    let a = h0, b = h1, c = h2, d = h3;
+    for (let i = 0; i < 64; i++) {
+      let f, g;
+      if (i < 16) { f = (b & c) | (~b & d); g = i; }
+      else if (i < 32) { f = (d & b) | (~d & c); g = (5 * i + 1) & 15; }
+      else if (i < 48) { f = b ^ c ^ d; g = (3 * i + 5) & 15; }
+      else { f = c ^ (b | ~d); g = (7 * i) & 15; }
+      const tmp = d;
+      d = c; c = b;
+      b = (b + rotl((a + f + MD5_K[i] + w[g]) >>> 0, MD5_S[i])) >>> 0;
+      a = tmp;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0;
+    h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
+  }
+  // MD5 输出按小端序拼接四个状态字
+  const word = n => {
+    let s = '';
+    for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0');
+    return s;
+  };
+  return word(h0) + word(h1) + word(h2) + word(h3);
 }
-function toHex(n){var s='';for(var i=0;i<4;i++)s+=((n>>>(i*8+4))&0x0F).toString(16)+((n>>>(i*8))&0x0F).toString(16);return s}
 
 async function shaHash(algo, input) {
   const enc = new TextEncoder().encode(input);

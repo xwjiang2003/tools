@@ -46,8 +46,16 @@ function runEncodeOp(mode) {
         else { const ta = document.createElement('textarea'); ta.innerHTML = input; result = ta.value; }
         break;
       case 'hex':
-        if (mode === 'encode') { for (let i = 0; i < input.length; i++) result += input.charCodeAt(i).toString(16).padStart(2, '0') + ' '; }
-        else result = input.replace(/\s/g, '').replace(/([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+        // 必须按 UTF-8 字节走：原实现用 charCodeAt 输出 UTF-16 码元，
+        // 「中」会编成 4e2d（4 个十六进制位），而解码端每次只读 2 位，
+        // 于是解出 'N-' 这种乱码——编码与解码不对称，中文无法往返。
+        if (mode === 'encode') {
+          result = Array.from(new TextEncoder().encode(input))
+            .map(b => b.toString(16).padStart(2, '0')).join(' ');
+        } else {
+          const pairs = input.replace(/[^0-9a-fA-F]/g, '').match(/[0-9a-fA-F]{1,2}/g) || [];
+          result = new TextDecoder().decode(Uint8Array.from(pairs.map(h => parseInt(h, 16))));
+        }
         break;
     }
     document.getElementById('encodeResult').textContent = result;

@@ -1,8 +1,11 @@
 // text-diff.js — Generic text diff (like Beyond Compare)
 
 function initDiffPage() {
-  // Load demo data
-  document.getElementById('textDiffInputA').value =
+  // Load demo data（用户已经开始输入就不要覆盖）
+  const a = document.getElementById('textDiffInputA');
+  const b = document.getElementById('textDiffInputB');
+  if (a.value.trim() || b.value.trim()) { setTimeout(doTextDiff, 200); return; }
+  a.value =
     'function hello(name) {\n  console.log("Hello, " + name);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Bye!");\n  return false;\n}\n\nvar x = 100;\nvar y = 200;';
   document.getElementById('textDiffInputB').value =
     'function hello(name, age) {\n  console.log("Hello, " + name);\n  console.log("Age: " + age);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Goodbye!");\n  return false;\n}\n\nvar x = 100;\nvar z = 300;';
