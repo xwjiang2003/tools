@@ -248,6 +248,16 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
   } catch (e) {}
 })();
 </script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
 </head>
 <body>
 <header class="header">
@@ -294,25 +304,38 @@ document.addEventListener("click", function (e) {
 </p>
 
 <h2>二、访问统计</h2>
+<p>本站使用两个第三方统计服务，用于了解访问量、来源与页面热度：</p>
+<ul>
+  <li>
+    <strong>不蒜子</strong>（busuanzi.ibruce.info）—— 用于页脚展示本站总访问量与访客数。
+    该服务在页面加载时接收你的浏览器标识（User-Agent）、来源页面地址，
+    以及由 IP 推导的大致地理位置，用于区分访客与统计去重。
+  </li>
+  <li>
+    <strong>百度统计</strong>（hm.baidu.com）—— 用于分析访问来源、地域分布、访问设备与各工具页的热度。
+    该服务会<strong>在你的浏览器中写入 Cookie</strong>（例如 <code>HMACCOUNT</code>、<code>Hm_lvt_*</code>、
+    <code>Hm_lpvt_*</code>）以识别回访用户，并收集你的 IP 地址、浏览器与操作系统信息、
+    来源页面以及在本站内的访问路径。
+  </li>
+</ul>
 <p>
-  本站使用第三方服务「不蒜子」（busuanzi.ibruce.info）统计页面访问量，
-  用于在页脚展示本站总访问量与访客数。该服务在页面加载时接收你的浏览器标识（User-Agent）、
-  来源页面地址与大致地理位置（由 IP 推导），用于区分访客与统计去重。
-</p>
-<p>
-  本站本身不设置任何用于追踪你的 Cookie，也不建立用户账号体系，不收集姓名、邮箱、手机号等个人信息。
-  统计脚本在本地预览（<code>file://</code>）与 <code>localhost</code> 调试时不会加载。
+  本站不建立用户账号体系，不收集姓名、邮箱、手机号等个人信息。
+  若你不希望被统计，可以通过浏览器设置或扩展拦截 <code>hm.baidu.com</code> 与
+  <code>busuanzi.ibruce.info</code> 的请求，或启用浏览器的「请勿追踪」类隐私保护功能——
+  这不影响任何工具的使用。
 </p>
 
 <h2>三、第三方资源</h2>
 <p>为了保持页面简洁，本站从公共 CDN 加载以下第三方资源，加载时你的浏览器会与这些服务通信，对方的隐私政策独立适用：</p>
 <ul>
   <li><strong>cdnjs.cloudflare.com</strong> — 提供 CodeMirror 代码编辑器与二维码生成库。</li>
-  <li><strong>busuanzi.ibruce.info</strong> — 提供访问量统计。</li>
+  <li><strong>busuanzi.ibruce.info</strong> — 页脚访问量统计。</li>
+  <li><strong>hm.baidu.com</strong> — 百度统计，站点分析。</li>
 </ul>
 <p>
-  本站不请求任何其他第三方域名。若你处于对隐私要求极高的环境，
-  可以拦截上述请求，除访问量计数与代码编辑器的高亮功能外，其余工具功能不受影响。
+  除以上三个域名外，本站不请求其他第三方资源。若你处于对隐私要求极高的环境，
+  可以拦截上述请求，除访问量计数与代码编辑器的语法高亮外，其余工具功能不受影响
+  （所有工具的计算逻辑都在本地完成，不依赖这些外部资源）。
 </p>
 
 <h2>四、广告</h2>
@@ -321,11 +344,17 @@ document.addEventListener("click", function (e) {
   届时本政策会同步更新，说明服务商名称与其数据用途。本站当前<strong>没有投放任何广告</strong>。
 </p>
 
-<h2>五、本地存储</h2>
+<h2>五、Cookie 与本地存储</h2>
+<p><strong>本站自身不写入任何 Cookie。</strong>唯一的 Cookie 来自上文所述的百度统计，
+用于区分独立访客与识别回访，你可以随时在浏览器中清除或屏蔽。</p>
 <p>
-  本站使用浏览器 localStorage 保存你的主题偏好（亮色 / 暗色），该数据仅保存在你的设备上，
-  不会同步到任何服务器，清除浏览器数据即可删除。
+  另外，本站使用浏览器 localStorage 保存两项偏好，它们仅保存在你的设备上，
+  不会同步到任何服务器，清除浏览器数据即可删除：
 </p>
+<ul>
+  <li>主题偏好（亮色 / 暗色）；</li>
+  <li>语言偏好（中文 / English），用于记住你手动选择的语言、避免每次访问都被自动跳转。</li>
+</ul>
 
 <h2>六、政策变更</h2>
 <p>

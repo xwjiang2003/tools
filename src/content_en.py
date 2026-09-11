@@ -562,29 +562,41 @@ PRIVACY_BODY_EN = """
 </p>
 
 <h2>2. Visit Analytics</h2>
+<p>This site uses two third-party analytics services to understand traffic, referrers and which tools are used:</p>
+<ul>
+  <li>
+    <strong>busuanzi</strong> (busuanzi.ibruce.info) — counts page views and visitors for the counter
+    shown in the footer. When a page loads, it receives your browser identifier (User-Agent), the
+    referring page URL and an approximate geographic location derived from your IP address, which it
+    uses to distinguish visitors and de-duplicate the count.
+  </li>
+  <li>
+    <strong>Baidu Analytics</strong> (hm.baidu.com) — analyses traffic sources, geographic
+    distribution, devices and how popular each tool page is. It <strong>sets cookies in your
+    browser</strong> (for example <code>HMACCOUNT</code>, <code>Hm_lvt_*</code>,
+    <code>Hm_lpvt_*</code>) to recognise returning visitors, and collects your IP address, browser
+    and operating system details, the referring page and your navigation path across this site.
+  </li>
+</ul>
 <p>
-  This site uses a third-party service, busuanzi (busuanzi.ibruce.info), to count page views and
-  display the total number of visits and visitors in the footer. When the page loads, that service
-  receives your browser identifier (User-Agent), the referring page URL and an approximate
-  geographic location derived from your IP address, which it uses to distinguish visitors and
-  de-duplicate the count.
-</p>
-<p>
-  This site itself sets no tracking cookies, has no user accounts, and does not collect personal
-  information such as names, email addresses or phone numbers. The analytics script is not loaded
-  during local previews (<code>file://</code>) or <code>localhost</code> debugging.
+  This site has no user accounts and does not collect personal information such as names, email
+  addresses or phone numbers. If you would rather not be counted, you can block
+  <code>hm.baidu.com</code> and <code>busuanzi.ibruce.info</code> in your browser or with an
+  extension — every tool keeps working normally.
 </p>
 
 <h2>3. Third-Party Resources</h2>
 <p>To keep the pages lightweight, this site loads the following third-party resources from public CDNs. Your browser communicates with those services when they load, and their own privacy policies apply:</p>
 <ul>
   <li><strong>cdnjs.cloudflare.com</strong> — provides the CodeMirror code editor and the QR code generation library.</li>
-  <li><strong>busuanzi.ibruce.info</strong> — provides visit statistics.</li>
+  <li><strong>busuanzi.ibruce.info</strong> — the visit counter in the footer.</li>
+  <li><strong>hm.baidu.com</strong> — Baidu Analytics, used for site statistics.</li>
 </ul>
 <p>
-  No other third-party domains are requested. If you work in a privacy-sensitive environment you can
-  block these requests; apart from the visit counter and the editor's syntax highlighting, all tool
-  features keep working.
+  No third-party domains beyond these three are requested. If you work in a privacy-sensitive
+  environment you can block them; apart from the visit counter and the editor's syntax highlighting,
+  every tool keeps working, because all computation happens locally and does not depend on these
+  external resources.
 </p>
 
 <h2>4. Advertising</h2>
@@ -595,11 +607,19 @@ PRIVACY_BODY_EN = """
   <strong>displays no advertising</strong>.
 </p>
 
-<h2>5. Local Storage</h2>
+<h2>5. Cookies and Local Storage</h2>
+<p><strong>This site sets no cookies of its own.</strong> The only cookies come from Baidu Analytics,
+described above, and are used to distinguish unique visitors and recognise returning ones. You can
+clear or block them at any time in your browser.</p>
 <p>
-  This site uses browser localStorage to remember your theme preference (light or dark). That data
-  stays on your device, is never synced to any server, and is deleted when you clear your browser data.
+  The site also uses browser localStorage to remember two preferences. They stay on your device, are
+  never synced to any server, and are removed when you clear your browser data:
 </p>
+<ul>
+  <li>theme preference (light or dark);</li>
+  <li>language preference (Chinese or English), so a manual choice is remembered and you are not
+      redirected on every visit.</li>
+</ul>
 
 <h2>6. Changes to This Policy</h2>
 <p>

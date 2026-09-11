@@ -49,6 +49,7 @@ JS_MODULES = [
 EN_DIR = 'en/'
 PRIVACY_FILE = 'privacy.html'
 REPO_URL = 'https://github.com/xwjiang2003/tools'
+BAIDU_ANALYTICS_ID = 'd052ce9e23ea8d3ec643b0d49eb5b96a'
 ISSUES_URL = REPO_URL + '/issues'
 DISCUSSIONS_URL = REPO_URL + '/discussions'
 FEEDBACK_EMAIL = '278975598@qq.com'
@@ -152,6 +153,25 @@ def lang_switch_html(lang, other_url):
         '}, true);\n'
         '</script>'
     )
+
+
+def analytics_html():
+    """百度统计代码，按官方要求放在全部页面的 </head> 之前。
+
+    刻意保持与百度后台给出的片段一字不差（含 document.getElementsByTagName 的插入方式），
+    因为「代码安装检查」是按页面 HTML 里是否出现 hm.js?<id> 来判断的，
+    改动片段有被误判为未安装的风险。
+    """
+    return '''<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?__BAIDU_ID__";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>'''.replace('__BAIDU_ID__', BAIDU_ANALYTICS_ID)
 
 
 def feedback_btn_html():
@@ -389,6 +409,7 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{HREFLANG}}', hreflang_html(path))
     page = page.replace('{{AUTODETECT}}', autodetect_html(lang, other))
     page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, other))
+    page = page.replace('{{ANALYTICS}}', analytics_html())
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
     page = page.replace('{{NAV}}', nav_html(None if path == PRIVACY_FILE else _slug_of(path),
