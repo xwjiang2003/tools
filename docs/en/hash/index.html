@@ -8,17 +8,17 @@
 <meta name="keywords" content="md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/hash/">
+<link rel="canonical" href="https://devtools.help/en/hash/">
 <meta property="og:title" content="MD5 / SHA-256 Hash Generator — HMAC &amp; Files | DevTools">
 <meta property="og:description" content="Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/hash/">
+<meta property="og:url" content="https://devtools.help/en/hash/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/hash/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/hash/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/hash/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "MD5 / SHA-256 Hash & Checksum Tool", "url": "https://xwjiang2003.github.io/tools/en/hash/", "description": "Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is MD5 still usable?", "acceptedAnswer": {"@type": "Answer", "text": "MD5 collisions can be constructed deliberately, so it must not be used for signatures, certificates or password storage. It remains fine for non-adversarial integrity checks such as confirming a download completed, since it is faster than SHA-256 and almost every download page publishes MD5 values. For anything security-related, use SHA-256 or better."}}, {"@type": "Question", "name": "Is it safe to compute hashes here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The computation runs entirely inside your browser and neither the text nor the file leaves your machine. That said, if you are handling sensitive data in an untrusted environment, a local command-line tool is still the safer choice, since browser extensions or page scripts can add risk."}}, {"@type": "Question", "name": "Why is a SHA-256 hash 64 characters long?", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 produces a 256-bit digest, and hexadecimal notation uses two characters per byte, so 32 bytes x 2 = 64 characters. By the same logic SHA-512 gives 128 characters and MD5 gives 32."}}, {"@type": "Question", "name": "Why does the same string always produce the same hash?", "acceptedAnswer": {"@type": "Answer", "text": "Hash functions are deterministic: the same input must produce the same output, and that is precisely what makes them useful for verification. If you need unpredictable output, add a random salt to the input."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hash/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/hash/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/hash/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "MD5 / SHA-256 Hash & Checksum Tool", "url": "https://devtools.help/en/hash/", "description": "Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is MD5 still usable?", "acceptedAnswer": {"@type": "Answer", "text": "MD5 collisions can be constructed deliberately, so it must not be used for signatures, certificates or password storage. It remains fine for non-adversarial integrity checks such as confirming a download completed, since it is faster than SHA-256 and almost every download page publishes MD5 values. For anything security-related, use SHA-256 or better."}}, {"@type": "Question", "name": "Is it safe to compute hashes here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The computation runs entirely inside your browser and neither the text nor the file leaves your machine. That said, if you are handling sensitive data in an untrusted environment, a local command-line tool is still the safer choice, since browser extensions or page scripts can add risk."}}, {"@type": "Question", "name": "Why is a SHA-256 hash 64 characters long?", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 produces a 256-bit digest, and hexadecimal notation uses two characters per byte, so 32 bytes x 2 = 64 characters. By the same logic SHA-512 gives 128 characters and MD5 gives 32."}}, {"@type": "Question", "name": "Why does the same string always produce the same hash?", "acceptedAnswer": {"@type": "Answer", "text": "Hash functions are deterministic: the same input must produce the same output, and that is precisely what makes them useful for verification. If you need unpredictable output, add a random salt to the input."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

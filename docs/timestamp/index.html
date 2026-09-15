@@ -8,17 +8,17 @@
 <meta name="keywords" content="Unix时间戳,时间戳转换,时间戳在线,时间戳转日期,日期转时间戳,毫秒时间戳,ISO8601,RFC2822,UTC时间">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/timestamp/">
+<link rel="canonical" href="https://devtools.help/timestamp/">
 <meta property="og:title" content="Unix 时间戳在线转换工具 - 时间戳与日期互转、多时区对照 | DevTools">
 <meta property="og:description" content="在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/timestamp/">
+<meta property="og:url" content="https://devtools.help/timestamp/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/timestamp/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/timestamp/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/timestamp/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://xwjiang2003.github.io/tools/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timestamp/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/timestamp/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/timestamp/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://devtools.help/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

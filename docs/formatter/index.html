@@ -8,17 +8,17 @@
 <meta name="keywords" content="HTML格式化,CSS格式化,JS格式化,JavaScript格式化,SQL格式化,XML格式化,代码压缩,在线代码美化">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/formatter/">
+<link rel="canonical" href="https://devtools.help/formatter/">
 <meta property="og:title" content="HTML / CSS / JS / SQL 在线代码格式化工具 | DevTools">
 <meta property="og:description" content="在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/formatter/">
+<meta property="og:url" content="https://devtools.help/formatter/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/formatter/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/formatter/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/formatter/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "HTML / CSS / JS / SQL 代码格式化", "url": "https://xwjiang2003.github.io/tools/formatter/", "description": "在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "格式化会改变代码的行为吗？", "acceptedAnswer": {"@type": "Answer", "text": "对 HTML、CSS、XML 与 SQL 而言，格式化只调整空白，不改变语义。JavaScript 需要额外注意自动分号插入规则：把两行合并到一行、或调整换行位置时，极少数写法可能改变语句边界，格式化后建议简单核对一遍。"}}, {"@type": "Question", "name": "压缩后的代码还能还原吗？", "acceptedAnswer": {"@type": "Answer", "text": "空白层面的压缩可以再由格式化还原；但变量重命名、死代码删除这类压缩优化是不可逆的，本工具只做空白压缩，不会重命名标识符。"}}, {"@type": "Question", "name": "SQL 格式化支持哪些方言？", "acceptedAnswer": {"@type": "Answer", "text": "做的是通用的关键字大写与缩进排版，MySQL、PostgreSQL、SQL Server 的常用语法都能处理，但方言特有的语法（如某些存储过程写法）可能出现排版不理想的情况。"}}, {"@type": "Question", "name": "代码会被上传吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。所有格式化都在浏览器本地完成，不会把代码发送到服务器。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/formatter/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/formatter/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/formatter/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "HTML / CSS / JS / SQL 代码格式化", "url": "https://devtools.help/formatter/", "description": "在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "格式化会改变代码的行为吗？", "acceptedAnswer": {"@type": "Answer", "text": "对 HTML、CSS、XML 与 SQL 而言，格式化只调整空白，不改变语义。JavaScript 需要额外注意自动分号插入规则：把两行合并到一行、或调整换行位置时，极少数写法可能改变语句边界，格式化后建议简单核对一遍。"}}, {"@type": "Question", "name": "压缩后的代码还能还原吗？", "acceptedAnswer": {"@type": "Answer", "text": "空白层面的压缩可以再由格式化还原；但变量重命名、死代码删除这类压缩优化是不可逆的，本工具只做空白压缩，不会重命名标识符。"}}, {"@type": "Question", "name": "SQL 格式化支持哪些方言？", "acceptedAnswer": {"@type": "Answer", "text": "做的是通用的关键字大写与缩进排版，MySQL、PostgreSQL、SQL Server 的常用语法都能处理，但方言特有的语法（如某些存储过程写法）可能出现排版不理想的情况。"}}, {"@type": "Question", "name": "代码会被上传吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。所有格式化都在浏览器本地完成，不会把代码发送到服务器。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

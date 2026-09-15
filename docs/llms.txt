@@ -11,26 +11,26 @@ Key facts:
 
 ## Tools / 工具
 
-- [JSON 在线格式化、校验与转换工具](https://xwjiang2003.github.io/tools/): 免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。
-  - English: [JSON Formatter, Validator & Converter](https://xwjiang2003.github.io/tools/en/) — Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.
-- [在线文本差异对比工具](https://xwjiang2003.github.io/tools/diff/): 免费在线文本比对工具：粘贴两段文本或代码，自动高亮新增、删除与改动行，支持统一视图与左右对照视图、区分大小写、忽略空白。纯浏览器本地处理。
-  - English: [Online Text Diff Checker](https://xwjiang2003.github.io/tools/en/diff/) — Paste two texts or files and see added, removed and changed lines highlighted instantly, in unified or side-by-side view. Nothing leaves your browser.
-- [Base64 / URL / Unicode 在线编码解码](https://xwjiang2003.github.io/tools/encode/): 免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。
-  - English: [Base64 / URL / Unicode Encoder & Decoder](https://xwjiang2003.github.io/tools/en/encode/) — Encode and decode Base64, URL percent-encoding, Unicode escapes, HTML entities and hex, with correct UTF-8 handling. Runs locally in your browser.
-- [正则表达式在线测试与替换](https://xwjiang2003.github.io/tools/regex/): 在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。
-  - English: [Regex Tester & Replacement Preview](https://xwjiang2003.github.io/tools/en/regex/) — Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.
-- [Unix 时间戳与日期互转](https://xwjiang2003.github.io/tools/timestamp/): 在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。
-  - English: [Unix Timestamp & Date Converter](https://xwjiang2003.github.io/tools/en/timestamp/) — Convert Unix timestamps to dates and back, reading 10-digit values as seconds and 13-digit values as milliseconds, with ISO 8601, RFC 2822 and timezone output.
-- [MD5 / SHA-256 在线哈希与校验](https://xwjiang2003.github.io/tools/hash/): 在线哈希计算工具：MD5、SHA-1、SHA-256、SHA-512，支持 HMAC 与 AES 加解密，并可拖入文件直接计算校验值。全部在浏览器本地运算，输入内容不会上传。
-  - English: [MD5 / SHA-256 Hash & Checksum Tool](https://xwjiang2003.github.io/tools/en/hash/) — Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.
-- [HTML / CSS / JS / SQL 代码格式化](https://xwjiang2003.github.io/tools/formatter/): 在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。
-  - English: [HTML / CSS / JS / SQL Formatter](https://xwjiang2003.github.io/tools/en/formatter/) — Beautify or minify HTML, CSS, JavaScript, XML and SQL with 2-space, 4-space or tab indentation, and see the size before and after. Runs locally in your browser.
-- [在线字符串与文本处理](https://xwjiang2003.github.io/tools/string/): 在线文本字符串处理：大小写与命名风格转换、按行排序、去重、查找替换、按分隔符分割合并、行号与前缀处理，并实时统计字符数、单词数、行数与字节数。
-  - English: [Online String & Text Tools](https://xwjiang2003.github.io/tools/en/string/) — Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.
-- [UUID / 密码 / 二维码在线生成](https://xwjiang2003.github.io/tools/generator/): 在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。
-  - English: [UUID / Password / QR Code Generator](https://xwjiang2003.github.io/tools/en/generator/) — Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.
+- [JSON 在线格式化、校验与转换工具](https://devtools.help/): 免费在线 JSON 工具：JSON 格式化美化、压缩、语法校验、递归排序、转义、树视图，并支持 JSON 差异比对、JSON 与 CSV/XML/YAML 互转、JSONPath 查询。纯浏览器本地处理，数据不上传服务器。
+  - English: [JSON Formatter, Validator & Converter](https://devtools.help/en/) — Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.
+- [在线文本差异对比工具](https://devtools.help/diff/): 免费在线文本比对工具：粘贴两段文本或代码，自动高亮新增、删除与改动行，支持统一视图与左右对照视图、区分大小写、忽略空白。纯浏览器本地处理。
+  - English: [Online Text Diff Checker](https://devtools.help/en/diff/) — Paste two texts or files and see added, removed and changed lines highlighted instantly, in unified or side-by-side view. Nothing leaves your browser.
+- [Base64 / URL / Unicode 在线编码解码](https://devtools.help/encode/): 免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。
+  - English: [Base64 / URL / Unicode Encoder & Decoder](https://devtools.help/en/encode/) — Encode and decode Base64, URL percent-encoding, Unicode escapes, HTML entities and hex, with correct UTF-8 handling. Runs locally in your browser.
+- [正则表达式在线测试与替换](https://devtools.help/regex/): 在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。
+  - English: [Regex Tester & Replacement Preview](https://devtools.help/en/regex/) — Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.
+- [Unix 时间戳与日期互转](https://devtools.help/timestamp/): 在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。
+  - English: [Unix Timestamp & Date Converter](https://devtools.help/en/timestamp/) — Convert Unix timestamps to dates and back, reading 10-digit values as seconds and 13-digit values as milliseconds, with ISO 8601, RFC 2822 and timezone output.
+- [MD5 / SHA-256 在线哈希与校验](https://devtools.help/hash/): 在线哈希计算工具：MD5、SHA-1、SHA-256、SHA-512，支持 HMAC 与 AES 加解密，并可拖入文件直接计算校验值。全部在浏览器本地运算，输入内容不会上传。
+  - English: [MD5 / SHA-256 Hash & Checksum Tool](https://devtools.help/en/hash/) — Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.
+- [HTML / CSS / JS / SQL 代码格式化](https://devtools.help/formatter/): 在线代码格式化与压缩：HTML、CSS、JavaScript、XML、SQL 一键美化缩进，也可压缩成一行，缩进支持 2 空格、4 空格与 Tab。纯浏览器本地处理，代码不外传。
+  - English: [HTML / CSS / JS / SQL Formatter](https://devtools.help/en/formatter/) — Beautify or minify HTML, CSS, JavaScript, XML and SQL with 2-space, 4-space or tab indentation, and see the size before and after. Runs locally in your browser.
+- [在线字符串与文本处理](https://devtools.help/string/): 在线文本字符串处理：大小写与命名风格转换、按行排序、去重、查找替换、按分隔符分割合并、行号与前缀处理，并实时统计字符数、单词数、行数与字节数。
+  - English: [Online String & Text Tools](https://devtools.help/en/string/) — Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.
+- [UUID / 密码 / 二维码在线生成](https://devtools.help/generator/): 在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。
+  - English: [UUID / Password / QR Code Generator](https://devtools.help/en/generator/) — Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.
 
 ## Optional
 
-- [隐私政策 / Privacy Policy](https://xwjiang2003.github.io/tools/privacy.html): 工具输入数据本地处理、访问统计与第三方资源说明。
+- [隐私政策 / Privacy Policy](https://devtools.help/privacy.html): 工具输入数据本地处理、访问统计与第三方资源说明。
 - [源代码 / Source](https://github.com/xwjiang2003/tools): issues welcome.

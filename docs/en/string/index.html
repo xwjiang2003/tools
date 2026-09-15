@@ -8,17 +8,17 @@
 <meta name="keywords" content="string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/string/">
+<link rel="canonical" href="https://devtools.help/en/string/">
 <meta property="og:title" content="String &amp; Text Tools — Case, Sort, Dedupe &amp; Count | DevTools">
 <meta property="og:description" content="Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/string/">
+<meta property="og:url" content="https://devtools.help/en/string/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/string/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/string/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/string/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Online String & Text Tools", "url": "https://xwjiang2003.github.io/tools/en/string/", "description": "Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How is the byte count calculated?", "acceptedAnswer": {"@type": "Answer", "text": "As UTF-8. An ASCII character takes 1 byte, a common Chinese character takes 3, and emoji or other supplementary-plane characters usually take 4. That is why the byte count of non-Latin text is noticeably larger than its character count."}}, {"@type": "Question", "name": "Can I use regular expressions for find and replace?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the replace operation and use a regular expression, referencing capture groups as $1, $2 and so on."}}, {"@type": "Question", "name": "When deduplicating, is the first or the last occurrence kept?", "acceptedAnswer": {"@type": "Answer", "text": "The first occurrence is kept by default and later duplicates are removed, so the relative order of the remaining lines is preserved."}}, {"@type": "Question", "name": "Does it slow down with very long text?", "acceptedAnswer": {"@type": "Answer", "text": "Routine processing of up to tens of thousands of lines is instant. For much larger inputs it is better to work in chunks, so the browser does not have to build one enormous string."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/string/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/string/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/string/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Online String & Text Tools", "url": "https://devtools.help/en/string/", "description": "Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How is the byte count calculated?", "acceptedAnswer": {"@type": "Answer", "text": "As UTF-8. An ASCII character takes 1 byte, a common Chinese character takes 3, and emoji or other supplementary-plane characters usually take 4. That is why the byte count of non-Latin text is noticeably larger than its character count."}}, {"@type": "Question", "name": "Can I use regular expressions for find and replace?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the replace operation and use a regular expression, referencing capture groups as $1, $2 and so on."}}, {"@type": "Question", "name": "When deduplicating, is the first or the last occurrence kept?", "acceptedAnswer": {"@type": "Answer", "text": "The first occurrence is kept by default and later duplicates are removed, so the relative order of the remaining lines is preserved."}}, {"@type": "Question", "name": "Does it slow down with very long text?", "acceptedAnswer": {"@type": "Answer", "text": "Routine processing of up to tens of thousands of lines is instant. For much larger inputs it is better to work in chunks, so the browser does not have to build one enormous string."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

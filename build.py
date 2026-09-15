@@ -35,6 +35,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
 from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
 from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
+from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
@@ -473,6 +474,11 @@ def build():
     pages[Path('robots.txt')] = robots_txt()
     pages[Path('llms.txt')] = llms_txt()
     pages[Path('.nojekyll')] = ''
+    # GitHub Pages 自定义域名。必须由构建生成：下面会 rmtree(docs)，
+    # 手动放进去的 CNAME 每次构建都会被删掉，域名随之失效。
+    pages[Path('CNAME')] = CUSTOM_DOMAIN + '\n'
+    # IndexNow 归属校验文件。域名根 == 本站发布目录根，所以放这里。
+    pages[Path(f'{INDEXNOW_KEY}.txt')] = INDEXNOW_KEY
 
     for outdir in (DIST, DOCS):
         if outdir.exists():

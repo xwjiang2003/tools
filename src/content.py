@@ -7,7 +7,10 @@
 
 SITE = {
     'name': 'DevTools',
-    'base_url': 'https://xwjiang2003.github.io/tools/',
+    # 站点根地址。自定义域名 devtools.help 绑在本仓库上，因此工具站直接由域名根
+    # 提供服务（不再有 /tools/ 前缀）。这一处驱动 canonical、hreflang、sitemap.xml、
+    # llms.txt、JSON-LD 与 og:url —— 改这一个变量即可全站生效。
+    'base_url': 'https://devtools.help/',
     'author': 'DevTools',
 }
 

@@ -8,17 +8,17 @@
 <meta name="keywords" content="text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/diff/">
+<link rel="canonical" href="https://devtools.help/en/diff/">
 <meta property="og:title" content="Text Diff Checker — Compare Code &amp; Text Online | DevTools">
 <meta property="og:description" content="Paste two texts or files and see added, removed and changed lines highlighted instantly, in unified or side-by-side view. Nothing leaves your browser.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/diff/">
+<meta property="og:url" content="https://devtools.help/en/diff/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/diff/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/diff/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/diff/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Online Text Diff Checker", "url": "https://xwjiang2003.github.io/tools/en/diff/", "description": "Paste two texts or files and see added, removed and changed lines highlighted instantly, in unified or side-by-side view. Nothing leaves your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What do the colours in the result mean?", "acceptedAnswer": {"@type": "Answer", "text": "A green background marks added lines, a red background marks removed ones, and uncoloured lines are identical on both sides. Changed words within a line are highlighted more strongly so you can find them inside long lines."}}, {"@type": "Question", "name": "Can it compare binary files?", "acceptedAnswer": {"@type": "Answer", "text": "No. This is a line-level text comparison; binary data needs a dedicated hexadecimal diff tool."}}, {"@type": "Question", "name": "Will very large texts be slow?", "acceptedAnswer": {"@type": "Answer", "text": "The algorithm scales with the number of lines, and anything up to a few thousand lines is effectively instant. With tens of thousands of lines and very large differences the browser may briefly stutter, so it is worth trimming to the section you actually need to check."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/diff/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/diff/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/diff/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Online Text Diff Checker", "url": "https://devtools.help/en/diff/", "description": "Paste two texts or files and see added, removed and changed lines highlighted instantly, in unified or side-by-side view. Nothing leaves your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What do the colours in the result mean?", "acceptedAnswer": {"@type": "Answer", "text": "A green background marks added lines, a red background marks removed ones, and uncoloured lines are identical on both sides. Changed words within a line are highlighted more strongly so you can find them inside long lines."}}, {"@type": "Question", "name": "Can it compare binary files?", "acceptedAnswer": {"@type": "Answer", "text": "No. This is a line-level text comparison; binary data needs a dedicated hexadecimal diff tool."}}, {"@type": "Question", "name": "Will very large texts be slow?", "acceptedAnswer": {"@type": "Answer", "text": "The algorithm scales with the number of lines, and anything up to a few thousand lines is effectively instant. With tens of thousands of lines and very large differences the browser may briefly stutter, so it is worth trimming to the section you actually need to check."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

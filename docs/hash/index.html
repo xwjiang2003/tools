@@ -8,17 +8,17 @@
 <meta name="keywords" content="MD5在线,SHA256在线,SHA1,哈希计算,文件MD5校验,HMAC,AES在线加解密,文件哈希值">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/hash/">
+<link rel="canonical" href="https://devtools.help/hash/">
 <meta property="og:title" content="MD5 / SHA-256 在线哈希计算工具 - HMAC 与文件校验 | DevTools">
 <meta property="og:description" content="在线哈希计算工具：MD5、SHA-1、SHA-256、SHA-512，支持 HMAC 与 AES 加解密，并可拖入文件直接计算校验值。全部在浏览器本地运算，输入内容不会上传。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/hash/">
+<meta property="og:url" content="https://devtools.help/hash/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/hash/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/hash/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/hash/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "MD5 / SHA-256 在线哈希与校验", "url": "https://xwjiang2003.github.io/tools/hash/", "description": "在线哈希计算工具：MD5、SHA-1、SHA-256、SHA-512，支持 HMAC 与 AES 加解密，并可拖入文件直接计算校验值。全部在浏览器本地运算，输入内容不会上传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "MD5 现在还能用吗？", "acceptedAnswer": {"@type": "Answer", "text": "MD5 已经可以人为构造碰撞，不能用于数字签名、证书或口令存储等安全场景。但它仍然适合做\"文件是否完整下载\"这类非对抗性的完整性校验，因为它的速度比 SHA-256 快，且几乎所有下载站都提供 MD5 值。涉及安全请用 SHA-256 及以上。"}}, {"@type": "Question", "name": "在这里计算哈希安全吗？", "acceptedAnswer": {"@type": "Answer", "text": "安全。计算过程全部在浏览器内完成，文本与文件都不会离开本机。不过如果你需要在不可信的环境里处理敏感数据，仍然建议使用本地命令行工具，避免浏览器扩展或页面脚本带来额外风险。"}}, {"@type": "Question", "name": "SHA-256 的结果为什么是 64 个字符？", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 输出 256 位二进制摘要，用十六进制表示时每字节两个字符，因此是 32 字节 × 2 = 64 个字符。同理 SHA-512 是 128 个字符，MD5 是 32 个字符。"}}, {"@type": "Question", "name": "为什么同一个字符串每次算出来都一样？", "acceptedAnswer": {"@type": "Answer", "text": "哈希函数是确定性的，同样的输入必然得到同样的输出，这正是它能用于校验的原因。如果你需要不可预测的结果，应该在输入里加入随机盐值。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hash/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/hash/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/hash/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "MD5 / SHA-256 在线哈希与校验", "url": "https://devtools.help/hash/", "description": "在线哈希计算工具：MD5、SHA-1、SHA-256、SHA-512，支持 HMAC 与 AES 加解密，并可拖入文件直接计算校验值。全部在浏览器本地运算，输入内容不会上传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "MD5 现在还能用吗？", "acceptedAnswer": {"@type": "Answer", "text": "MD5 已经可以人为构造碰撞，不能用于数字签名、证书或口令存储等安全场景。但它仍然适合做\"文件是否完整下载\"这类非对抗性的完整性校验，因为它的速度比 SHA-256 快，且几乎所有下载站都提供 MD5 值。涉及安全请用 SHA-256 及以上。"}}, {"@type": "Question", "name": "在这里计算哈希安全吗？", "acceptedAnswer": {"@type": "Answer", "text": "安全。计算过程全部在浏览器内完成，文本与文件都不会离开本机。不过如果你需要在不可信的环境里处理敏感数据，仍然建议使用本地命令行工具，避免浏览器扩展或页面脚本带来额外风险。"}}, {"@type": "Question", "name": "SHA-256 的结果为什么是 64 个字符？", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 输出 256 位二进制摘要，用十六进制表示时每字节两个字符，因此是 32 字节 × 2 = 64 个字符。同理 SHA-512 是 128 个字符，MD5 是 32 个字符。"}}, {"@type": "Question", "name": "为什么同一个字符串每次算出来都一样？", "acceptedAnswer": {"@type": "Answer", "text": "哈希函数是确定性的，同样的输入必然得到同样的输出，这正是它能用于校验的原因。如果你需要不可预测的结果，应该在输入里加入随机盐值。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

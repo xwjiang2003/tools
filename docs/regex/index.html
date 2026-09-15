@@ -8,17 +8,17 @@
 <meta name="keywords" content="正则表达式在线测试,正则测试工具,regex在线,正则匹配,正则替换,正则表达式语法,常用正则表达式">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/regex/">
+<link rel="canonical" href="https://devtools.help/regex/">
 <meta property="og:title" content="正则表达式在线测试工具 - 实时匹配高亮与替换预览 | DevTools">
 <meta property="og:description" content="在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/regex/">
+<meta property="og:url" content="https://devtools.help/regex/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "正则表达式在线测试与替换", "url": "https://xwjiang2003.github.io/tools/regex/", "description": "在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这里用的是哪种正则引擎？", "acceptedAnswer": {"@type": "Answer", "text": "用的是浏览器原生的 JavaScript RegExp，遵循 ECMAScript 语法。它与 Python、PCRE、Java 的写法大体相通，但 (?P<name>...) 命名分组、变长后行断言等特性支持情况不同，跨语言使用时需要留意。"}}, {"@type": "Question", "name": "为什么我的正则匹配不到内容？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因有三类：一是忘了勾选 g 标志导致只匹配第一处；二是特殊字符没有转义，例如匹配小数点应当写 \\.；三是没勾选 m 或 s，导致 ^ $ 与 . 的行为和预期不符。"}}, {"@type": "Question", "name": "贪婪匹配和非贪婪匹配有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "量词 * 和 + 默认是贪婪的，会尽可能多地匹配字符；在量词后加问号变成 *? 或 +? 即为非贪婪，尽可能少地匹配。例如对 <a><b> 使用 <.+> 会匹配整串，而 <.+?> 只匹配 <a>。"}}, {"@type": "Question", "name": "页面会记录我输入的正则和文本吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。匹配、替换全部在浏览器内完成，输入内容不会发送到服务器。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/regex/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/regex/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/regex/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "正则表达式在线测试与替换", "url": "https://devtools.help/regex/", "description": "在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这里用的是哪种正则引擎？", "acceptedAnswer": {"@type": "Answer", "text": "用的是浏览器原生的 JavaScript RegExp，遵循 ECMAScript 语法。它与 Python、PCRE、Java 的写法大体相通，但 (?P<name>...) 命名分组、变长后行断言等特性支持情况不同，跨语言使用时需要留意。"}}, {"@type": "Question", "name": "为什么我的正则匹配不到内容？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因有三类：一是忘了勾选 g 标志导致只匹配第一处；二是特殊字符没有转义，例如匹配小数点应当写 \\.；三是没勾选 m 或 s，导致 ^ $ 与 . 的行为和预期不符。"}}, {"@type": "Question", "name": "贪婪匹配和非贪婪匹配有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "量词 * 和 + 默认是贪婪的，会尽可能多地匹配字符；在量词后加问号变成 *? 或 +? 即为非贪婪，尽可能少地匹配。例如对 <a><b> 使用 <.+> 会匹配整串，而 <.+?> 只匹配 <a>。"}}, {"@type": "Question", "name": "页面会记录我输入的正则和文本吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。匹配、替换全部在浏览器内完成，输入内容不会发送到服务器。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

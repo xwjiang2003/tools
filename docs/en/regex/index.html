@@ -8,17 +8,17 @@
 <meta name="keywords" content="regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/regex/">
+<link rel="canonical" href="https://devtools.help/en/regex/">
 <meta property="og:title" content="Regex Tester Online — Live Highlight &amp; Replace | DevTools">
 <meta property="og:description" content="Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/regex/">
+<meta property="og:url" content="https://devtools.help/en/regex/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Regex Tester & Replacement Preview", "url": "https://xwjiang2003.github.io/tools/en/regex/", "description": "Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which regex engine does this use?", "acceptedAnswer": {"@type": "Answer", "text": "The browser native JavaScript RegExp engine, following ECMAScript syntax. It is broadly compatible with Python, PCRE and Java, but features such as (?P<name>...) named groups and variable-length lookbehind differ, so keep that in mind when moving a pattern between languages."}}, {"@type": "Question", "name": "Why does my pattern match nothing?", "acceptedAnswer": {"@type": "Answer", "text": "Three common causes: the g flag is off, so only the first occurrence can be found; special characters are unescaped — matching a literal dot requires \\.; or m and s are unchecked, so ^, $ and . behave differently from what you expect."}}, {"@type": "Question", "name": "What is the difference between greedy and lazy matching?", "acceptedAnswer": {"@type": "Answer", "text": "The quantifiers * and + are greedy by default and consume as much as possible. Appending a question mark makes them lazy (*? or +?), consuming as little as possible. Against <a><b>, the pattern <.+> matches the whole string while <.+?> matches only <a>."}}, {"@type": "Question", "name": "Does the page record the patterns and text I enter?", "acceptedAnswer": {"@type": "Answer", "text": "No. Matching and replacement both run inside your browser, and your input is never sent to a server."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/regex/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/regex/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/regex/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Regex Tester & Replacement Preview", "url": "https://devtools.help/en/regex/", "description": "Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group details and a replacement preview, plus common patterns. Runs locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Which regex engine does this use?", "acceptedAnswer": {"@type": "Answer", "text": "The browser native JavaScript RegExp engine, following ECMAScript syntax. It is broadly compatible with Python, PCRE and Java, but features such as (?P<name>...) named groups and variable-length lookbehind differ, so keep that in mind when moving a pattern between languages."}}, {"@type": "Question", "name": "Why does my pattern match nothing?", "acceptedAnswer": {"@type": "Answer", "text": "Three common causes: the g flag is off, so only the first occurrence can be found; special characters are unescaped — matching a literal dot requires \\.; or m and s are unchecked, so ^, $ and . behave differently from what you expect."}}, {"@type": "Question", "name": "What is the difference between greedy and lazy matching?", "acceptedAnswer": {"@type": "Answer", "text": "The quantifiers * and + are greedy by default and consume as much as possible. Appending a question mark makes them lazy (*? or +?), consuming as little as possible. Against <a><b>, the pattern <.+> matches the whole string while <.+?> matches only <a>."}}, {"@type": "Question", "name": "Does the page record the patterns and text I enter?", "acceptedAnswer": {"@type": "Answer", "text": "No. Matching and replacement both run inside your browser, and your input is never sent to a server."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

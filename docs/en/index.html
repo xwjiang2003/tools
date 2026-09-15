@@ -8,17 +8,17 @@
 <meta name="keywords" content="JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/">
+<link rel="canonical" href="https://devtools.help/en/">
 <meta property="og:title" content="JSON Formatter &amp; Validator Online — Free, In-Browser | DevTools">
 <meta property="og:description" content="Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/">
+<meta property="og:url" content="https://devtools.help/en/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON Formatter, Validator & Converter", "url": "https://xwjiang2003.github.io/tools/en/", "description": "Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is my JSON uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Parsing, formatting, diffing and conversion are all done by JavaScript in your browser, and the page contains no code that sends JSON to a backend. You can keep using these features offline once the editor dependency has loaded."}}, {"@type": "Question", "name": "Validation fails, but the JSON looks fine. Why?", "acceptedAnswer": {"@type": "Answer", "text": "The four usual suspects are a trailing comma after the last item of an object or array, single quotes instead of double quotes, a literal newline inside a string that was never escaped, and an invisible BOM at the start of the file. The error message includes the position, so moving the cursor there usually reveals the problem."}}, {"@type": "Question", "name": "How is JSON different from a JavaScript object literal?", "acceptedAnswer": {"@type": "Answer", "text": "JSON requires double-quoted keys, forbids trailing commas and comments, and has no undefined, functions or single-quoted strings. Object literals allow all of those, which is why copying an object straight out of JavaScript source often fails validation."}}, {"@type": "Question", "name": "How large a JSON document can it handle?", "acceptedAnswer": {"@type": "Answer", "text": "That depends on the memory your browser has available; a few tens of megabytes is normally fine. For hundreds of megabytes, reach for a command-line tool such as jq — the browser editor gets noticeably sluggish at that size."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON Formatter, Validator & Converter", "url": "https://devtools.help/en/", "description": "Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is my JSON uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Parsing, formatting, diffing and conversion are all done by JavaScript in your browser, and the page contains no code that sends JSON to a backend. You can keep using these features offline once the editor dependency has loaded."}}, {"@type": "Question", "name": "Validation fails, but the JSON looks fine. Why?", "acceptedAnswer": {"@type": "Answer", "text": "The four usual suspects are a trailing comma after the last item of an object or array, single quotes instead of double quotes, a literal newline inside a string that was never escaped, and an invisible BOM at the start of the file. The error message includes the position, so moving the cursor there usually reveals the problem."}}, {"@type": "Question", "name": "How is JSON different from a JavaScript object literal?", "acceptedAnswer": {"@type": "Answer", "text": "JSON requires double-quoted keys, forbids trailing commas and comments, and has no undefined, functions or single-quoted strings. Object literals allow all of those, which is why copying an object straight out of JavaScript source often fails validation."}}, {"@type": "Question", "name": "How large a JSON document can it handle?", "acceptedAnswer": {"@type": "Answer", "text": "That depends on the memory your browser has available; a few tens of megabytes is normally fine. For hundreds of megabytes, reach for a command-line tool such as jq — the browser editor gets noticeably sluggish at that size."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

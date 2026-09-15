@@ -8,17 +8,17 @@
 <meta name="keywords" content="base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/encode/">
+<link rel="canonical" href="https://devtools.help/en/encode/">
 <meta property="og:title" content="Base64 / URL / Unicode Encoder &amp; Decoder Online | DevTools">
 <meta property="og:description" content="Encode and decode Base64, URL percent-encoding, Unicode escapes, HTML entities and hex, with correct UTF-8 handling. Runs locally in your browser.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/encode/">
+<meta property="og:url" content="https://devtools.help/en/encode/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/encode/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/encode/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/encode/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Base64 / URL / Unicode Encoder & Decoder", "url": "https://xwjiang2003.github.io/tools/en/encode/", "description": "Encode and decode Base64, URL percent-encoding, Unicode escapes, HTML entities and hex, with correct UTF-8 handling. Runs locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Base64 encryption?", "acceptedAnswer": {"@type": "Answer", "text": "No. Base64 is only a way of representing binary data with printable characters, and anyone can reverse it directly. It provides no confidentiality whatsoever; when secrecy matters, use a real cipher such as AES."}}, {"@type": "Question", "name": "Why does a Base64 string end with equals signs?", "acceptedAnswer": {"@type": "Answer", "text": "The equals signs are padding. Base64 encodes every 3 bytes as 4 characters, so when the input length is not a multiple of 3, one or two = characters are appended to keep the output length a multiple of 4."}}, {"@type": "Question", "name": "Should I use encodeURI or encodeURIComponent?", "acceptedAnswer": {"@type": "Answer", "text": "Use encodeURIComponent for individual query parameter values, because it also escapes &, =, ? and /. Use encodeURI when escaping a whole URL that must keep its structure, since it leaves those syntactic characters alone."}}, {"@type": "Question", "name": "The decoded text is garbled. What went wrong?", "acceptedAnswer": {"@type": "Answer", "text": "Usually the original was encoded with a character set other than UTF-8, or the content was encoded twice. Try decoding once more and see whether the result still looks encoded; this page always treats text as UTF-8."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/encode/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/encode/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/encode/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Base64 / URL / Unicode Encoder & Decoder", "url": "https://devtools.help/en/encode/", "description": "Encode and decode Base64, URL percent-encoding, Unicode escapes, HTML entities and hex, with correct UTF-8 handling. Runs locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Base64 encryption?", "acceptedAnswer": {"@type": "Answer", "text": "No. Base64 is only a way of representing binary data with printable characters, and anyone can reverse it directly. It provides no confidentiality whatsoever; when secrecy matters, use a real cipher such as AES."}}, {"@type": "Question", "name": "Why does a Base64 string end with equals signs?", "acceptedAnswer": {"@type": "Answer", "text": "The equals signs are padding. Base64 encodes every 3 bytes as 4 characters, so when the input length is not a multiple of 3, one or two = characters are appended to keep the output length a multiple of 4."}}, {"@type": "Question", "name": "Should I use encodeURI or encodeURIComponent?", "acceptedAnswer": {"@type": "Answer", "text": "Use encodeURIComponent for individual query parameter values, because it also escapes &, =, ? and /. Use encodeURI when escaping a whole URL that must keep its structure, since it leaves those syntactic characters alone."}}, {"@type": "Question", "name": "The decoded text is garbled. What went wrong?", "acceptedAnswer": {"@type": "Answer", "text": "Usually the original was encoded with a character set other than UTF-8, or the content was encoded twice. Try decoding once more and see whether the result still looks encoded; this page always treats text as UTF-8."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

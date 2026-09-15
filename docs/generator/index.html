@@ -8,17 +8,17 @@
 <meta name="keywords" content="UUID生成,在线UUID,GUID生成,随机密码生成器,二维码生成,在线二维码,Lorem Ipsum,随机数据生成,测试数据">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/generator/">
+<link rel="canonical" href="https://devtools.help/generator/">
 <meta property="og:title" content="UUID / 随机密码 / 二维码 在线生成器 | DevTools">
 <meta property="og:description" content="在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/generator/">
+<meta property="og:url" content="https://devtools.help/generator/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/generator/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/generator/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/generator/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / 密码 / 二维码在线生成", "url": "https://xwjiang2003.github.io/tools/generator/", "description": "在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "UUID v4 会重复吗？", "acceptedAnswer": {"@type": "Answer", "text": "UUID v4 有 122 位随机位，理论上可能碰撞，但概率极低——每秒生成十亿个 UUID 持续约 100 年，碰撞概率仍远低于硬件出错的概率，工程上可以认为不会重复。"}}, {"@type": "Question", "name": "生成的密码真的随机吗？", "acceptedAnswer": {"@type": "Answer", "text": "使用浏览器的 crypto.getRandomValues() 密码学安全随机数生成器，不是 Math.random()，因此不存在可预测的伪随机序列问题。生成后请通过可信渠道保存，本页不会记录任何结果。"}}, {"@type": "Question", "name": "生成的测试数据能直接用于生产吗？", "acceptedAnswer": {"@type": "Answer", "text": "不能。手机号、身份证号等字段是按格式规则构造的假数据，只适合测试与演示，不具备真实性，也可能与他人真实信息巧合。"}}, {"@type": "Question", "name": "二维码有使用限制吗？", "acceptedAnswer": {"@type": "Answer", "text": "二维码本身是开放标准，可自由使用。但请确保编码进去的网址或内容合法，二维码只是载体，不改变内容本身的责任归属。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/generator/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/generator/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/generator/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / 密码 / 二维码在线生成", "url": "https://devtools.help/generator/", "description": "在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "UUID v4 会重复吗？", "acceptedAnswer": {"@type": "Answer", "text": "UUID v4 有 122 位随机位，理论上可能碰撞，但概率极低——每秒生成十亿个 UUID 持续约 100 年，碰撞概率仍远低于硬件出错的概率，工程上可以认为不会重复。"}}, {"@type": "Question", "name": "生成的密码真的随机吗？", "acceptedAnswer": {"@type": "Answer", "text": "使用浏览器的 crypto.getRandomValues() 密码学安全随机数生成器，不是 Math.random()，因此不存在可预测的伪随机序列问题。生成后请通过可信渠道保存，本页不会记录任何结果。"}}, {"@type": "Question", "name": "生成的测试数据能直接用于生产吗？", "acceptedAnswer": {"@type": "Answer", "text": "不能。手机号、身份证号等字段是按格式规则构造的假数据，只适合测试与演示，不具备真实性，也可能与他人真实信息巧合。"}}, {"@type": "Question", "name": "二维码有使用限制吗？", "acceptedAnswer": {"@type": "Answer", "text": "二维码本身是开放标准，可自由使用。但请确保编码进去的网址或内容合法，二维码只是载体，不改变内容本身的责任归属。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

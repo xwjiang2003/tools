@@ -2,73 +2,73 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://xwjiang2003.github.io/tools/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/"/>
+    <loc>https://devtools.help/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/"/>
     <changefreq>monthly</changefreq><priority>1.0</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/diff/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/diff/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/diff/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/diff/"/>
+    <loc>https://devtools.help/diff/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/diff/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/diff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/diff/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/encode/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/encode/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/encode/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/encode/"/>
+    <loc>https://devtools.help/encode/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/encode/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/encode/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/encode/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/regex/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/regex/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/regex/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/regex/"/>
+    <loc>https://devtools.help/regex/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/regex/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/regex/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/regex/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/timestamp/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/timestamp/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/timestamp/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/timestamp/"/>
+    <loc>https://devtools.help/timestamp/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timestamp/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/timestamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/timestamp/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/hash/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/hash/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/hash/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/hash/"/>
+    <loc>https://devtools.help/hash/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hash/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/hash/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/hash/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/formatter/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/formatter/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/formatter/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/formatter/"/>
+    <loc>https://devtools.help/formatter/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/formatter/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/formatter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/formatter/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/string/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/string/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/string/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/string/"/>
+    <loc>https://devtools.help/string/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/string/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/string/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/string/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/generator/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/generator/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/generator/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/generator/"/>
+    <loc>https://devtools.help/generator/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/generator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/generator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/generator/"/>
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xwjiang2003.github.io/tools/privacy.html</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/privacy.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/privacy.html"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/privacy.html"/>
+    <loc>https://devtools.help/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/privacy.html"/>
     <changefreq>monthly</changefreq><priority>0.3</priority>
   </url>
 </urlset>

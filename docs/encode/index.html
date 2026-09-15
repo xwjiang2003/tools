@@ -8,17 +8,17 @@
 <meta name="keywords" content="Base64编码,Base64解码,Base64在线,URL编码,URL解码,Unicode转中文,HTML实体转义,Hex编码,十六进制转换">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/encode/">
+<link rel="canonical" href="https://devtools.help/encode/">
 <meta property="og:title" content="Base64 / URL / Unicode 在线编码解码工具 - Hex 与 HTML 实体转换 | DevTools">
 <meta property="og:description" content="免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/encode/">
+<meta property="og:url" content="https://devtools.help/encode/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/encode/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/encode/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/encode/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Base64 / URL / Unicode 在线编码解码", "url": "https://xwjiang2003.github.io/tools/encode/", "description": "免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Base64 是加密吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。Base64 只是一种把二进制数据表示成可打印字符的编码方式，任何人都能直接还原，不提供任何保密能力。需要保密请使用 AES 等真正的加密算法。"}}, {"@type": "Question", "name": "为什么 Base64 结果末尾会有等号？", "acceptedAnswer": {"@type": "Answer", "text": "等号是填充符。Base64 把每 3 个字节编码成 4 个字符，当原始数据长度不是 3 的倍数时，用 1 到 2 个等号补齐，保证结果长度是 4 的倍数。"}}, {"@type": "Question", "name": "encodeURI 和 encodeURIComponent 用哪个？", "acceptedAnswer": {"@type": "Answer", "text": "拼接查询参数的值时用 encodeURIComponent，它会把 & = ? / 等也一并转义；整条 URL 保留结构地转义时用 encodeURI，它不会转义这些具有语法含义的字符。"}}, {"@type": "Question", "name": "解码后出现乱码怎么办？", "acceptedAnswer": {"@type": "Answer", "text": "多半是编码时用的字符集不是 UTF-8，或者内容被做了两次编码。可以试试先解码一次，看结果是否还像编码后的形式；本页对中文按 UTF-8 处理。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/encode/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/encode/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/encode/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Base64 / URL / Unicode 在线编码解码", "url": "https://devtools.help/encode/", "description": "免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Base64 是加密吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。Base64 只是一种把二进制数据表示成可打印字符的编码方式，任何人都能直接还原，不提供任何保密能力。需要保密请使用 AES 等真正的加密算法。"}}, {"@type": "Question", "name": "为什么 Base64 结果末尾会有等号？", "acceptedAnswer": {"@type": "Answer", "text": "等号是填充符。Base64 把每 3 个字节编码成 4 个字符，当原始数据长度不是 3 的倍数时，用 1 到 2 个等号补齐，保证结果长度是 4 的倍数。"}}, {"@type": "Question", "name": "encodeURI 和 encodeURIComponent 用哪个？", "acceptedAnswer": {"@type": "Answer", "text": "拼接查询参数的值时用 encodeURIComponent，它会把 & = ? / 等也一并转义；整条 URL 保留结构地转义时用 encodeURI，它不会转义这些具有语法含义的字符。"}}, {"@type": "Question", "name": "解码后出现乱码怎么办？", "acceptedAnswer": {"@type": "Answer", "text": "多半是编码时用的字符集不是 UTF-8，或者内容被做了两次编码。可以试试先解码一次，看结果是否还像编码后的形式；本页对中文按 UTF-8 处理。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

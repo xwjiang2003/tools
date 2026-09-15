@@ -2,7 +2,7 @@
 
 纯前端在线开发工具集，所有数据仅在浏览器本地处理，无后端、无追踪。
 
-线上地址：<https://xwjiang2003.github.io/tools/>
+线上地址：<https://devtools.help/>
 
 ## 页面结构
 
@@ -155,33 +155,39 @@ Google 与百度的 sitemap ping 接口已下线（实测 Google 无响应、Bin
 IndexNow 是目前**唯一不需要账号**的提交通道，结果由 Bing / Yandex / Seznam / Naver 共享。
 Bing 索引同时供 ChatGPT Search 检索，所以这一步对传统搜索和 AI 引用都有用。
 
-归属校验文件是 `docs/<key>.txt`（key 见 `src/site_config.py`）。
-因为本仓库是 GitHub Pages 项目站点、`https://xwjiang2003.github.io/` 根路径返回 404，
-key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好覆盖本站全部 URL。
+归属校验文件是 `docs/<key>.txt`（key 见 `src/site_config.py`），
+对应 <https://devtools.help/9f4c1d7a2e8b5306ac1f7d9e4b2a8c30.txt>。
+
+本站用自定义域名后，**发布目录根（`docs/`）就是主机根**，因此天然满足 IndexNow
+官方「强烈建议」的 Option 1：一份 key 覆盖整站，可提交的 URL 不受目录限制。
 
 > 改动 key 会让已有校验失效，需要重新提交，所以不要随意更换。
+> **换域名后 host 变了，必须带新 host 重新跑一次 `submit.py`。**
 
-### 用户站点已建立，根目录可用
+### 自定义域名与主机级文件
 
-`xwjiang2003.github.io` 用户站点仓库已创建并发布（<https://xwjiang2003.github.io/>），
-+它拿回了**域名根目录的控制权**，因此：
+2026-09 起本站从 `xwjiang2003.github.io/tools/` 迁到 **<https://devtools.help/>**
+（CNAME 绑在本仓库，`docs/` 发布，站点直接由域名根提供服务，没有 `/tools/` 前缀）。
 
-- **文件验证**和 **HTML 标记验证**现在都能用（此前根路径 404，只能标记验证）。
-  文件验证：把 `baidu_verify_xxx.html` / `googleXXXX.html` 放进 `xwjiang2003.github.io` 仓库根目录即可。
-- **主机级文件已移交根仓库**（`robots.txt` / `sitemap.xml` / IndexNow key）。
-  这一点很关键：**`robots.txt` 只有放在主机根目录才会被爬虫读取**，
-  此前生成的 `/tools/robots.txt` 实际上从未被任何爬虫读到。权威版本现在在
-  <https://xwjiang2003.github.io/robots.txt>。
-- IndexNow 已切到官方推荐的 **Option 1**：key 文件在主机根目录，一份 key 覆盖整站，
-  可提交的 URL 不再受目录限制。
+- `docs/CNAME` 由 `build.py` 生成。**必须这样**：build.py 每次构建都会 `rmtree(docs)`，
+  手动放进去的 CNAME 会被删掉，自定义域名随之失效。
+- `robots.txt` 只认**主机根**。现在本站主机就是 `devtools.help`，
+  所以 `docs/robots.txt` 就是权威版本（以前它在 `/tools/` 下，爬虫根本不会读）。
+- `sitemap.xml` / `llms.txt` 的绝对 URL 全部来自 `src/content.py` 的 `base_url` 一个变量。
+- 内部链接（导航/页脚/语言切换）都是相对路径，换域名自动适配，无需改动。
+
+> `xwjiang2003.github.io` 用户站点仓库仍保留（落地页导航），
+> 它已改为直接指向 `https://devtools.help/`，避免多一跳 301。
 
 ### 需要你自己登录账号操作
 
 | 平台 | 入口 | 说明 |
 |------|------|------|
-| Google Search Console | <https://search.google.com/search-console> | 用「网址前缀」添加 `https://xwjiang2003.github.io/tools/`，验证码填进 `src/index.html` 预留的 `google-site-verification` 注释行 |
+| Google Search Console | <https://search.google.com/search-console> | 用「网域」或「网址前缀」添加 `https://devtools.help/`，验证码填进 `src/index.html` 预留的 `google-site-verification` 注释行 |
 | Bing 网站管理员工具 | <https://www.bing.com/webmasters> | 同上，用 `msvalidate.01`；也可直接导入 Search Console |
-| 百度搜索资源平台 | <https://ziyuan.baidu.com> | 用 `baidu-site-verification`，或直接把验证文件放进根仓库 |
+| 百度搜索资源平台 | <https://ziyuan.baidu.com> | 用 `baidu-site-verification`，或把验证文件放进本仓库 `docs/` |
+
+> **验证按域名算**：换到 `devtools.help` 需要**重新验证**，旧 `github.io` 资源的验证不能复用。
 
 验证码拿到后，把 `src/index.html` 里对应那行注释取消并填入即可，重新 `python3 build.py` 后推送。
 百度对 `github.io` 收录一向很差，不要期待太高。
@@ -193,7 +199,7 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 
 - `robots.txt` 已显式放行 `GPTBot` / `OAI-SearchBot` / `ClaudeBot` / `PerplexityBot` /
   `Google-Extended` / `Bytespider` / `DeepSeekBot` 等（默认 `User-agent: *` 本就允许，显式列出是声明意图）。
-- `llms.txt` 已生成（<https://xwjiang2003.github.io/tools/llms.txt>）。
+- `llms.txt` 已生成（<https://devtools.help/llms.txt>）。
   这是社区提案，主流厂商并未承诺读取，属于成本极低、**不要指望它是收录开关**。
 - 真正的杠杆是：进入 Bing / Google 索引（AI 检索大多基于这两家的索引）+ 每页的
   JSON-LD（`WebApplication` + `FAQPage`，FAQ 结构最容易被直接引用）+ 站外引用。
@@ -245,7 +251,8 @@ key 文件只能放在 `/tools/` 下，走 IndexNow 的 Option 2 —— 恰好�
 
 - 统计脚本只在线上环境加载，`file://` 本地预览和 `localhost` 调试不会上报，避免污染线上数据。
 - 统计服务不可用时，页脚计数器自动移除，不影响页面其它功能。
-- 不蒜子按**域名**聚合：`xwjiang2003.github.io` 下所有项目共用同一份 PV/UV，且没有明细报表。
+- 不蒜子按**域名**聚合：`devtools.help` 与旧的 `xwjiang2003.github.io` 是**两份独立计数**。
+  换域名会让页脚计数从 0 重新开始（百度统计不受影响，它按跟踪 ID 归类）。
   需要分路径 / 来源 / 地区等详细数据时，可另接百度统计或 Google Analytics。
 
 ## 快捷键

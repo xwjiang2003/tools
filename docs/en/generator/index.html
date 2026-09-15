@@ -8,17 +8,17 @@
 <meta name="keywords" content="uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/en/generator/">
+<link rel="canonical" href="https://devtools.help/en/generator/">
 <meta property="og:title" content="UUID, Password &amp; QR Code Generator Online | DevTools">
 <meta property="og:description" content="Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/en/generator/">
+<meta property="og:url" content="https://devtools.help/en/generator/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/generator/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/generator/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/generator/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / Password / QR Code Generator", "url": "https://xwjiang2003.github.io/tools/en/generator/", "description": "Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can UUID v4 values collide?", "acceptedAnswer": {"@type": "Answer", "text": "A UUID v4 carries 122 random bits, so collisions are theoretically possible but astronomically unlikely: generating a billion of them every second for about 100 years still leaves a collision probability far below the chance of a hardware failure. In practice you can treat them as unique."}}, {"@type": "Question", "name": "Are the generated passwords really random?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They come from the browser crypto.getRandomValues() cryptographic random number generator rather than Math.random(), so there is no predictable pseudo-random sequence. Store the result somewhere trustworthy — this page keeps no record of it."}}, {"@type": "Question", "name": "Can the generated test data be used in production?", "acceptedAnswer": {"@type": "Answer", "text": "No. Fields such as phone and ID numbers are fabricated to match a format and suit only testing and demos. They are not real, and may coincidentally match a real person."}}, {"@type": "Question", "name": "Are there restrictions on using the QR codes?", "acceptedAnswer": {"@type": "Answer", "text": "The QR code format is an open standard and free to use. Do make sure the URL or content you encode is lawful — the code is only a carrier and does not change who is responsible for what it contains."}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/generator/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/generator/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/generator/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / Password / QR Code Generator", "url": "https://devtools.help/en/generator/", "description": "Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can UUID v4 values collide?", "acceptedAnswer": {"@type": "Answer", "text": "A UUID v4 carries 122 random bits, so collisions are theoretically possible but astronomically unlikely: generating a billion of them every second for about 100 years still leaves a collision probability far below the chance of a hardware failure. In practice you can treat them as unique."}}, {"@type": "Question", "name": "Are the generated passwords really random?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They come from the browser crypto.getRandomValues() cryptographic random number generator rather than Math.random(), so there is no predictable pseudo-random sequence. Store the result somewhere trustworthy — this page keeps no record of it."}}, {"@type": "Question", "name": "Can the generated test data be used in production?", "acceptedAnswer": {"@type": "Answer", "text": "No. Fields such as phone and ID numbers are fabricated to match a format and suit only testing and demos. They are not real, and may coincidentally match a real person."}}, {"@type": "Question", "name": "Are there restrictions on using the QR codes?", "acceptedAnswer": {"@type": "Answer", "text": "The QR code format is an open standard and free to use. Do make sure the URL or content you encode is lawful — the code is only a carrier and does not change who is responsible for what it contains."}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

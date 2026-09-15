@@ -8,17 +8,17 @@
 <meta name="keywords" content="字符串工具,文本去重,文本排序,大小写转换,驼峰命名转换,在线字符统计,文本替换,行去重">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/string/">
+<link rel="canonical" href="https://devtools.help/string/">
 <meta property="og:title" content="在线字符串处理工具 - 大小写转换/去重/排序/统计 | DevTools">
 <meta property="og:description" content="在线文本字符串处理：大小写与命名风格转换、按行排序、去重、查找替换、按分隔符分割合并、行号与前缀处理，并实时统计字符数、单词数、行数与字节数。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/string/">
+<meta property="og:url" content="https://devtools.help/string/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/string/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/string/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/string/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线字符串与文本处理", "url": "https://xwjiang2003.github.io/tools/string/", "description": "在线文本字符串处理：大小写与命名风格转换、按行排序、去重、查找替换、按分隔符分割合并、行号与前缀处理，并实时统计字符数、单词数、行数与字节数。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "字节数是怎么计算的？", "acceptedAnswer": {"@type": "Answer", "text": "按 UTF-8 编码计算。一个 ASCII 字符占 1 字节，常见汉字占 3 字节，emoji 等增补平面字符通常占 4 字节。所以中文文本的字节数会明显大于字符数。"}}, {"@type": "Question", "name": "支持用正则做查找替换吗？", "acceptedAnswer": {"@type": "Answer", "text": "支持。选择替换操作后可以使用正则表达式，并按 $1 $2 的形式引用捕获分组。"}}, {"@type": "Question", "name": "去重时保留的是第一次还是最后一次出现的行？", "acceptedAnswer": {"@type": "Answer", "text": "默认保留第一次出现的行，后续重复行被移除，因此结果中行的先后顺序保持不变。"}}, {"@type": "Question", "name": "文本很长时会卡吗？", "acceptedAnswer": {"@type": "Answer", "text": "几万行以内的常规文本处理是即时的。如果需要处理更大的文本，建议分块处理，避免浏览器一次性构造过大的字符串。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/string/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/string/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/string/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线字符串与文本处理", "url": "https://devtools.help/string/", "description": "在线文本字符串处理：大小写与命名风格转换、按行排序、去重、查找替换、按分隔符分割合并、行号与前缀处理，并实时统计字符数、单词数、行数与字节数。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "字节数是怎么计算的？", "acceptedAnswer": {"@type": "Answer", "text": "按 UTF-8 编码计算。一个 ASCII 字符占 1 字节，常见汉字占 3 字节，emoji 等增补平面字符通常占 4 字节。所以中文文本的字节数会明显大于字符数。"}}, {"@type": "Question", "name": "支持用正则做查找替换吗？", "acceptedAnswer": {"@type": "Answer", "text": "支持。选择替换操作后可以使用正则表达式，并按 $1 $2 的形式引用捕获分组。"}}, {"@type": "Question", "name": "去重时保留的是第一次还是最后一次出现的行？", "acceptedAnswer": {"@type": "Answer", "text": "默认保留第一次出现的行，后续重复行被移除，因此结果中行的先后顺序保持不变。"}}, {"@type": "Question", "name": "文本很长时会卡吗？", "acceptedAnswer": {"@type": "Answer", "text": "几万行以内的常规文本处理是即时的。如果需要处理更大的文本，建议分块处理，避免浏览器一次性构造过大的字符串。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->

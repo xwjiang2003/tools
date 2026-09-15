@@ -1,7 +1,7 @@
 # DevTools — 在线开发工具集
 #
 # ⚠️ 爬虫只会读取主机根目录的 /robots.txt，本文件（/tools/robots.txt）不影响抓取，
-#    权威版本在 https://xwjiang2003.github.io/robots.txt，两份放行清单保持同步。
+#    权威版本在 https://robots.txt，两份放行清单保持同步。
 
 User-agent: *
 Allow: /
@@ -60,5 +60,5 @@ Allow: /
 User-agent: YouBot
 Allow: /
 
-Sitemap: https://xwjiang2003.github.io/tools/sitemap.xml
-# LLM 站点摘要: https://xwjiang2003.github.io/tools/llms.txt
+Sitemap: https://devtools.help/sitemap.xml
+# LLM 站点摘要: https://devtools.help/llms.txt

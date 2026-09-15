@@ -9,11 +9,13 @@
 
 Bing 的索引又直接供 ChatGPT Search 检索使用，所以这一步同时影响传统搜索与 AI 引用。
 
+换域名后 host 变了，必须带着新 host 重新提交一次。
+
 用法:
   python3 submit.py            # 提交 sitemap 中的全部 URL
   python3 submit.py --dry-run  # 只打印将要提交的内容
 
-注意：IndexNow 会回抓 https://xwjiang2003.github.io/tools/<key>.txt 校验归属，
+注意：IndexNow 会回抓 https://devtools.help/<key>.txt 校验归属，
 所以必须先把这个 key 文件部署上线，再运行本脚本。
 """
 

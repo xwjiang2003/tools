@@ -8,17 +8,17 @@
 <meta name="keywords" content="文本对比,文本比对,在线diff,代码对比工具,文本差异,字符串对比,文本比较在线,代码diff">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://xwjiang2003.github.io/tools/diff/">
+<link rel="canonical" href="https://devtools.help/diff/">
 <meta property="og:title" content="在线文本差异对比工具 - 代码/文本 Diff 左右对照 | DevTools">
 <meta property="og:description" content="免费在线文本比对工具：粘贴两段文本或代码，自动高亮新增、删除与改动行，支持统一视图与左右对照视图、区分大小写、忽略空白。纯浏览器本地处理。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://xwjiang2003.github.io/tools/diff/">
+<meta property="og:url" content="https://devtools.help/diff/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://xwjiang2003.github.io/tools/diff/">
-<link rel="alternate" hreflang="en" href="https://xwjiang2003.github.io/tools/en/diff/">
-<link rel="alternate" hreflang="x-default" href="https://xwjiang2003.github.io/tools/diff/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线文本差异对比工具", "url": "https://xwjiang2003.github.io/tools/diff/", "description": "免费在线文本比对工具：粘贴两段文本或代码，自动高亮新增、删除与改动行，支持统一视图与左右对照视图、区分大小写、忽略空白。纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "比对结果里的颜色代表什么？", "acceptedAnswer": {"@type": "Answer", "text": "绿色背景表示新增的行，红色背景表示删除的行，未标色的行表示两侧一致。行内变动的字词会额外加深标出，便于在长行里定位到具体改了哪几个字。"}}, {"@type": "Question", "name": "支持比对二进制文件吗？", "acceptedAnswer": {"@type": "Answer", "text": "不支持。这里做的是文本行级比对，二进制内容需要专门的十六进制比对工具。"}}, {"@type": "Question", "name": "大文本会比对得很慢吗？", "acceptedAnswer": {"@type": "Answer", "text": "比对算法与文本行数相关，几千行以内基本是即时的。如果双方差异极大且行数上万，浏览器可能会有短暂卡顿，建议先截取需要核对的片段。"}}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/diff/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/diff/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/diff/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线文本差异对比工具", "url": "https://devtools.help/diff/", "description": "免费在线文本比对工具：粘贴两段文本或代码，自动高亮新增、删除与改动行，支持统一视图与左右对照视图、区分大小写、忽略空白。纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "比对结果里的颜色代表什么？", "acceptedAnswer": {"@type": "Answer", "text": "绿色背景表示新增的行，红色背景表示删除的行，未标色的行表示两侧一致。行内变动的字词会额外加深标出，便于在长行里定位到具体改了哪几个字。"}}, {"@type": "Question", "name": "支持比对二进制文件吗？", "acceptedAnswer": {"@type": "Answer", "text": "不支持。这里做的是文本行级比对，二进制内容需要专门的十六进制比对工具。"}}, {"@type": "Question", "name": "大文本会比对得很慢吗？", "acceptedAnswer": {"@type": "Answer", "text": "比对算法与文本行数相关，几千行以内基本是即时的。如果双方差异极大且行数上万，浏览器可能会有短暂卡顿，建议先截取需要核对的片段。"}}]}]}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -222,10 +222,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
-     2026-09 起已建立用户站点仓库 xwjiang2003.github.io，域名根目录可用，
-     因此「文件验证」和「HTML 标记验证」现在都可以：
-       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进 xwjiang2003.github.io 仓库根目录；
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
        - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
      Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
