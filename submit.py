@@ -36,12 +36,21 @@ PRIVACY = 'privacy.html'
 
 
 def all_urls():
-    """主机根页面 + tools 站点的 10 个中文页与 10 个英文页。"""
+    """站点全部 URL：10 个中文页 + 10 个英文页。
+
+    迁移到自定义域名后 ROOT_SITE_URL == SITE['base_url']（发布目录根就是主机根），
+    两者会产出同一个根 URL，所以这里去重并保持顺序。
+    """
     urls = [ROOT_SITE_URL]
     for p in [t['path'] for t in TOOLS] + [PRIVACY]:
         urls.append(SITE['base_url'] + p)
         urls.append(SITE['base_url'] + EN_DIR + p)
-    return urls
+    seen, out = set(), []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            out.append(u)
+    return out
 
 
 def main():
