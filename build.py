@@ -41,6 +41,14 @@ SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
 DOCS = ROOT / 'docs'
 
+# 需要原样发布到站点根目录的第三方文件（搜索引擎的域名验证文件等）。
+#
+# 不能直接放进 docs/：下面 build() 会 rmtree(outdir)，手放进去的文件必然被删
+# （CNAME 早就因为这个原因改成由构建生成了）。所以统一放在仓库根的 root_files/，
+# 由构建复制到 dist/ 与 docs/ 根目录。以后新增验证文件只要丢进这个目录，
+# 不用再改代码；换域名/换平台要删除时，也只要从这里删掉即可。
+ROOT_FILES = ROOT / 'root_files'
+
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
     'timestamp.js', 'hash.js', 'formatter.js',
@@ -479,6 +487,12 @@ def build():
     pages[Path('CNAME')] = CUSTOM_DOMAIN + '\n'
     # IndexNow 归属校验文件。域名根 == 本站发布目录根，所以放这里。
     pages[Path(f'{INDEXNOW_KEY}.txt')] = INDEXNOW_KEY
+
+    # 站点根目录的附加文件（搜索引擎验证文件等），见上方 ROOT_FILES 的说明
+    if ROOT_FILES.is_dir():
+        for extra in sorted(ROOT_FILES.iterdir()):
+            if extra.is_file():
+                pages[Path(extra.name)] = extra.read_text('utf-8')
 
     for outdir in (DIST, DOCS):
         if outdir.exists():
