@@ -27,9 +27,13 @@
 import os
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 from pathlib import Path
+
+# Windows 控制台默认 GBK，print 中文会抛 UnicodeEncodeError 或输出乱码，
+# 重定向到文件时也一样。统一强制 UTF-8。
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / 'src'))
@@ -86,11 +90,14 @@ def main():
             print('  ' + u)
         return 0
 
-    endpoint = (f'{BAIDU_PUSH_ENDPOINT}?'
-                + urllib.parse.urlencode({'site': BAIDU_PUSH_SITE, 'token': token}))
+    # 注意：site 参数不能 urlencode。百度不认识 https%3A%2F%2F 这种编码形式，
+    # 会直接返回 400 "site init fail"，看起来跟「站点没验证」一模一样，很容易误判。
+    endpoint = f'{BAIDU_PUSH_ENDPOINT}?site={BAIDU_PUSH_SITE}&token={token}'
     data = ('\n'.join(urls) + '\n').encode('utf-8')
-    req = urllib.request.Request(endpoint, data=data, method='POST',
-                                 headers={'Content-Type': 'text/plain'})
+    req = urllib.request.Request(
+        endpoint, data=data, method='POST',
+        headers={'Content-Type': 'text/plain',
+                 'User-Agent': 'Mozilla/5.0 devtools.help-push/1.0'})
 
     print(f'→ 推送 {len(urls)} 条到百度（site={BAIDU_PUSH_SITE}）\n')
     try:
@@ -118,13 +125,24 @@ def main():
             print('   ' + u)
         return 0
 
+    # 百度把多种失败都塞进 400，光看状态码分不清是没验证、token 错还是配额不够，
+    # 所以按返回体里的 message 判断，并始终打印原始返回。
+    msg = ''
+    try:
+        msg = json.loads(text).get('message', '')
+    except ValueError:
+        pass
+    body = text.strip()[:200]
+
     hints = {
-        400: '站点未在百度验证过，或 token 错误',
-        401: 'token 无效',
-        404: '接口地址错误',
-        500: '服务器错误（配额用尽也返回 500，看返回体是否含 over quota）',
+        'over quota': '当日配额不足（本次条数 > 剩余配额）。明天再推，或本次减少条数',
+        'site init fail': '站点未在百度验证过，或 site 参数写法不对（不要 urlencode）',
+        'token is invalid': 'token 无效',
+        'empty content': '请求体为空',
     }
-    print(f'❌ HTTP {code} — {hints.get(code, text.strip()[:200] or "无响应")}')
+    why = hints.get(msg, f'HTTP {code}')
+    print(f'❌ {why}')
+    print(f'   原始返回：{body or "无响应"}')
     return 1
 
 
