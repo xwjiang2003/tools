@@ -29,3 +29,16 @@ ENDPOINTS = [
     ('Yandex', 'https://yandex.com/indexnow'),
     ('Seznam', 'https://search.seznam.cz/indexnow'),
 ]
+
+# 百度「普通收录 - API 推送」。
+#
+# 位置：百度搜索资源平台 → 资源提交 → 普通收录 → API 提交 → 推送接口（token 就在那串 URL 里）。
+# 这是百度最快的收录通道，新站点几乎只能靠它让深层页被抓到；
+# 与 IndexNow 不同，百度不参与 IndexNow，必须单独推。
+#
+# token 本身只用于「向你自己站点推送链接」，泄露的后果是别人能消耗你的每日配额，
+# 风险很小，所以直接写在这里方便日常使用。若不放心，可用环境变量 BAIDU_PUSH_TOKEN
+# 覆盖（push_baidu.py 会优先读环境变量），把这一行改成空字符串即可。
+BAIDU_PUSH_ENDPOINT = 'http://data.zz.baidu.com/urls'
+BAIDU_PUSH_SITE = 'https://devtools.help'
+BAIDU_PUSH_TOKEN = 'bbfX9MJIqD7hqpmJ'
