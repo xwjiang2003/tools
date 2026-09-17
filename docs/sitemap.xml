@@ -6,7 +6,15 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/"/>
-    <changefreq>monthly</changefreq><priority>1.0</priority>
+    <changefreq>weekly</changefreq><priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/hotnews/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hotnews/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/hotnews/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/hotnews/"/>
+    <changefreq>daily</changefreq><priority>0.9</priority>
   </url>
   <url>
     <loc>https://devtools.help/diff/</loc>
@@ -69,6 +77,6 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/privacy.html"/>
-    <changefreq>monthly</changefreq><priority>0.3</priority>
+    <changefreq>yearly</changefreq><priority>0.3</priority>
   </url>
 </urlset>

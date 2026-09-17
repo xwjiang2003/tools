@@ -540,6 +540,73 @@ TOOLS_EN = {
              'for what it contains.'),
         ],
     },
+    'hotnews': {
+        'nav': 'Tech News',
+        'title': "Today's Tech News — Live Headlines for Developers | DevTools",
+        'description': (
+            'A tech news page rebuilt every day at 08:00 (UTC+8) from Hacker News, TechCrunch, '
+            'The Verge and Ars Technica. Every headline links straight to the original article. '
+            'No signup, no ads, no tracking.'
+        ),
+        'keywords': (
+            'tech news today,daily tech headlines,hacker news front page,developer news,'
+            'tech news aggregator,techcrunch headlines,ars technica,the verge tech'
+        ),
+        'h1': "Today's Tech News for Developers",
+        'intro': [
+            'One page with the day\u2019s most useful technology reading. It pulls the public RSS '
+            'feeds of Hacker News, TechCrunch, The Verge and Ars Technica into a single list, keeps '
+            'the source\u2019s own ordering, and links every headline straight to the original '
+            'article. Nothing is republished here — the copyright stays with each publisher.',
+            'The list is refreshed and the page rebuilt once a day at 08:00 (UTC+8). Because the '
+            'result is baked into plain HTML at build time rather than loaded by JavaScript, the '
+            'page works with no API calls, loads in one request, and is fully readable by search '
+            'engines and text browsers. There is no signup, no popup, no interstitial and no cookie.',
+        ],
+        'features': [
+            ('Grouped by source',
+             'Four sources, one section each. Use the tabs above the list to focus on a single '
+             'publication, or leave it on All to read everything in order.'),
+            ('Straight to the original',
+             'Every headline is a direct link to the publisher, opened in a new tab with no '
+             'redirect page and no tracking parameters added.'),
+            ('Updated daily at 08:00',
+             'A scheduled job refetches every source and rebuilds the page each morning, so what '
+             'you open is always the current edition.'),
+            ('Community signal',
+             'Hacker News entries keep their point count, which is often the clearest read on how '
+             'much the developer community actually cared about a story.'),
+            ('Graceful fallback',
+             'If a source is briefly unreachable the previous successful snapshot is kept and '
+             'labelled with its timestamp, so the page never renders empty.'),
+            ('No account, no app',
+             'A plain static page. No registration, no install, no browser extension.'),
+        ],
+        'steps': [
+            'Scroll the list below — by default every source is expanded, top to bottom.',
+            'Click a source tab to narrow the list to one publication, or All to see everything.',
+            'Click any headline to open the full article on the publisher\u2019s site in a new tab.',
+            'Need an actual tool? Use the top navigation to jump to the JSON, regex or timestamp pages.',
+        ],
+        'faq': [
+            ('How often is this page updated?',
+             'Once a day at 08:00 UTC+8. The scheduled job refetches every source and rebuilds the '
+             'page, so everyone sees the same edition at the same time. The exact timestamp is '
+             'printed at the top of the list.'),
+            ('Did you write these articles?',
+             'No. This page only reads each publisher\u2019s public RSS summary and displays the '
+             'headline, summary and publish time. The full article and its copyright belong to the '
+             'publisher, and clicking a headline takes you there. If a publisher would rather not '
+             'be aggregated, the feedback button removes them on request.'),
+            ('Why is the ordering not by time?',
+             'Each source\u2019s own order is preserved. Those lists are already ranked by editors '
+             'or by an algorithm — most visibly on Hacker News, where re-sorting by timestamp would '
+             'destroy the meaning of the ranking.'),
+            ('Do the outbound links carry ads or redirects?',
+             'No. Headlines point directly at the article URL. This site adds no interstitial, no '
+             'affiliate parameters and no redirect layer.'),
+        ],
+    },
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.

@@ -34,6 +34,17 @@ CJK_RUN = re.compile(r'[\u4e00-\u9fff]+')
 COMMENT = re.compile(r'/\*.*?\*/|<!--.*?-->|(?<!:)//[^\n]*', re.S)
 # 英文页里刻意保留的中文：语言切换按钮 + 字符串工具的 CJK 示例
 CJK_WHITELIST = {'中文', '你好', '世界'}
+# 站点根目录下的第三方验证文件（root_files/ 里的那些）。它们是 .html 但不是本站页面，
+# 没有反馈弹窗、也不进 sitemap，页面级检查必须跳过，否则每次都会被误报。
+VERIFY_PREFIXES = ('baidu_verify_', 'google', 'yandex_', 'msvalidate', 'sogou_verify_',
+                   '360verify', 'bing', 'indexnow')
+
+
+def is_page_file(f, target):
+    """排除站点根目录下的第三方验证文件。"""
+    if f.parent != target:
+        return True
+    return not f.name.lower().startswith(VERIFY_PREFIXES)
 
 
 # 只挑可执行的 JS：type 为空、text/javascript 或 module。
@@ -61,7 +72,7 @@ def main():
         print(f'❌ 目录不存在: {target}（先运行 python3 build.py）')
         return 1
 
-    pages = sorted(target.rglob('*.html'))
+    pages = [f for f in sorted(target.rglob('*.html')) if is_page_file(f, target)]
     errors = []
 
     # 1) 内联脚本语法
@@ -109,8 +120,10 @@ def main():
             n = len(urls)
             # 中英两个版本共用一条 <url>，靠 xhtml:link 声明 hreflang，
             # 所以条数应等于「非 /en/ 页面数」。
+            # 注意用 as_posix()：Windows 上 str(Path) 是反斜杠，直接比较 'en/'
+            # 会让所有英文页都被算成中文页。
             zh_pages = [f for f in pages
-                        if not str(f.relative_to(target)).startswith('en/')]
+                        if not f.relative_to(target).as_posix().startswith('en/')]
             ok = n == len(zh_pages)
             print(f'  {"✅" if ok else "❌"} sitemap.xml 合法，含 {n} 条 url'
                   f'（中文页面 {len(zh_pages)} 个，中英共用条目）')

@@ -1,0 +1,80 @@
+# 每天北京时间 08:00 更新「今日科技热榜」并重建站点。
+#
+# 为什么放在 GitHub Actions 而不是本地定时任务：抓取 + 构建 + 提交都在 GitHub 的机器上完成，
+# 不依赖任何一台电脑开机，也不占用本地带宽。页面本身就是仓库里的静态文件，跑完即发布。
+#
+# 时间说明：GitHub 的 cron 用 UTC，北京时间 08:00 == UTC 00:00。
+# 注意 workflow 里的 cron 有几分钟到十几分钟的排队延迟（高峰期更久），这是 GitHub 的
+# 正常行为，不是配置问题。要精确到点，只能改用外部调度器触发 workflow_dispatch。
+name: Daily tech news
+
+on:
+  schedule:
+    - cron: '0 0 * * *'      # UTC 00:00 = 北京时间 08:00
+  workflow_dispatch:          # 支持在 Actions 页面手动跑一次
+
+# 定时任务要能提交产物，必须显式给写权限
+permissions:
+  contents: write
+  pages: write
+
+# 同一时间只跑一个，避免手动触发和定时任务撞车
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 抓取。单个源失败不影响整体：失败的源会沿用上一次的数据，
+      # 页面照常构建，只是那一条会标注「上次成功抓取」的时间。
+      - name: Fetch news
+        run: python3 fetch_news.py
+
+      # 重建全站（中英双语所有页面 + sitemap + robots + llms.txt）
+      - name: Build site
+        run: python3 build.py
+
+      # 产物静态校验。check.py 需要 node 做内联脚本语法检查，runner 自带。
+      - name: Verify output
+        run: python3 check.py docs
+
+      - name: Commit and push
+        id: commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data docs
+          if git diff --cached --quiet; then
+            echo '没有变化，跳过提交'
+            exit 0
+          fi
+          git commit -m "chore(news): 更新 $(date -u +%Y-%m-%d) 科技热榜
+
+          由 .github/workflows/daily-news.yml 自动生成。"
+          git push
+
+      # 用 GITHUB_TOKEN 推送不会触发任何 workflow，也就不会自动触发 Pages 构建，
+      # 所以这里显式请求一次。失败不阻塞：即使不触发，下一次推送也会带上这批产物。
+      - name: Trigger Pages rebuild
+        if: steps.commit.outcome == 'success'
+        continue-on-error: true
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds"
+
+      # 顺带把新页面推给搜索引擎。IndexNow 无账号、无配额限制，失败也不影响发布。
+      - name: Notify search engines (IndexNow)
+        continue-on-error: true
+        run: python3 submit.py

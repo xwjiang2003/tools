@@ -35,11 +35,19 @@ sys.path.insert(0, str(ROOT / 'src'))
 from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
 from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
 from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
+from news import (CST, jsonld_items, load_news,           # noqa: E402
+                  render_body as render_news_body,
+                  sources_for, visible_items)
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
 DOCS = ROOT / 'docs'
+
+# 今日热榜页。正文不是静态文件而是构建期从 data/news.json 渲染出来的，
+# 所以 build() 里对它单独处理（见下方 NEWS_SLUG 分支）。
+NEWS_SLUG = 'hotnews'
+NEWS_PATH = next(t['path'] for t in TOOLS if t['slug'] == NEWS_SLUG)
 
 # 需要原样发布到站点根目录的第三方文件（搜索引擎的域名验证文件等）。
 #
@@ -337,20 +345,46 @@ def seo_section(c):
     return '\n'.join(p)
 
 
-def jsonld(c, url, lang):
-    graph = [{
-        '@type': 'WebApplication',
-        'name': c['h1'],
-        'url': url,
-        'description': c['description'],
-        'applicationCategory': 'DeveloperApplication',
-        'operatingSystem': 'Any',
-        'browserRequirements': '需要启用 JavaScript 的现代浏览器' if lang == 'zh'
-                               else 'Requires a modern browser with JavaScript enabled',
-        'inLanguage': HTML_LANG[lang],
-        'isAccessibleForFree': True,
-        'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'},
-    }]
+def jsonld(c, url, lang, news=None):
+    graph = []
+    if c.get('slug') == NEWS_SLUG:
+        # 热榜页不是「应用」，而是一个每天更新的列表页：用 CollectionPage + ItemList
+        # 描述更准确，也给了搜索引擎一个明确信号——这一页的条目会变、并且都指向外部原文。
+        graph.append({
+            '@type': 'CollectionPage',
+            'name': c['h1'],
+            'url': url,
+            'description': c['description'],
+            'inLanguage': HTML_LANG[lang],
+            'isAccessibleForFree': True,
+        })
+        entries = jsonld_items(lang, news or {}, 20)
+        if entries:
+            graph.append({
+                '@type': 'ItemList',
+                'name': c['h1'],
+                'numberOfItems': sum(len(visible_items(news, s))
+                                     for s in sources_for(lang)),
+                'itemListOrder': 'https://schema.org/ItemListUnordered',
+                'itemListElement': [
+                    {'@type': 'ListItem', 'position': i, 'name': title, 'url': link}
+                    for i, (_, title, link) in enumerate(entries, 1)
+                ],
+            })
+    else:
+        graph.append({
+            '@type': 'WebApplication',
+            'name': c['h1'],
+            'url': url,
+            'description': c['description'],
+            'applicationCategory': 'DeveloperApplication',
+            'operatingSystem': 'Any',
+            'browserRequirements': '需要启用 JavaScript 的现代浏览器' if lang == 'zh'
+                                   else 'Requires a modern browser with JavaScript enabled',
+            'inLanguage': HTML_LANG[lang],
+            'isAccessibleForFree': True,
+            'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'},
+        })
     if c['faq']:
         graph.append({
             '@type': 'FAQPage',
@@ -367,7 +401,14 @@ def jsonld(c, url, lang):
 
 # ---------------------------------------------------------------- 资源内联
 
-def inline_assets(tpl, with_js=True):
+def inline_assets(tpl, with_js=True, only_modules=None):
+    """把 CSS 与 JS 内联进模板。
+
+    only_modules 给定时只内联列出的模块，其余 `<script src="js/...">` 和
+    所有 cdnjs 标签一并删掉。用于热榜页这类「不需要编辑器」的页面：
+    默认模板会把 10 个模块和 12 个 CodeMirror/QRCode 的 CDN 标签全部带上，
+    对新闻页来说那是纯浪费（实测单页因此从约 14 KB 涨到 120 KB，还要多 14 个外部请求）。
+    """
     css = (SRC / 'css' / 'style.css').read_text('utf-8')
     tpl = tpl.replace('<link rel="stylesheet" href="css/style.css">',
                       '<style>\n' + css + '\n</style>')
@@ -378,7 +419,15 @@ def inline_assets(tpl, with_js=True):
         tag = f'<script src="js/{mod}"></script>'
         if tag not in tpl:
             raise SystemExit(f'❌ 模板中找不到脚本标签: {tag}')
+        if only_modules is not None and mod not in only_modules:
+            tpl = tpl.replace(tag + '\n', '')          # 整行连标签一并去掉
+            continue
         tpl = tpl.replace(tag, '<script>\n// ' + mod + '\n' + js + '\n</script>')
+    if only_modules is not None:
+        tpl = re.sub(r'\n<link rel="stylesheet" href="https://cdnjs\.cloudflare\.com/[^"]*">',
+                     '', tpl)
+        tpl = re.sub(r'\n<script src="https://cdnjs\.cloudflare\.com/[^"]*"></script>',
+                     '', tpl)
     return tpl
 
 
@@ -442,18 +491,27 @@ def _slug_of(path):
 
 def build():
     tpl = inline_assets((SRC / 'index.html').read_text('utf-8'))
+    # 热榜页只需要 core.js（主题、语言切换、反馈弹窗）：编辑器模块和 CodeMirror/QRCode
+    # 的 CDN 标签对它毫无用处，去掉后单页体积与外部请求都只剩零头。
+    news_tpl = inline_assets((SRC / 'index.html').read_text('utf-8'),
+                             only_modules=('core.js',))
     privacy_tpl = inline_assets((SRC / 'privacy.html').read_text('utf-8'), with_js=False)
+    news = load_news()
 
     pages = {}
     for lang in LANGS:
         for t in TOOLS:
             c = content_for(t, lang)
-            body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
+            if t['slug'] == NEWS_SLUG:
+                page_tpl, body = news_tpl, render_news_body(lang, news)
+            else:
+                page_tpl = tpl
+                body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
             base = lang_prefix(lang, rel_root(lang, t['path']))
             home = base or './'
-            page = apply_common(tpl, lang, t['slug'], t['path'], c['title'], c['description'],
-                                c['keywords'], body, seo_section(c),
-                                jsonld(c, canonical_url(lang, t['path']), lang),
+            page = apply_common(page_tpl, lang, t['slug'], t['path'], c['title'],
+                                c['description'], c['keywords'], body, seo_section(c),
+                                jsonld(c, canonical_url(lang, t['path']), lang, news),
                                 base, home)
             if lang == 'en':
                 page = localize(page)
@@ -478,7 +536,7 @@ def build():
             page = localize(page)
         pages[out_path(lang, PRIVACY_FILE)] = page
 
-    pages[Path('sitemap.xml')] = sitemap_xml()
+    pages[Path('sitemap.xml')] = sitemap_xml(news)
     pages[Path('robots.txt')] = robots_txt()
     pages[Path('llms.txt')] = llms_txt()
     pages[Path('.nojekyll')] = ''
@@ -509,20 +567,36 @@ def build():
     return True
 
 
-def sitemap_xml():
+def sitemap_xml(news=None):
     paths = [t['path'] for t in TOOLS] + [PRIVACY_FILE]
+
+    # 只有热榜页写 <lastmod>。它每天确实会变，lastmod 因此是真的；
+    # 其余页面变化很少，如果跟着构建时间天天变，反而会让搜索引擎不再信任这个字段。
+    news_day = ''
+    if news and news.get('generated_at'):
+        from datetime import datetime
+        news_day = datetime.fromtimestamp(news['generated_at'], CST).strftime('%Y-%m-%d')
+
     rows = []
     for p in paths:
         zh = SITE['base_url'] + p
         en = SITE['base_url'] + EN_DIR + p
-        pri = '1.0' if p == '' else ('0.3' if p == PRIVACY_FILE else '0.8')
+        if p == '':
+            pri, freq = '1.0', 'weekly'
+        elif p == PRIVACY_FILE:
+            pri, freq = '0.3', 'yearly'
+        elif p == NEWS_PATH:
+            pri, freq = '0.9', 'daily'
+        else:
+            pri, freq = '0.8', 'monthly'
+        lastmod = f'\n    <lastmod>{news_day}</lastmod>' if (p == NEWS_PATH and news_day) else ''
         rows.append(
             '  <url>\n'
-            f'    <loc>{zh}</loc>\n'
+            f'    <loc>{zh}</loc>{lastmod}\n'
             f'    <xhtml:link rel="alternate" hreflang="zh-CN" href="{zh}"/>\n'
             f'    <xhtml:link rel="alternate" hreflang="en" href="{en}"/>\n'
             f'    <xhtml:link rel="alternate" hreflang="x-default" href="{zh}"/>\n'
-            f'    <changefreq>monthly</changefreq><priority>{pri}</priority>\n'
+            f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
             '  </url>'
         )
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -583,11 +657,14 @@ def llms_txt():
         '> 免注册、免安装的纯浏览器端开发者工具集合，覆盖 JSON、文本比对、编解码、正则、',
         '> 时间戳、哈希、代码格式化、字符串处理与生成器共 9 个工具。所有解析与计算都在用户',
         '> 浏览器内完成，输入内容不会上传到任何服务器。中英双语，免费无广告。',
+        '> 另有一个「今日科技热榜」页面，每天 08:00 自动聚合十余家科技媒体的最新资讯。',
         '',
         'Key facts:',
         '- 9 tools, each on its own URL; every page runs entirely client-side '
         '(no upload, no signup, no ads).',
         '- Bilingual: Chinese at the root, English under /en/. Same tools, independent copy.',
+        '- A tech news page is rebuilt daily at 08:00 UTC+8 from public RSS feeds; '
+        'each item links out to the original article.',
         '- Verification hooks: /sitemap.xml (with hreflang alternates), /robots.txt, '
         'JSON-LD on every tool page.',
         '',
@@ -595,12 +672,23 @@ def llms_txt():
         '',
     ]
     for t in TOOLS:
+        if t['slug'] == NEWS_SLUG:
+            continue
         en = TOOLS_EN[t['slug']]
         zh_url = SITE['base_url'] + t['path']
         en_url = SITE['base_url'] + EN_DIR + t['path']
         out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]}')
         out.append(f'  - English: [{en["h1"]}]({en_url}) — {en["description"]}')
     out += [
+        '',
+        '## News / 资讯',
+        '',
+        f'- [今日科技热榜 / Today\'s Tech News]({SITE["base_url"]}{NEWS_PATH}): '
+        '每天 08:00 自动聚合 IT之家、少数派、InfoQ、开源中国、Solidot、爱范儿、钛媒体、'
+        '雷峰网与 Hacker News、TechCrunch、The Verge、Ars Technica 的最新条目，'
+        '每条给出标题、来源、发布时间与原文直达链接。',
+        f'  - English: [Today\'s Tech News]({SITE["base_url"]}{EN_DIR}{NEWS_PATH}) — '
+        'rebuilt daily from Hacker News, TechCrunch, The Verge and Ars Technica.',
         '',
         '## Optional',
         '',

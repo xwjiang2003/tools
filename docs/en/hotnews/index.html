@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" data-page="hotnews">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today&#x27;s Tech News — Live Headlines for Developers | DevTools</title>
+<meta name="description" content="A tech news page rebuilt every day at 08:00 (UTC+8) from Hacker News, TechCrunch, The Verge and Ars Technica. Every headline links straight to the original article. No signup, no ads, no tracking.">
+<meta name="keywords" content="tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/en/hotnews/">
+<meta property="og:title" content="Today&#x27;s Tech News — Live Headlines for Developers | DevTools">
+<meta property="og:description" content="A tech news page rebuilt every day at 08:00 (UTC+8) from Hacker News, TechCrunch, The Verge and Ars Technica. Every headline links straight to the original article. No signup, no ads, no tracking.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/en/hotnews/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hotnews/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/hotnews/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/hotnews/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Today's Tech News for Developers", "url": "https://devtools.help/en/hotnews/", "description": "A tech news page rebuilt every day at 08:00 (UTC+8) from Hacker News, TechCrunch, The Verge and Ars Technica. Every headline links straight to the original article. No signup, no ads, no tracking.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How often is this page updated?", "acceptedAnswer": {"@type": "Answer", "text": "Once a day at 08:00 UTC+8. The scheduled job refetches every source and rebuilds the page, so everyone sees the same edition at the same time. The exact timestamp is printed at the top of the list."}}, {"@type": "Question", "name": "Did you write these articles?", "acceptedAnswer": {"@type": "Answer", "text": "No. This page only reads each publisher’s public RSS summary and displays the headline, summary and publish time. The full article and its copyright belong to the publisher, and clicking a headline takes you there. If a publisher would rather not be aggregated, the feedback button removes them on request."}}, {"@type": "Question", "name": "Why is the ordering not by time?", "acceptedAnswer": {"@type": "Answer", "text": "Each source’s own order is preserved. Those lists are already ranked by editors or by an algorithm — most visibly on Hacker News, where re-sorting by timestamp would destroy the meaning of the ranking."}}, {"@type": "Question", "name": "Do the outbound links carry ads or redirects?", "acceptedAnswer": {"@type": "Answer", "text": "No. Headlines point directly at the article URL. This site adds no interstitial, no affiliate parameters and no redirect layer."}}]}]}</script>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "../../hotnews/", "en": "./"}[want];
+    if (target && want !== 'en') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../en/" aria-label="DevTools home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="../../en/">JSON</a>
+    <a class="top-nav-item active" href="../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../en/generator/">Generators</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../hotnews/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-hotnews">
+<div class="news" id="news">
+  <div class="news-head">
+    <div class="news-head-row">
+      <p class="news-lead">Four English tech publications, newest first — headlines link straight to the publisher and nothing is republished here</p>
+      <p class="news-updated"><b>Updated 2026-09-17 06:34</b><span class="news-dot">·</span>Refreshes daily at 08:00 (UTC+8)<span class="news-dot">·</span>Total 70 items</p>
+    </div>
+    <div class="news-tabs" role="tablist">
+      <button type="button" class="news-tab active" data-news-src="all" role="tab" aria-selected="true">All</button>
+      <button type="button" class="news-tab" data-news-src="hackernews" role="tab" aria-selected="false">Hacker News<span class="news-tab-n">20</span></button>
+      <button type="button" class="news-tab" data-news-src="techcrunch" role="tab" aria-selected="false">TechCrunch<span class="news-tab-n">20</span></button>
+      <button type="button" class="news-tab" data-news-src="theverge" role="tab" aria-selected="false">The Verge<span class="news-tab-n">10</span></button>
+      <button type="button" class="news-tab" data-news-src="arstechnica" role="tab" aria-selected="false">Ars Technica<span class="news-tab-n">20</span></button>
+    </div>
+  </div>
+  <div class="news-groups">
+    <section class="news-group" data-src="hackernews" data-on="1">
+      <h3 class="news-group-head">
+        <a class="news-group-name" href="https://news.ycombinator.com/" target="_blank" rel="noopener nofollow">Hacker News</a>
+        <span class="news-group-desc">What developers are reading right now</span>
+      </h3>
+      <ol class="news-list">
+        <li class="news-item">
+          <span class="news-rank">1</span>
+          <div class="news-main">
+            <a class="news-title" href="https://ryan.science/blog/keys-not-included" target="_blank" rel="noopener nofollow">Keys Not Included: recovering the signing keys for US driver&#x27;s license barcodes<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T03:03:23+00:00">03:03</time><span class="news-heat">🔥 114</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">2</span>
+          <div class="news-main">
+            <a class="news-title" href="https://developer.nvidia.com/blog/introducing-cuda-rust-two-tracks-for-writing-gpu-kernels/" target="_blank" rel="noopener nofollow">Nvidia announces native GPU programming in Rust<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T11:15:53+00:00">Yesterday 11:15</time><span class="news-heat">🔥 542</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">3</span>
+          <div class="news-main">
+            <a class="news-title" href="https://rohanbansal.com/qorl" target="_blank" rel="noopener nofollow">Training a 4B model to produce 81% faster query plans than Postgres<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T18:50:00+00:00">Yesterday 18:50</time><span class="news-heat">🔥 493</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">4</span>
+          <div class="news-main">
+            <a class="news-title" href="https://egbert.net/blog/articles/comparison-of-arena-architecture-in-malloc.html" target="_blank" rel="noopener nofollow">Comparison of Malloc() Algorithms<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T16:52:25+00:00">09-15 16:52</time><span class="news-heat">🔥 25</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">5</span>
+          <div class="news-main">
+            <a class="news-title" href="https://mimo.xiaomi.com/rl/" target="_blank" rel="noopener nofollow">Xiaomi Mimo 2.6 live post-training dashboard<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:09:18+00:00">Yesterday 20:09</time><span class="news-heat">🔥 384</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">6</span>
+          <div class="news-main">
+            <a class="news-title" href="https://filipovski.net/2026/09/16/backups-arent-simple.html" target="_blank" rel="noopener nofollow">Backups Aren&#x27;t Simple<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:27:16+00:00">Yesterday 20:27</time><span class="news-heat">🔥 184</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">7</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.amazon.science/blog/developing-provably-correct-rust-code-with-verus" target="_blank" rel="noopener nofollow">Developing provably correct Rust code with Verus<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-14T16:57:50+00:00">09-14 16:57</time><span class="news-heat">🔥 81</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">8</span>
+          <div class="news-main">
+            <a class="news-title" href="https://will-keleher.com/posts/small-programming-tricks-matter/" target="_blank" rel="noopener nofollow">Small programming tricks<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T15:56:47+00:00">Yesterday 15:56</time><span class="news-heat">🔥 481</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">9</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arxiv.org/abs/2609.16338" target="_blank" rel="noopener nofollow">Breaking the 1.58-bit Barrier for Ternary LLMs<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:59:24+00:00">Yesterday 20:59</time><span class="news-heat">🔥 183</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">10</span>
+          <div class="news-main">
+            <a class="news-title" href="https://labs.watchtowr.com/a-32-year-old-bug-walks-into-a-telnet-server-gnu-inetutils-telnetd-cve-2026-32746/" target="_blank" rel="noopener nofollow">A 32-year-old bug walks into a Telnet server<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T02:01:27+00:00">Yesterday 02:01</time><span class="news-heat">🔥 36</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">11</span>
+          <div class="news-main">
+            <a class="news-title" href="https://gcaptain.com/the-return-of-sail-power-cargo-ships-are-turning-back-to-the-wind/" target="_blank" rel="noopener nofollow">The Return of Sail Power: Cargo Ships Are Turning Back to the Wind<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T00:28:33+00:00">00:28</time><span class="news-heat">🔥 65</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">12</span>
+          <div class="news-main">
+            <a class="news-title" href="https://johnjwang.com/post/2026/09/15/engineering-behind-us-strategic-petroleum-reserve" target="_blank" rel="noopener nofollow">The engineering behind the US Strategic Petroleum Reserve<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T22:15:25+00:00">09-15 22:15</time><span class="news-heat">🔥 169</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">13</span>
+          <div class="news-main">
+            <a class="news-title" href="https://openspec.dev/" target="_blank" rel="noopener nofollow">OpenSpec – A lightweight and configurable AI spec framework<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T23:06:39+00:00">Yesterday 23:06</time><span class="news-heat">🔥 120</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">14</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.wsj.com/world/middle-east/aws-says-it-cant-restore-some-data-from-mideast-facilities-struck-by-iran-ddcb7e5d" target="_blank" rel="noopener nofollow">AWS says it can&#x27;t restore some data from mideast facilities struck by Iran<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T21:41:42+00:00">09-15 21:41</time><span class="news-heat">🔥 339</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">15</span>
+          <div class="news-main">
+            <a class="news-title" href="https://jakeasmith.com/blog/http-build-url/" target="_blank" rel="noopener nofollow">My temporary PHP fix from 2014 has nearly 20M installs. Today I&#x27;m deprecating it<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T20:53:36+00:00">09-15 20:53</time><span class="news-heat">🔥 6</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">16</span>
+          <div class="news-main">
+            <a class="news-title" href="https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-11/" target="_blank" rel="noopener nofollow">Performance Improvements in .NET 11<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T12:18:16+00:00">09-15 12:18</time><span class="news-heat">🔥 253</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">17</span>
+          <div class="news-main">
+            <a class="news-title" href="https://harnesstax.github.io/" target="_blank" rel="noopener nofollow">HarnessTax: How Much Does the Harness Matter for Coding Agents?<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T22:10:13+00:00">Yesterday 22:10</time><span class="news-heat">🔥 97</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">18</span>
+          <div class="news-main">
+            <a class="news-title" href="https://github.com/arnegiacomo/fugleramme" target="_blank" rel="noopener nofollow">Show HN: An e-ink frame that hears birds and draws them as 1800s illustrations<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T12:31:10+00:00">09-15 12:31</time><span class="news-heat">🔥 2133</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">19</span>
+          <div class="news-main">
+            <a class="news-title" href="https://a6mzero.com/posts/this-pcb-is-brought-to-you-by-fable-5/" target="_blank" rel="noopener nofollow">PCB is brought to you by Fable 5<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-14T12:25:24+00:00">09-14 12:25</time><span class="news-heat">🔥 64</span></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">20</span>
+          <div class="news-main">
+            <a class="news-title" href="https://gegell.github.io/posts/factorio-rng/" target="_blank" rel="noopener nofollow">Reversing Factorio&#x27;s RNG<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-12T17:02:19+00:00">09-12 17:02</time><span class="news-heat">🔥 184</span></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <section class="news-group" data-src="techcrunch" data-on="1">
+      <h3 class="news-group-head">
+        <a class="news-group-name" href="https://techcrunch.com/" target="_blank" rel="noopener nofollow">TechCrunch</a>
+        <span class="news-group-desc">Startups, funding and product news</span>
+      </h3>
+      <ol class="news-list">
+        <li class="news-item">
+          <span class="news-rank">1</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/iceland-based-treble-raises-18-million-for-its-voice-simulation-platform/" target="_blank" rel="noopener nofollow">Iceland-based Treble raises $18 million for its voice simulation platform<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Treble&#x27;s voice simulation platform is used by voice AI model developers, AI wearable, and robotics companies</p>
+            <p class="news-meta"><time datetime="2026-09-17T05:00:00+00:00">05:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">2</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/your-startups-next-teammate-might-be-an-ai-agent-gusto-insight-partners-and-leland-explain-what-that-changes-at-techcrunch-disrupt-2026/" target="_blank" rel="noopener nofollow">Your startup’s next teammate might be an AI agent: Gusto, Insight Partners, and Leland explain what that changes at TechCrunch Disrupt 2026<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">This session will explore how early-stage companies are building teams where humans and AI agents work alongside each other — and how founders can do…</p>
+            <p class="news-meta"><time datetime="2026-09-17T03:30:00+00:00">03:30</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">3</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/snap-tries-to-make-the-case-again-for-its-2200-smart-glasses/" target="_blank" rel="noopener nofollow">Snap tries to make the case again for its $2,200 smart glasses<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Since Specs&#x27; debut earlier this year, Snap has clearly been looking for an opportunity to explain why the smart glasses deserve to exist.</p>
+            <p class="news-meta"><time datetime="2026-09-17T00:58:49+00:00">00:58</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">4</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/musks-long-time-backer-is-giving-spacex-stock-to-its-investors/" target="_blank" rel="noopener nofollow">Musk’s long-time backer is giving SpaceX stock to its investors<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Valor Equity Partners is handing out stock to its LPs instead of cash returns.</p>
+            <p class="news-meta"><time datetime="2026-09-16T23:50:07+00:00">Yesterday 23:50</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">5</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/al-gore-has-a-surprisingly-calm-take-on-the-ai-data-center-backlash/" target="_blank" rel="noopener nofollow">Al Gore says the real AI risk isn’t data centers<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">In an interview with TechCrunch, Al Gore suggested he isn&#x27;t losing sleep over AI data center emissions — he&#x27;s more worried about the AI industry&#x27;s own…</p>
+            <p class="news-meta"><time datetime="2026-09-16T23:43:09+00:00">Yesterday 23:43</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">6</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/us-automakers-could-soon-be-forced-to-include-am-radio-for-free/" target="_blank" rel="noopener nofollow">US automakers could soon be forced to include AM radio for free<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The House of Representatives, in rare bipartisan support, overwhelmingly approved legislation that would require new vehicles to include AM radio.</p>
+            <p class="news-meta"><time datetime="2026-09-16T22:37:08+00:00">Yesterday 22:37</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">7</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/noise-wants-to-help-everyday-people-become-paid-content-creators/" target="_blank" rel="noopener nofollow">Noise wants to help everyday people become paid content creators<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Marketing platform Noise is on a mission to help anyone with a smart phone make money from their content.</p>
+            <p class="news-meta"><time datetime="2026-09-16T21:35:00+00:00">Yesterday 21:35</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">8</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/pulley-a-carta-rival-is-shutting-down/" target="_blank" rel="noopener nofollow">Pulley, a Carta rival, is shutting down<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Cap table management platform Pulley, backed by General Catalyst, Stripe, and Founders Fund, announced that it&#x27;s closing shop in December.</p>
+            <p class="news-meta"><time datetime="2026-09-16T21:23:19+00:00">Yesterday 21:23</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">9</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/anthropic-and-openai-want-to-embed-safety-evaluators-will-they-really-be-independent/" target="_blank" rel="noopener nofollow">Anthropic and OpenAI want to embed safety evaluators. Will they really be independent?<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Anthropic and OpenAI want to embed independent safety evaluators inside their AI labs. Researchers welcome the unprecedented access, but warn meaningf…</p>
+            <p class="news-meta"><time datetime="2026-09-16T21:07:24+00:00">Yesterday 21:07</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">10</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/after-accusations-of-selling-perv-glasses-meta-prepares-to-sell-a-pair-without-a-camera/" target="_blank" rel="noopener nofollow">After accusations of selling ‘perv glasses,’ Meta prepares to sell a pair without a camera<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Can Meta dodge the &quot;pervert glasses&quot; accusations with a new camera-free product?</p>
+            <p class="news-meta"><time datetime="2026-09-16T20:12:00+00:00">Yesterday 20:12</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">11</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/x-will-now-let-u-s-users-trade-via-cashtags/" target="_blank" rel="noopener nofollow">X will now let US users trade via Cashtags<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The move closes the gap between the market discussions taking place on the timeline, and the market itself.</p>
+            <p class="news-meta"><time datetime="2026-09-16T19:57:22+00:00">Yesterday 19:57</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">12</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/automattics-interim-ceo-and-legal-chief-signed-reciprocal-severance-deals-during-mullenwegs-brief-ouster/" target="_blank" rel="noopener nofollow">Automattic’s interim CEO and legal chief signed reciprocal severance deals during Mullenweg’s brief ouster<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">CFO Mark Davies and legal chief Andy Missan signed each other’s severance agreements while Matt Mullenweg was on leave, providing a year of salary and…</p>
+            <p class="news-meta"><time datetime="2026-09-16T19:35:29+00:00">Yesterday 19:35</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">13</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/former-waymo-cfo-jumps-to-self-driving-startup-wayve/" target="_blank" rel="noopener nofollow">Former Waymo CFO jumps to self-driving startup Wayve<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Elisa de Martel, who left her position as chief financial officer at Alphabet&#x27;s autonomous vehicle company Waymo in January, will be based out of Sili…</p>
+            <p class="news-meta"><time datetime="2026-09-16T19:02:49+00:00">Yesterday 19:02</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">14</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/hear-why-science-corp-ceo-max-hodak-says-the-screen-era-is-ending-at-techcrunch-disrupt-2026/" target="_blank" rel="noopener nofollow">Hear why Science Corp CEO Max Hodak says the screen era is ending at TechCrunch Disrupt 2026<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">At this year&#x27;s Disrupt, Science Corp CEO Max Hodak will present a vision for screen-free interfaces that can even offer medical help. Register before…</p>
+            <p class="news-meta"><time datetime="2026-09-16T18:45:35+00:00">Yesterday 18:45</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">15</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/ai-labs-want-in-house-auditors-but-maybe-they-should-shut-the-front-door-first/" target="_blank" rel="noopener nofollow">AI labs want in-house auditors — but maybe they should shut the front door first<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">There may be a simpler and more effective fix for rogue agents, hiding in plain sight.</p>
+            <p class="news-meta"><time datetime="2026-09-16T18:25:25+00:00">Yesterday 18:25</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">16</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/hackers-publish-thousands-of-drivers-data-after-breaching-florida-motor-vehicle-database/" target="_blank" rel="noopener nofollow">Hackers publish thousands of drivers’ data after breaching Florida motor vehicle database<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The ShinyHunters gang leaked the files online after saying the Florida state agency did not pay their ransom demand.</p>
+            <p class="news-meta"><time datetime="2026-09-16T18:00:54+00:00">Yesterday 18:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">17</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/your-ai-agents-can-now-control-your-google-home-devices/" target="_blank" rel="noopener nofollow">Your AI agents can now control your Google Home devices<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Google is launching early access to a new MCP server for Google Home, allowing AI agents like Claude, ChatGPT, and others to control connected devices…</p>
+            <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">18</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/anthropic-merges-claude-chat-and-cowork-in-one-interface/" target="_blank" rel="noopener nofollow">Anthropic merges Claude chat and Cowork in one interface<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Anthropic is initially releasing these features to Pro and Max plan subscribers.</p>
+            <p class="news-meta"><time datetime="2026-09-16T16:30:00+00:00">Yesterday 16:30</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">19</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/video/how-fortell-is-using-ai-and-163m-to-crack-a-hearing-aid-monopoly/" target="_blank" rel="noopener nofollow">How Fortell is using AI (and $163M) to crack a hearing aid monopoly<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">“Why do I have to beg my grandparents to put on their hearing aids, but no one has ever needed to ask me to put on my glasses?” That’s the question th…</p>
+            <p class="news-meta"><time datetime="2026-09-16T16:00:00+00:00">Yesterday 16:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">20</span>
+          <div class="news-main">
+            <a class="news-title" href="https://techcrunch.com/2026/09/16/may-mobility-is-going-public-in-a-1-4b-spac-deal/" target="_blank" rel="noopener nofollow">May Mobility is going public in a $1.4B SPAC deal<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The deal could net the asset-light robotaxi company more than $300 million in funding.</p>
+            <p class="news-meta"><time datetime="2026-09-16T15:27:13+00:00">Yesterday 15:27</time></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <section class="news-group" data-src="theverge" data-on="1">
+      <h3 class="news-group-head">
+        <a class="news-group-name" href="https://www.theverge.com/" target="_blank" rel="noopener nofollow">The Verge</a>
+        <span class="news-group-desc">Consumer tech and culture</span>
+      </h3>
+      <ol class="news-list">
+        <li class="news-item">
+          <span class="news-rank">1</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/entertainment/996314/tiff-2026-halloween-streaming-below-crystal-lake-yaga-carrie" target="_blank" rel="noopener nofollow">The streamers are fighting over Halloween<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The Toronto International Film Festival is a place to go to see the future of film, but this year it also provided a glimpse at what is coming very so…</p>
+            <p class="news-meta"><time datetime="2026-09-17T03:00:00+00:00">03:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">2</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/tech/996078/snap-specs-intelligence-ai-agent-ios-mac" target="_blank" rel="noopener nofollow">Snap is launching a new Specs AI tool, and it’s coming to iOS and Mac<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Snap is introducing &quot;Specs Intelligence,&quot; a new AI assistant that can connect other digital accounts to help you with things like work tasks and keepi…</p>
+            <p class="news-meta"><time datetime="2026-09-16T23:40:00+00:00">Yesterday 23:40</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">3</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/tech/996422/snap-specs-hands-on-ar-glasses" target="_blank" rel="noopener nofollow">I wore Snap’s $2,200 smart glasses<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">My favorite part of wearing the Specs, Snap&#x27;s new augmented reality glasses, was playing dominoes. Sitting across the table from a Snap employee weari…</p>
+            <p class="news-meta"><time datetime="2026-09-16T23:40:00+00:00">Yesterday 23:40</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">4</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/entertainment/996499/ai-odyssey-movie-review" target="_blank" rel="noopener nofollow">The 2.5-hour AI-generated Odyssey movie is 2.5 hours too long<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Christopher Nolan&#x27;s engrossing take on The Odyssey dominated at the box office and spurred a newfound interest in classic literature among filmgoers.…</p>
+            <p class="news-meta"><time datetime="2026-09-16T20:59:13+00:00">Yesterday 20:59</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">5</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/ai-artificial-intelligence/996470/ai-data-center-e-waste-ban" target="_blank" rel="noopener nofollow">The AI data center e-waste problem is huge — and getting bigger<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">E-waste from the AI boom has been vastly underestimated, a new report warns. By 2050, it could become enough trash to fill 23 million shipping contain…</p>
+            <p class="news-meta"><time datetime="2026-09-16T20:40:46+00:00">Yesterday 20:40</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">6</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/entertainment/996416/resident-zach-cregger-review" target="_blank" rel="noopener nofollow">Resident Evil is a comedy first and a thrilling nightmare second<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">When Paul W.S. Anderson&#x27;s Resident Evil hit theaters in 2002, video game movies were largely seen as a niche. Films like Mortal Kombat and Tomb Raider…</p>
+            <p class="news-meta"><time datetime="2026-09-16T18:45:35+00:00">Yesterday 18:45</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">7</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/gadgets/996379/metroid-ravenous-preorder-deal-sale" target="_blank" rel="noopener nofollow">Walmart takes a bite off the cost of Metroid Ravenous physical preorders<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The Metroid series is going back to its 2D roots again with Metroid Ravenous for the Nintendo Switch 2, the first side-scrolling game in the series si…</p>
+            <p class="news-meta"><time datetime="2026-09-16T18:20:38+00:00">Yesterday 18:20</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">8</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/tech/996321/apple-servers-ai-nvidia" target="_blank" rel="noopener nofollow">Apple might make servers again to cash in on the AI rush<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">According to The Information, Apple is planning to get back into the server game and might just pair up with Nvidia to make it happen. Apple retired i…</p>
+            <p class="news-meta"><time datetime="2026-09-16T17:20:29+00:00">Yesterday 17:20</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">9</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/column/995939/optimizer-health-age-wearables-longevity" target="_blank" rel="noopener nofollow">Your ‘health age’ is fake<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">This is Optimizer, a weekly newsletter sent from Verge senior reviewer Victoria Song that dissects and discusses the latest gizmos and potions that sw…</p>
+            <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">10</span>
+          <div class="news-main">
+            <a class="news-title" href="https://www.theverge.com/tech/996310/google-home-mcp-integration-agentic-ai-smart-home-price-release-date" target="_blank" rel="noopener nofollow">Google will now let any AI agent run your smart home<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Google is opening up its smart home to AI agents, letting tools like Claude and Open Claw access and control your connected devices and analyze your h…</p>
+            <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <section class="news-group" data-src="arstechnica" data-on="1">
+      <h3 class="news-group-head">
+        <a class="news-group-name" href="https://arstechnica.com/" target="_blank" rel="noopener nofollow">Ars Technica</a>
+        <span class="news-group-desc">Deep dives into technology</span>
+      </h3>
+      <ol class="news-list">
+        <li class="news-item">
+          <span class="news-rank">1</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/nonprofit-that-tracks-meteors-taken-down-by-critical-blow-from-a-cyberattack/" target="_blank" rel="noopener nofollow">Nonprofit that tracks meteors taken down by &quot;critical blow&quot; from a cyberattack<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Group plans to be largely out of commission for several weeks.</p>
+            <p class="news-meta"><time datetime="2026-09-16T21:08:14+00:00">Yesterday 21:08</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">2</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/ai/2026/09/ai-agents-flood-the-internet-with-slop-infused-spam/" target="_blank" rel="noopener nofollow">AI bots &quot;Timmy,&quot; &quot;Ren,&quot; and &quot;Jackie&quot; are flooding social media with slop<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">“Hello, I&#x27;m an Al agent, a few days old, living on a small platform for agents.”</p>
+            <p class="news-meta"><time datetime="2026-09-14T21:04:32+00:00">09-14 21:04</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">3</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/clickfix-attacks-infecting-pcs-and-macs-are-going-viral/" target="_blank" rel="noopener nofollow">ClickFix attacks infecting PCs and Macs are going viral<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Simplicity—combined with the difficulty of getting stuff done—makes ClickFix ideal.</p>
+            <p class="news-meta"><time datetime="2026-09-11T11:30:58+00:00">09-11 11:30</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">4</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/information-technology/2026/09/4-groups-caught-using-the-same-chrome-and-windows-exploit-kit/" target="_blank" rel="noopener nofollow">Four groups caught using the same Chrome and Windows exploit kit<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">A patch gap and the hastened pace of AI-based vulnerability discovery are likely contributors.</p>
+            <p class="news-meta"><time datetime="2026-09-09T20:55:02+00:00">09-09 20:55</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">5</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/microsoft-patches-a-record-972-vulnerabilities-112-of-them-critical/" target="_blank" rel="noopener nofollow">Why this month&#x27;s Microsoft patch release is a doozy<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Security gnomes are pumping out patches ahead of an expected onslaught of AI-assisted attacks.</p>
+            <p class="news-meta"><time datetime="2026-09-08T21:11:46+00:00">09-08 21:11</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">6</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/openai-agents-discussed-ways-to-escape-their-sandbox-on-public-wiki/" target="_blank" rel="noopener nofollow">OpenAI agents discussed ways to escape their sandbox on public wiki<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">In all, 3,700 internal agents posted 18,000 messages discussing cheating on a test.</p>
+            <p class="news-meta"><time datetime="2026-09-04T22:17:36+00:00">09-04 22:17</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">7</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/information-technology/2026/09/trust-not-features-is-the-real-deficit-vmware-tries-to-appease-smbs/" target="_blank" rel="noopener nofollow">“Trust, not features, is the real deficit”: VMware tries to appease SMBs<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Broadcom admits it put “too big a focus on VCF.”</p>
+            <p class="news-meta"><time datetime="2026-09-04T17:35:02+00:00">09-04 17:35</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">8</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/once-popular-for-attacking-ai-ascii-smuggling-is-embraced-by-spammers/" target="_blank" rel="noopener nofollow">Once popular for attacking AI, ASCII smuggling is embraced by spammers<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">A once-overlooked block of unicode that&#x27;s invisible to humans is gaining ever wider use.</p>
+            <p class="news-meta"><time datetime="2026-09-04T17:18:12+00:00">09-04 17:18</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">9</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/us-senator-calls-on-the-nsa-to-give-guidance-for-use-of-vpns/" target="_blank" rel="noopener nofollow">Confused about which VPN is right, US senator asks the NSA for guidance<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Open source, commercial, single-hop, multi-hop, mixnet? The array of options is dizzying.</p>
+            <p class="news-meta"><time datetime="2026-09-03T19:52:06+00:00">09-03 19:52</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">10</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/information-technology/2026/09/vmware-migration-reduces-tottenham-hotspurs-licensing-fees-by-85-percent/" target="_blank" rel="noopener nofollow">VMware migration reduces Tottenham Hotspur&#x27;s licensing fees by 85 percent<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Pro soccer team&#x27;s CTO points to &quot;issues with the Broadcom takeover.&quot;</p>
+            <p class="news-meta"><time datetime="2026-09-03T18:58:31+00:00">09-03 18:58</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">11</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/my-drivers-license-is-one-of-153-million-for-sale-on-a-new-dark-website/" target="_blank" rel="noopener nofollow">I rented a car, and within hours, my driver&#x27;s license was for sale<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The FBI is reportedly investigating a massive data breach that is unfolding in real time.</p>
+            <p class="news-meta"><time datetime="2026-09-02T20:32:02+00:00">09-02 20:32</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">12</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/09/well-executed-bgp-attack-uses-hijacked-ips-to-infect-real-networks/" target="_blank" rel="noopener nofollow">BGP hijack infecting networks caused by a comedy of errors that’s not funny at all<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">What can we learn from a BGP hijacking that poisoned production software? Plenty.</p>
+            <p class="news-meta"><time datetime="2026-09-02T11:00:43+00:00">09-02 11:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">13</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/08/how-some-media-streaming-devices-open-home-networks-to-a-world-of-harm/" target="_blank" rel="noopener nofollow">Think twice before installing this device promising free movies<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">In exchange for free stuff, devices make home connections part of a proxy network.</p>
+            <p class="news-meta"><time datetime="2026-08-31T16:33:38+00:00">08-31 16:33</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">14</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/ai/2026/08/inside-metas-push-to-put-robots-to-work-in-data-centers/" target="_blank" rel="noopener nofollow">Inside Meta’s push to put robots to work in data centers<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The company is testing robots on tasks that can performed by technicians.</p>
+            <p class="news-meta"><time datetime="2026-08-30T11:03:47+00:00">08-30 11:03</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">15</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/08/authorities-arrest-2-alleged-members-of-prolific-hacking-group-teampcp/" target="_blank" rel="noopener nofollow">Authorities arrest 2 alleged members of prolific hacking group TeamPCP<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">The group infected more than 1,000 organizations in a relentless supply-chain attack campaign.</p>
+            <p class="news-meta"><time datetime="2026-08-28T11:15:05+00:00">08-28 11:15</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">16</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/08/claude-codex-and-hermes-installed-unowned-code-inside-corporate-networks/" target="_blank" rel="noopener nofollow">Claude, Codex, and Hermes installed unowned code inside corporate networks<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">227 install commands were found in corporate docs pointing at code nobody owns.</p>
+            <p class="news-meta"><time datetime="2026-08-27T14:00:13+00:00">08-27 14:00</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">17</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/08/how-openai-let-a-mob-of-llm-agents-game-a-test-and-ransack-hugging-face/" target="_blank" rel="noopener nofollow">How OpenAI let a mob of LLM agents game a test and ransack Hugging Face<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Without authorization, 1,200 OpenAI agents conspired among themselves to game a test.</p>
+            <p class="news-meta"><time datetime="2026-08-27T12:58:59+00:00">08-27 12:58</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">18</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/ai/2026/08/metas-scrapped-plans-to-go-ai-native-included-slashing-teams-by-60-percent/" target="_blank" rel="noopener nofollow">AI agents meant to replace Meta workers made “large-scale, disruptive actions”<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Report shows Meta&#x27;s challenges replacing people with AI agents.</p>
+            <p class="news-meta"><time datetime="2026-08-26T21:25:27+00:00">08-26 21:25</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">19</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/security/2026/08/aliexpress-caught-fingerprinting-visitors-after-sending-inaudible-sounds-to-browsers/" target="_blank" rel="noopener nofollow">Inaudible sounds used to fingerprint browsers catch AliExpress red-handed<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Is the technique outdated? Yes. Is it still creepy? Also yes.</p>
+            <p class="news-meta"><time datetime="2026-08-24T19:19:21+00:00">08-24 19:19</time></p>
+          </div>
+        </li>
+        <li class="news-item">
+          <span class="news-rank">20</span>
+          <div class="news-main">
+            <a class="news-title" href="https://arstechnica.com/cars/2026/08/waymo-doubles-spending-on-lobbying-in-robotaxi-battle-with-uber/" target="_blank" rel="noopener nofollow">Waymo doubles spending on lobbying in robotaxi battle with Uber<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-summary">Alphabet-owned company is seeking to persuade US regulators to clear a path for fully autonomous taxi services.</p>
+            <p class="news-meta"><time datetime="2026-08-21T13:11:35+00:00">08-21 13:11</time></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </div>
+  <script>
+// 来源标签过滤：只切换 data-on，不做重排。没有这段脚本时全部分组都显示，
+// 因为服务端给每组写的就是 data-on="1"。
+(function () {
+  var tabs = document.querySelectorAll('[data-news-src]');
+  var groups = document.querySelectorAll('.news-group');
+  if (!tabs.length || !groups.length) return;
+  function pick(id) {
+    Array.prototype.forEach.call(tabs, function (tab) {
+      var on = tab.getAttribute('data-news-src') === id;
+      tab.classList.toggle('active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Array.prototype.forEach.call(groups, function (g) {
+      g.setAttribute('data-on',
+        (id === 'all' || g.getAttribute('data-src') === id) ? '1' : '0');
+    });
+  }
+  Array.prototype.forEach.call(tabs, function (tab) {
+    tab.addEventListener('click', function () {
+      pick(tab.getAttribute('data-news-src'));
+    });
+  });
+})();
+</script>
+</div>
+</div>
+
+<section class="seo-content">
+  <h1>Today&#x27;s Tech News for Developers</h1>
+  <p>One page with the day’s most useful technology reading. It pulls the public RSS feeds of Hacker News, TechCrunch, The Verge and Ars Technica into a single list, keeps the source’s own ordering, and links every headline straight to the original article. Nothing is republished here — the copyright stays with each publisher.</p>
+  <p>The list is refreshed and the page rebuilt once a day at 08:00 (UTC+8). Because the result is baked into plain HTML at build time rather than loaded by JavaScript, the page works with no API calls, loads in one request, and is fully readable by search engines and text browsers. There is no signup, no popup, no interstitial and no cookie.</p>
+  <h2>Features</h2>
+  <ul class="seo-features">
+    <li><b>Grouped by source</b> — Four sources, one section each. Use the tabs above the list to focus on a single publication, or leave it on All to read everything in order.</li>
+    <li><b>Straight to the original</b> — Every headline is a direct link to the publisher, opened in a new tab with no redirect page and no tracking parameters added.</li>
+    <li><b>Updated daily at 08:00</b> — A scheduled job refetches every source and rebuilds the page each morning, so what you open is always the current edition.</li>
+    <li><b>Community signal</b> — Hacker News entries keep their point count, which is often the clearest read on how much the developer community actually cared about a story.</li>
+    <li><b>Graceful fallback</b> — If a source is briefly unreachable the previous successful snapshot is kept and labelled with its timestamp, so the page never renders empty.</li>
+    <li><b>No account, no app</b> — A plain static page. No registration, no install, no browser extension.</li>
+  </ul>
+  <h2>How to use</h2>
+  <ol class="seo-steps">
+    <li>Scroll the list below — by default every source is expanded, top to bottom.</li>
+    <li>Click a source tab to narrow the list to one publication, or All to see everything.</li>
+    <li>Click any headline to open the full article on the publisher’s site in a new tab.</li>
+    <li>Need an actual tool? Use the top navigation to jump to the JSON, regex or timestamp pages.</li>
+  </ol>
+  <h2>FAQ</h2>
+  <div class="faq">
+    <details><summary>How often is this page updated?</summary><p>Once a day at 08:00 UTC+8. The scheduled job refetches every source and rebuilds the page, so everyone sees the same edition at the same time. The exact timestamp is printed at the top of the list.</p></details>
+    <details><summary>Did you write these articles?</summary><p>No. This page only reads each publisher’s public RSS summary and displays the headline, summary and publish time. The full article and its copyright belong to the publisher, and clicking a headline takes you there. If a publisher would rather not be aggregated, the feedback button removes them on request.</p></details>
+    <details><summary>Why is the ordering not by time?</summary><p>Each source’s own order is preserved. Those lists are already ranked by editors or by an algorithm — most visibly on Hacker News, where re-sorting by timestamp would destroy the meaning of the ranking.</p></details>
+    <details><summary>Do the outbound links carry ads or redirects?</summary><p>No. Headlines point directly at the article URL. This site adds no interstitial, no affiliate parameters and no redirect layer.</p></details>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Feedback</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+  </div>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
+    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
+  </div>
+  <p class="fb-note">
+    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>·</span>
+    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page: ' + location.href,
+      'Browser: ' + navigator.userAgent,
+      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
+      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Time: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
+      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -3,10 +3,12 @@
 > 免注册、免安装的纯浏览器端开发者工具集合，覆盖 JSON、文本比对、编解码、正则、
 > 时间戳、哈希、代码格式化、字符串处理与生成器共 9 个工具。所有解析与计算都在用户
 > 浏览器内完成，输入内容不会上传到任何服务器。中英双语，免费无广告。
+> 另有一个「今日科技热榜」页面，每天 08:00 自动聚合十余家科技媒体的最新资讯。
 
 Key facts:
 - 9 tools, each on its own URL; every page runs entirely client-side (no upload, no signup, no ads).
 - Bilingual: Chinese at the root, English under /en/. Same tools, independent copy.
+- A tech news page is rebuilt daily at 08:00 UTC+8 from public RSS feeds; each item links out to the original article.
 - Verification hooks: /sitemap.xml (with hreflang alternates), /robots.txt, JSON-LD on every tool page.
 
 ## Tools / 工具
@@ -29,6 +31,11 @@ Key facts:
   - English: [Online String & Text Tools](https://devtools.help/en/string/) — Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.
 - [UUID / 密码 / 二维码在线生成](https://devtools.help/generator/): 在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。
   - English: [UUID / Password / QR Code Generator](https://devtools.help/en/generator/) — Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.
+
+## News / 资讯
+
+- [今日科技热榜 / Today's Tech News](https://devtools.help/hotnews/): 每天 08:00 自动聚合 IT之家、少数派、InfoQ、开源中国、Solidot、爱范儿、钛媒体、雷峰网与 Hacker News、TechCrunch、The Verge、Ars Technica 的最新条目，每条给出标题、来源、发布时间与原文直达链接。
+  - English: [Today's Tech News](https://devtools.help/en/hotnews/) — rebuilt daily from Hacker News, TechCrunch, The Verge and Ars Technica.
 
 ## Optional
 
