@@ -240,6 +240,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
 .news-group-name:hover{color:var(--primary);text-decoration:underline}
 .news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
 .news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
 .news-list{list-style:none;margin:0;padding:0}
 .news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
@@ -346,7 +347,7 @@ document.addEventListener("click", function (e) {
   <div class="news-head">
     <div class="news-head-row">
       <p class="news-lead">Four English tech publications, newest first — headlines link straight to the publisher and nothing is republished here</p>
-      <p class="news-updated"><b>Updated 2026-09-17 06:49</b><span class="news-dot">·</span>Refreshes daily at 08:00 (UTC+8)<span class="news-dot">·</span>Total 70 items</p>
+      <p class="news-updated"><b>Updated 2026-09-17 08:23</b><span class="news-dot">·</span>Refreshes daily at 08:00 (UTC+8)<span class="news-dot">·</span>Total 70 items</p>
     </div>
     <div class="news-tabs" role="tablist">
       <button type="button" class="news-tab active" data-news-src="all" role="tab" aria-selected="true">All</button>
@@ -355,6 +356,7 @@ document.addEventListener("click", function (e) {
       <button type="button" class="news-tab" data-news-src="theverge" role="tab" aria-selected="false">The Verge<span class="news-tab-n">10</span></button>
       <button type="button" class="news-tab" data-news-src="arstechnica" role="tab" aria-selected="false">Ars Technica<span class="news-tab-n">20</span></button>
     </div>
+    <p class="news-warn">1 sources failed this round; their last successful snapshot is shown</p>
   </div>
   <div class="news-groups">
     <section class="news-group" data-src="hackernews" data-on="1">
@@ -362,145 +364,146 @@ document.addEventListener("click", function (e) {
         <a class="news-group-name" href="https://news.ycombinator.com/" target="_blank" rel="noopener nofollow">Hacker News</a>
         <span class="news-group-desc">What developers are reading right now</span>
       </h3>
+      <p class="news-group-note">Ranked by community vote rather than editors, and the score after each title is the best proxy for what working developers actually care about today.</p>
       <ol class="news-list">
         <li class="news-item">
           <span class="news-rank">1</span>
           <div class="news-main">
-            <a class="news-title" href="https://ryan.science/blog/keys-not-included" target="_blank" rel="noopener nofollow">Keys Not Included: recovering the signing keys for US driver&#x27;s license barcodes<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-17T03:03:23+00:00">03:03</time><span class="news-heat">🔥 119</span></p>
+            <a class="news-title" href="https://developer.nvidia.com/blog/introducing-cuda-rust-two-tracks-for-writing-gpu-kernels/" target="_blank" rel="noopener nofollow">Nvidia announces native GPU programming in Rust<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T11:15:53+00:00">Yesterday 11:15</time><span class="news-heat">🔥 634</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">2</span>
           <div class="news-main">
-            <a class="news-title" href="https://developer.nvidia.com/blog/introducing-cuda-rust-two-tracks-for-writing-gpu-kernels/" target="_blank" rel="noopener nofollow">Nvidia announces native GPU programming in Rust<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T11:15:53+00:00">Yesterday 11:15</time><span class="news-heat">🔥 554</span></p>
+            <a class="news-title" href="https://ryan.science/blog/keys-not-included" target="_blank" rel="noopener nofollow">Keys Not Included: recovering the signing keys for US driver&#x27;s license barcodes<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T03:03:23+00:00">03:03</time><span class="news-heat">🔥 149</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">3</span>
           <div class="news-main">
-            <a class="news-title" href="https://egbert.net/blog/articles/comparison-of-arena-architecture-in-malloc.html" target="_blank" rel="noopener nofollow">Comparison of Malloc() Algorithms<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T16:52:25+00:00">09-15 16:52</time><span class="news-heat">🔥 32</span></p>
+            <a class="news-title" href="https://jakeasmith.com/blog/http-build-url/" target="_blank" rel="noopener nofollow">My temporary PHP fix from 2014 has nearly 20M installs. Today I&#x27;m deprecating it<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T20:53:36+00:00">09-15 20:53</time><span class="news-heat">🔥 75</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">4</span>
           <div class="news-main">
-            <a class="news-title" href="https://rohanbansal.com/qorl" target="_blank" rel="noopener nofollow">Training a 4B model to produce 81% faster query plans than Postgres<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T18:50:00+00:00">Yesterday 18:50</time><span class="news-heat">🔥 497</span></p>
+            <a class="news-title" href="https://www.damtp.cam.ac.uk/events/strings02/dirac/speach.html" target="_blank" rel="noopener nofollow">The Relation Between Mathematics and Physics by Paul Dirac<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-13T16:38:22+00:00">09-13 16:38</time><span class="news-heat">🔥 25</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">5</span>
           <div class="news-main">
-            <a class="news-title" href="https://mimo.xiaomi.com/rl/" target="_blank" rel="noopener nofollow">Xiaomi Mimo 2.6 live post-training dashboard<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T20:09:18+00:00">Yesterday 20:09</time><span class="news-heat">🔥 392</span></p>
+            <a class="news-title" href="https://rohanbansal.com/qorl" target="_blank" rel="noopener nofollow">Training a 4B model to produce 81% faster query plans than Postgres<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T18:50:00+00:00">Yesterday 18:50</time><span class="news-heat">🔥 528</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">6</span>
           <div class="news-main">
-            <a class="news-title" href="https://filipovski.net/2026/09/16/backups-arent-simple.html" target="_blank" rel="noopener nofollow">Backups Aren&#x27;t Simple<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T20:27:16+00:00">Yesterday 20:27</time><span class="news-heat">🔥 186</span></p>
+            <a class="news-title" href="https://egbert.net/blog/articles/comparison-of-arena-architecture-in-malloc.html" target="_blank" rel="noopener nofollow">Comparison of Malloc() Algorithms<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T16:52:25+00:00">09-15 16:52</time><span class="news-heat">🔥 59</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">7</span>
           <div class="news-main">
-            <a class="news-title" href="https://will-keleher.com/posts/small-programming-tricks-matter/" target="_blank" rel="noopener nofollow">Small programming tricks<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T15:56:47+00:00">Yesterday 15:56</time><span class="news-heat">🔥 487</span></p>
+            <a class="news-title" href="https://mimo.xiaomi.com/rl/" target="_blank" rel="noopener nofollow">Xiaomi Mimo 2.6 live post-training dashboard<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:09:18+00:00">Yesterday 20:09</time><span class="news-heat">🔥 420</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">8</span>
           <div class="news-main">
-            <a class="news-title" href="https://www.amazon.science/blog/developing-provably-correct-rust-code-with-verus" target="_blank" rel="noopener nofollow">Developing provably correct Rust code with Verus<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-14T16:57:50+00:00">09-14 16:57</time><span class="news-heat">🔥 83</span></p>
+            <a class="news-title" href="https://servo.org/blog/2026/09/15/one-year-of-sponsorship/" target="_blank" rel="noopener nofollow">One Year of Sponsored Servo Development<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T08:13:54+00:00">08:13</time><span class="news-heat">🔥 5</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">9</span>
           <div class="news-main">
-            <a class="news-title" href="https://labs.watchtowr.com/a-32-year-old-bug-walks-into-a-telnet-server-gnu-inetutils-telnetd-cve-2026-32746/" target="_blank" rel="noopener nofollow">A 32-year-old bug walks into a Telnet server<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T02:01:27+00:00">Yesterday 02:01</time><span class="news-heat">🔥 41</span></p>
+            <a class="news-title" href="https://github.com/cloudflare/security-audit-skill" target="_blank" rel="noopener nofollow">Cloudflare/Security-Audit-Skill<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T04:36:55+00:00">04:36</time><span class="news-heat">🔥 41</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">10</span>
           <div class="news-main">
-            <a class="news-title" href="https://jakeasmith.com/blog/http-build-url/" target="_blank" rel="noopener nofollow">My temporary PHP fix from 2014 has nearly 20M installs. Today I&#x27;m deprecating it<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T20:53:36+00:00">09-15 20:53</time><span class="news-heat">🔥 12</span></p>
+            <a class="news-title" href="https://filipovski.net/2026/09/16/backups-arent-simple.html" target="_blank" rel="noopener nofollow">Backups Aren&#x27;t Simple<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:27:16+00:00">Yesterday 20:27</time><span class="news-heat">🔥 224</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">11</span>
           <div class="news-main">
-            <a class="news-title" href="https://arxiv.org/abs/2609.16338" target="_blank" rel="noopener nofollow">Breaking the 1.58-bit Barrier for Ternary LLMs<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T20:59:24+00:00">Yesterday 20:59</time><span class="news-heat">🔥 185</span></p>
+            <a class="news-title" href="https://will-keleher.com/posts/small-programming-tricks-matter/" target="_blank" rel="noopener nofollow">Small programming tricks<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T15:56:47+00:00">Yesterday 15:56</time><span class="news-heat">🔥 504</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">12</span>
           <div class="news-main">
-            <a class="news-title" href="https://gcaptain.com/the-return-of-sail-power-cargo-ships-are-turning-back-to-the-wind/" target="_blank" rel="noopener nofollow">The Return of Sail Power: Cargo Ships Are Turning Back to the Wind<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-17T00:28:33+00:00">00:28</time><span class="news-heat">🔥 68</span></p>
+            <a class="news-title" href="https://www.amazon.science/blog/developing-provably-correct-rust-code-with-verus" target="_blank" rel="noopener nofollow">Developing provably correct Rust code with Verus<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-14T16:57:50+00:00">09-14 16:57</time><span class="news-heat">🔥 103</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">13</span>
           <div class="news-main">
-            <a class="news-title" href="https://johnjwang.com/post/2026/09/15/engineering-behind-us-strategic-petroleum-reserve" target="_blank" rel="noopener nofollow">The engineering behind the US Strategic Petroleum Reserve<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T22:15:25+00:00">09-15 22:15</time><span class="news-heat">🔥 173</span></p>
+            <a class="news-title" href="https://arxiv.org/abs/2609.16338" target="_blank" rel="noopener nofollow">Breaking the 1.58-bit Barrier for Ternary LLMs<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T20:59:24+00:00">Yesterday 20:59</time><span class="news-heat">🔥 196</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">14</span>
           <div class="news-main">
-            <a class="news-title" href="https://openspec.dev/" target="_blank" rel="noopener nofollow">OpenSpec – A lightweight and configurable AI spec framework<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T23:06:39+00:00">Yesterday 23:06</time><span class="news-heat">🔥 121</span></p>
+            <a class="news-title" href="https://labs.watchtowr.com/a-32-year-old-bug-walks-into-a-telnet-server-gnu-inetutils-telnetd-cve-2026-32746/" target="_blank" rel="noopener nofollow">A 32-year-old bug walks into a Telnet server<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T02:01:27+00:00">Yesterday 02:01</time><span class="news-heat">🔥 52</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">15</span>
           <div class="news-main">
-            <a class="news-title" href="https://www.wsj.com/world/middle-east/aws-says-it-cant-restore-some-data-from-mideast-facilities-struck-by-iran-ddcb7e5d" target="_blank" rel="noopener nofollow">AWS says it can&#x27;t restore some data from mideast facilities struck by Iran<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T21:41:42+00:00">09-15 21:41</time><span class="news-heat">🔥 344</span></p>
+            <a class="news-title" href="https://johnjwang.com/post/2026/09/15/engineering-behind-us-strategic-petroleum-reserve" target="_blank" rel="noopener nofollow">The engineering behind the US Strategic Petroleum Reserve<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T22:15:25+00:00">09-15 22:15</time><span class="news-heat">🔥 194</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">16</span>
           <div class="news-main">
-            <a class="news-title" href="https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-11/" target="_blank" rel="noopener nofollow">Performance Improvements in .NET 11<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T12:18:16+00:00">09-15 12:18</time><span class="news-heat">🔥 259</span></p>
+            <a class="news-title" href="https://gcaptain.com/the-return-of-sail-power-cargo-ships-are-turning-back-to-the-wind/" target="_blank" rel="noopener nofollow">The Return of Sail Power: Cargo Ships Are Turning Back to the Wind<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-17T00:28:33+00:00">00:28</time><span class="news-heat">🔥 84</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">17</span>
           <div class="news-main">
-            <a class="news-title" href="https://github.com/arnegiacomo/fugleramme" target="_blank" rel="noopener nofollow">Show HN: An e-ink frame that hears birds and draws them as 1800s illustrations<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-15T12:31:10+00:00">09-15 12:31</time><span class="news-heat">🔥 2136</span></p>
+            <a class="news-title" href="https://openspec.dev/" target="_blank" rel="noopener nofollow">OpenSpec – A lightweight and configurable AI spec framework<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T23:06:39+00:00">Yesterday 23:06</time><span class="news-heat">🔥 135</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">18</span>
           <div class="news-main">
-            <a class="news-title" href="https://a6mzero.com/posts/this-pcb-is-brought-to-you-by-fable-5/" target="_blank" rel="noopener nofollow">PCB is brought to you by Fable 5<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-14T12:25:24+00:00">09-14 12:25</time><span class="news-heat">🔥 68</span></p>
+            <a class="news-title" href="https://www.wsj.com/world/middle-east/aws-says-it-cant-restore-some-data-from-mideast-facilities-struck-by-iran-ddcb7e5d" target="_blank" rel="noopener nofollow">AWS says it can&#x27;t restore some data from mideast facilities struck by Iran<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-15T21:41:42+00:00">09-15 21:41</time><span class="news-heat">🔥 382</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">19</span>
           <div class="news-main">
-            <a class="news-title" href="https://harnesstax.github.io/" target="_blank" rel="noopener nofollow">HarnessTax: How Much Does the Harness Matter for Coding Agents?<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-16T22:10:13+00:00">Yesterday 22:10</time><span class="news-heat">🔥 99</span></p>
+            <a class="news-title" href="https://a6mzero.com/posts/this-pcb-is-brought-to-you-by-fable-5/" target="_blank" rel="noopener nofollow">PCB is brought to you by Fable 5<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-14T12:25:24+00:00">09-14 12:25</time><span class="news-heat">🔥 89</span></p>
           </div>
         </li>
         <li class="news-item">
           <span class="news-rank">20</span>
           <div class="news-main">
-            <a class="news-title" href="https://gegell.github.io/posts/factorio-rng/" target="_blank" rel="noopener nofollow">Reversing Factorio&#x27;s RNG<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-meta"><time datetime="2026-09-12T17:02:19+00:00">09-12 17:02</time><span class="news-heat">🔥 187</span></p>
+            <a class="news-title" href="https://harnesstax.github.io/" target="_blank" rel="noopener nofollow">HarnessTax: How Much Does the Harness Matter for Coding Agents?<span class="news-ext" aria-hidden="true">↗</span></a>
+            <p class="news-meta"><time datetime="2026-09-16T22:10:13+00:00">Yesterday 22:10</time><span class="news-heat">🔥 117</span></p>
           </div>
         </li>
       </ol>
@@ -510,12 +513,13 @@ document.addEventListener("click", function (e) {
         <a class="news-group-name" href="https://techcrunch.com/" target="_blank" rel="noopener nofollow">TechCrunch</a>
         <span class="news-group-desc">Startups, funding and product news</span>
       </h3>
+      <p class="news-group-note">Strongest on funding rounds, acquisitions and launch coverage. Treat its forecasts as commentary, not data.</p>
       <ol class="news-list">
         <li class="news-item">
           <span class="news-rank">1</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/iceland-based-treble-raises-18-million-for-its-voice-simulation-platform/" target="_blank" rel="noopener nofollow">Iceland-based Treble raises $18 million for its voice simulation platform<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Treble&#x27;s voice simulation platform is used by voice AI model developers, AI wearable, and robotics companies</p>
+            <p class="news-summary">Treble&#x27;s voice simulation platform is used by voice AI model developers, AI wearable, and robotics c…</p>
             <p class="news-meta"><time datetime="2026-09-17T05:00:00+00:00">05:00</time></p>
           </div>
         </li>
@@ -523,7 +527,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">2</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/your-startups-next-teammate-might-be-an-ai-agent-gusto-insight-partners-and-leland-explain-what-that-changes-at-techcrunch-disrupt-2026/" target="_blank" rel="noopener nofollow">Your startup’s next teammate might be an AI agent: Gusto, Insight Partners, and Leland explain what that changes at TechCrunch Disrupt 2026<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">This session will explore how early-stage companies are building teams where humans and AI agents work alongside each other — and how founders can do…</p>
+            <p class="news-summary">This session will explore how early-stage companies are building teams where humans and AI agents wo…</p>
             <p class="news-meta"><time datetime="2026-09-17T03:30:00+00:00">03:30</time></p>
           </div>
         </li>
@@ -531,7 +535,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">3</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/snap-tries-to-make-the-case-again-for-its-2200-smart-glasses/" target="_blank" rel="noopener nofollow">Snap tries to make the case again for its $2,200 smart glasses<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Since Specs&#x27; debut earlier this year, Snap has clearly been looking for an opportunity to explain why the smart glasses deserve to exist.</p>
+            <p class="news-summary">Since Specs&#x27; debut earlier this year, Snap has clearly been looking for an opportunity to explain wh…</p>
             <p class="news-meta"><time datetime="2026-09-17T00:58:49+00:00">00:58</time></p>
           </div>
         </li>
@@ -547,7 +551,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">5</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/al-gore-has-a-surprisingly-calm-take-on-the-ai-data-center-backlash/" target="_blank" rel="noopener nofollow">Al Gore says the real AI risk isn’t data centers<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">In an interview with TechCrunch, Al Gore suggested he isn&#x27;t losing sleep over AI data center emissions — he&#x27;s more worried about the AI industry&#x27;s own…</p>
+            <p class="news-summary">In an interview with TechCrunch, Al Gore suggested he isn&#x27;t losing sleep over AI data center emissio…</p>
             <p class="news-meta"><time datetime="2026-09-16T23:43:09+00:00">Yesterday 23:43</time></p>
           </div>
         </li>
@@ -555,7 +559,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">6</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/us-automakers-could-soon-be-forced-to-include-am-radio-for-free/" target="_blank" rel="noopener nofollow">US automakers could soon be forced to include AM radio for free<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">The House of Representatives, in rare bipartisan support, overwhelmingly approved legislation that would require new vehicles to include AM radio.</p>
+            <p class="news-summary">The House of Representatives, in rare bipartisan support, overwhelmingly approved legislation that w…</p>
             <p class="news-meta"><time datetime="2026-09-16T22:37:08+00:00">Yesterday 22:37</time></p>
           </div>
         </li>
@@ -563,7 +567,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">7</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/noise-wants-to-help-everyday-people-become-paid-content-creators/" target="_blank" rel="noopener nofollow">Noise wants to help everyday people become paid content creators<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Marketing platform Noise is on a mission to help anyone with a smart phone make money from their content.</p>
+            <p class="news-summary">Marketing platform Noise is on a mission to help anyone with a smart phone make money from their con…</p>
             <p class="news-meta"><time datetime="2026-09-16T21:35:00+00:00">Yesterday 21:35</time></p>
           </div>
         </li>
@@ -571,7 +575,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">8</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/pulley-a-carta-rival-is-shutting-down/" target="_blank" rel="noopener nofollow">Pulley, a Carta rival, is shutting down<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Cap table management platform Pulley, backed by General Catalyst, Stripe, and Founders Fund, announced that it&#x27;s closing shop in December.</p>
+            <p class="news-summary">Cap table management platform Pulley, backed by General Catalyst, Stripe, and Founders Fund, announc…</p>
             <p class="news-meta"><time datetime="2026-09-16T21:23:19+00:00">Yesterday 21:23</time></p>
           </div>
         </li>
@@ -579,7 +583,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">9</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/anthropic-and-openai-want-to-embed-safety-evaluators-will-they-really-be-independent/" target="_blank" rel="noopener nofollow">Anthropic and OpenAI want to embed safety evaluators. Will they really be independent?<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Anthropic and OpenAI want to embed independent safety evaluators inside their AI labs. Researchers welcome the unprecedented access, but warn meaningf…</p>
+            <p class="news-summary">Anthropic and OpenAI want to embed independent safety evaluators inside their AI labs. Researchers w…</p>
             <p class="news-meta"><time datetime="2026-09-16T21:07:24+00:00">Yesterday 21:07</time></p>
           </div>
         </li>
@@ -595,7 +599,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">11</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/x-will-now-let-u-s-users-trade-via-cashtags/" target="_blank" rel="noopener nofollow">X will now let US users trade via Cashtags<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">The move closes the gap between the market discussions taking place on the timeline, and the market itself.</p>
+            <p class="news-summary">The move closes the gap between the market discussions taking place on the timeline, and the market…</p>
             <p class="news-meta"><time datetime="2026-09-16T19:57:22+00:00">Yesterday 19:57</time></p>
           </div>
         </li>
@@ -603,7 +607,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">12</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/automattics-interim-ceo-and-legal-chief-signed-reciprocal-severance-deals-during-mullenwegs-brief-ouster/" target="_blank" rel="noopener nofollow">Automattic’s interim CEO and legal chief signed reciprocal severance deals during Mullenweg’s brief ouster<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">CFO Mark Davies and legal chief Andy Missan signed each other’s severance agreements while Matt Mullenweg was on leave, providing a year of salary and…</p>
+            <p class="news-summary">CFO Mark Davies and legal chief Andy Missan signed each other’s severance agreements while Matt Mull…</p>
             <p class="news-meta"><time datetime="2026-09-16T19:35:29+00:00">Yesterday 19:35</time></p>
           </div>
         </li>
@@ -611,7 +615,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">13</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/former-waymo-cfo-jumps-to-self-driving-startup-wayve/" target="_blank" rel="noopener nofollow">Former Waymo CFO jumps to self-driving startup Wayve<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Elisa de Martel, who left her position as chief financial officer at Alphabet&#x27;s autonomous vehicle company Waymo in January, will be based out of Sili…</p>
+            <p class="news-summary">Elisa de Martel, who left her position as chief financial officer at Alphabet&#x27;s autonomous vehicle c…</p>
             <p class="news-meta"><time datetime="2026-09-16T19:02:49+00:00">Yesterday 19:02</time></p>
           </div>
         </li>
@@ -619,7 +623,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">14</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/hear-why-science-corp-ceo-max-hodak-says-the-screen-era-is-ending-at-techcrunch-disrupt-2026/" target="_blank" rel="noopener nofollow">Hear why Science Corp CEO Max Hodak says the screen era is ending at TechCrunch Disrupt 2026<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">At this year&#x27;s Disrupt, Science Corp CEO Max Hodak will present a vision for screen-free interfaces that can even offer medical help. Register before…</p>
+            <p class="news-summary">At this year&#x27;s Disrupt, Science Corp CEO Max Hodak will present a vision for screen-free interfaces…</p>
             <p class="news-meta"><time datetime="2026-09-16T18:45:35+00:00">Yesterday 18:45</time></p>
           </div>
         </li>
@@ -635,7 +639,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">16</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/hackers-publish-thousands-of-drivers-data-after-breaching-florida-motor-vehicle-database/" target="_blank" rel="noopener nofollow">Hackers publish thousands of drivers’ data after breaching Florida motor vehicle database<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">The ShinyHunters gang leaked the files online after saying the Florida state agency did not pay their ransom demand.</p>
+            <p class="news-summary">The ShinyHunters gang leaked the files online after saying the Florida state agency did not pay thei…</p>
             <p class="news-meta"><time datetime="2026-09-16T18:00:54+00:00">Yesterday 18:00</time></p>
           </div>
         </li>
@@ -643,7 +647,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">17</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/2026/09/16/your-ai-agents-can-now-control-your-google-home-devices/" target="_blank" rel="noopener nofollow">Your AI agents can now control your Google Home devices<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Google is launching early access to a new MCP server for Google Home, allowing AI agents like Claude, ChatGPT, and others to control connected devices…</p>
+            <p class="news-summary">Google is launching early access to a new MCP server for Google Home, allowing AI agents like Claude…</p>
             <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
           </div>
         </li>
@@ -659,7 +663,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">19</span>
           <div class="news-main">
             <a class="news-title" href="https://techcrunch.com/video/how-fortell-is-using-ai-and-163m-to-crack-a-hearing-aid-monopoly/" target="_blank" rel="noopener nofollow">How Fortell is using AI (and $163M) to crack a hearing aid monopoly<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">“Why do I have to beg my grandparents to put on their hearing aids, but no one has ever needed to ask me to put on my glasses?” That’s the question th…</p>
+            <p class="news-summary">“Why do I have to beg my grandparents to put on their hearing aids, but no one has ever needed to as…</p>
             <p class="news-meta"><time datetime="2026-09-16T16:00:00+00:00">Yesterday 16:00</time></p>
           </div>
         </li>
@@ -678,12 +682,14 @@ document.addEventListener("click", function (e) {
         <a class="news-group-name" href="https://www.theverge.com/" target="_blank" rel="noopener nofollow">The Verge</a>
         <span class="news-group-desc">Consumer tech and culture</span>
       </h3>
+      <p class="news-group-note">The widest range of the four, from phones to policy to internet culture, and usually the best writing. Reviews are opinionated, so check a second source before buying on one.</p>
+      <p class="news-warn">Fetch failed this round; showing the last successful snapshot (06:49)</p>
       <ol class="news-list">
         <li class="news-item">
           <span class="news-rank">1</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/entertainment/996314/tiff-2026-halloween-streaming-below-crystal-lake-yaga-carrie" target="_blank" rel="noopener nofollow">The streamers are fighting over Halloween<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">The Toronto International Film Festival is a place to go to see the future of film, but this year it also provided a glimpse at what is coming very so…</p>
+            <p class="news-summary">The Toronto International Film Festival is a place to go to see the future of film, but this year it…</p>
             <p class="news-meta"><time datetime="2026-09-17T03:00:00+00:00">03:00</time></p>
           </div>
         </li>
@@ -691,7 +697,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">2</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/tech/996078/snap-specs-intelligence-ai-agent-ios-mac" target="_blank" rel="noopener nofollow">Snap is launching a new Specs AI tool, and it’s coming to iOS and Mac<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Snap is introducing &quot;Specs Intelligence,&quot; a new AI assistant that can connect other digital accounts to help you with things like work tasks and keepi…</p>
+            <p class="news-summary">Snap is introducing &quot;Specs Intelligence,&quot; a new AI assistant that can connect other digital accounts…</p>
             <p class="news-meta"><time datetime="2026-09-16T23:40:00+00:00">Yesterday 23:40</time></p>
           </div>
         </li>
@@ -699,7 +705,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">3</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/tech/996422/snap-specs-hands-on-ar-glasses" target="_blank" rel="noopener nofollow">I wore Snap’s $2,200 smart glasses<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">My favorite part of wearing the Specs, Snap&#x27;s new augmented reality glasses, was playing dominoes. Sitting across the table from a Snap employee weari…</p>
+            <p class="news-summary">My favorite part of wearing the Specs, Snap&#x27;s new augmented reality glasses, was playing dominoes. S…</p>
             <p class="news-meta"><time datetime="2026-09-16T23:40:00+00:00">Yesterday 23:40</time></p>
           </div>
         </li>
@@ -707,7 +713,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">4</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/entertainment/996499/ai-odyssey-movie-review" target="_blank" rel="noopener nofollow">The 2.5-hour AI-generated Odyssey movie is 2.5 hours too long<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Christopher Nolan&#x27;s engrossing take on The Odyssey dominated at the box office and spurred a newfound interest in classic literature among filmgoers.…</p>
+            <p class="news-summary">Christopher Nolan&#x27;s engrossing take on The Odyssey dominated at the box office and spurred a newfoun…</p>
             <p class="news-meta"><time datetime="2026-09-16T20:59:13+00:00">Yesterday 20:59</time></p>
           </div>
         </li>
@@ -715,7 +721,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">5</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/ai-artificial-intelligence/996470/ai-data-center-e-waste-ban" target="_blank" rel="noopener nofollow">The AI data center e-waste problem is huge — and getting bigger<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">E-waste from the AI boom has been vastly underestimated, a new report warns. By 2050, it could become enough trash to fill 23 million shipping contain…</p>
+            <p class="news-summary">E-waste from the AI boom has been vastly underestimated, a new report warns. By 2050, it could becom…</p>
             <p class="news-meta"><time datetime="2026-09-16T20:40:46+00:00">Yesterday 20:40</time></p>
           </div>
         </li>
@@ -723,7 +729,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">6</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/entertainment/996416/resident-zach-cregger-review" target="_blank" rel="noopener nofollow">Resident Evil is a comedy first and a thrilling nightmare second<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">When Paul W.S. Anderson&#x27;s Resident Evil hit theaters in 2002, video game movies were largely seen as a niche. Films like Mortal Kombat and Tomb Raider…</p>
+            <p class="news-summary">When Paul W.S. Anderson&#x27;s Resident Evil hit theaters in 2002, video game movies were largely seen as…</p>
             <p class="news-meta"><time datetime="2026-09-16T18:45:35+00:00">Yesterday 18:45</time></p>
           </div>
         </li>
@@ -731,7 +737,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">7</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/gadgets/996379/metroid-ravenous-preorder-deal-sale" target="_blank" rel="noopener nofollow">Walmart takes a bite off the cost of Metroid Ravenous physical preorders<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">The Metroid series is going back to its 2D roots again with Metroid Ravenous for the Nintendo Switch 2, the first side-scrolling game in the series si…</p>
+            <p class="news-summary">The Metroid series is going back to its 2D roots again with Metroid Ravenous for the Nintendo Switch…</p>
             <p class="news-meta"><time datetime="2026-09-16T18:20:38+00:00">Yesterday 18:20</time></p>
           </div>
         </li>
@@ -739,7 +745,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">8</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/tech/996321/apple-servers-ai-nvidia" target="_blank" rel="noopener nofollow">Apple might make servers again to cash in on the AI rush<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">According to The Information, Apple is planning to get back into the server game and might just pair up with Nvidia to make it happen. Apple retired i…</p>
+            <p class="news-summary">According to The Information, Apple is planning to get back into the server game and might just pair…</p>
             <p class="news-meta"><time datetime="2026-09-16T17:20:29+00:00">Yesterday 17:20</time></p>
           </div>
         </li>
@@ -747,7 +753,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">9</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/column/995939/optimizer-health-age-wearables-longevity" target="_blank" rel="noopener nofollow">Your ‘health age’ is fake<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">This is Optimizer, a weekly newsletter sent from Verge senior reviewer Victoria Song that dissects and discusses the latest gizmos and potions that sw…</p>
+            <p class="news-summary">This is Optimizer, a weekly newsletter sent from Verge senior reviewer Victoria Song that dissects a…</p>
             <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
           </div>
         </li>
@@ -755,7 +761,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">10</span>
           <div class="news-main">
             <a class="news-title" href="https://www.theverge.com/tech/996310/google-home-mcp-integration-agentic-ai-smart-home-price-release-date" target="_blank" rel="noopener nofollow">Google will now let any AI agent run your smart home<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Google is opening up its smart home to AI agents, letting tools like Claude and Open Claw access and control your connected devices and analyze your h…</p>
+            <p class="news-summary">Google is opening up its smart home to AI agents, letting tools like Claude and Open Claw access and…</p>
             <p class="news-meta"><time datetime="2026-09-16T17:00:00+00:00">Yesterday 17:00</time></p>
           </div>
         </li>
@@ -766,6 +772,7 @@ document.addEventListener("click", function (e) {
         <a class="news-group-name" href="https://arstechnica.com/" target="_blank" rel="noopener nofollow">Ars Technica</a>
         <span class="news-group-desc">Deep dives into technology</span>
       </h3>
+      <p class="news-group-note">The most technical of the four, with long explainers on chips, science and policy. Worth opening when you have time rather than for quick headlines.</p>
       <ol class="news-list">
         <li class="news-item">
           <span class="news-rank">1</span>
@@ -923,7 +930,7 @@ document.addEventListener("click", function (e) {
           <span class="news-rank">20</span>
           <div class="news-main">
             <a class="news-title" href="https://arstechnica.com/cars/2026/08/waymo-doubles-spending-on-lobbying-in-robotaxi-battle-with-uber/" target="_blank" rel="noopener nofollow">Waymo doubles spending on lobbying in robotaxi battle with Uber<span class="news-ext" aria-hidden="true">↗</span></a>
-            <p class="news-summary">Alphabet-owned company is seeking to persuade US regulators to clear a path for fully autonomous taxi services.</p>
+            <p class="news-summary">Alphabet-owned company is seeking to persuade US regulators to clear a path for fully autonomous tax…</p>
             <p class="news-meta"><time datetime="2026-08-21T13:11:35+00:00">08-21 13:11</time></p>
           </div>
         </li>

@@ -621,11 +621,15 @@ def robots_txt():
                              'meta-externalagent', 'Bytespider', 'DeepSeekBot',
                              'CCBot', 'Amazonbot', 'cohere-ai', 'YouBot']),
     ]
+    # 迁移到自定义域名后，发布目录根 == 主机根，所以这里生成的就是权威版本。
+    # 早期放在 /tools/ 子目录下时需要两份清单并提示「本文件不影响抓取」，现已不适用；
+    # 也不要再手写该文件——每次构建都会覆盖，改放行清单请改下面的 groups。
     lines = [
         '# DevTools — 在线开发工具集',
         '#',
-        '# ⚠️ 爬虫只会读取主机根目录的 /robots.txt，本文件（/tools/robots.txt）不影响抓取，',
-        f'#    权威版本在 {SITE["base_url"].rsplit("/", 2)[0]}/robots.txt，两份放行清单保持同步。',
+        '# 本文件由构建生成，并以主机根地址 ' + SITE['base_url'] + 'robots.txt 提供，',
+        '# 是唯一权威版本。修改放行清单请改 build.py 的 robots_txt() 后重新构建，',
+        '# 直接编辑本文件会在下次构建时被覆盖。',
         '',
         'User-agent: *',
         'Allow: /',

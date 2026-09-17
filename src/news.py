@@ -45,8 +45,15 @@ DISPLAY_TZ = {'zh': CST, 'en': timezone.utc}
 # 每个源在页面上最多展示多少条
 PER_SOURCE = {'zh': 15, 'en': 20}
 
-# 摘要截断长度（字符）
-SUMMARY_LIMIT = {'zh': 90, 'en': 150}
+# 摘要截断长度（字符）。
+#
+# 取的是「够判断要不要点进去」的量，不是「能代替原文」的量：几十字足以构成
+# 著作权法意义上的适当引用，再多就开始有替代原文的观感了。English feeds 的
+# 摘要本身更长、且英文信息密度低，所以上限给得宽一些。
+#
+# 渲染时会再按这个值兜一次截断（见 render_body），所以改完不需要等下一次抓取，
+# 旧的 data/news.json 快照也会立即收缩到新长度。
+SUMMARY_LIMIT = {'zh': 60, 'en': 100}
 
 SOURCE_TIMEOUT = 30
 MAX_WORKERS = 8
@@ -58,7 +65,12 @@ CJK_RE = re.compile(r'[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac0
 
 # 说明几件事：
 #   kind='rss'  RSS 2.0；'atom' Atom；'hn' 走 Hacker News 官方 Firebase 接口
-#   desc        页面上每个分组标题后面的一句话说明
+#   desc        分组标题后面的一句话标签
+#   note        编辑点评：这家源适合看什么、不适合看什么
+#
+#   note 存在的理由不只是「好看」。纯标题列表容易被搜索引擎判成没有增量价值的
+#   抓取内容；而「什么情况下值得读这家源」是抓不出、也复制不走的判断，正是把
+#   聚合变成策展的那一点增量。所以这里每条都要写实际的取舍，不要写成客套介绍。
 #   36氪已不再提供 RSS（/feed 返回 HTML），其接口需要签名，故不收录；
 #   知乎热榜接口要登录态，同样不收录。
 SOURCES = [
@@ -66,62 +78,87 @@ SOURCES = [
     {
         'id': 'ithome', 'lang': 'zh', 'kind': 'rss',
         'name': 'IT之家', 'desc': '综合科技资讯，更新最快',
+        'note': '硬件首发和价格快讯基本都从这里出，更新频次是这一批里最高的；'
+                '要闻与软文混排，看标题时得自己筛一遍。',
         'home': 'https://www.ithome.com/', 'url': 'https://www.ithome.com/rss/',
     },
     {
         'id': 'sspai', 'lang': 'zh', 'kind': 'rss',
         'name': '少数派', 'desc': '数字生活与效率工具',
+        'note': '偏重实测与长期使用体验，出稿慢但值得细读；不适合追当日热点，'
+                '更像工具选型时要翻的参考库。',
         'home': 'https://sspai.com/', 'url': 'https://sspai.com/feed',
     },
     {
         'id': 'infoq', 'lang': 'zh', 'kind': 'rss',
         'name': 'InfoQ 中文', 'desc': '软件开发与架构',
+        'note': '聚焦架构实践与技术选型复盘，读者偏资深工程师；'
+                '这里没有消费电子新闻，想找技术深度优先翻它。',
         'home': 'https://www.infoq.cn/', 'url': 'https://www.infoq.cn/feed',
     },
     {
         'id': 'oschina', 'lang': 'zh', 'kind': 'rss',
         'name': '开源中国', 'desc': '开源项目与社区动态',
+        'note': '开源项目发布、版本更新与社区动态最全，适合盯版本号；'
+                '原创分析较少，多为资讯转述。',
         'home': 'https://www.oschina.net/news', 'url': 'https://www.oschina.net/news/rss',
     },
     {
         'id': 'solidot', 'lang': 'zh', 'kind': 'rss',
         'name': 'Solidot', 'desc': '科技、安全与极客文化',
+        'note': '偏极客口味，安全漏洞与科研类新闻占比高；'
+                '译文体标题有时偏生硬，但信息密度不错。',
         'home': 'https://www.solidot.org/', 'url': 'https://www.solidot.org/index.rss',
     },
     {
         'id': 'ifanr', 'lang': 'zh', 'kind': 'rss',
         'name': '爱范儿', 'desc': '消费电子与新硬件',
+        'note': '新硬件与 AI 应用的体验向报道，选题偏年轻化；'
+                '深度评测不多，更适合知道最近出了什么。',
         'home': 'https://www.ifanr.com/', 'url': 'https://www.ifanr.com/feed',
     },
     {
         'id': 'tmtpost', 'lang': 'zh', 'kind': 'rss',
         'name': '钛媒体', 'desc': '科技商业与产业观察',
+        'note': '偏产业与资本视角，融资、供应链、政策类的解释性文章较多；'
+                '想找具体技术细节不适合看这里。',
         'home': 'https://www.tmtpost.com/', 'url': 'https://www.tmtpost.com/rss.xml',
     },
     {
         'id': 'leiphone', 'lang': 'zh', 'kind': 'rss',
         'name': '雷峰网', 'desc': 'AI 与前沿技术',
+        'note': 'AI 落地与公司动态更新较勤，也常发产业观察；'
+                '部分稿件带明显观点倾向，注意区分事实与评论。',
         'home': 'https://www.leiphone.com/', 'url': 'https://www.leiphone.com/feed',
     },
     # ---------------- English ----------------
     {
         'id': 'hackernews', 'lang': 'en', 'kind': 'hn',
         'name': 'Hacker News', 'desc': 'What developers are reading right now',
+        'note': 'Ranked by community vote rather than editors, and the score after each '
+                'title is the best proxy for what working developers actually care about today.',
         'home': 'https://news.ycombinator.com/', 'url': '',
     },
     {
         'id': 'techcrunch', 'lang': 'en', 'kind': 'rss',
         'name': 'TechCrunch', 'desc': 'Startups, funding and product news',
+        'note': 'Strongest on funding rounds, acquisitions and launch coverage. '
+                'Treat its forecasts as commentary, not data.',
         'home': 'https://techcrunch.com/', 'url': 'https://techcrunch.com/feed/',
     },
     {
         'id': 'theverge', 'lang': 'en', 'kind': 'atom',
         'name': 'The Verge', 'desc': 'Consumer tech and culture',
+        'note': 'The widest range of the four, from phones to policy to internet culture, '
+                'and usually the best writing. Reviews are opinionated, so check a second '
+                'source before buying on one.',
         'home': 'https://www.theverge.com/', 'url': 'https://www.theverge.com/rss/index.xml',
     },
     {
         'id': 'arstechnica', 'lang': 'en', 'kind': 'rss',
         'name': 'Ars Technica', 'desc': 'Deep dives into technology',
+        'note': 'The most technical of the four, with long explainers on chips, science and '
+                'policy. Worth opening when you have time rather than for quick headlines.',
         'home': 'https://arstechnica.com/', 'url':
             'https://feeds.arstechnica.com/arstechnica/technology-lab',
     },
@@ -432,6 +469,17 @@ TEXT = {
 _LANG_ATTR = {'zh': 'zh-CN', 'en': 'en'}
 
 
+def _trunc(s, limit):
+    """渲染期的二次截断。
+
+    fetch 已经截过一次，但 data/news.json 里可能存着上一次以更宽上限抓到的摘要；
+    兜这一刀能确保收紧 SUMMARY_LIMIT 之后不必等到明天的定时任务才生效。
+    """
+    if not s or not limit or len(s) <= limit:
+        return s
+    return s[:limit].rstrip(' ,;，。·') + '…'
+
+
 def _esc(s):
     return html_mod.escape(str(s if s is not None else ''), quote=True)
 
@@ -510,6 +558,8 @@ def render_body(lang, data):
                    f'target="_blank" rel="noopener nofollow">{_esc(src["name"])}</a>')
         out.append(f'        <span class="news-group-desc">{_esc(src["desc"])}</span>')
         out.append('      </h3>')
+        if src.get('note'):
+            out.append(f'      <p class="news-group-note">{_esc(src["note"])}</p>')
         if entry.get('stale'):
             out.append(f'      <p class="news-warn">{_esc(t["stale"])}{t["lpar"]}'
                        f'{_esc(format_ts(entry.get("fetched_at"), lang))}{t["rpar"]}</p>')
@@ -524,7 +574,8 @@ def render_body(lang, data):
                    f'rel="noopener nofollow">{title}'
                    f'<span class="news-ext" aria-hidden="true">↗</span></a>']
             if it.get('summary'):
-                row.append(f'            <p class="news-summary">{_esc(it["summary"])}</p>')
+                row.append(f'            <p class="news-summary">'
+                           f'{_esc(_trunc(it["summary"], SUMMARY_LIMIT[lang]))}</p>')
             meta = []
             if it.get('ts'):
                 meta.append(f'<time datetime="{_esc(_iso(it["ts"], lang))}">'

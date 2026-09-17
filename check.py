@@ -76,7 +76,13 @@ def main():
     errors = []
 
     # 1) 内联脚本语法
-    has_node = subprocess.run(['which', 'node'], capture_output=True).returncode == 0
+    # Windows 没有 `which`，而且 subprocess 找不到不存在的程序会直接抛
+    # FileNotFoundError（不会返回非 0 码），所以要自己兜住。
+    try:
+        has_node = subprocess.run(
+            ['node', '--version'], capture_output=True).returncode == 0
+    except OSError:
+        has_node = False
     if not has_node:
         print('⚠️  找不到 node，跳过 JS 语法校验（强烈建议装上，这是本脚本的主要价值）')
     checked = 0
