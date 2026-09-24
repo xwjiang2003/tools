@@ -420,6 +420,97 @@ TOOLS_EN = {
              'procedure bodies, may not lay out perfectly.'),
             ('Is my code uploaded?',
              'No. All formatting is done locally in the browser and your code is never sent to a server.'),
+            ('Does it format Go code?',
+             'Not yet. Go ships with the official gofmt / goimports formatters, which are normally '
+             'run in your editor or CI pipeline — see the Go command cheat sheet for usage, and our '
+             'blog for a detailed comparison of the two tools.'),
+        ],
+        'seealso': [
+            ('Go command cheat sheet (gofmt / goimports usage)', 'go-cheatsheet/'),
+            ('Blog: gofmt vs goimports, and how to wire them into CI', 'blog/gofmt-vs-goimports/'),
+        ],
+    },
+    'go-cheatsheet': {
+        'nav': 'Go Cheat Sheet',
+        'title': 'Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools',
+        'description': (
+            'A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, '
+            'gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives '
+            '(require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. '
+            'Every entry includes a copy-paste example and a real-world pitfall. Bilingual.'
+        ),
+        'keywords': (
+            'go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,'
+            'go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,'
+            'goprivate,go mod commands,go environment variables'
+        ),
+        'h1': 'Go Toolchain Command Cheat Sheet',
+        'intro': [
+            'A full-text searchable cheat sheet for the Go toolchain, organized into the six '
+            'groups you reach for most: build & test (go build / go test), modules & dependencies '
+            '(go mod tidy / go get), formatting (gofmt / goimports), key environment variables '
+            '(GOPROXY / GOPRIVATE), go.mod directives (require / replace / retract), and '
+            'cross-compilation & toolchain management.',
+            'Every entry ships a copy-paste example plus a real-world pitfall — why the go test '
+            'result cache makes "changed env var, same result" happen, why a vendor directory '
+            'makes go get look broken, and why replace only works in the main module. '
+            'Maintained against current Go releases; applies to Go 1.27.x.',
+        ],
+        'features': [
+            ('Full-Text Search', 'The search box filters across commands, descriptions and '
+             'pitfalls — type a keyword and jump straight to the entry.'),
+            ('Six High-Frequency Groups', 'Build & test, dependencies, formatting, environment '
+             'variables, go.mod directives and cross-compilation, each in its own section.'),
+            ('Copy-Paste Examples', 'Every command comes with a working example, including a '
+             'multi-platform cross-compilation matrix.'),
+            ('Pitfalls Called Out', 'Each entry carries a "Watch out" note — the difference '
+             'from ordinary documentation.'),
+            ('Maintained Per Release', 'The applicable Go version and update date are shown; '
+             'entries are reviewed after each Go release.'),
+            ('Pure Static, No Signup', 'Content is baked into the page at build time — complete '
+             'on first paint, no login, no ads, no tracking.'),
+        ],
+        'steps': [
+            'Type a command or keyword (e.g. tidy, proxy, replace) into the search box to '
+            'filter entries instantly.',
+            'Or click a section tab to jump to a group: build / deps / formatting / env / '
+            'go.mod / cross-compile.',
+            'Copy the commands from the example blocks; the Watch-out note tells you when the '
+            'result differs from expectations.',
+            'Need to format HTML/CSS/JS/SQL online? Use the code formatter; for the gofmt vs '
+            'goimports deep dive, see the blog.',
+        ],
+        'faq': [
+            ('What is the difference between gofmt and goimports?',
+             'gofmt only handles layout (indentation, alignment, spacing) and never touches '
+             'imports; goimports builds on gofmt by adding/removing imports and sorting them '
+             'into stdlib and third-party groups. Their output on the same file can differ — '
+             'standardize on goimports -l in CI. See the blog post for the full comparison '
+             'with CI configuration examples.'),
+            ('How do I configure GOPROXY behind a restricted network?',
+             'Run go env -w GOPROXY=https://goproxy.cn,direct (or another reachable mirror). '
+             'The trailing direct means "fall back to the origin only after all proxies fail" '
+             'and must come last; combine it with GOPRIVATE=git.company.com/* for private '
+             'repositories so they skip the proxy and checksum database.'),
+            ('What is the difference between go get and go install?',
+             'go get only edits the current project\'s go.mod (add/upgrade/downgrade a '
+             'dependency) and installs no binaries; go install pkg@version installs a command '
+             'into GOBIN and ignores the go.mod of the current directory. Use go get for '
+             'project dependencies and go install for global tools.'),
+            ('Does cross-compiling require a target-platform toolchain?',
+             'No. GOOS=linux GOARCH=arm64 go build is all it takes, and go tool dist list '
+             'shows every supported pair. The only exception is CGO-based dependencies '
+             '(such as some sqlite drivers), which need a target C toolchain or a pure-Go '
+             'replacement.'),
+            ('Do I still need to set GO111MODULE?',
+             'No. It was the module-mode switch of the Go 1.11–1.22 era and was removed from '
+             'the go command entirely in Go 1.23 — setting it has no effect. Delete '
+             'GO111MODULE=on from legacy CI scripts.'),
+        ],
+        'seealso': [
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('Blog: gofmt vs goimports, and how to wire them into CI', 'blog/gofmt-vs-goimports/'),
+            ('JSON formatter & validator', './'),
         ],
     },
     'string': {

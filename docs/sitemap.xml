@@ -17,6 +17,13 @@
     <changefreq>daily</changefreq><priority>0.9</priority>
   </url>
   <url>
+    <loc>https://devtools.help/go-cheatsheet/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/go-cheatsheet/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/go-cheatsheet/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/go-cheatsheet/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://devtools.help/diff/</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/diff/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/diff/"/>
@@ -78,5 +85,21 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/privacy.html"/>
     <changefreq>yearly</changefreq><priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/blog/</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/"/>
+    <changefreq>weekly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/blog/gofmt-vs-goimports/</loc>
+    <lastmod>2026-09-24</lastmod>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/gofmt-vs-goimports/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/gofmt-vs-goimports/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/gofmt-vs-goimports/"/>
+    <changefreq>monthly</changefreq><priority>0.7</priority>
   </url>
 </urlset>

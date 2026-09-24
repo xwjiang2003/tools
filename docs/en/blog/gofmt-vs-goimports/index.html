@@ -1,3 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" data-page="blog-gofmt-vs-goimports">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gofmt vs goimports: Why Your CI Formatting Check Fails | DevTools Blog</title>
+<meta name="description" content="gofmt only handles code layout; goimports additionally adds/removes imports and sorts them into groups, so the two tools can produce different output for the same file. This post covers what each tool does, the three situations where their output diverges, and how to wire a consistent formatting check into CI (GitHub Actions example included).">
+<meta name="keywords" content="gofmt vs goimports,gofmt flags,goimports install,goimports -local,go format check ci,gofmt -l,gofumpt,go formatting check fails">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/en/blog/gofmt-vs-goimports/">
+<meta property="og:title" content="gofmt vs goimports: Why Your CI Formatting Check Fails | DevTools Blog">
+<meta property="og:description" content="gofmt only handles code layout; goimports additionally adds/removes imports and sorts them into groups, so the two tools can produce different output for the same file. This post covers what each tool does, the three situations where their output diverges, and how to wire a consistent formatting check into CI (GitHub Actions example included).">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/en/blog/gofmt-vs-goimports/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/gofmt-vs-goimports/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/gofmt-vs-goimports/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/gofmt-vs-goimports/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "gofmt vs goimports: Why Your CI Formatting Check Fails", "description": "gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/", "datePublished": "2026-09-24", "dateModified": "2026-09-24", "inLanguage": "en", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "gofmt vs goimports,gofmt flags,goimports install,goimports -local,go format check ci,gofmt -l,gofumpt,go formatting check fails"}]}</script>
+<style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
   --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
@@ -301,3 +323,471 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
 .post-related h2{margin-top:0}
 @media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "../../../blog/gofmt-vs-goimports/", "en": "./"}[want];
+    if (target && want !== 'en') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../../en/" aria-label="DevTools home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="../../../en/">JSON</a>
+    <a class="top-nav-item" href="../../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <a class="top-nav-item" href="../../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../../en/generator/">Generators</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../../blog/gofmt-vs-goimports/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-blog-gofmt-vs-goimports">
+<article class="post" lang="en">
+  <h1>gofmt vs goimports: Why Your CI Formatting Check Fails</h1>
+  <div class="post-meta"><time datetime="2026-09-24">Published 2026-09-24</time><span class="blog-tag">Go</span><span class="blog-tag">Toolchain</span><span class="blog-tag">CI</span></div>
+<blockquote>
+  <p><b>TL;DR</b>: gofmt only adjusts layout (indentation, alignment, spacing) and never
+  touches imports; goimports = gofmt + automatic import addition/removal + import grouping.
+  Running goimports in your editor but gofmt -l in CI (or the reverse) is the most common
+  reason for "works on my machine, fails in CI". Standardize on goimports everywhere.</p>
+</blockquote>
+
+<h2>1. What gofmt does</h2>
+<p>gofmt is the official Go layout tool, installed with the toolchain, with a single job:
+<b>make whitespace layout conform to one standard</b>. It handles indentation (tabs),
+alignment, spacing around operators and brace placement. It never changes program semantics.</p>
+<p>The flags that matter:</p>
+<pre><code>gofmt -l .        # list non-conforming files without writing (this is your CI check)
+gofmt -d main.go  # show the diff it would apply, without writing
+gofmt -w .        # rewrite files in place
+gofmt -s -w .     # also simplify code (e.g. x[a:len(x)] -&gt; x[a:])
+gofmt -r 'rule' -w .  # rewrite by pattern (rarely needed)</code></pre>
+<p>The boundary to remember: <b>gofmt never adds or removes imports, and never reorders
+import groups</b>. An imported-but-unused package is left in place by gofmt (the compiler
+will complain, but that is not gofmt's job).</p>
+
+<h2>2. The two extra things goimports does</h2>
+<p>goimports is not part of the standard toolchain; install it separately:</p>
+<pre><code>go install golang.org/x/tools/cmd/goimports@latest</code></pre>
+<p>It does everything gofmt does, then two things more:</p>
+<ol>
+  <li><b>Adds and removes imports</b>: use <code>fmt.Println</code> without importing
+      <code>fmt</code> and it adds the line; import something unused and it deletes it.</li>
+  <li><b>Groups and sorts imports</b>: standard library in one group, third-party in
+      another, alphabetical within each group.</li>
+</ol>
+<p>A typical example. This file imports <code>os</code> without using it, and the groups
+are a mess:</p>
+<pre><code>package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"fmt"
+	"os"
+)
+
+func main() {
+	fmt.Println(gin.Version)
+}</code></pre>
+<p><b>gofmt output</b>: only sorts <code>"fmt"</code> alphabetically inside the same group;
+<code>os</code> stays:</p>
+<pre><code>import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"os"
+)</code></pre>
+<p><b>goimports output</b>: drops the unused <code>os</code> and splits stdlib from
+third-party:</p>
+<pre><code>import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+)</code></pre>
+<p>Same input, different output — that is the root cause of "the format check passes
+locally but fails in CI".</p>
+
+<h2>3. Three scenarios where the output diverges</h2>
+<h3>a. An unused import exists</h3>
+<p>gofmt keeps it, goimports removes it. If your editor runs goimports on save but CI
+checks with gofmt -l, everything passes; the reverse combination — gofmt locally,
+goimports -l in CI — breaks the build.</p>
+<h3>b. A missing import</h3>
+<p>goimports tries to add it automatically. When several candidates exist (is
+<code>rand</code> <code>math/rand</code> or <code>math/rand/v2</code>?), it picks one from
+its index — and a wrong guess is a compile error. <b>Always eyeball what goimports added
+before committing.</b></p>
+<h3>c. Your own organization's packages land in the wrong group</h3>
+<p>By default goimports lumps every non-stdlib path into the third-party group, so
+<code>git.company.com/team/utils</code> ends up mixed with GitHub dependencies. Use
+<code>-local</code> to give your own prefix its own group:</p>
+<pre><code>goimports -local git.company.com -w .</code></pre>
+<p>Mirror the setting in your editor (VS Code's <code>go.formatTool</code> and the
+<code>local</code> setting of gopls), or editor formatting will disagree with the CLI.</p>
+
+<h2>4. The correct CI setup</h2>
+<p>One principle: <b>the editor, the command line and CI must use the same tool with the
+same flags</b>. Standardizing on goimports is recommended (it is a superset of gofmt and
+strictly stronger):</p>
+<pre><code># any output means some file is non-conforming; exit 1
+files=$(goimports -local git.company.com -l .)
+if [ -n "$files" ]; then
+  echo "files failing goimports:"
+  echo "$files"
+  exit 1
+fi</code></pre>
+<p>A complete GitHub Actions example:</p>
+<pre><code>name: check
+on: [push, pull_request]
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod   # stay in sync with the repo, kills version skew
+      - run: go install golang.org/x/tools/cmd/goimports@latest
+      - run: |
+          files=$(goimports -l .)
+          test -z "$files" || { echo "need goimports: $files"; exit 1; }
+      - run: go vet ./...
+      - run: go test ./...</code></pre>
+<div class="post-note">
+<p><b>Version pitfall</b>: gofmt shipped with different Go versions can differ on edge-case
+syntax, and goimports grouping behavior has changed across releases. Pinning CI with
+<code>go-version-file: go.mod</code> eliminates the whole class of "I formatted it locally,
+why does CI still fail".</p>
+</div>
+
+<h2>5. Going stricter: gofumpt and staticcheck</h2>
+<ul>
+  <li><b>gofumpt</b>: a stricter superset of gofmt (e.g. enforcing multi-line import
+      blocks). Pick exactly one per repo — mixing gofmt and gofumpt produces flip-flopping
+      diffs.</li>
+  <li><b>staticcheck</b>: not a formatter but a deep static analyzer, usually run alongside
+      the formatting check in CI:</li>
+</ul>
+<pre><code>go install mvdan.cc/gofumpt@latest
+gofumpt -l .
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...</code></pre>
+
+<h2>6. Summary</h2>
+<table>
+  <tr><th></th><th>gofmt</th><th>goimports</th></tr>
+  <tr><td>Installation</td><td>Ships with Go</td><td>go install golang.org/x/tools/cmd/goimports@latest</td></tr>
+  <tr><td>Code layout</td><td>Yes</td><td>Yes (identical)</td></tr>
+  <tr><td>Add/remove imports</td><td>No</td><td>Yes</td></tr>
+  <tr><td>Import grouping</td><td>No</td><td>Yes (-local for your own prefix)</td></tr>
+  <tr><td>CI check</td><td>gofmt -l .</td><td>goimports -l . (recommended)</td></tr>
+</table>
+<p>For more commands and pitfalls (gofmt's -s/-r, the goimports indexing mechanism), see the
+<a href="/go-cheatsheet/">Go toolchain command cheat sheet</a>, section
+&quot;Formatting &amp; Code Tools&quot;.</p>
+  <div class="post-related">
+    <h2>Further reading</h2>
+    <ul>
+      <li><a href="../../../en/go-cheatsheet/">Go toolchain command cheat sheet</a></li>
+      <li><a href="../../../en/formatter/">Code formatter (HTML / CSS / JS / SQL)</a></li>
+      <li><a href="../../../en/blog/">All articles</a></li>
+    </ul>
+  </div>
+</article>
+</div>
+
+
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../../en/">Home</a><a href="../../../en/hotnews/">Tech News</a><a href="../../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../../en/diff/">Text Diff</a><a href="../../../en/encode/">Encode</a><a href="../../../en/regex/">Regex</a><a href="../../../en/timestamp/">Timestamp</a><a href="../../../en/hash/">Hash</a><a href="../../../en/formatter/">Formatter</a><a href="../../../en/string/">Strings</a><a href="../../../en/generator/">Generators</a><a href="../../../en/blog/">Blog</a><a href="../../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Feedback</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+  </div>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
+    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
+  </div>
+  <p class="fb-note">
+    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>·</span>
+    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page: ' + location.href,
+      'Browser: ' + navigator.userAgent,
+      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
+      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Time: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
+      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

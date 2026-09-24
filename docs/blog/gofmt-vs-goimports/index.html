@@ -1,3 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page="blog-gofmt-vs-goimports">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败 | DevTools 博客</title>
+<meta name="description" content="gofmt 只管代码排版，goimports 在此基础上自动增删 import 并分组排序，两者对同一份代码的输出可以不一样。本文讲清三件事：两个工具各自做什么、结果在什么情况下会不同、CI 里应该怎么配格式化检查（含 GitHub Actions 示例）。">
+<meta name="keywords" content="gofmt goimports区别,gofmt 用法,goimports 安装,goimports -local,go 代码格式化 ci,gofmt -l,gofumpt,go 格式化检查失败">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/blog/gofmt-vs-goimports/">
+<meta property="og:title" content="gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败 | DevTools 博客">
+<meta property="og:description" content="gofmt 只管代码排版，goimports 在此基础上自动增删 import 并分组排序，两者对同一份代码的输出可以不一样。本文讲清三件事：两个工具各自做什么、结果在什么情况下会不同、CI 里应该怎么配格式化检查（含 GitHub Actions 示例）。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/blog/gofmt-vs-goimports/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/gofmt-vs-goimports/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/gofmt-vs-goimports/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/gofmt-vs-goimports/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败", "description": "gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。", "url": "https://devtools.help/blog/gofmt-vs-goimports/", "datePublished": "2026-09-24", "dateModified": "2026-09-24", "inLanguage": "zh-CN", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "gofmt goimports区别,gofmt 用法,goimports 安装,goimports -local,go 代码格式化 ci,gofmt -l,gofumpt,go 格式化检查失败"}]}</script>
+<style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
   --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
@@ -301,3 +323,455 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
 .post-related h2{margin-top:0}
 @media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "./", "en": "../../en/blog/gofmt-vs-goimports/"}[want];
+    if (target && want !== 'zh') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../" aria-label="DevTools 首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="../../">JSON 工具</a>
+    <a class="top-nav-item" href="../../hotnews/">今日热榜</a>
+    <a class="top-nav-item" href="../../go-cheatsheet/">Go 速查表</a>
+    <a class="top-nav-item" href="../../diff/">文本比对</a>
+    <a class="top-nav-item" href="../../encode/">编码解码</a>
+    <a class="top-nav-item" href="../../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../../string/">字符串</a>
+    <a class="top-nav-item" href="../../generator/">生成器</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../../en/blog/gofmt-vs-goimports/" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-blog-gofmt-vs-goimports">
+<article class="post" lang="zh-CN">
+  <h1>gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败</h1>
+  <div class="post-meta"><time datetime="2026-09-24">发布于 2026-09-24</time><span class="blog-tag">Go</span><span class="blog-tag">工具链</span><span class="blog-tag">CI</span></div>
+<blockquote>
+  <p><b>一句话结论</b>：gofmt 只调整代码排版（缩进、对齐、空格），从不触碰 import；
+  goimports = gofmt + 自动增删 import + import 分组排序。本地编辑器用 goimports、
+  CI 里却用 gofmt -l 检查（或反过来），是「本地好好的、CI 挂了」的最常见原因。统一用 goimports。</p>
+</blockquote>
+
+<h2>一、gofmt 做什么</h2>
+<p>gofmt 是 Go 官方的代码排版工具，随工具链一起安装，职责只有一个：<b>让代码的空白布局符合统一规范</b>。
+它处理缩进（tab）、对齐、运算符两侧的空格、括号位置这类问题，不会改动任何代码语义。</p>
+<p>常用旗标：</p>
+<pre><code>gofmt -l .        # 只列出「不符合规范」的文件，不改文件（CI 检查就用它）
+gofmt -d main.go  # 显示会改成什么样的 diff，不写回
+gofmt -w .        # 直接改写文件
+gofmt -s -w .     # 在排版之外再做代码简化（如 x[a:len(x)] → x[a:]）
+gofmt -r 'a[i], a[j] = a[j], a[i] -> a[i], a[j] = a[j], a[i]' -w .  # 按规则重写（极少用）</code></pre>
+<p>需要记住的边界：<b>gofmt 不会增删 import，也不会调整 import 的分组顺序</b>。
+一个引入了却没使用的包，gofmt 会原样保留（编译器会报错，但那不是 gofmt 的职责）。</p>
+
+<h2>二、goimports 多做的两件事</h2>
+<p>goimports 不属于 Go 标准工具链，需要单独安装：</p>
+<pre><code>go install golang.org/x/tools/cmd/goimports@latest</code></pre>
+<p>它先做 gofmt 的全部工作，然后多做两件事：</p>
+<ol>
+  <li><b>自动补全和删除 import</b>：代码里用了 <code>fmt.Println</code> 但没 import "fmt"，
+      它会补上；import 了没用的包，它会删掉。</li>
+  <li><b>import 分组排序</b>：按「标准库一组、第三方一组」分组，组内按路径字母序排列。</li>
+</ol>
+<p>看个典型例子。下面这份代码 import 了没用的 <code>os</code>，分组也是乱的：</p>
+<pre><code>package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"fmt"
+	"os"
+)
+
+func main() {
+	fmt.Println(gin.Version)
+}</code></pre>
+<p><b>gofmt 的输出</b>：只把 <code>"fmt"</code> 按字母序排进同一组，<code>os</code> 原样保留：</p>
+<pre><code>import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"os"
+)</code></pre>
+<p><b>goimports 的输出</b>：删掉未使用的 <code>os</code>，并把标准库和第三方分成两组：</p>
+<pre><code>import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+)</code></pre>
+<p>同一份输入，两个工具的输出不一样——这就是「格式化检查为什么有时过有时不过」的根源。</p>
+
+<h2>三、结果会不同的三种典型场景</h2>
+<h3>1. 存在未使用的 import</h3>
+<p>gofmt 保留，goimports 删除。本地编辑器配的是 goimports（保存时自动删），
+提交后 CI 用 gofmt -l 检查能通过；但反过来——本地用 gofmt、CI 用 goimports -l——就会挂。</p>
+<h3>2. 缺少 import</h3>
+<p>goimports 会尝试自动补全。存在多个候选包时（比如 <code>rand</code> 可能是
+<code>math/rand</code> 也可能是 <code>math/rand/v2</code>），它会按索引猜一个，
+猜错了就是编译错误。<b>所以 goimports 的补全结果必须过一眼，别盲目提交。</b></p>
+<h3>3. 你自己公司的包被归错组</h3>
+<p>goimports 默认把「非标准库」全归进第三方组，于是 <code>git.company.com/team/utils</code>
+会和 github 依赖混在一起。用 <code>-local</code> 参数把自家前缀单独成组：</p>
+<pre><code>goimports -local git.company.com -w .</code></pre>
+<p>编辑器里也要同步配置（VS Code 的 <code>go.formatTool</code> 与
+<code>gopls</code> 的 <code>local</code> 设置），否则编辑器格式化结果和命令行不一致。</p>
+
+<h2>四、CI 里的正确姿势</h2>
+<p>原则只有一条：<b>本地编辑器、命令行、CI 三处用同一个工具、同一组参数</b>。
+推荐统一为 goimports（它是 gofmt 的超集，检查更严）：</p>
+<pre><code># 有输出即代表有文件不符合规范，退出码置 1
+files=$(goimports -local git.company.com -l .)
+if [ -n "$files" ]; then
+  echo "以下文件未通过 goimports 检查："
+  echo "$files"
+  exit 1
+fi</code></pre>
+<p>GitHub Actions 完整示例：</p>
+<pre><code>name: check
+on: [push, pull_request]
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod   # 与仓库 go.mod 保持一致，避免版本差
+      - run: go install golang.org/x/tools/cmd/goimports@latest
+      - run: |
+          files=$(goimports -l .)
+          test -z "$files" || { echo "need goimports: $files"; exit 1; }
+      - run: go vet ./...
+      - run: go test ./...</code></pre>
+<div class="post-note">
+<p><b>版本坑</b>：不同 Go 版本自带的 gofmt 在极少数边缘语法上的排版会有差异，
+goimports 不同版本的分组行为也调整过。CI 用 <code>go-version-file: go.mod</code>
+锁定与仓库一致的 Go 版本，可以消掉「我本地格式化过了为什么 CI 还挂」的整类问题。</p>
+</div>
+
+<h2>五、想要更严格：gofumpt 与 staticcheck</h2>
+<ul>
+  <li><b>gofumpt</b>：gofmt 的更严格超集（如强制多行 import 块的写法）。
+      注意全仓库只能选一个——混用 gofmt 和 gofumpt 会产生反复横跳的 diff。</li>
+  <li><b>staticcheck</b>：不是格式化工具，是深度静态检查，CI 里常与格式化检查并列挂：</li>
+</ul>
+<pre><code>go install mvdan.cc/gofumpt@latest
+gofumpt -l .
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...</code></pre>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th></th><th>gofmt</th><th>goimports</th></tr>
+  <tr><td>安装</td><td>随 Go 工具链自带</td><td>go install golang.org/x/tools/cmd/goimports@latest</td></tr>
+  <tr><td>代码排版</td><td>✔</td><td>✔（完全一致）</td></tr>
+  <tr><td>增删 import</td><td>✘</td><td>✔</td></tr>
+  <tr><td>import 分组排序</td><td>✘</td><td>✔（-local 指定自家前缀）</td></tr>
+  <tr><td>CI 检查命令</td><td>gofmt -l .</td><td>goimports -l .（推荐）</td></tr>
+</table>
+<p>更多命令的用法与坑点（gofmt 的 -s/-r、goimports 的索引机制）见
+<a href="/go-cheatsheet/">Go 工具链命令速查表</a>的「格式化与代码工具」一节。</p>
+  <div class="post-related">
+    <h2>相关阅读</h2>
+    <ul>
+      <li><a href="../../go-cheatsheet/">Go 工具链命令速查表</a></li>
+      <li><a href="../../formatter/">代码格式化工具（HTML / CSS / JS / SQL）</a></li>
+      <li><a href="../../blog/">全部文章</a></li>
+    </ul>
+  </div>
+</article>
+</div>
+
+
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../">首页</a><a href="../../hotnews/">今日热榜</a><a href="../../go-cheatsheet/">Go 速查表</a><a href="../../diff/">文本比对</a><a href="../../encode/">编码解码</a><a href="../../regex/">正则表达式</a><a href="../../timestamp/">时间戳</a><a href="../../hash/">加密哈希</a><a href="../../formatter/">代码格式化</a><a href="../../string/">字符串</a><a href="../../generator/">生成器</a><a href="../../blog/">博客</a><a href="../../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">
+    <span>其它：</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">查看已有反馈</a>
+    <span>·</span>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -32,6 +32,16 @@ Key facts:
 - [UUID / 密码 / 二维码在线生成](https://devtools.help/generator/): 在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。
   - English: [UUID / Password / QR Code Generator](https://devtools.help/en/generator/) — Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.
 
+## Cheatsheet / 速查表
+
+- [Go 工具链命令速查表](https://devtools.help/go-cheatsheet/): Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，支持关键词搜索，中英双语。
+  - English: [Go Toolchain Command Cheat Sheet](https://devtools.help/en/go-cheatsheet/) — A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives (require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. Every entry includes a copy-paste example and a real-world pitfall. Bilingual.
+
+## Blog / 文章
+
+- [gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败](https://devtools.help/blog/gofmt-vs-goimports/): gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。
+  - English: [gofmt vs goimports: Why Your CI Formatting Check Fails](https://devtools.help/en/blog/gofmt-vs-goimports/) — gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.
+
 ## News / 资讯
 
 - [今日科技热榜 / Today's Tech News](https://devtools.help/hotnews/): 每天 08:00 自动聚合 IT之家、少数派、InfoQ、开源中国、Solidot、爱范儿、钛媒体、雷峰网与 Hacker News、TechCrunch、The Verge、Ars Technica 的最新条目，每条给出标题、来源、发布时间与原文直达链接。

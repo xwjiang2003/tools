@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en" data-page="go-cheatsheet">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools</title>
+<meta name="description" content="A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives (require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. Every entry includes a copy-paste example and a real-world pitfall. Bilingual.">
+<meta name="keywords" content="go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/en/go-cheatsheet/">
+<meta property="og:title" content="Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools">
+<meta property="og:description" content="A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives (require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. Every entry includes a copy-paste example and a real-world pitfall. Bilingual.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/en/go-cheatsheet/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/go-cheatsheet/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/go-cheatsheet/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/go-cheatsheet/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Go Toolchain Command Cheat Sheet", "url": "https://devtools.help/en/go-cheatsheet/", "description": "A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives (require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. Every entry includes a copy-paste example and a real-world pitfall. Bilingual.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the difference between gofmt and goimports?", "acceptedAnswer": {"@type": "Answer", "text": "gofmt only handles layout (indentation, alignment, spacing) and never touches imports; goimports builds on gofmt by adding/removing imports and sorting them into stdlib and third-party groups. Their output on the same file can differ — standardize on goimports -l in CI. See the blog post for the full comparison with CI configuration examples."}}, {"@type": "Question", "name": "How do I configure GOPROXY behind a restricted network?", "acceptedAnswer": {"@type": "Answer", "text": "Run go env -w GOPROXY=https://goproxy.cn,direct (or another reachable mirror). The trailing direct means \"fall back to the origin only after all proxies fail\" and must come last; combine it with GOPRIVATE=git.company.com/* for private repositories so they skip the proxy and checksum database."}}, {"@type": "Question", "name": "What is the difference between go get and go install?", "acceptedAnswer": {"@type": "Answer", "text": "go get only edits the current project's go.mod (add/upgrade/downgrade a dependency) and installs no binaries; go install pkg@version installs a command into GOBIN and ignores the go.mod of the current directory. Use go get for project dependencies and go install for global tools."}}, {"@type": "Question", "name": "Does cross-compiling require a target-platform toolchain?", "acceptedAnswer": {"@type": "Answer", "text": "No. GOOS=linux GOARCH=arm64 go build is all it takes, and go tool dist list shows every supported pair. The only exception is CGO-based dependencies (such as some sqlite drivers), which need a target C toolchain or a pure-Go replacement."}}, {"@type": "Question", "name": "Do I still need to set GO111MODULE?", "acceptedAnswer": {"@type": "Answer", "text": "No. It was the module-mode switch of the Go 1.11–1.22 era and was removed from the go command entirely in Go 1.23 — setting it has no effect. Delete GO111MODULE=on from legacy CI scripts."}}]}]}</script>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "../../go-cheatsheet/", "en": "./"}[want];
+    if (target && want !== 'en') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../en/" aria-label="DevTools home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="../../en/">JSON</a>
+    <a class="top-nav-item" href="../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item active" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../en/generator/">Generators</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../go-cheatsheet/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-go-cheatsheet">
+<div class="gocs" id="gocs">
+  <div class="gocs-head">
+    <p class="gocs-lead">Covers go build/test, go mod dependency management, gofmt/goimports, environment variables, go.mod directives and cross-compilation — every entry ships a copy-paste example and a real-world pitfall</p>
+    <p class="gocs-meta"><b>Updated 2026-09-24</b><span class="gocs-dot">·</span>Applies to Go 1.27.x<span class="gocs-dot">·</span>35 entries</p>
+    <input class="gocs-search" id="gocsSearch" type="search" placeholder="Search commands, env vars or keywords…" aria-label="Search commands, env vars or keywords…">
+    <div class="gocs-tabs" role="tablist">
+      <a class="gocs-tab active" href="#gocs" data-gocs-jump="top">All</a>
+      <a class="gocs-tab" href="#gocs-build" data-gocs-jump="build">Build, Run &amp; Test<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-mod" data-gocs-jump="mod">Modules &amp; Dependencies<span class="gocs-tab-n">7</span></a>
+      <a class="gocs-tab" href="#gocs-fmt" data-gocs-jump="fmt">Formatting &amp; Code Tools<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-env" data-gocs-jump="env">Key Environment Variables<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-modfile" data-gocs-jump="modfile">go.mod Directives<span class="gocs-tab-n">5</span></a>
+      <a class="gocs-tab" href="#gocs-x" data-gocs-jump="x">Cross-Compilation &amp; Toolchains<span class="gocs-tab-n">5</span></a>
+    </div>
+  </div>
+  <div class="gocs-groups">
+    <section class="gocs-group" id="gocs-build" data-on="1">
+      <h3 class="gocs-group-head">Build, Run &amp; Test<span class="gocs-group-desc">The commands you type most often. All of them accept ./... to match every package in the current module.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="go build ./... compiles every package in the module. without -o it only type-checks and links — no binary is left behind. ./... skips the vendor directory and nested modules (directories with their own go.mod). go build -o bin/app ./cmd/app">
+          <code class="gocs-cmd">go build ./...</code>
+          <p class="gocs-desc">Compiles every package in the module. Without -o it only type-checks and links — no binary is left behind.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go build -o bin/app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>./... skips the vendor directory and nested modules (directories with their own go.mod).</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go run . compiles into a temp directory and runs immediately — the daily driver for local development. killing the go run process may leave the actual child binary running — always ship go build artifacts in production. go run ./cmd/app --config dev.yaml">
+          <code class="gocs-cmd">go run .</code>
+          <p class="gocs-desc">Compiles into a temp directory and runs immediately — the daily driver for local development.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go run ./cmd/app --config dev.yaml</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Killing the go run process may leave the actual child binary running — always ship go build artifacts in production.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go test ./... runs all tests. handy flags: -v verbose, -run to filter by regex, -race for the race detector, -cover for coverage. test results are cached; changing env vars or external files does not invalidate the cache — force a rerun with -count=1. go test -race -run testparse ./pkg/parser/...
+go test -coverprofile=cover.out ./... &amp;&amp; go tool cover -html=cover.out">
+          <code class="gocs-cmd">go test ./...</code>
+          <p class="gocs-desc">Runs all tests. Handy flags: -v verbose, -run to filter by regex, -race for the race detector, -cover for coverage.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go test -race -run TestParse ./pkg/parser/...
+go test -coverprofile=cover.out ./... &amp;&amp; go tool cover -html=cover.out</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Test results are cached; changing env vars or external files does NOT invalidate the cache — force a rerun with -count=1.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go vet ./... the official static analyzer: printf mismatches, unreachable code, malformed struct tags, and more. vet only covers a small set of high-confidence checks; add staticcheck in ci for much broader coverage. go vet ./... &amp;&amp; staticcheck ./...">
+          <code class="gocs-cmd">go vet ./...</code>
+          <p class="gocs-desc">The official static analyzer: printf mismatches, unreachable code, malformed struct tags, and more.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go vet ./... &amp;&amp; staticcheck ./...</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>vet only covers a small set of high-confidence checks; add staticcheck in CI for much broader coverage.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go install pkg@version installs a command into gobin (default ~/go/bin) — the standard way to manage global go tools. with @version, go install ignores the go.mod in the current directory and builds in isolation; to add a project dependency use go get, not go install. go install golang.org/x/tools/cmd/goimports@latest
+go install honnef.co/go/tools/cmd/staticcheck@2025.1">
+          <code class="gocs-cmd">go install pkg@version</code>
+          <p class="gocs-desc">Installs a command into GOBIN (default ~/go/bin) — the standard way to manage global Go tools.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go install golang.org/x/tools/cmd/goimports@latest
+go install honnef.co/go/tools/cmd/staticcheck@2025.1</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>With @version, go install ignores the go.mod in the current directory and builds in isolation; to add a project dependency use go get, not go install.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go clean -cache -modcache wipes the build cache and module download cache — the last resort when dependency changes seem to have no effect. -modcache deletes every downloaded module; the next build re-downloads everything, so use it carefully on ci images. go clean -cache
+go clean -modcache   # harsher: deletes every downloaded module">
+          <code class="gocs-cmd">go clean -cache -modcache</code>
+          <p class="gocs-desc">Wipes the build cache and module download cache — the last resort when dependency changes seem to have no effect.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go clean -cache
+go clean -modcache   # harsher: deletes every downloaded module</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>-modcache deletes every downloaded module; the next build re-downloads everything, so use it carefully on CI images.</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-mod" data-on="1">
+      <h3 class="gocs-group-head">Modules &amp; Dependencies<span class="gocs-group-desc">Day-to-day go.mod / go.sum operations. When debugging dependency issues, reach for go mod graph and go mod why first.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="go mod init &lt;path&gt; initializes a module and writes go.mod. the module path is exactly what others will use to import you. private repos still need a full host-based path (e.g. git.company.com/team/proj); a short made-up name makes the module unresolvable. go mod init github.com/yourname/project">
+          <code class="gocs-cmd">go mod init &lt;path&gt;</code>
+          <p class="gocs-desc">Initializes a module and writes go.mod. The module path is exactly what others will use to import you.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go mod init github.com/yourname/project</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Private repos still need a full host-based path (e.g. git.company.com/team/proj); a short made-up name makes the module unresolvable.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod tidy adds/removes go.mod entries to match real imports and completes go.sum — run it before every commit. on &quot;missing go.sum entry&quot;, run go mod download &lt;module&gt; first, then tidy again; tidy scans build tags for the current goos/goarch only — mind -compat for older toolchains. go mod tidy
+go mod tidy -compat=1.26   # stay compatible with an older version">
+          <code class="gocs-cmd">go mod tidy</code>
+          <p class="gocs-desc">Adds/removes go.mod entries to match real imports and completes go.sum — run it before every commit.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go mod tidy
+go mod tidy -compat=1.26   # stay compatible with an older version</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>On &quot;missing go.sum entry&quot;, run go mod download &lt;module&gt; first, then tidy again; tidy scans build tags for the current GOOS/GOARCH only — mind -compat for older toolchains.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go get pkg@version adds, upgrades or downgrades a dependency (edits go.mod only — installs no binaries). omitting the version means @upgrade and may pull a cascade of indirect upgrades; pin an exact version for minimal diffs. go get github.com/gin-gonic/gin@latest
+go get github.com/sirupsen/logrus@v1.9.3   # same for downgrades">
+          <code class="gocs-cmd">go get pkg@version</code>
+          <p class="gocs-desc">Adds, upgrades or downgrades a dependency (edits go.mod only — installs no binaries).</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go get github.com/gin-gonic/gin@latest
+go get github.com/sirupsen/logrus@v1.9.3   # same for downgrades</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Omitting the version means @upgrade and may pull a cascade of indirect upgrades; pin an exact version for minimal diffs.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go list -m -u all lists all dependencies with available upgrades (a [v1.2.3] suffix means a newer version exists). &quot;all&quot; includes indirect deps and gets long; filter to direct deps with go list -m -f &#x27;{{if not .indirect}}{{.path}}{{end}}&#x27; all. go list -m -u all
+go list -m -versions github.com/spf13/cobra   # every version of one module">
+          <code class="gocs-cmd">go list -m -u all</code>
+          <p class="gocs-desc">Lists all dependencies with available upgrades (a [v1.2.3] suffix means a newer version exists).</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go list -m -u all
+go list -m -versions github.com/spf13/cobra   # every version of one module</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>&quot;all&quot; includes indirect deps and gets long; filter to direct deps with go list -m -f &#x27;{{if not .Indirect}}{{.Path}}{{end}}&#x27; all.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod why &lt;pkg&gt; answers &quot;who pulled this package in?&quot; by showing the import chain from your main packages to it. why shows the chain from the main module&#x27;s perspective; for raw version requirements between modules use go mod graph. go mod why golang.org/x/sys
+go mod graph | grep jwt   # the full dependency graph">
+          <code class="gocs-cmd">go mod why &lt;pkg&gt;</code>
+          <p class="gocs-desc">Answers &quot;who pulled this package in?&quot; by showing the import chain from your main packages to it.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go mod why golang.org/x/sys
+go mod graph | grep jwt   # the full dependency graph</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>why shows the chain from the main module&#x27;s perspective; for raw version requirements between modules use go mod graph.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod download downloads dependencies into the local cache without compiling — use it to warm up ci caches. most &quot;missing go.sum entry&quot; build failures are fixed by downloading the offending module explicitly. go mod download
+go mod download github.com/gin-gonic/gin   # download just this module">
+          <code class="gocs-cmd">go mod download</code>
+          <p class="gocs-desc">Downloads dependencies into the local cache without compiling — use it to warm up CI caches.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go mod download
+go mod download github.com/gin-gonic/gin   # download just this module</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Most &quot;missing go.sum entry&quot; build failures are fixed by downloading the offending module explicitly.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod verify verifies that cached modules match the hashes recorded in go.sum — guards against a tampered cache. only &quot;all modules verified&quot; is a pass; any mismatch means the cache is untrustworthy — run go clean -modcache. go mod verify">
+          <code class="gocs-cmd">go mod verify</code>
+          <p class="gocs-desc">Verifies that cached modules match the hashes recorded in go.sum — guards against a tampered cache.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go mod verify</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Only &quot;all modules verified&quot; is a pass; any mismatch means the cache is untrustworthy — run go clean -modcache.</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-fmt" data-on="1">
+      <h3 class="gocs-group-head">Formatting &amp; Code Tools<span class="gocs-group-desc">gofmt handles layout; goimports additionally manages imports — see our blog post for the full comparison.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="gofmt -l -w . formats source code: -l lists non-conforming files, -w rewrites in place, -d shows the diff without writing. gofmt never adds/removes imports and does not reorder import groups — that is goimports territory, and their output can differ. gofmt -l .          # ci check: any output means failure
+gofmt -d main.go    # preview what would change
+gofmt -s -w .       # also simplify the code">
+          <code class="gocs-cmd">gofmt -l -w .</code>
+          <p class="gocs-desc">Formats source code: -l lists non-conforming files, -w rewrites in place, -d shows the diff without writing.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>gofmt -l .          # CI check: any output means failure
+gofmt -d main.go    # preview what would change
+gofmt -s -w .       # also simplify the code</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>gofmt never adds/removes imports and does not reorder import groups — that is goimports territory, and their output can differ.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goimports -l -w . = gofmt + automatic import addition/removal + grouping (stdlib first, then third-party). without -local, your own organization&#x27;s packages land in the third-party group; the first run on a large repo builds an index and is expectedly slow. go install golang.org/x/tools/cmd/goimports@latest
+goimports -local github.com/myorg -w .   # own packages in their own group">
+          <code class="gocs-cmd">goimports -l -w .</code>
+          <p class="gocs-desc">= gofmt + automatic import addition/removal + grouping (stdlib first, then third-party).</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go install golang.org/x/tools/cmd/goimports@latest
+goimports -local github.com/myorg -w .   # own packages in their own group</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Without -local, your own organization&#x27;s packages land in the third-party group; the first run on a large repo builds an index and is expectedly slow.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go doc &lt;pkg&gt;.&lt;symbol&gt; reads documentation in the terminal — packages, functions and types, no browser needed. querying a third-party package that is not downloaded yet fails — run go mod download first or append @version. go doc net/http.server
+go doc json.marshal
+go doc github.com/gin-gonic/gin@latest   # pkg@version since go 1.27">
+          <code class="gocs-cmd">go doc &lt;pkg&gt;.&lt;symbol&gt;</code>
+          <p class="gocs-desc">Reads documentation in the terminal — packages, functions and types, no browser needed.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go doc net/http.Server
+go doc json.Marshal
+go doc github.com/gin-gonic/gin@latest   # pkg@version since Go 1.27</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Querying a third-party package that is not downloaded yet fails — run go mod download first or append @version.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go generate ./... scans for //go:generate directives and runs them (mocks, stringer, and other codegen). go generate is not part of the build — go build never triggers it. commit generated files or run it in ci. //go:generate stringer -type=status
+go generate ./...">
+          <code class="gocs-cmd">go generate ./...</code>
+          <p class="gocs-desc">Scans for //go:generate directives and runs them (mocks, stringer, and other codegen).</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>//go:generate stringer -type=Status
+go generate ./...</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>go generate is NOT part of the build — go build never triggers it. Commit generated files or run it in CI.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gofumpt -l -w . a stricter third-party formatter (a superset of gofmt), popular for enforcing team-wide style. gofumpt output is a stricter gofmt-compatible style; mixing both tools on one repo creates flip-flopping diffs. go install mvdan.cc/gofumpt@latest
+gofumpt -extra -w .">
+          <code class="gocs-cmd">gofumpt -l -w .</code>
+          <p class="gocs-desc">A stricter third-party formatter (a superset of gofmt), popular for enforcing team-wide style.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go install mvdan.cc/gofumpt@latest
+gofumpt -extra -w .</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>gofumpt output is a stricter gofmt-compatible style; mixing both tools on one repo creates flip-flopping diffs.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="staticcheck ./... the de-facto deep static analyzer: bugs, performance, deprecated apis and simplifications. complements go vet rather than replacing it: vet covers compiler-grade certainties, staticcheck covers broader practice. go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...">
+          <code class="gocs-cmd">staticcheck ./...</code>
+          <p class="gocs-desc">The de-facto deep static analyzer: bugs, performance, deprecated APIs and simplifications.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Complements go vet rather than replacing it: vet covers compiler-grade certainties, staticcheck covers broader practice.</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-env" data-on="1">
+      <h3 class="gocs-group-head">Key Environment Variables<span class="gocs-group-desc">Values set via go env -w persist in the go env file and apply to every shell session.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="goproxy the module download proxy. a regional mirror is essential where proxy.golang.org is unreachable or slow. put direct last: it means &quot;fall back to the origin only after all proxies fail&quot;; writing only direct disables proxies entirely. go env -w goproxy=https://goproxy.cn,direct
+go env -w goproxy=https://goproxy.io,direct   # another popular mirror">
+          <code class="gocs-cmd">GOPROXY</code>
+          <p class="gocs-desc">The module download proxy. A regional mirror is essential where proxy.golang.org is unreachable or slow.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GOPROXY=https://goproxy.io,direct   # another popular mirror</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Put direct last: it means &quot;fall back to the origin only after all proxies fail&quot;; writing only direct disables proxies entirely.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goprivate glob patterns for private module prefixes; matching modules bypass the proxy and checksum database and fetch directly. goprivate is the default for both gonoproxy and gonosumdb; set those two individually when you only want one behavior. go env -w goprivate=git.company.com/*,github.com/myorg/*
+go env -w gonoproxy=git.company.com/*   # bypass the proxy only">
+          <code class="gocs-cmd">GOPRIVATE</code>
+          <p class="gocs-desc">Glob patterns for private module prefixes; matching modules bypass the proxy and checksum database and fetch directly.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env -w GOPRIVATE=git.company.com/*,github.com/myorg/*
+go env -w GONOPROXY=git.company.com/*   # bypass the proxy only</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>GOPRIVATE is the default for both GONOPROXY and GONOSUMDB; set those two individually when you only want one behavior.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goflags default flags appended to every go command, e.g. a global -mod=mod or -race. with a vendor/ directory and go &gt;= 1.14, -mod=vendor is automatic — that is usually why go get edits seem to have no effect. go env -w goflags=-mod=mod
+go env -u goflags   # unset the setting">
+          <code class="gocs-cmd">GOFLAGS</code>
+          <p class="gocs-desc">Default flags appended to every go command, e.g. a global -mod=mod or -race.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env -w GOFLAGS=-mod=mod
+go env -u GOFLAGS   # unset the setting</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>With a vendor/ directory and go &gt;= 1.14, -mod=vendor is automatic — that is usually why go get edits seem to have no effect.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gopath / gomodcache / gobin gopath is the workspace root; modules cache at $gopath/pkg/mod (gomodcache); installed binaries land in gobin. &quot;command not found&quot; right after go install almost always means gobin is not on your path. go env gopath gomodcache gobin
+go env -w gobin=$home/bin   # custom install location">
+          <code class="gocs-cmd">GOPATH / GOMODCACHE / GOBIN</code>
+          <p class="gocs-desc">GOPATH is the workspace root; modules cache at $GOPATH/pkg/mod (GOMODCACHE); installed binaries land in GOBIN.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env GOPATH GOMODCACHE GOBIN
+go env -w GOBIN=$HOME/bin   # custom install location</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>&quot;command not found&quot; right after go install almost always means GOBIN is not on your PATH.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="cgo_enabled toggles cgo. set it to 0 for cross-compilation and fully static binaries. with cgo off, net dns resolution and os/user lookups fall back to pure-go implementations that behave slightly differently from glibc (and are usually more reliable in alpine containers). cgo_enabled=0 goos=linux goarch=amd64 go build -o app ./cmd/app">
+          <code class="gocs-cmd">CGO_ENABLED</code>
+          <p class="gocs-desc">Toggles CGO. Set it to 0 for cross-compilation and fully static binaries.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>With CGO off, net DNS resolution and os/user lookups fall back to pure-Go implementations that behave slightly differently from glibc (and are usually more reliable in Alpine containers).</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go111module (legacy) the go 1.11–1.22 module-mode switch; removed from the go command entirely in go 1.23 — no need to set it anymore. delete go111module=on from legacy ci scripts; if a script starts failing after a toolchain upgrade, this is why. go env go111module   # on current versions: unknown go environment variable">
+          <code class="gocs-cmd">GO111MODULE (legacy)</code>
+          <p class="gocs-desc">The Go 1.11–1.22 module-mode switch; removed from the go command entirely in Go 1.23 — no need to set it anymore.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env GO111MODULE   # on current versions: unknown go environment variable</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Delete GO111MODULE=on from legacy CI scripts; if a script starts failing after a toolchain upgrade, this is why.</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-modfile" data-on="1">
+      <h3 class="gocs-group-head">go.mod Directives<span class="gocs-group-desc">go.mod has only a handful of directives; mastering replace and retract resolves 80% of dependency disputes.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="module / go / toolchain module path, minimum language version, and the expected toolchain — the three header lines of go.mod. since go 1.21 the go directive is a hard floor: an older toolchain refuses to build instead of &quot;giving it a try&quot;. module github.com/you/proj
+
+go 1.26
+
+toolchain go1.27.1">
+          <code class="gocs-cmd">module / go / toolchain</code>
+          <p class="gocs-desc">Module path, minimum language version, and the expected toolchain — the three header lines of go.mod.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>module github.com/you/proj
+
+go 1.26
+
+toolchain go1.27.1</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Since Go 1.21 the go directive is a hard floor: an older toolchain refuses to build instead of &quot;giving it a try&quot;.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="require declares a dependency with its minimum version. the // indirect comment marks deps your code does not import directly. since go 1.27, go mod tidy consolidates scattered require blocks into the standard direct/indirect two-block layout — hand-splitting blocks is pointless. require (
+	github.com/gin-gonic/gin v1.10.0
+	golang.org/x/sys v0.24.0 // indirect
+)">
+          <code class="gocs-cmd">require</code>
+          <p class="gocs-desc">Declares a dependency with its minimum version. The // indirect comment marks deps your code does not import directly.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>require (
+	github.com/gin-gonic/gin v1.10.0
+	golang.org/x/sys v0.24.0 // indirect
+)</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Since Go 1.27, go mod tidy consolidates scattered require blocks into the standard direct/indirect two-block layout — hand-splitting blocks is pointless.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="replace substitutes a module with a local directory or fork — the standard way to debug deps or apply temporary patches. replace only applies to the main module: when someone imports your library, the replace directives inside it are ignored. replace github.com/foo/bar =&gt; ../bar
+
+replace github.com/foo/bar v1.2.3 =&gt; github.com/you/bar v1.2.4-fix">
+          <code class="gocs-cmd">replace</code>
+          <p class="gocs-desc">Substitutes a module with a local directory or fork — the standard way to debug deps or apply temporary patches.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>replace github.com/foo/bar =&gt; ../bar
+
+replace github.com/foo/bar v1.2.3 =&gt; github.com/you/bar v1.2.4-fix</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>replace only applies to the main module: when someone imports your library, the replace directives inside it are ignored.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="exclude explicitly excludes a broken version; the go command treats it as non-existent. exclude is main-module-only too; to withdraw versions of a published library use retract, not exclude. exclude github.com/foo/bar v1.2.3">
+          <code class="gocs-cmd">exclude</code>
+          <p class="gocs-desc">Explicitly excludes a broken version; the go command treats it as non-existent.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>exclude github.com/foo/bar v1.2.3</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>exclude is main-module-only too; to withdraw versions of a published library use retract, not exclude.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="retract lets a library author withdraw published versions (the antidote to a bad release); go get automatically avoids them. retract does not delete versions (they stay on the proxy and can still be requested explicitly); it only removes them from queries like @latest. retract (
+	v1.2.0   // shipped an unfinished feature by mistake
+	v1.1.9   // security issue, please upgrade to v1.1.10
+)">
+          <code class="gocs-cmd">retract</code>
+          <p class="gocs-desc">Lets a library author withdraw published versions (the antidote to a bad release); go get automatically avoids them.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>retract (
+	v1.2.0   // shipped an unfinished feature by mistake
+	v1.1.9   // security issue, please upgrade to v1.1.10
+)</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>retract does not delete versions (they stay on the proxy and can still be requested explicitly); it only removes them from queries like @latest.</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-x" data-on="1">
+      <h3 class="gocs-group-head">Cross-Compilation &amp; Toolchains<span class="gocs-group-desc">Go cross-compiles without any target-platform toolchain — two environment variables are enough.</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="goos / goarch target os and architecture — prefix go build with them to cross-compile. dependencies that use cgo (e.g. sqlite3 drivers) fail to cross-compile without a target c toolchain — switch to pure-go alternatives like modernc.org/sqlite. goos=linux   goarch=amd64 go build -o app-linux-amd64   ./cmd/app
+goos=linux   goarch=arm64 go build -o app-linux-arm64   ./cmd/app
+goos=windows goarch=amd64 go build -o app.exe           ./cmd/app
+goos=darwin  goarch=arm64 go build -o app-darwin-arm64  ./cmd/app">
+          <code class="gocs-cmd">GOOS / GOARCH</code>
+          <p class="gocs-desc">Target OS and architecture — prefix go build with them to cross-compile.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>GOOS=linux   GOARCH=amd64 go build -o app-linux-amd64   ./cmd/app
+GOOS=linux   GOARCH=arm64 go build -o app-linux-arm64   ./cmd/app
+GOOS=windows GOARCH=amd64 go build -o app.exe           ./cmd/app
+GOOS=darwin  GOARCH=arm64 go build -o app-darwin-arm64  ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Dependencies that use CGO (e.g. sqlite3 drivers) fail to cross-compile without a target C toolchain — switch to pure-Go alternatives like modernc.org/sqlite.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go tool dist list lists every goos/goarch pair supported by your toolchain. exotic pairs (e.g. linux/riscv64) need no extra installation — if it is listed, it compiles. go tool dist list
+go tool dist list | grep linux">
+          <code class="gocs-cmd">go tool dist list</code>
+          <p class="gocs-desc">Lists every GOOS/GOARCH pair supported by your toolchain.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go tool dist list
+go tool dist list | grep linux</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>Exotic pairs (e.g. linux/riscv64) need no extra installation — if it is listed, it compiles.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gotoolchain toolchain selection policy: auto downloads and switches per go.mod (default); local uses only the installed version. on ci images prefer local with the right version preinstalled — otherwise builds download a toolchain on the spot, which is slow and can fail. go env gotoolchain
+go env -w gotoolchain=local   # never download a toolchain automatically">
+          <code class="gocs-cmd">GOTOOLCHAIN</code>
+          <p class="gocs-desc">Toolchain selection policy: auto downloads and switches per go.mod (default); local uses only the installed version.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go env GOTOOLCHAIN
+go env -w GOTOOLCHAIN=local   # never download a toolchain automatically</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>On CI images prefer local with the right version preinstalled — otherwise builds download a toolchain on the spot, which is slow and can fail.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="-trimpath -ldflags &quot;-s -w&quot; the release-build trio: strips local paths, symbol table and dwarf info — typically 20–30% smaller binaries. after -s -w, panics still carry line numbers but source-level debugging with delve is gone — use it for release artifacts only. go build -trimpath -ldflags=&quot;-s -w&quot; -o bin/app ./cmd/app">
+          <code class="gocs-cmd">-trimpath -ldflags &quot;-s -w&quot;</code>
+          <p class="gocs-desc">The release-build trio: strips local paths, symbol table and DWARF info — typically 20–30% smaller binaries.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go build -trimpath -ldflags=&quot;-s -w&quot; -o bin/app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>After -s -w, panics still carry line numbers but source-level debugging with delve is gone — use it for release artifacts only.</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go version / go env shows the active toolchain version and full environment — the first step of any environment debugging. go env shows the effective value, which can come from the os environment, the go env -w file, or built-in defaults. go version
+go env goversion goos goarch goproxy
+go env -json   # machine-readable dump of every setting">
+          <code class="gocs-cmd">go version / go env</code>
+          <p class="gocs-desc">Shows the active toolchain version and full environment — the first step of any environment debugging.</p>
+          <div class="gocs-eg-label">Example</div>
+          <pre class="gocs-eg"><code>go version
+go env GOVERSION GOOS GOARCH GOPROXY
+go env -json   # machine-readable dump of every setting</code></pre>
+          <p class="gocs-pit"><b>Watch out</b>go env shows the effective value, which can come from the OS environment, the go env -w file, or built-in defaults.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+  <p class="gocs-nohit" id="gocsNohit" hidden>No matching entry — try another keyword.</p>
+  <script>
+(function () {
+  var box = document.getElementById('gocsSearch');
+  if (!box) return;
+  var items = document.querySelectorAll('.gocs-item');
+  var groups = document.querySelectorAll('.gocs-group');
+  var nohit = document.getElementById('gocsNohit');
+  function apply() {
+    var q = box.value.trim().toLowerCase();
+    var any = false;
+    Array.prototype.forEach.call(items, function (it) {
+      var on = !q || it.getAttribute('data-hay').indexOf(q) !== -1;
+      it.setAttribute('data-on', on ? '1' : '0');
+      if (on) any = true;
+    });
+    Array.prototype.forEach.call(groups, function (g) {
+      var vis = g.querySelector('.gocs-item[data-on="1"]');
+      g.setAttribute('data-on', vis ? '1' : '0');
+    });
+    if (nohit) nohit.hidden = any || !q;
+  }
+  box.addEventListener('input', apply);
+})();
+</script>
+</div>
+</div>
+
+<section class="seo-content">
+  <h1>Go Toolchain Command Cheat Sheet</h1>
+  <p>A full-text searchable cheat sheet for the Go toolchain, organized into the six groups you reach for most: build &amp; test (go build / go test), modules &amp; dependencies (go mod tidy / go get), formatting (gofmt / goimports), key environment variables (GOPROXY / GOPRIVATE), go.mod directives (require / replace / retract), and cross-compilation &amp; toolchain management.</p>
+  <p>Every entry ships a copy-paste example plus a real-world pitfall — why the go test result cache makes &quot;changed env var, same result&quot; happen, why a vendor directory makes go get look broken, and why replace only works in the main module. Maintained against current Go releases; applies to Go 1.27.x.</p>
+  <h2>Features</h2>
+  <ul class="seo-features">
+    <li><b>Full-Text Search</b> — The search box filters across commands, descriptions and pitfalls — type a keyword and jump straight to the entry.</li>
+    <li><b>Six High-Frequency Groups</b> — Build &amp; test, dependencies, formatting, environment variables, go.mod directives and cross-compilation, each in its own section.</li>
+    <li><b>Copy-Paste Examples</b> — Every command comes with a working example, including a multi-platform cross-compilation matrix.</li>
+    <li><b>Pitfalls Called Out</b> — Each entry carries a &quot;Watch out&quot; note — the difference from ordinary documentation.</li>
+    <li><b>Maintained Per Release</b> — The applicable Go version and update date are shown; entries are reviewed after each Go release.</li>
+    <li><b>Pure Static, No Signup</b> — Content is baked into the page at build time — complete on first paint, no login, no ads, no tracking.</li>
+  </ul>
+  <h2>How to use</h2>
+  <ol class="seo-steps">
+    <li>Type a command or keyword (e.g. tidy, proxy, replace) into the search box to filter entries instantly.</li>
+    <li>Or click a section tab to jump to a group: build / deps / formatting / env / go.mod / cross-compile.</li>
+    <li>Copy the commands from the example blocks; the Watch-out note tells you when the result differs from expectations.</li>
+    <li>Need to format HTML/CSS/JS/SQL online? Use the code formatter; for the gofmt vs goimports deep dive, see the blog.</li>
+  </ol>
+  <h2>FAQ</h2>
+  <div class="faq">
+    <details><summary>What is the difference between gofmt and goimports?</summary><p>gofmt only handles layout (indentation, alignment, spacing) and never touches imports; goimports builds on gofmt by adding/removing imports and sorting them into stdlib and third-party groups. Their output on the same file can differ — standardize on goimports -l in CI. See the blog post for the full comparison with CI configuration examples.</p></details>
+    <details><summary>How do I configure GOPROXY behind a restricted network?</summary><p>Run go env -w GOPROXY=https://goproxy.cn,direct (or another reachable mirror). The trailing direct means &quot;fall back to the origin only after all proxies fail&quot; and must come last; combine it with GOPRIVATE=git.company.com/* for private repositories so they skip the proxy and checksum database.</p></details>
+    <details><summary>What is the difference between go get and go install?</summary><p>go get only edits the current project&#x27;s go.mod (add/upgrade/downgrade a dependency) and installs no binaries; go install pkg@version installs a command into GOBIN and ignores the go.mod of the current directory. Use go get for project dependencies and go install for global tools.</p></details>
+    <details><summary>Does cross-compiling require a target-platform toolchain?</summary><p>No. GOOS=linux GOARCH=arm64 go build is all it takes, and go tool dist list shows every supported pair. The only exception is CGO-based dependencies (such as some sqlite drivers), which need a target C toolchain or a pure-Go replacement.</p></details>
+    <details><summary>Do I still need to set GO111MODULE?</summary><p>No. It was the module-mode switch of the Go 1.11–1.22 era and was removed from the go command entirely in Go 1.23 — setting it has no effect. Delete GO111MODULE=on from legacy CI scripts.</p></details>
+  </div>
+  <h2>Related tools &amp; reading</h2>
+  <ul class="seo-related">
+    <li><a href="../../en/formatter/">Code formatter (HTML / CSS / JS / SQL)</a></li>
+    <li><a href="../../en/blog/gofmt-vs-goimports/">Blog: gofmt vs goimports, and how to wire them into CI</a></li>
+    <li><a href="../../en/./">JSON formatter &amp; validator</a></li>
+  </ul>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Feedback</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+  </div>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
+    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
+  </div>
+  <p class="fb-note">
+    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>·</span>
+    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page: ' + location.href,
+      'Browser: ' + navigator.userAgent,
+      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
+      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Time: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
+      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>
