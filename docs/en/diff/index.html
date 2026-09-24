@@ -260,6 +260,71 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .news-heat{color:var(--warning);font-weight:600}
 .news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
 @media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
@@ -314,6 +379,7 @@ var _hmt = _hmt || [];
   <nav class="top-nav" id="topNav">
     <a class="top-nav-item" href="../../en/">JSON</a>
     <a class="top-nav-item" href="../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
     <a class="top-nav-item active" href="../../en/diff/">Text Diff</a>
     <a class="top-nav-item" href="../../en/encode/">Encode</a>
     <a class="top-nav-item" href="../../en/regex/">Regex</a>
@@ -414,7 +480,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>

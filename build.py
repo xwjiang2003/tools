@@ -38,6 +38,12 @@ from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
 from news import (CST, jsonld_items, load_news,           # noqa: E402
                   render_body as render_news_body,
                   sources_for, visible_items)
+from cheatsheet import render_body as render_cheat_body   # noqa: E402
+from blog import (ARTICLES, BLOG_INDEX, TEXT as BLOG_TEXT,  # noqa: E402
+                  article_jsonld, article_path, articles_for,
+                  index_jsonld as blog_index_jsonld,
+                  render_article, render_index as render_blog_index)
+from blog_en import ARTICLES_EN                           # noqa: E402
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
 SRC = ROOT / 'src'
@@ -48,6 +54,10 @@ DOCS = ROOT / 'docs'
 # 所以 build() 里对它单独处理（见下方 NEWS_SLUG 分支）。
 NEWS_SLUG = 'hotnews'
 NEWS_PATH = next(t['path'] for t in TOOLS if t['slug'] == NEWS_SLUG)
+
+# Go 速查表页。与热榜同型：正文构建期从 cheatsheet.py 的数据渲染，
+# 页面只需要 core.js（不需要编辑器与 CodeMirror），见 build() 的 CHEAT_SLUG 分支。
+CHEAT_SLUG = 'go-cheatsheet'
 
 # 需要原样发布到站点根目录的第三方文件（搜索引擎的域名验证文件等）。
 #
@@ -120,8 +130,12 @@ def out_path(lang, path):
 
 
 def rel_root(lang, path):
-    """从输出文件所在目录回到站点根目录的相对前缀。"""
-    depth = (0 if path == '' else 1) + (1 if lang == 'en' else 0)
+    """从输出文件所在目录回到站点根目录的相对前缀。
+
+    depth 按 path 里的 '/' 数计算：'' → 0，'diff/' → 1，'blog/foo/' → 2，
+    'privacy.html' 这类根级文件 → 0。英文页再多一级 /en/。
+    """
+    depth = path.count('/') + (1 if lang == 'en' else 0)
     return '../' * depth
 
 
@@ -316,6 +330,8 @@ def footer_links_html(base, labels):
         if not t['path']:
             continue
         parts.append(f'<a href="{base}{t["path"]}">{esc(labels[t["slug"]])}</a>')
+    # 博客不是工具、不进 TOOLS，但需要一个站点级入口（正文交叉链接之外的保底）。
+    parts.append(f'<a href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
     return ''.join(parts)
 
 
@@ -341,6 +357,14 @@ def seo_section(c):
     for q, a in c['faq']:
         p.append(f'    <details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>')
     p.append('  </div>')
+    # 「相关工具与阅读」：正文级交叉链接（真实 <a href>，不是全站样板导航）。
+    # 链接是站点根相对路径，构建时补上语言前缀 c['_base']（由 build() 在调用前注入）。
+    if c.get('seealso'):
+        p.append(f'  <h2>{esc(c["_related_heading"])}</h2>')
+        p.append('  <ul class="seo-related">')
+        for text, href in c['seealso']:
+            p.append(f'    <li><a href="{esc(c["_base"] + href)}">{esc(text)}</a></li>')
+        p.append('  </ul>')
     p.append('</section>')
     return '\n'.join(p)
 
@@ -394,6 +418,11 @@ def jsonld(c, url, lang, news=None):
                 for q, a in c['faq']
             ],
         })
+    return _jsonld_raw(graph)
+
+
+def _jsonld_raw(graph):
+    """把 @graph 条目列表包成 JSON-LD <script> 标签（工具页与博客页共用）。"""
     data = json.dumps({'@context': 'https://schema.org', '@graph': graph},
                       ensure_ascii=False)
     return '<script type="application/ld+json">' + data.replace('</', '<\\/') + '</script>'
@@ -435,9 +464,11 @@ def inline_assets(tpl, with_js=True, only_modules=None):
 
 HEADINGS = {
     'zh': {'_features_heading': '主要功能', '_steps_heading': '使用步骤',
-           '_faq_heading': '常见问题', '_home': '首页'},
+           '_faq_heading': '常见问题', '_home': '首页', '_blog': '博客',
+           '_related_heading': '相关工具与阅读'},
     'en': {'_features_heading': 'Features', '_steps_heading': 'How to use',
-           '_faq_heading': 'FAQ', '_home': 'Home'},
+           '_faq_heading': 'FAQ', '_home': 'Home', '_blog': 'Blog',
+           '_related_heading': 'Related tools & reading'},
 }
 
 # 英文界面文案直接复用 i18n 字典，保证与内联 JS 的翻译一致
@@ -504,11 +535,15 @@ def build():
             c = content_for(t, lang)
             if t['slug'] == NEWS_SLUG:
                 page_tpl, body = news_tpl, render_news_body(lang, news)
+            elif t['slug'] == CHEAT_SLUG:
+                # 速查表与热榜同型：只需要 core.js 的轻量模板 + 构建期渲染的正文
+                page_tpl, body = news_tpl, render_cheat_body(lang)
             else:
                 page_tpl = tpl
                 body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
             base = lang_prefix(lang, rel_root(lang, t['path']))
             home = base or './'
+            c['_base'] = base     # seo_section 的「相关工具与阅读」链接要用
             page = apply_common(page_tpl, lang, t['slug'], t['path'], c['title'],
                                 c['description'], c['keywords'], body, seo_section(c),
                                 jsonld(c, canonical_url(lang, t['path']), lang, news),
@@ -516,6 +551,36 @@ def build():
             if lang == 'en':
                 page = localize(page)
             pages[out_path(lang, t['path'])] = page
+
+        # ---------------- 博客：索引页 + 文章页 ----------------
+        # 文章不是工具：不进 TOOLS / 顶部导航，走与热榜相同的轻量模板（只有 core.js），
+        # 但拥有独立的 URL、canonical、hreflang、JSON-LD（TechArticle）与 sitemap 条目。
+        lang_articles = articles_for(lang, ARTICLES_EN)
+        bt = BLOG_TEXT[lang]
+
+        base = lang_prefix(lang, rel_root(lang, BLOG_INDEX))
+        page = apply_common(news_tpl, lang, 'blog', BLOG_INDEX, bt['index_title'],
+                            bt['index_desc'], bt['index_kw'],
+                            render_blog_index(lang, ARTICLES_EN, base), '',
+                            _jsonld_raw(blog_index_jsonld(
+                                lang_articles, canonical_url(lang, BLOG_INDEX), lang)),
+                            base, base or './')
+        if lang == 'en':
+            page = localize(page)
+        pages[out_path(lang, BLOG_INDEX)] = page
+
+        for a in lang_articles:
+            apath = article_path(a['slug'])
+            base = lang_prefix(lang, rel_root(lang, apath))
+            page = apply_common(news_tpl, lang, 'blog-' + a['slug'], apath, a['title'],
+                                a['description'], a['keywords'],
+                                render_article(lang, a, base), '',
+                                _jsonld_raw([article_jsonld(
+                                    a, canonical_url(lang, apath), lang)]),
+                                base, base or './')
+            if lang == 'en':
+                page = localize(page)
+            pages[out_path(lang, apath)] = page
 
         # 隐私政策
         body = PRIVACY_BODY_ZH if lang == 'zh' else PRIVACY_BODY_EN
@@ -568,28 +633,36 @@ def build():
 
 
 def sitemap_xml(news=None):
-    paths = [t['path'] for t in TOOLS] + [PRIVACY_FILE]
-
-    # 只有热榜页写 <lastmod>。它每天确实会变，lastmod 因此是真的；
-    # 其余页面变化很少，如果跟着构建时间天天变，反而会让搜索引擎不再信任这个字段。
+    # 只有「确实会变」的页面才写 <lastmod>。热榜每天变、博客文章有真实的
+    # 发布/校订日期，这两类的 lastmod 是真的；其余页面变化很少，如果跟着构建
+    # 时间天天变，反而会让搜索引擎不再信任这个字段。
     news_day = ''
     if news and news.get('generated_at'):
         from datetime import datetime
         news_day = datetime.fromtimestamp(news['generated_at'], CST).strftime('%Y-%m-%d')
 
+    # (path, priority, changefreq, lastmod)
+    entries = []
+    for t in TOOLS:
+        p = t['path']
+        if p == '':
+            entries.append((p, '1.0', 'weekly', ''))
+        elif p == NEWS_PATH:
+            entries.append((p, '0.9', 'daily', news_day))
+        else:
+            entries.append((p, '0.8', 'monthly', ''))
+    entries.append((PRIVACY_FILE, '0.3', 'yearly', ''))
+    # 博客：索引页取最新文章的校订日期，文章页用自己的日期
+    blog_updated = max(a['updated'] for a in ARTICLES) if ARTICLES else ''
+    entries.append((BLOG_INDEX, '0.6', 'weekly', blog_updated))
+    for a in ARTICLES:
+        entries.append((article_path(a['slug']), '0.7', 'monthly', a['updated']))
+
     rows = []
-    for p in paths:
+    for p, pri, freq, lastmod_day in entries:
         zh = SITE['base_url'] + p
         en = SITE['base_url'] + EN_DIR + p
-        if p == '':
-            pri, freq = '1.0', 'weekly'
-        elif p == PRIVACY_FILE:
-            pri, freq = '0.3', 'yearly'
-        elif p == NEWS_PATH:
-            pri, freq = '0.9', 'daily'
-        else:
-            pri, freq = '0.8', 'monthly'
-        lastmod = f'\n    <lastmod>{news_day}</lastmod>' if (p == NEWS_PATH and news_day) else ''
+        lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
         rows.append(
             '  <url>\n'
             f'    <loc>{zh}</loc>{lastmod}\n'
@@ -676,13 +749,35 @@ def llms_txt():
         '',
     ]
     for t in TOOLS:
-        if t['slug'] == NEWS_SLUG:
+        # 热榜与速查表都不是「有输入框的工具」，各自单列一节
+        if t['slug'] in (NEWS_SLUG, CHEAT_SLUG):
             continue
         en = TOOLS_EN[t['slug']]
         zh_url = SITE['base_url'] + t['path']
         en_url = SITE['base_url'] + EN_DIR + t['path']
         out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]}')
         out.append(f'  - English: [{en["h1"]}]({en_url}) — {en["description"]}')
+    # 速查表不是工具（没有输入框），单独一节；博客同理，且每篇都要列出，
+    # 否则新文章写完不进这份摘要，等于白写。
+    cheat = next(t for t in TOOLS if t['slug'] == CHEAT_SLUG)
+    cheat_en = TOOLS_EN[CHEAT_SLUG]
+    out += [
+        '',
+        '## Cheatsheet / 速查表',
+        '',
+        f'- [{cheat["h1"]}]({SITE["base_url"]}{cheat["path"]}): {cheat["description"]}',
+        f'  - English: [{cheat_en["h1"]}]({SITE["base_url"]}{EN_DIR}{cheat["path"]})'
+        f' — {cheat_en["description"]}',
+        '',
+        '## Blog / 文章',
+        '',
+    ]
+    for a in ARTICLES:
+        out.append(f'- [{a["h1"]}]({SITE["base_url"]}{article_path(a["slug"])}): {a["summary"]}')
+        en_a = dict(a)
+        en_a.update(ARTICLES_EN[a['slug']])
+        out.append(f'  - English: [{en_a["h1"]}]'
+                   f'({SITE["base_url"]}{EN_DIR}{article_path(a["slug"])}) — {en_a["summary"]}')
     out += [
         '',
         '## News / 资讯',

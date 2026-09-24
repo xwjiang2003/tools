@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page="go-cheatsheet">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go 命令速查表 - go build/go mod/gofmt/环境变量/交叉编译 | DevTools</title>
+<meta name="description" content="Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，支持关键词搜索，中英双语。">
+<meta name="keywords" content="Go命令速查,go mod tidy,go get,gofmt goimports区别,GOPROXY设置,go.mod replace,Go交叉编译,GOOS GOARCH,GOTOOLCHAIN,go build 参数,GOPRIVATE 私有仓库,go mod 命令,Go 环境变量">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/go-cheatsheet/">
+<meta property="og:title" content="Go 命令速查表 - go build/go mod/gofmt/环境变量/交叉编译 | DevTools">
+<meta property="og:description" content="Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，支持关键词搜索，中英双语。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/go-cheatsheet/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/go-cheatsheet/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/go-cheatsheet/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/go-cheatsheet/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Go 工具链命令速查表", "url": "https://devtools.help/go-cheatsheet/", "description": "Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，支持关键词搜索，中英双语。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "gofmt 和 goimports 到底有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "gofmt 只管代码排版（缩进、对齐、空格），不会动 import；goimports 在 gofmt 的基础上自动补全和删除 import，并按「标准库 / 第三方」分组排序。两者对同一份代码的输出可以不同，CI 里建议统一用 goimports -l 检查。更完整的对比（含 CI 配置示例）见本站博客专题。"}}, {"@type": "Question", "name": "GOPROXY 在国内怎么配？", "acceptedAnswer": {"@type": "Answer", "text": "执行 go env -w GOPROXY=https://goproxy.cn,direct 即可。结尾的 direct 表示「所有代理都失败后回源仓库直连」，必须放在最后；私有仓库再配合 GOPRIVATE=git.company.com/* 跳过代理与校验。"}}, {"@type": "Question", "name": "go get 和 go install 有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "go get 只修改当前项目的 go.mod（添加/升级/降级依赖），不安装任何二进制；go install pkg@version 用来安装命令行工具到 GOBIN，且会忽略当前目录的 go.mod。想给项目加依赖用 go get，想装全局工具用 go install。"}}, {"@type": "Question", "name": "交叉编译需要装目标平台的工具链吗？", "acceptedAnswer": {"@type": "Answer", "text": "不需要。GOOS=linux GOARCH=arm64 go build 一对环境变量即可，go tool dist list 能列出全部支持的组合。唯一的例外是依赖 CGO 的库（如部分 sqlite 驱动），需要目标平台的 C 工具链或改用纯 Go 实现。"}}, {"@type": "Question", "name": "GO111MODULE 还需要设置吗？", "acceptedAnswer": {"@type": "Answer", "text": "不需要。它是 Go 1.11–1.22 时代的模块模式开关，Go 1.23 起已被 go 命令彻底移除，设置它没有效果；老 CI 脚本里的 GO111MODULE=on 可以直接删掉。"}}]}]}</script>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "./", "en": "../en/go-cheatsheet/"}[want];
+    if (target && want !== 'zh') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../" aria-label="DevTools 首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <a class="top-nav-item" href="../">JSON 工具</a>
+    <a class="top-nav-item" href="../hotnews/">今日热榜</a>
+    <a class="top-nav-item active" href="../go-cheatsheet/">Go 速查表</a>
+    <a class="top-nav-item" href="../diff/">文本比对</a>
+    <a class="top-nav-item" href="../encode/">编码解码</a>
+    <a class="top-nav-item" href="../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../string/">字符串</a>
+    <a class="top-nav-item" href="../generator/">生成器</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/go-cheatsheet/" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-go-cheatsheet">
+<div class="gocs" id="gocs">
+  <div class="gocs-head">
+    <p class="gocs-lead">覆盖 go build/test、go mod 依赖管理、gofmt/goimports、环境变量、go.mod 指令与交叉编译，每条附可直接照抄的示例和真实踩坑点</p>
+    <p class="gocs-meta"><b>更新于 2026-09-24</b><span class="gocs-dot">·</span>适用版本：Go 1.27.x<span class="gocs-dot">·</span>共 35 条</p>
+    <input class="gocs-search" id="gocsSearch" type="search" placeholder="搜索命令、环境变量或关键词…" aria-label="搜索命令、环境变量或关键词…">
+    <div class="gocs-tabs" role="tablist">
+      <a class="gocs-tab active" href="#gocs" data-gocs-jump="top">全部</a>
+      <a class="gocs-tab" href="#gocs-build" data-gocs-jump="build">构建、运行与测试<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-mod" data-gocs-jump="mod">模块与依赖管理<span class="gocs-tab-n">7</span></a>
+      <a class="gocs-tab" href="#gocs-fmt" data-gocs-jump="fmt">格式化与代码工具<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-env" data-gocs-jump="env">关键环境变量<span class="gocs-tab-n">6</span></a>
+      <a class="gocs-tab" href="#gocs-modfile" data-gocs-jump="modfile">go.mod 指令速查<span class="gocs-tab-n">5</span></a>
+      <a class="gocs-tab" href="#gocs-x" data-gocs-jump="x">交叉编译与版本管理<span class="gocs-tab-n">5</span></a>
+    </div>
+  </div>
+  <div class="gocs-groups">
+    <section class="gocs-group" id="gocs-build" data-on="1">
+      <h3 class="gocs-group-head">构建、运行与测试<span class="gocs-group-desc">日常写得最多的一组命令，全部支持 ./... 匹配当前模块下的所有包。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="go build ./... 编译当前模块的所有包。不带 -o 时只检查能否编译，不会留下二进制文件。 ./... 不会包含 vendor 目录和子模块（各有自己 go.mod 的目录）。 go build -o bin/app ./cmd/app">
+          <code class="gocs-cmd">go build ./...</code>
+          <p class="gocs-desc">编译当前模块的所有包。不带 -o 时只检查能否编译，不会留下二进制文件。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go build -o bin/app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>注意</b>./... 不会包含 vendor 目录和子模块（各有自己 go.mod 的目录）。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go run . 编译到临时目录并立即运行，开发调试最常用。 kill 掉 go run 进程不一定能杀掉它启动的子进程（程序本体），生产环境请用 go build 的产物。 go run ./cmd/app --config dev.yaml">
+          <code class="gocs-cmd">go run .</code>
+          <p class="gocs-desc">编译到临时目录并立即运行，开发调试最常用。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go run ./cmd/app --config dev.yaml</code></pre>
+          <p class="gocs-pit"><b>注意</b>kill 掉 go run 进程不一定能杀掉它启动的子进程（程序本体），生产环境请用 go build 的产物。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go test ./... 运行全部测试。常用旗标：-v 详细输出、-run 按正则筛选、-race 竞态检测、-cover 覆盖率。 测试结果会被缓存，改了环境变量或外部文件不会使缓存失效——需要强制重跑时加 -count=1。 go test -race -run testparse ./pkg/parser/...
+go test -coverprofile=cover.out ./... &amp;&amp; go tool cover -html=cover.out">
+          <code class="gocs-cmd">go test ./...</code>
+          <p class="gocs-desc">运行全部测试。常用旗标：-v 详细输出、-run 按正则筛选、-race 竞态检测、-cover 覆盖率。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go test -race -run TestParse ./pkg/parser/...
+go test -coverprofile=cover.out ./... &amp;&amp; go tool cover -html=cover.out</code></pre>
+          <p class="gocs-pit"><b>注意</b>测试结果会被缓存，改了环境变量或外部文件不会使缓存失效——需要强制重跑时加 -count=1。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go vet ./... 官方静态检查：printf 参数错位、不可达代码、错误的 struct tag 等。 vet 只覆盖一小类高置信问题，ci 里建议再挂 staticcheck（honest 地说：两者误报都很低）。 go vet ./... &amp;&amp; staticcheck ./...">
+          <code class="gocs-cmd">go vet ./...</code>
+          <p class="gocs-desc">官方静态检查：printf 参数错位、不可达代码、错误的 struct tag 等。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go vet ./... &amp;&amp; staticcheck ./...</code></pre>
+          <p class="gocs-pit"><b>注意</b>vet 只覆盖一小类高置信问题，CI 里建议再挂 staticcheck（honest 地说：两者误报都很低）。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go install pkg@version 把命令行工具安装到 gobin（默认 ~/go/bin），管理全局工具的标准方式。 带 @版本号 时 go install 会忽略当前目录的 go.mod，在独立上下文中构建；想给项目加依赖请用 go get，不是 go install。 go install golang.org/x/tools/cmd/goimports@latest
+go install honnef.co/go/tools/cmd/staticcheck@2025.1">
+          <code class="gocs-cmd">go install pkg@version</code>
+          <p class="gocs-desc">把命令行工具安装到 GOBIN（默认 ~/go/bin），管理全局工具的标准方式。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go install golang.org/x/tools/cmd/goimports@latest
+go install honnef.co/go/tools/cmd/staticcheck@2025.1</code></pre>
+          <p class="gocs-pit"><b>注意</b>带 @版本号 时 go install 会忽略当前目录的 go.mod，在独立上下文中构建；想给项目加依赖请用 go get，不是 go install。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go clean -cache -modcache 清空构建缓存与模块下载缓存，排查「改了依赖却像没改」类怪问题的最后手段。 -modcache 会删掉 gomodcache 下所有模块，下次构建全量重新下载，ci 镜像里慎用。 go clean -cache
+go clean -modcache   # 更狠：删掉全部已下载模块">
+          <code class="gocs-cmd">go clean -cache -modcache</code>
+          <p class="gocs-desc">清空构建缓存与模块下载缓存，排查「改了依赖却像没改」类怪问题的最后手段。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go clean -cache
+go clean -modcache   # 更狠：删掉全部已下载模块</code></pre>
+          <p class="gocs-pit"><b>注意</b>-modcache 会删掉 GOMODCACHE 下所有模块，下次构建全量重新下载，CI 镜像里慎用。</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-mod" data-on="1">
+      <h3 class="gocs-group-head">模块与依赖管理<span class="gocs-group-desc">go.mod / go.sum 的日常操作。排查依赖问题时先看 go mod graph 和 go mod why。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="go mod init &lt;path&gt; 初始化模块，生成 go.mod。模块路径就是别人 import 你时用的路径。 私有仓库也要用完整域名路径（如 git.company.com/team/proj），随便起个短名会让 go get 无法定位仓库。 go mod init github.com/yourname/project">
+          <code class="gocs-cmd">go mod init &lt;path&gt;</code>
+          <p class="gocs-desc">初始化模块，生成 go.mod。模块路径就是别人 import 你时用的路径。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go mod init github.com/yourname/project</code></pre>
+          <p class="gocs-pit"><b>注意</b>私有仓库也要用完整域名路径（如 git.company.com/team/proj），随便起个短名会让 go get 无法定位仓库。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod tidy 按代码里真实的 import 增删 go.mod 条目并补全 go.sum，提交前必跑。 报 missing go.sum entry 时，先 go mod download &lt;模块&gt; 再 tidy；tidy 只扫描当前 goos/goarch 下的构建标签，跨平台代码注意 -compat。 go mod tidy
+go mod tidy -compat=1.26   # 兼容到指定旧版本">
+          <code class="gocs-cmd">go mod tidy</code>
+          <p class="gocs-desc">按代码里真实的 import 增删 go.mod 条目并补全 go.sum，提交前必跑。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go mod tidy
+go mod tidy -compat=1.26   # 兼容到指定旧版本</code></pre>
+          <p class="gocs-pit"><b>注意</b>报 missing go.sum entry 时，先 go mod download &lt;模块&gt; 再 tidy；tidy 只扫描当前 GOOS/GOARCH 下的构建标签，跨平台代码注意 -compat。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go get pkg@version 添加、升级或降级依赖（只改 go.mod，不安装任何二进制）。 不带版本等价于 @upgrade，可能顺手升级一堆间接依赖；想最小改动就钉死版本号。 go get github.com/gin-gonic/gin@latest
+go get github.com/sirupsen/logrus@v1.9.3   # 降级同理">
+          <code class="gocs-cmd">go get pkg@version</code>
+          <p class="gocs-desc">添加、升级或降级依赖（只改 go.mod，不安装任何二进制）。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go get github.com/gin-gonic/gin@latest
+go get github.com/sirupsen/logrus@v1.9.3   # 降级同理</code></pre>
+          <p class="gocs-pit"><b>注意</b>不带版本等价于 @upgrade，可能顺手升级一堆间接依赖；想最小改动就钉死版本号。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go list -m -u all 列出全部依赖及可升级版本（[v1.2.3] 后缀表示有新版本）。 all 包含间接依赖，输出会很长；只看直接依赖用 go list -m -u $(go list -m -f &#x27;{{if not .indirect}}{{.path}}{{end}}&#x27; all)。 go list -m -u all
+go list -m -versions github.com/spf13/cobra   # 看某个模块的全部版本">
+          <code class="gocs-cmd">go list -m -u all</code>
+          <p class="gocs-desc">列出全部依赖及可升级版本（[v1.2.3] 后缀表示有新版本）。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go list -m -u all
+go list -m -versions github.com/spf13/cobra   # 看某个模块的全部版本</code></pre>
+          <p class="gocs-pit"><b>注意</b>all 包含间接依赖，输出会很长；只看直接依赖用 go list -m -u $(go list -m -f &#x27;{{if not .Indirect}}{{.Path}}{{end}}&#x27; all)。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod why &lt;pkg&gt; 回答「这个包到底是谁引进来的」：给出从 main 包到它的导入链。 why 显示的是「主模块视角」的链；要对比两个模块互相的版本要求，用 go mod graph。 go mod why golang.org/x/sys
+go mod graph | grep jwt   # 看完整的依赖图">
+          <code class="gocs-cmd">go mod why &lt;pkg&gt;</code>
+          <p class="gocs-desc">回答「这个包到底是谁引进来的」：给出从 main 包到它的导入链。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go mod why golang.org/x/sys
+go mod graph | grep jwt   # 看完整的依赖图</code></pre>
+          <p class="gocs-pit"><b>注意</b>why 显示的是「主模块视角」的链；要对比两个模块互相的版本要求，用 go mod graph。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod download 只下载依赖到本地缓存，不编译。ci 里用它预热缓存、加速后续构建。 go.sum 缺条目导致的构建失败，多半 download 一下对应模块就能修。 go mod download
+go mod download github.com/gin-gonic/gin   # 只下载指定模块">
+          <code class="gocs-cmd">go mod download</code>
+          <p class="gocs-desc">只下载依赖到本地缓存，不编译。CI 里用它预热缓存、加速后续构建。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go mod download
+go mod download github.com/gin-gonic/gin   # 只下载指定模块</code></pre>
+          <p class="gocs-pit"><b>注意</b>go.sum 缺条目导致的构建失败，多半 download 一下对应模块就能修。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go mod verify 校验本地缓存里的模块与 go.sum 记录的哈希一致，防缓存被篡改。 输出 all modules verified 才是通过；任何一行不匹配都说明缓存不可信，应 go clean -modcache。 go mod verify">
+          <code class="gocs-cmd">go mod verify</code>
+          <p class="gocs-desc">校验本地缓存里的模块与 go.sum 记录的哈希一致，防缓存被篡改。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go mod verify</code></pre>
+          <p class="gocs-pit"><b>注意</b>输出 all modules verified 才是通过；任何一行不匹配都说明缓存不可信，应 go clean -modcache。</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-fmt" data-on="1">
+      <h3 class="gocs-group-head">格式化与代码工具<span class="gocs-group-desc">gofmt 管格式，goimports 在此基础上管 import，两者区别详见本站博客专题。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="gofmt -l -w . 格式化代码：-l 列出不符合规范的文件，-w 直接改写，-d 只看差异不改文件。 gofmt 不会增删 import，也不会调整 import 分组——那是 goimports 的活，两者结果可以不一样。 gofmt -l .          # ci 检查：有输出即失败
+gofmt -d main.go    # 看会改成什么样
+gofmt -s -w .       # 同时做代码简化">
+          <code class="gocs-cmd">gofmt -l -w .</code>
+          <p class="gocs-desc">格式化代码：-l 列出不符合规范的文件，-w 直接改写，-d 只看差异不改文件。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>gofmt -l .          # CI 检查：有输出即失败
+gofmt -d main.go    # 看会改成什么样
+gofmt -s -w .       # 同时做代码简化</code></pre>
+          <p class="gocs-pit"><b>注意</b>gofmt 不会增删 import，也不会调整 import 分组——那是 goimports 的活，两者结果可以不一样。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goimports -l -w . = gofmt + 自动补全/删除 import + 按标准库/第三方分组排序。 不加 -local 时，你自己公司的包会被归进「第三方」一组；首次在大仓库上运行会建索引，比较慢属正常。 go install golang.org/x/tools/cmd/goimports@latest
+goimports -local github.com/myorg -w .   # 本地包单独一组">
+          <code class="gocs-cmd">goimports -l -w .</code>
+          <p class="gocs-desc">= gofmt + 自动补全/删除 import + 按标准库/第三方分组排序。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go install golang.org/x/tools/cmd/goimports@latest
+goimports -local github.com/myorg -w .   # 本地包单独一组</code></pre>
+          <p class="gocs-pit"><b>注意</b>不加 -local 时，你自己公司的包会被归进「第三方」一组；首次在大仓库上运行会建索引，比较慢属正常。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go doc &lt;pkg&gt;.&lt;symbol&gt; 终端里查文档：包、函数、类型都可以，不用开浏览器。 查未下载的第三方包会失败，先 go mod download 或加 @version 后缀。 go doc net/http.server
+go doc json.marshal
+go doc github.com/gin-gonic/gin@latest   # 1.27 起支持 pkg@version">
+          <code class="gocs-cmd">go doc &lt;pkg&gt;.&lt;symbol&gt;</code>
+          <p class="gocs-desc">终端里查文档：包、函数、类型都可以，不用开浏览器。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go doc net/http.Server
+go doc json.Marshal
+go doc github.com/gin-gonic/gin@latest   # 1.27 起支持 pkg@version</code></pre>
+          <p class="gocs-pit"><b>注意</b>查未下载的第三方包会失败，先 go mod download 或加 @version 后缀。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go generate ./... 扫描源码里的 //go:generate 注释并执行对应命令（生成 mock、stringer 等）。 go generate 不是构建的一部分，go build 不会触发它——生成物要提交进仓库或写进 ci。 //go:generate stringer -type=status
+go generate ./...">
+          <code class="gocs-cmd">go generate ./...</code>
+          <p class="gocs-desc">扫描源码里的 //go:generate 注释并执行对应命令（生成 mock、stringer 等）。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>//go:generate stringer -type=Status
+go generate ./...</code></pre>
+          <p class="gocs-pit"><b>注意</b>go generate 不是构建的一部分，go build 不会触发它——生成物要提交进仓库或写进 CI。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gofumpt -l -w . 第三方更严格的格式化器（gofmt 的超集），团队统一风格时常用。 gofumpt 的输出是 gofmt 兼容的更严格版本，混用两个工具格式化同一仓库会产生反复横跳的 diff。 go install mvdan.cc/gofumpt@latest
+gofumpt -extra -w .">
+          <code class="gocs-cmd">gofumpt -l -w .</code>
+          <p class="gocs-desc">第三方更严格的格式化器（gofmt 的超集），团队统一风格时常用。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go install mvdan.cc/gofumpt@latest
+gofumpt -extra -w .</code></pre>
+          <p class="gocs-pit"><b>注意</b>gofumpt 的输出是 gofmt 兼容的更严格版本，混用两个工具格式化同一仓库会产生反复横跳的 diff。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="staticcheck ./... 事实标准的深度静态检查，覆盖 bug、性能、弃用 api、代码简化建议。 和 go vet 是互补关系不是替代关系：vet 管编译级高置信问题，staticcheck 管更宽的最佳实践。 go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...">
+          <code class="gocs-cmd">staticcheck ./...</code>
+          <p class="gocs-desc">事实标准的深度静态检查，覆盖 bug、性能、弃用 API、代码简化建议。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...</code></pre>
+          <p class="gocs-pit"><b>注意</b>和 go vet 是互补关系不是替代关系：vet 管编译级高置信问题，staticcheck 管更宽的最佳实践。</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-env" data-on="1">
+      <h3 class="gocs-group-head">关键环境变量<span class="gocs-group-desc">用 go env -w 写入的配置持久保存在 go env 文件里，对所有终端会话生效。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="goproxy 模块下载代理。国内网络必配，否则拉github上的依赖经常超时。 direct 要放在最后：意思是「所有代理都失败后才直连源仓库」；只写 direct 等于完全不用代理。 go env -w goproxy=https://goproxy.cn,direct
+go env -w goproxy=https://goproxy.io,direct   # 另一个常用镜像">
+          <code class="gocs-cmd">GOPROXY</code>
+          <p class="gocs-desc">模块下载代理。国内网络必配，否则拉github上的依赖经常超时。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GOPROXY=https://goproxy.io,direct   # 另一个常用镜像</code></pre>
+          <p class="gocs-pit"><b>注意</b>direct 要放在最后：意思是「所有代理都失败后才直连源仓库」；只写 direct 等于完全不用代理。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goprivate 声明私有模块路径前缀（glob），匹配的模块跳过代理和 sum 校验，直连仓库。 goprivate 同时是 gonoproxy 和 gonosumdb 的默认值；只想跳过其中一项就单独设置那两个变量。 go env -w goprivate=git.company.com/*,github.com/myorg/*
+go env -w gonoproxy=git.company.com/*   # 只想绕过代理时">
+          <code class="gocs-cmd">GOPRIVATE</code>
+          <p class="gocs-desc">声明私有模块路径前缀（glob），匹配的模块跳过代理和 sum 校验，直连仓库。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env -w GOPRIVATE=git.company.com/*,github.com/myorg/*
+go env -w GONOPROXY=git.company.com/*   # 只想绕过代理时</code></pre>
+          <p class="gocs-pit"><b>注意</b>GOPRIVATE 同时是 GONOPROXY 和 GONOSUMDB 的默认值；只想跳过其中一项就单独设置那两个变量。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="goflags 给所有 go 命令追加默认旗标，比如全局启用 -mod=mod 或 -race。 项目根目录有 vendor/ 且 go &gt;= 1.14 时默认自动 -mod=vendor，此时 go get 的改动看起来「不生效」多半是这个原因。 go env -w goflags=-mod=mod
+go env -u goflags   # 删除设置">
+          <code class="gocs-cmd">GOFLAGS</code>
+          <p class="gocs-desc">给所有 go 命令追加默认旗标，比如全局启用 -mod=mod 或 -race。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env -w GOFLAGS=-mod=mod
+go env -u GOFLAGS   # 删除设置</code></pre>
+          <p class="gocs-pit"><b>注意</b>项目根目录有 vendor/ 且 go &gt;= 1.14 时默认自动 -mod=vendor，此时 go get 的改动看起来「不生效」多半是这个原因。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gopath / gomodcache / gobin gopath 是工作区根；模块缓存在 $gopath/pkg/mod（即 gomodcache）；安装的二进制去 gobin。 go install 装了工具却提示 command not found，基本都是 gobin 不在 path 里。 go env gopath gomodcache gobin
+go env -w gobin=$home/bin   # 自定义安装位置">
+          <code class="gocs-cmd">GOPATH / GOMODCACHE / GOBIN</code>
+          <p class="gocs-desc">GOPATH 是工作区根；模块缓存在 $GOPATH/pkg/mod（即 GOMODCACHE）；安装的二进制去 GOBIN。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env GOPATH GOMODCACHE GOBIN
+go env -w GOBIN=$HOME/bin   # 自定义安装位置</code></pre>
+          <p class="gocs-pit"><b>注意</b>go install 装了工具却提示 command not found，基本都是 GOBIN 不在 PATH 里。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="cgo_enabled 是否启用 cgo。交叉编译和纯静态二进制时设为 0。 关掉 cgo 后 net 的域名解析和 os/user 的用户查询会走纯 go 实现，行为与 glibc 略有差异（ alpine 容器里反而更稳）。 cgo_enabled=0 goos=linux goarch=amd64 go build -o app ./cmd/app">
+          <code class="gocs-cmd">CGO_ENABLED</code>
+          <p class="gocs-desc">是否启用 CGO。交叉编译和纯静态二进制时设为 0。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>注意</b>关掉 CGO 后 net 的域名解析和 os/user 的用户查询会走纯 Go 实现，行为与 glibc 略有差异（ Alpine 容器里反而更稳）。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go111module（历史变量） go 1.11–1.22 时代的模块模式开关，go 1.23 起已被 go 命令彻底移除，无需再设置。 老 ci 脚本里的 go111module=on 可以直接删掉；如果升级后脚本报错，就是它。 go env go111module   # 当前版本会报：unknown go environment variable">
+          <code class="gocs-cmd">GO111MODULE（历史变量）</code>
+          <p class="gocs-desc">Go 1.11–1.22 时代的模块模式开关，Go 1.23 起已被 go 命令彻底移除，无需再设置。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env GO111MODULE   # 当前版本会报：unknown go environment variable</code></pre>
+          <p class="gocs-pit"><b>注意</b>老 CI 脚本里的 GO111MODULE=on 可以直接删掉；如果升级后脚本报错，就是它。</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-modfile" data-on="1">
+      <h3 class="gocs-group-head">go.mod 指令速查<span class="gocs-group-desc">go.mod 一共就这几个指令，搞懂 replace 和 retract 能解决 80% 的依赖纠纷。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="module / go / toolchain 模块路径、语言版本下限、期望的工具链版本，go.mod 的头部三行。 go 1.21 起 go 指令是硬下限：工具链比它老会直接拒绝构建，而不是「试试看」。 module github.com/you/proj
+
+go 1.26
+
+toolchain go1.27.1">
+          <code class="gocs-cmd">module / go / toolchain</code>
+          <p class="gocs-desc">模块路径、语言版本下限、期望的工具链版本，go.mod 的头部三行。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>module github.com/you/proj
+
+go 1.26
+
+toolchain go1.27.1</code></pre>
+          <p class="gocs-pit"><b>注意</b>Go 1.21 起 go 指令是硬下限：工具链比它老会直接拒绝构建，而不是「试试看」。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="require 声明依赖及最低版本。// indirect 注释表示间接依赖（不直接被你的代码 import）。 go 1.27 起 go mod tidy 会自动把多个 require 块合并成「直接 + 间接」两块的标准结构，手工拆块没有意义。 require (
+	github.com/gin-gonic/gin v1.10.0
+	golang.org/x/sys v0.24.0 // indirect
+)">
+          <code class="gocs-cmd">require</code>
+          <p class="gocs-desc">声明依赖及最低版本。// indirect 注释表示间接依赖（不直接被你的代码 import）。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>require (
+	github.com/gin-gonic/gin v1.10.0
+	golang.org/x/sys v0.24.0 // indirect
+)</code></pre>
+          <p class="gocs-pit"><b>注意</b>Go 1.27 起 go mod tidy 会自动把多个 require 块合并成「直接 + 间接」两块的标准结构，手工拆块没有意义。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="replace 把某个模块替换成本地目录或 fork，调试依赖和临时打补丁的标配。 replace 只在主模块生效：你发布的库被别人 import 时，你库里的 replace 会被完全忽略。 replace github.com/foo/bar =&gt; ../bar
+
+replace github.com/foo/bar v1.2.3 =&gt; github.com/you/bar v1.2.4-fix">
+          <code class="gocs-cmd">replace</code>
+          <p class="gocs-desc">把某个模块替换成本地目录或 fork，调试依赖和临时打补丁的标配。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>replace github.com/foo/bar =&gt; ../bar
+
+replace github.com/foo/bar v1.2.3 =&gt; github.com/you/bar v1.2.4-fix</code></pre>
+          <p class="gocs-pit"><b>注意</b>replace 只在主模块生效：你发布的库被别人 import 时，你库里的 replace 会被完全忽略。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="exclude 明确排除某个有问题的版本，go 命令会当它不存在。 exclude 同样只在主模块生效；已发布的库撤回版本应该用 retract 而不是 exclude。 exclude github.com/foo/bar v1.2.3">
+          <code class="gocs-cmd">exclude</code>
+          <p class="gocs-desc">明确排除某个有问题的版本，go 命令会当它不存在。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>exclude github.com/foo/bar v1.2.3</code></pre>
+          <p class="gocs-pit"><b>注意</b>exclude 同样只在主模块生效；已发布的库撤回版本应该用 retract 而不是 exclude。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="retract 库作者撤回自己已发布的版本（发错版本号的后悔药），go get 会自动避开。 retract 不删版本（代理上仍在，仍可被显式指定），只是不再被 @latest 等查询选中。 retract (
+	v1.2.0   // 误发了未完成的功能
+	v1.1.9   // 安全问题，请升级到 v1.1.10
+)">
+          <code class="gocs-cmd">retract</code>
+          <p class="gocs-desc">库作者撤回自己已发布的版本（发错版本号的后悔药），go get 会自动避开。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>retract (
+	v1.2.0   // 误发了未完成的功能
+	v1.1.9   // 安全问题，请升级到 v1.1.10
+)</code></pre>
+          <p class="gocs-pit"><b>注意</b>retract 不删版本（代理上仍在，仍可被显式指定），只是不再被 @latest 等查询选中。</p>
+        </article>
+      </div>
+    </section>
+    <section class="gocs-group" id="gocs-x" data-on="1">
+      <h3 class="gocs-group-head">交叉编译与版本管理<span class="gocs-group-desc">Go 的交叉编译不需要目标平台的工具链，一对环境变量就够了。</span></h3>
+      <div class="gocs-items">
+        <article class="gocs-item" data-on="1" data-hay="goos / goarch 指定目标操作系统与架构，直接加在 go build 前面即可交叉编译。 用到 cgo 的依赖（sqlite3 驱动等）交叉编译会失败，需要目标平台的 c 工具链，或换纯 go 实现（如 modernc.org/sqlite）。 goos=linux   goarch=amd64 go build -o app-linux-amd64   ./cmd/app
+goos=linux   goarch=arm64 go build -o app-linux-arm64   ./cmd/app
+goos=windows goarch=amd64 go build -o app.exe           ./cmd/app
+goos=darwin  goarch=arm64 go build -o app-darwin-arm64  ./cmd/app">
+          <code class="gocs-cmd">GOOS / GOARCH</code>
+          <p class="gocs-desc">指定目标操作系统与架构，直接加在 go build 前面即可交叉编译。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>GOOS=linux   GOARCH=amd64 go build -o app-linux-amd64   ./cmd/app
+GOOS=linux   GOARCH=arm64 go build -o app-linux-arm64   ./cmd/app
+GOOS=windows GOARCH=amd64 go build -o app.exe           ./cmd/app
+GOOS=darwin  GOARCH=arm64 go build -o app-darwin-arm64  ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>注意</b>用到 CGO 的依赖（sqlite3 驱动等）交叉编译会失败，需要目标平台的 C 工具链，或换纯 Go 实现（如 modernc.org/sqlite）。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go tool dist list 列出当前工具链支持的全部 goos/goarch 组合。 小众组合（如 linux/riscv64）不需要额外安装任何东西，能列出来就能编。 go tool dist list
+go tool dist list | grep linux">
+          <code class="gocs-cmd">go tool dist list</code>
+          <p class="gocs-desc">列出当前工具链支持的全部 GOOS/GOARCH 组合。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go tool dist list
+go tool dist list | grep linux</code></pre>
+          <p class="gocs-pit"><b>注意</b>小众组合（如 linux/riscv64）不需要额外安装任何东西，能列出来就能编。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="gotoolchain 工具链选择策略：auto 按 go.mod 自动下载切换（默认），local 只用本机版本。 ci 镜像里建议显式设为 local 并预装正确版本，否则构建会现场下载工具链，慢且可能失败。 go env gotoolchain
+go env -w gotoolchain=local   # 禁止自动下载工具链">
+          <code class="gocs-cmd">GOTOOLCHAIN</code>
+          <p class="gocs-desc">工具链选择策略：auto 按 go.mod 自动下载切换（默认），local 只用本机版本。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go env GOTOOLCHAIN
+go env -w GOTOOLCHAIN=local   # 禁止自动下载工具链</code></pre>
+          <p class="gocs-pit"><b>注意</b>CI 镜像里建议显式设为 local 并预装正确版本，否则构建会现场下载工具链，慢且可能失败。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="-trimpath -ldflags &quot;-s -w&quot; 发布构建三件套：去掉本机路径、符号表与调试信息，体积能小 20–30%。 -s -w 之后 panic 堆栈里的行号仍在，但无法用 delve 做源码级调试；发布件才用，日常构建别加。 go build -trimpath -ldflags=&quot;-s -w&quot; -o bin/app ./cmd/app">
+          <code class="gocs-cmd">-trimpath -ldflags &quot;-s -w&quot;</code>
+          <p class="gocs-desc">发布构建三件套：去掉本机路径、符号表与调试信息，体积能小 20–30%。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go build -trimpath -ldflags=&quot;-s -w&quot; -o bin/app ./cmd/app</code></pre>
+          <p class="gocs-pit"><b>注意</b>-s -w 之后 panic 堆栈里的行号仍在，但无法用 delve 做源码级调试；发布件才用，日常构建别加。</p>
+        </article>
+        <article class="gocs-item" data-on="1" data-hay="go version / go env 确认当前工具链版本与全部环境配置，排查环境问题第一步。 go env 显示的是「生效值」，它可能来自系统环境变量、go env -w 文件或默认值三处之一。 go version
+go env goversion goos goarch goproxy
+go env -json   # 机器可读的全量配置">
+          <code class="gocs-cmd">go version / go env</code>
+          <p class="gocs-desc">确认当前工具链版本与全部环境配置，排查环境问题第一步。</p>
+          <div class="gocs-eg-label">示例</div>
+          <pre class="gocs-eg"><code>go version
+go env GOVERSION GOOS GOARCH GOPROXY
+go env -json   # 机器可读的全量配置</code></pre>
+          <p class="gocs-pit"><b>注意</b>go env 显示的是「生效值」，它可能来自系统环境变量、go env -w 文件或默认值三处之一。</p>
+        </article>
+      </div>
+    </section>
+  </div>
+  <p class="gocs-nohit" id="gocsNohit" hidden>没有匹配的条目，换个关键词试试。</p>
+  <script>
+(function () {
+  var box = document.getElementById('gocsSearch');
+  if (!box) return;
+  var items = document.querySelectorAll('.gocs-item');
+  var groups = document.querySelectorAll('.gocs-group');
+  var nohit = document.getElementById('gocsNohit');
+  function apply() {
+    var q = box.value.trim().toLowerCase();
+    var any = false;
+    Array.prototype.forEach.call(items, function (it) {
+      var on = !q || it.getAttribute('data-hay').indexOf(q) !== -1;
+      it.setAttribute('data-on', on ? '1' : '0');
+      if (on) any = true;
+    });
+    Array.prototype.forEach.call(groups, function (g) {
+      var vis = g.querySelector('.gocs-item[data-on="1"]');
+      g.setAttribute('data-on', vis ? '1' : '0');
+    });
+    if (nohit) nohit.hidden = any || !q;
+  }
+  box.addEventListener('input', apply);
+})();
+</script>
+</div>
+</div>
+
+<section class="seo-content">
+  <h1>Go 工具链命令速查表</h1>
+  <p>这是一张可以全文搜索的 Go 工具链速查表，覆盖日常开发最高频的六组内容：构建与测试（go build / go test）、模块与依赖（go mod tidy / go get）、格式化工具（gofmt / goimports）、关键环境变量（GOPROXY / GOPRIVATE）、go.mod 指令（require / replace / retract）以及交叉编译与工具链管理。</p>
+  <p>每条目都给出可直接照抄的示例和真实踩坑点——比如 go test 的结果缓存为什么会让「改了环境变量却没重跑」、vendor 目录为什么会让 go get 看起来「不生效」、replace 为什么只在主模块生效。内容随 Go 版本演进维护，当前适用于 Go 1.27.x。</p>
+  <h2>主要功能</h2>
+  <ul class="seo-features">
+    <li><b>全文搜索</b>：顶部搜索框按命令、说明与坑点全文过滤，输入关键词即时定位条目。</li>
+    <li><b>六组高频场景</b>：构建测试、依赖管理、格式化、环境变量、go.mod 指令、交叉编译，各成一区。</li>
+    <li><b>示例可直接照抄</b>：每条命令附真实可用的命令行示例，包括多平台交叉编译矩阵。</li>
+    <li><b>坑点单独标注</b>：每条目的「注意」栏记录容易踩的坑，这是与普通文档最大的区别。</li>
+    <li><b>随版本维护</b>：标注适用 Go 版本与更新时间，新版本发布后整体校订。</li>
+    <li><b>纯静态免注册</b>：内容构建期写进页面，打开即完整可见，不登录、无广告、不追踪。</li>
+  </ul>
+  <h2>使用步骤</h2>
+  <ol class="seo-steps">
+    <li>在顶部搜索框输入命令名或关键词（如 tidy、代理、replace）即时过滤条目。</li>
+    <li>或点分类标签跳到对应分组：构建测试 / 依赖 / 格式化 / 环境变量 / go.mod / 交叉编译。</li>
+    <li>直接复制示例区的命令使用，注意栏会提醒什么情况下结果和预期不同。</li>
+    <li>需要在线格式化 HTML/CSS/JS/SQL 代码时用本站的代码格式化工具；gofmt 相关的深入对比见博客。</li>
+  </ol>
+  <h2>常见问题</h2>
+  <div class="faq">
+    <details><summary>gofmt 和 goimports 到底有什么区别？</summary><p>gofmt 只管代码排版（缩进、对齐、空格），不会动 import；goimports 在 gofmt 的基础上自动补全和删除 import，并按「标准库 / 第三方」分组排序。两者对同一份代码的输出可以不同，CI 里建议统一用 goimports -l 检查。更完整的对比（含 CI 配置示例）见本站博客专题。</p></details>
+    <details><summary>GOPROXY 在国内怎么配？</summary><p>执行 go env -w GOPROXY=https://goproxy.cn,direct 即可。结尾的 direct 表示「所有代理都失败后回源仓库直连」，必须放在最后；私有仓库再配合 GOPRIVATE=git.company.com/* 跳过代理与校验。</p></details>
+    <details><summary>go get 和 go install 有什么区别？</summary><p>go get 只修改当前项目的 go.mod（添加/升级/降级依赖），不安装任何二进制；go install pkg@version 用来安装命令行工具到 GOBIN，且会忽略当前目录的 go.mod。想给项目加依赖用 go get，想装全局工具用 go install。</p></details>
+    <details><summary>交叉编译需要装目标平台的工具链吗？</summary><p>不需要。GOOS=linux GOARCH=arm64 go build 一对环境变量即可，go tool dist list 能列出全部支持的组合。唯一的例外是依赖 CGO 的库（如部分 sqlite 驱动），需要目标平台的 C 工具链或改用纯 Go 实现。</p></details>
+    <details><summary>GO111MODULE 还需要设置吗？</summary><p>不需要。它是 Go 1.11–1.22 时代的模块模式开关，Go 1.23 起已被 go 命令彻底移除，设置它没有效果；老 CI 脚本里的 GO111MODULE=on 可以直接删掉。</p></details>
+  </div>
+  <h2>相关工具与阅读</h2>
+  <ul class="seo-related">
+    <li><a href="../formatter/">代码格式化工具（HTML / CSS / JS / SQL）</a></li>
+    <li><a href="../blog/gofmt-vs-goimports/">博客：gofmt 和 goimports 的区别与 CI 实践</a></li>
+    <li><a href=".././">JSON 在线格式化与校验</a></li>
+  </ul>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../">首页</a><a href="../hotnews/">今日热榜</a><a href="../go-cheatsheet/">Go 速查表</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../blog/">博客</a><a href="../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">
+    <span>其它：</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">查看已有反馈</a>
+    <span>·</span>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -20,6 +20,7 @@ Bing 的索引又直接供 ChatGPT Search 检索使用，所以这一步同时�
 """
 
 import json
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -28,24 +29,35 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / 'src'))
 
-from content import SITE, TOOLS                       # noqa: E402
 from site_config import INDEXNOW_KEY, KEY_LOCATION, ENDPOINTS, ROOT_SITE_URL  # noqa: E402
-
-EN_DIR = 'en/'
-PRIVACY = 'privacy.html'
 
 
 def all_urls():
-    """站点全部 URL：10 个中文页 + 10 个英文页。
+    """站点全部 URL：直接读构建产物 docs/sitemap.xml。
 
-    迁移到自定义域名后 ROOT_SITE_URL == SITE['base_url']（发布目录根就是主机根），
-    两者会产出同一个根 URL，所以这里去重并保持顺序。
+    以前是从 TOOLS 手算一份路径列表，结果是每加一种新页面（速查表、博客文章）
+    都要记得回来同步一次，忘了就漏提交——而漏提交的后果恰恰是最难发现的那种。
+    sitemap.xml 由 build.py 生成、且与真实页面一一对应（check.py 会校验条数），
+    用它当唯一来源，新增页面自动进提交列表。
     """
-    urls = [ROOT_SITE_URL]
-    for p in [t['path'] for t in TOOLS] + [PRIVACY]:
-        urls.append(SITE['base_url'] + p)
-        urls.append(SITE['base_url'] + EN_DIR + p)
-    seen, out = set(), []
+    sitemap = ROOT / 'docs' / 'sitemap.xml'
+    if not sitemap.exists():
+        print(f'❌ 找不到 {sitemap}，先运行 python3 build.py')
+        return []
+    text = sitemap.read_text('utf-8')
+
+    # sitemap 里中英是一对：<loc> 是中文页，英文页在 hreflang="en" 的备用链接里。
+    # 只看 <loc> 会漏掉整套英文站，所以两个都要取。
+    locs = re.findall(r'<loc>(.*?)</loc>', text)
+    en_locs = re.findall(r'hreflang="en" href="(.*?)"', text)
+    urls = []
+    for zh, en in zip(locs, en_locs):
+        urls += [zh, en]
+    urls += locs[len(en_locs):]
+
+    # 兜底：确保根 URL 一定在最前（迁移到自定义域名后 ROOT_SITE_URL == base_url，
+    # 两者相同会去重；保留这段是为了换回子目录部署时首页不被漏掉）。
+    seen, out = {ROOT_SITE_URL}, [ROOT_SITE_URL]
     for u in urls:
         if u not in seen:
             seen.add(u)

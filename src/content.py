@@ -128,6 +128,73 @@ TOOLS = [
         ],
     },
     {
+        'slug': 'go-cheatsheet',
+        'path': 'go-cheatsheet/',
+        'nav': 'Go 速查表',
+        'title': 'Go 命令速查表 - go build/go mod/gofmt/环境变量/交叉编译 | DevTools',
+        'description': (
+            'Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、'
+            'GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、'
+            'GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，'
+            '支持关键词搜索，中英双语。'
+        ),
+        'keywords': (
+            'Go命令速查,go mod tidy,go get,gofmt goimports区别,GOPROXY设置,'
+            'go.mod replace,Go交叉编译,GOOS GOARCH,GOTOOLCHAIN,go build 参数,'
+            'GOPRIVATE 私有仓库,go mod 命令,Go 环境变量'
+        ),
+        'h1': 'Go 工具链命令速查表',
+        'intro': [
+            '这是一张可以全文搜索的 Go 工具链速查表，覆盖日常开发最高频的六组内容：'
+            '构建与测试（go build / go test）、模块与依赖（go mod tidy / go get）、'
+            '格式化工具（gofmt / goimports）、关键环境变量（GOPROXY / GOPRIVATE）、'
+            'go.mod 指令（require / replace / retract）以及交叉编译与工具链管理。',
+            '每条目都给出可直接照抄的示例和真实踩坑点——比如 go test 的结果缓存为什么会让'
+            '「改了环境变量却没重跑」、vendor 目录为什么会让 go get 看起来「不生效」、'
+            'replace 为什么只在主模块生效。内容随 Go 版本演进维护，当前适用于 Go 1.27.x。',
+        ],
+        'features': [
+            ('全文搜索', '顶部搜索框按命令、说明与坑点全文过滤，输入关键词即时定位条目。'),
+            ('六组高频场景', '构建测试、依赖管理、格式化、环境变量、go.mod 指令、交叉编译，各成一区。'),
+            ('示例可直接照抄', '每条命令附真实可用的命令行示例，包括多平台交叉编译矩阵。'),
+            ('坑点单独标注', '每条目的「注意」栏记录容易踩的坑，这是与普通文档最大的区别。'),
+            ('随版本维护', '标注适用 Go 版本与更新时间，新版本发布后整体校订。'),
+            ('纯静态免注册', '内容构建期写进页面，打开即完整可见，不登录、无广告、不追踪。'),
+        ],
+        'steps': [
+            '在顶部搜索框输入命令名或关键词（如 tidy、代理、replace）即时过滤条目。',
+            '或点分类标签跳到对应分组：构建测试 / 依赖 / 格式化 / 环境变量 / go.mod / 交叉编译。',
+            '直接复制示例区的命令使用，注意栏会提醒什么情况下结果和预期不同。',
+            '需要在线格式化 HTML/CSS/JS/SQL 代码时用本站的代码格式化工具；gofmt 相关的深入对比见博客。',
+        ],
+        'faq': [
+            ('gofmt 和 goimports 到底有什么区别？',
+             'gofmt 只管代码排版（缩进、对齐、空格），不会动 import；goimports 在 gofmt 的基础上'
+             '自动补全和删除 import，并按「标准库 / 第三方」分组排序。两者对同一份代码的输出可以不同，'
+             'CI 里建议统一用 goimports -l 检查。更完整的对比（含 CI 配置示例）见本站博客专题。'),
+            ('GOPROXY 在国内怎么配？',
+             '执行 go env -w GOPROXY=https://goproxy.cn,direct 即可。结尾的 direct 表示'
+             '「所有代理都失败后回源仓库直连」，必须放在最后；私有仓库再配合 '
+             'GOPRIVATE=git.company.com/* 跳过代理与校验。'),
+            ('go get 和 go install 有什么区别？',
+             'go get 只修改当前项目的 go.mod（添加/升级/降级依赖），不安装任何二进制；'
+             'go install pkg@version 用来安装命令行工具到 GOBIN，且会忽略当前目录的 go.mod。'
+             '想给项目加依赖用 go get，想装全局工具用 go install。'),
+            ('交叉编译需要装目标平台的工具链吗？',
+             '不需要。GOOS=linux GOARCH=arm64 go build 一对环境变量即可，'
+             'go tool dist list 能列出全部支持的组合。唯一的例外是依赖 CGO 的库'
+             '（如部分 sqlite 驱动），需要目标平台的 C 工具链或改用纯 Go 实现。'),
+            ('GO111MODULE 还需要设置吗？',
+             '不需要。它是 Go 1.11–1.22 时代的模块模式开关，Go 1.23 起已被 go 命令彻底移除，'
+             '设置它没有效果；老 CI 脚本里的 GO111MODULE=on 可以直接删掉。'),
+        ],
+        'seealso': [
+            ('代码格式化工具（HTML / CSS / JS / SQL）', 'formatter/'),
+            ('博客：gofmt 和 goimports 的区别与 CI 实践', 'blog/gofmt-vs-goimports/'),
+            ('JSON 在线格式化与校验', './'),
+        ],
+    },
+    {
         'slug': 'diff',
         'path': 'diff/',
         'nav': '文本比对',
@@ -392,6 +459,13 @@ TOOLS = [
              '但方言特有的语法（如某些存储过程写法）可能出现排版不理想的情况。'),
             ('代码会被上传吗？',
              '不会。所有格式化都在浏览器本地完成，不会把代码发送到服务器。'),
+            ('支持格式化 Go 代码吗？',
+             '暂不支持。Go 有官方强制性格式工具 gofmt / goimports，通常在本地编辑器或 CI 里直接使用，'
+             '用法见本站的 Go 命令速查表；两者区别与 CI 配置在本站博客有专题文章。'),
+        ],
+        'seealso': [
+            ('Go 工具链命令速查表（gofmt / goimports 用法）', 'go-cheatsheet/'),
+            ('博客：gofmt 和 goimports 的区别与 CI 实践', 'blog/gofmt-vs-goimports/'),
         ],
     },
     {

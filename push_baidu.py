@@ -25,6 +25,7 @@
 """
 
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -38,24 +39,33 @@ if hasattr(sys.stdout, 'reconfigure'):
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / 'src'))
 
-from content import SITE, TOOLS                                   # noqa: E402
+from content import SITE                                          # noqa: E402
 from site_config import (BAIDU_PUSH_ENDPOINT, BAIDU_PUSH_SITE,    # noqa: E402
                          BAIDU_PUSH_TOKEN)
 
 EN_DIR = 'en/'
-PRIVACY = 'privacy.html'
 MAX_URLS = 2000
 
 
 def zh_urls(with_en=False):
-    """中文页（默认）；--with-en 时把英文页也带上。"""
-    urls = []
-    for p in [t['path'] for t in TOOLS] + [PRIVACY]:
-        urls.append(SITE['base_url'] + p)
-        if with_en:
-            urls.append(SITE['base_url'] + EN_DIR + p)
-    seen, out = set(), []
-    for u in urls:
+    """中文页（默认）；--with-en 时把英文页也带上。
+
+    URL 列表来自构建产物 docs/sitemap.xml，而不是在这里手算一份路径清单：
+    速查表、博客文章这类新页面是后加的，手算清单每加一种就要回来同步一次，
+    忘了就静默漏推。sitemap 与真实页面一一对应（check.py 校验条数），用它最稳。
+    """
+    sitemap = ROOT / 'docs' / 'sitemap.xml'
+    if not sitemap.exists():
+        print(f'❌ 找不到 {sitemap}，先运行 python3 build.py')
+        return []
+    text = sitemap.read_text('utf-8')
+    en_prefix = SITE['base_url'] + EN_DIR
+    locs = re.findall(r'<loc>(.*?)</loc>', text)
+    en_locs = re.findall(r'hreflang="en" href="(.*?)"', text)
+    out, seen = [], set()
+    for u in locs + (en_locs if with_en else []):
+        if not with_en and u.startswith(en_prefix):
+            continue
         if u not in seen:
             seen.add(u)
             out.append(u)
