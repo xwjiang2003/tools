@@ -433,7 +433,6 @@ def visible_items(data, src):
 TEXT = {
     'zh': {
         'updated': '更新于',
-        'auto': '每天 08:00 自动更新',
         'lead': '聚合 8 家中文科技媒体与 4 家英文科技媒体的最新条目，只做索引与直达，不转载正文',
         'total': '本期共 ',
         'unit': ' 条',
@@ -449,7 +448,6 @@ TEXT = {
     },
     'en': {
         'updated': 'Updated',
-        'auto': 'Refreshes daily at 08:00 (UTC+8)',
         'lead': 'Four English tech publications, newest first — headlines link straight to the '
                 'publisher and nothing is republished here',
         'total': 'Total ',
@@ -485,14 +483,14 @@ def _esc(s):
 
 
 def format_ts(ts, lang):
+    """条目时间一律用 MM-dd HH:mm。
+
+    不再对「今天/昨天」做特殊显示（HH:mm、昨天 HH:mm）：同一屏里混着三种格式
+    反而要靠读者自己换算，统一成 MM-dd HH:mm 一眼就能比大小。
+    """
     if not ts:
         return ''
     dt = datetime.fromtimestamp(ts, DISPLAY_TZ[lang])
-    now = datetime.now(DISPLAY_TZ[lang])
-    if dt.date() == now.date():
-        return dt.strftime('%H:%M')
-    if (now.date() - dt.date()).days == 1:
-        return ('昨天 ' if lang == 'zh' else 'Yesterday ') + dt.strftime('%H:%M')
     return dt.strftime('%m-%d %H:%M')
 
 
@@ -532,7 +530,6 @@ def render_body(lang, data):
     out.append('    <div class="news-head-row">')
     out.append(f'      <p class="news-lead">{_esc(t["lead"])}</p>')
     out.append(f'      <p class="news-updated"><b>{_esc(t["updated"])} { _esc(updated) }</b>'
-               f'<span class="news-dot">·</span>{_esc(t["auto"])}'
                f'<span class="news-dot">·</span>'
                f'{_esc(t["total"])}{total}{_esc(t["unit"])}</p>')
     out.append('    </div>')
