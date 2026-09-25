@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page="blog-coraza-waf-rules">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coraza 规则详解：从 SecRule 语法到写出第一条防护规则 | DevTools 博客</title>
+<meta name="description" content="Coraza 是 Go 语言写的开源 WAF、ModSecurity 的官方接任者，规则语法（SecRule）与 ModSecurity 几乎完全兼容。本文从「一条规则由什么组成」讲起，覆盖变量、运算符、转换函数、动作、五个处理阶段、OWASP CRS 核心规则集，并手把手写一个 防 SQL 注入的自定义规则，最后讲清 DetectionOnly 与 On 两种模式的取舍。">
+<meta name="keywords" content="Coraza 规则,Coraza WAF,SecRule 语法,ModSecurity 替代,OWASP CRS,Coraza 自定义规则,SecRuleEngine,@rx 运算符,WAF 规则编写">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/blog/coraza-waf-rules/">
+<meta property="og:title" content="Coraza 规则详解：从 SecRule 语法到写出第一条防护规则 | DevTools 博客">
+<meta property="og:description" content="Coraza 是 Go 语言写的开源 WAF、ModSecurity 的官方接任者，规则语法（SecRule）与 ModSecurity 几乎完全兼容。本文从「一条规则由什么组成」讲起，覆盖变量、运算符、转换函数、动作、五个处理阶段、OWASP CRS 核心规则集，并手把手写一个 防 SQL 注入的自定义规则，最后讲清 DetectionOnly 与 On 两种模式的取舍。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/blog/coraza-waf-rules/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/coraza-waf-rules/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/coraza-waf-rules/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/coraza-waf-rules/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Coraza 规则详解：从 SecRule 语法到写出第一条防护规则", "description": "Coraza 是 Go 写的开源 WAF、ModSecurity 的接任者，SecRule 语法基本兼容。讲清一条规则的三要素、五个处理阶段、OWASP CRS 规则集，并手把手写一个 防 SQL 注入的自定义规则，以及 DetectionOnly 与 On 的取舍。", "url": "https://devtools.help/blog/coraza-waf-rules/", "datePublished": "2026-09-25", "dateModified": "2026-09-25", "inLanguage": "zh-CN", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "Coraza 规则,Coraza WAF,SecRule 语法,ModSecurity 替代,OWASP CRS,Coraza 自定义规则,SecRuleEngine,@rx 运算符,WAF 规则编写"}]}</script>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
+.nav-group:first-child{border-left:none;padding-left:0}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "./", "en": "../../en/blog/coraza-waf-rules/"}[want];
+    if (target && want !== 'zh') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../" aria-label="DevTools 首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <span class="nav-group">JSON 工具</span>
+    <a class="top-nav-item" href="../../">JSON 工具</a>
+    <span class="nav-group">格式转换</span>
+    <a class="top-nav-item" href="../../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../../yaml/">JSON↔YAML</a>
+    <a class="top-nav-item" href="../../toml/">JSON↔TOML</a>
+    <a class="top-nav-item" href="../../csv/">JSON↔CSV</a>
+    <a class="top-nav-item" href="../../color/">颜色转换</a>
+    <span class="nav-group">编码 / 加密</span>
+    <a class="top-nav-item" href="../../encode/">编码解码</a>
+    <a class="top-nav-item" href="../../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../../jwt/">JWT 解码</a>
+    <span class="nav-group">文本 / 字符串</span>
+    <a class="top-nav-item" href="../../diff/">文本比对</a>
+    <a class="top-nav-item" href="../../string/">字符串</a>
+    <a class="top-nav-item" href="../../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../../case/">命名风格</a>
+    <span class="nav-group">代码 / 生成</span>
+    <a class="top-nav-item" href="../../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../../generator/">生成器</a>
+    <span class="nav-group">速查表</span>
+    <a class="top-nav-item" href="../../go-cheatsheet/">Go 速查表</a>
+    <span class="nav-group">内容</span>
+    <a class="top-nav-item" href="../../hotnews/">今日热榜</a>
+    <a class="top-nav-item active" href="../../blog/">博客</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../../en/blog/coraza-waf-rules/" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-blog-coraza-waf-rules">
+<article class="post" lang="zh-CN">
+  <h1>Coraza 规则详解：从 SecRule 语法到写出第一条防护规则</h1>
+  <div class="post-meta"><time datetime="2026-09-25">发布于 2026-09-25</time><span class="blog-tag">WAF</span><span class="blog-tag">Coraza</span><span class="blog-tag">安全</span><span class="blog-tag">ModSecurity</span><span class="blog-tag">OWASP</span></div>
+<blockquote>
+  <p><b>一句话结论</b>：Coraza 是 Go 语言实现的开源 WAF、ModSecurity 的官方接任者，
+  规则语法（SecRule）与 ModSecurity 几乎完全兼容，老项目迁移基本是「换引擎、规则照抄」。
+  核心是<b>一条 SecRule = 变量 + 运算符 + 动作</b>，配合五个处理阶段与 OWASP CRS 规则集，
+  既能直接套用社区规则，也能自己写针对性规则。</p>
+</blockquote>
+
+<h2>一、Coraza 是什么</h2>
+<p>Coraza 是一个用 Go 写的、符合 <b>OWASP 标准</b>的 Web 应用防火墙引擎，也是 ModSecurity v3
+停止维护后被社区广泛采用的替代品。它最值得说的三点：</p>
+<ul>
+  <li><b>语法兼容 ModSecurity</b>：过去写的 <code>SecRule</code>、<code>SecAction</code>、
+      <code>SecRuleEngine</code> 等指令，以及 OWASP CRS（Core Rule Set）核心规则集，
+      基本可以原样跑在 Coraza 上，迁移成本极低；</li>
+  <li><b>纯 Go、无 C 依赖</b>：不依赖 libmodsecurity 那个 C 库，交叉编译、容器化、嵌入到
+      自己的 Go 程序里都顺手；</li>
+  <li><b>既能当库也能当网关</b>：可以 <code>import</code> 进 Go 服务做内联检测，也能通过
+      Caddy / Nginx 连接器或独立网关（如 warden）部署在流量前面。</li>
+</ul>
+<p>它遵循 Apache-2.0 许可，是 OWASP 基金会下的正式项目。</p>
+
+<h2>二、一条规则由什么组成</h2>
+<p>Coraza 的绝大多数防护逻辑都写在一条 <code>SecRule</code> 里。一条最朴素的规则长这样：</p>
+<pre><code>SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|nikto|nmap)" \
+    "id:1001,phase:1,deny,status:403,msg:'known scanner UA'"</code></pre>
+<p>它由三个部分构成，顺序固定：</p>
+<table>
+  <tr><th>组成部分</th><th>作用</th><th>上例对应</th></tr>
+  <tr><td>变量（Variable）</td><td>指定检测哪份数据：请求头、参数、URI、body、IP……</td><td><code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td>运算符（Operator）</td><td>指定怎么判定命中，以 @ 开头</td><td><code>@rx (?i)(sqlmap|nikto)</code></td></tr>
+  <tr><td>动作（Action）</td><td>指定命中后做什么，逗号分隔的键值对</td><td><code>id:1001,phase:1,deny,...</code></td></tr>
+</table>
+<p>反斜杠 <code>\</code> 是续行符，把一条长规则拆成多行更可读。下面分别拆看这三块。</p>
+
+<h2>三、变量：你要检测的是哪份数据</h2>
+<p>变量决定了规则盯着请求的哪一部分。常用的一批：</p>
+<table>
+  <tr><th>变量</th><th>含义</th></tr>
+  <tr><td><code>REQUEST_URI</code></td><td>完整请求路径（含查询串），最常用</td></tr>
+  <tr><td><code>REQUEST_LINE</code></td><td>完整请求行，如 <code>GET /a?x=1 HTTP/1.1</code></td></tr>
+  <tr><td><code>REQUEST_HEADERS</code></td><td>全部请求头；加冒号取单个，如 <code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td><code>REQUEST_BODY</code></td><td>请求体（POST 表单 / JSON / XML，需开启相应解析）</td></tr>
+  <tr><td><code>ARGS</code> / <code>ARGS_GET</code> / <code>ARGS_POST</code></td><td>所有参数 / 仅查询串 / 仅表单</td></tr>
+  <tr><td><code>QUERY_STRING</code></td><td>仅查询串部分</td></tr>
+  <tr><td><code>REMOTE_ADDR</code></td><td>客户端 IP</td></tr>
+  <tr><td><code>RESPONSE_BODY</code></td><td>响应体（出方向检测，如泄露银行卡号）</td></tr>
+  <tr><td><code>TX</code></td><td>事务变量，规则之间用 setvar 传递数据</td></tr>
+</table>
+<p>变量还能带计数 / 集合语义，比如 <code>&amp;ARGS</code> 统计参数个数，
+<code>ARGS:username</code> 只取名为 username 的参数。多个变量用 <code>|</code> 并联：
+<code>REQUEST_HEADERS|REQUEST_BODY</code> 表示「头或体任一命中即触发」。</p>
+
+<h2>四、运算符：怎么算命中</h2>
+<p>运算符决定匹配逻辑，都以 @ 开头。最常用的是正则匹配：</p>
+<pre><code>@rx &lt;正则表达式&gt;          # 正则匹配，命中返回 true
+@pm word1 word2 ...       # 短语匹配，多关键词「或」关系，性能优于挨个 @rx
+@pmFromFile /path/list    # 从文件批量读关键词做短语匹配（如扫描器 UA 清单）</code></pre>
+<p>其它常用运算符：</p>
+<table>
+  <tr><th>运算符</th><th>判定</th></tr>
+  <tr><td><code>@eq</code> / <code>@gt</code> / <code>@lt</code> / <code>@ge</code> / <code>@le</code></td><td>等于 / 大于 / 小于 / 大于等于 / 小于等于（数值）</td></tr>
+  <tr><td><code>@contains</code> / <code>@beginsWith</code> / <code>@endsWith</code></td><td>包含 / 前缀 / 后缀</td></tr>
+  <tr><td><code>@within</code></td><td>目标是否在给定集合内（如 IP 在 CIDR 内）</td></tr>
+  <tr><td><code>@ipMatch</code></td><td>客户端 IP 是否匹配某个 CIDR / IP 列表</td></tr>
+  <tr><td><code>@validateUrlEncoding</code></td><td>URL 编码是否合法（识别 %u 等畸形编码绕过）</td></tr>
+  <tr><td><code>@validateUtf8Encoding</code></td><td>UTF-8 编码是否合法</td></tr>
+  <tr><td><code>@detectSQLi</code></td><td>内置的 SQL 注入检测（CRS 在用）</td></tr>
+  <tr><td><code>@detectXSS</code></td><td>内置的 XSS 检测</td></tr>
+  <tr><td><code>@rx</code> 配合 <code>!</code></td><td>取反：<code>@rx !...</code> 表示不匹配才命中</td></tr>
+</table>
+<p>小提示：<code>@pm</code> 比一串 <code>@rx (a|b|c)</code> 快得多，它内部是 Aho-Corasick 多模匹配；
+要匹配几十个扫描器关键词时优先用 <code>@pmFromFile</code>。</p>
+
+<h2>五、转换函数（transforms）：匹配前先归一化</h2>
+<p>攻击者常用大小写混合、URL 双重编码、空白穿插来绕过规则。转换函数会在匹配<b>之前</b>
+对变量做变换，把变形归一化。写在动作里、用 <code>t:</code> 前缀，可叠加多个：</p>
+<pre><code>"id:1002,phase:2,deny,t:lowercase,t:urlDecode,t:removeWhitespace,t:compressWhitespace,@rx (?i)(union\s+select|drop\s+table)"</code></pre>
+<table>
+  <tr><th>转换函数</th><th>做了什么</th></tr>
+  <tr><td><code>t:none</code></td><td>先清空之前累积的转换（常放最前重置）</td></tr>
+  <tr><td><code>t:lowercase</code></td><td>转小写，抵消大小写绕过</td></tr>
+  <tr><td><code>t:urlDecode</code> / <code>t:urlDecodeUni</code></td><td>URL 解码（含 %u 编码）</td></tr>
+  <tr><td><code>t:removeWhitespace</code> / <code>t:compressWhitespace</code></td><td>去空白 / 压缩连续空白</td></tr>
+  <tr><td><code>t:htmlEntityDecode</code></td><td>解码 <code>&amp;amp;</code> <code>&amp;#x3c;</code> 这类 HTML 实体</td></tr>
+  <tr><td><code>t:base64Decode</code></td><td>Base64 解码</td></tr>
+  <tr><td><code>t:normalisePath</code> / <code>t:normalisePathWin</code></td><td>归一化路径（消解 ../ 与多余斜杠）</td></tr>
+  <tr><td><code>t:cmdLine</code></td><td>把命令行字符串归一化（抵消失空格、引号、路径变形）</td></tr>
+</table>
+
+<h2>六、动作：命中之后做什么</h2>
+<p>动作分三类。最常用的是破坏性动作（决定请求的最终命运）：</p>
+<table>
+  <tr><th>破坏性动作</th><th>效果</th></tr>
+  <tr><td><code>deny</code></td><td>立即拦截，可配 <code>status:403</code>（或 406 等）</td></tr>
+  <tr><td><code>block</code></td><td>按当前 <code>SecDefaultAction</code> 设定的方式拦截（更灵活）</td></tr>
+  <tr><td><code>pass</code></td><td>放行（但记录 / 计数，常用于只告警不拦）</td></tr>
+  <tr><td><code>allow</code></td><td>放行并跳过后续阶段检测</td></tr>
+  <tr><td><code>redirect</code> + <code>location</code></td><td>302 跳转到指定地址</td></tr>
+</table>
+<p>非破坏性动作负责记账与上下文：</p>
+<pre><code>setvar:tx.sql_hits=+1     # 给事务变量计数（配合 &gt; 阈值再拦）
+setvar:tx.block_flag=1    # 打个标记，后面规则读到就拦截
+capture                   # 把 @rx 的捕获组存进 TX.0 / TX.1 ...
+log / nolog               # 是否写日志
+auditlog / noauditlog     # 是否进审计日志</code></pre>
+<p>还有些元数据动作必须给每条规则带上，方便排障：</p>
+<pre><code>id:1003                  # 规则 ID（必填且全局唯一，CRS 占 900000+ 段，自定义建议 1000-7999）
+phase:2                  # 处理阶段
+msg:'sql injection'       # 命中时记录的可读信息
+severity:'CRITICAL'       # 严重级别（EMERGENCY/ALERT/CRITICAL/ERROR/WARNING/NOTICE/INFO）
+tag:'attack-sqli'         # 标签，便于归类统计</code></pre>
+
+<h2>七、规则链（chain）：多条件「且」关系</h2>
+<p>单条规则只能表达一个「变量 + 运算符」。要表达「A 且 B」用 <code>chain</code> 把多条规则串起来，
+只有整条链全部命中才执行最后一条的破坏性动作：</p>
+<pre><code>SecRule ARGS_GET:q "@rx (?i)select" "id:2001,phase:2,chain,t:none,t:lowercase"
+    SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|havij)" "deny,status:403,msg:'sql tool'"</code></pre>
+<p>上例含义：只有当参数 <code>q</code> 里出现 select <b>并且</b> UA 是扫描器时才拦截——
+避免单独一条 select 就把正常带 SQL 关键字的搜索请求误杀。</p>
+
+<h2>八、五个处理阶段（phase）</h2>
+<p>规则按 <code>phase</code> 分布在请求 / 响应的不同阶段，越靠前越省资源：</p>
+<table>
+  <tr><th>阶段</th><th>时机</th><th>适合放什么</th></tr>
+  <tr><td>phase:1</td><td>请求头刚收完</td><td>按 IP / UA / Host 做粗筛（最快）</td></tr>
+  <tr><td>phase:2</td><td>请求体解析完</td><td>参数、body 的注入 / XSS 检测（最常用）</td></tr>
+  <tr><td>phase:3</td><td>响应头生成前</td><td>出方向头改写</td></tr>
+  <tr><td>phase:4</td><td>响应体生成后</td><td>出方向数据泄露检测（卡号、身份证）</td></tr>
+  <tr><td>phase:5</td><td>日志记录时</td><td>仅做统计 / 记日志，不拦截</td></tr>
+</table>
+<p>把廉价的粗筛放 phase:1、把贵的正则 / 解码放 phase:2，是减少误杀和开销的关键。</p>
+
+<h2>九、OWASP CRS：开箱即用的规则集</h2>
+<p>自己写规则是兜底，真正扛住日常攻击的是 <b>OWASP CRS（Core Rule Set）</b>——
+一套社区维护、覆盖 SQLi / XSS / 文件包含 / 协议违规 / 扫描器指纹等场景的通用规则，随 Coraza
+一起分发。启用方式就是在配置文件里 Include 它：</p>
+<pre><code>Include /path/to/coraza.conf          # 引擎基础配置（SecRuleEngine 等）
+Include /path/to/crs-setup.conf       # CRS 总开关与调参
+Include /path/to/rules/*.conf          # 具体规则文件</code></pre>
+<p>CRS 的几个实用调参（在 <code>crs-setup.conf</code> 里）：</p>
+<ul>
+  <li><code>tx.paranoia_level</code>：偏执等级 1~4，越高规则越严、误报也越多，默认 1；
+      上线初期建议先 1，观察稳定后再上调；</li>
+  <li><code>tx.blocking_paranoia_level</code>：实际拦截的偏执等级，可低于 <code>paranoia_level</code>
+      做到「高级别只记录、低级别才拦」；</li>
+  <li><code>tx.anomaly_score_block</code>：把「累计异常分超阈值才拦」作为拦截策略，比单条命中就拦更稳；
+      单条规则命中通常只加分、不直接 deny，由总分决定是否拦截，显著降低误杀。</li>
+</ul>
+
+<h2>十、实战：写一个防 SQL 注入的自定义规则</h2>
+<p>假设搜索接口 <code>/search?q=</code> 老被注入探测，要在 CRS 之外加一条针对性规则。
+思路：先归一化、再正则、命中先计数而非直接拦、超阈值再 deny：</p>
+<pre><code># /etc/coraza/custom/search-sqli.conf
+SecRule REQUEST_URI "@rx (?i)/search" "id:900100,phase:1,pass,nolog,setvar:tx.on_search=1"
+
+SecRule ARGS_GET:q \
+    "@rx (?i)(union\s+select|select\s+.*\s+from|or\s+1=1|'\s+or\s+'|drop\s+table|insert\s+into)" \
+    "id:900101,phase:2,chain,t:none,t:lowercase,t:urlDecode,t:compressWhitespace"
+    SecRule TX:on_search "@eq 1" \
+        "deny,status:403,msg:'SQLi in search q',severity:'CRITICAL',tag:'attack-sqli',\
+         setvar:tx.sql_score=+5"
+
+SecAction "id:900102,phase:2,pass,setvar:tx.sql_score=0"
+SecRule TX:sql_score "@ge 5" "id:900103,phase:2,deny,status:403,msg:'SQLi score exceeded'"</code></pre>
+<p>这条规则做了三件事：①只在 <code>/search</code> 路径启用，不影响别的接口；
+②对 <code>q</code> 参数做大小写无关、解码后的正则匹配，命中先打 <code>sql_score</code> 标记；
+③真正拦截的是「分数累计到 5」那条，给正常关键词搜索留了缓冲，避免一次误匹配就 403。</p>
+<p>把自定义文件 Include 进主配置即可，无需改动 CRS 本身。</p>
+
+<h2>十一、DetectionOnly 与 On：先观察再拦截</h2>
+<p><code>SecRuleEngine</code> 是总开关，只有两个值值得记住：</p>
+<table>
+  <tr><th>取值</th><th>行为</th><th>何时用</th></tr>
+  <tr><td><code>DetectionOnly</code></td><td>只记录、不拦截</td><td>新规则 / 新站点上线前先跑一段时间</td></tr>
+  <tr><td><code>On</code></td><td>命中即按动作处理</td><td>确认误报可控之后</td></tr>
+</table>
+<p>经验之谈：<b>任何新规则、任何新接入的站点，先用 DetectionOnly 跑至少一到两周</b>，
+翻审计日志看有没有把正常业务算成攻击（典型误杀：带 <code>select</code> 的搜索、带
+<code>&lt;</code> 的富文本编辑、JSON 里的大段文本）。确认误报率可接受，再把对应规则切到
+<code>On</code> 或调高 <code>blocking_paranoia_level</code>。<b>直接 On 上线是 WAF 误杀的头号原因。</b></p>
+
+<h2>十二、怎么把它跑起来</h2>
+<p>Coraza 不是只能当独立盒子，常见四种落地姿势：</p>
+<table>
+  <tr><th>方式</th><th>怎么做</th><th>适合</th></tr>
+  <tr><td>Go 库内联</td><td><code>import github.com/corazawaf/coraza/v3</code>，在 handler 里 ProcessRequest</td><td>自己写 Go 服务、想内联检测</td></tr>
+  <tr><td>Caddy 连接器</td><td>用 coraza-caddy 插件，Caddyfile 里加几行即可</td><td>已在用 Caddy 反代</td></tr>
+  <tr><td>Nginx 连接器</td><td>coraza-nginx 动态模块</td><td>已在用 Nginx、想最小改动</td></tr>
+  <tr><td>独立网关</td><td>如 warden，一个二进制把 Coraza + CC 防护 + 后台打包</td><td>不想碰配置、要开箱即用的面板</td></tr>
+</table>
+<p>以 Caddy 为例，最小配置只是：</p>
+<pre><code>{
+    order coraza before reverse_proxy
+}
+example.com {
+    coraza {
+        directives `
+            Include /etc/coraza/coraza.conf
+            Include /etc/coraza/crs/crs-setup.conf
+            Include /etc/coraza/rules/*.conf
+        `
+    }
+    reverse_proxy 127.0.0.1:8000
+}</code></pre>
+
+<h2>十三、小结</h2>
+<p>Coraza 把 ModSecurity 那套成熟的规则体系搬到了 Go 上，迁移几乎零成本。记住这条主线：</p>
+<table>
+  <tr><th>概念</th><th>一句话</th></tr>
+  <tr><td>一条规则</td><td>变量 + 运算符（@ 开头）+ 动作（id/phase/deny…）</td></tr>
+  <tr><td>归一化</td><td>用 t: 转换函数在匹配前消解变形绕过</td></tr>
+  <tr><td>多条件</td><td>chain 表达「且」，TX 变量做跨规则计数</td></tr>
+  <tr><td>日常防护</td><td>直接上 OWASP CRS，别从零手搓</td></tr>
+  <tr><td>上线纪律</td><td>DetectionOnly 观察 → 再 On；异常分阈值拦截比单条 deny 稳</td></tr>
+</table>
+<p>想看一个把 Coraza 和 CC 防护、IP 归属拦截打包成单文件网关的真实项目，见
+<a href="/blog/warden-go-waf/">warden：一个单文件部署的 Go 反向代理 WAF</a>。</p>
+  <div class="post-related">
+    <h2>相关阅读</h2>
+    <ul>
+      <li><a href="../../blog/warden-go-waf/">warden：一个单文件部署的 Go 反向代理 WAF</a></li>
+      <li><a href="../../go-cheatsheet/">Go 工具链命令速查表</a></li>
+      <li><a href="../../blog/">全部文章</a></li>
+    </ul>
+  </div>
+</article>
+</div>
+
+
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../">首页</a><a href="../../hotnews/">今日热榜</a><a href="../../go-cheatsheet/">Go 速查表</a><a href="../../diff/">文本比对</a><a href="../../encode/">编码解码</a><a href="../../regex/">正则表达式</a><a href="../../timestamp/">时间戳</a><a href="../../hash/">加密哈希</a><a href="../../formatter/">代码格式化</a><a href="../../string/">字符串</a><a href="../../generator/">生成器</a><a href="../../color/">颜色转换</a><a href="../../case/">命名风格</a><a href="../../jwt/">JWT 解码</a><a href="../../yaml/">JSON↔YAML</a><a href="../../toml/">JSON↔TOML</a><a href="../../csv/">JSON↔CSV</a><a href="../../blog/">博客</a><a href="../../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">
+    <span>其它：</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">查看已有反馈</a>
+    <span>·</span>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

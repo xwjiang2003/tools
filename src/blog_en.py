@@ -6,6 +6,269 @@
 """
 
 ARTICLES_EN = {
+    'coraza-waf-rules': {
+        'tags': ['WAF', 'Coraza', 'Security', 'ModSecurity', 'OWASP'],
+        'title': ('Coraza Rules Explained: From SecRule Syntax to Your First '
+                  'Custom Rule | DevTools Blog'),
+        'description': (
+            'Coraza is a Go-based open-source WAF and the community successor to '
+            'ModSecurity, with SecRule syntax that is almost fully compatible. This '
+            'post starts from "what a rule is made of" and covers variables, operators, '
+            'transforms, actions, the five processing phases, the OWASP CRS set, a '
+            'hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.'
+        ),
+        'keywords': (
+            'coraza rules,coraza waf,secrule syntax,modsecurity alternative,owasp crs,'
+            'coraza custom rule,secruleengine,@rx operator,waf rule writing'
+        ),
+        'h1': 'Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule',
+        'summary': (
+            'Coraza is a Go-based open-source WAF and the successor to ModSecurity, with '
+            'largely compatible SecRule syntax. This post covers the three parts of a rule, '
+            'the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi '
+            'rule, and the DetectionOnly-vs-On trade-off.'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: Coraza is an open-source WAF written in Go and the community successor to
+  ModSecurity. Its rule syntax (<code>SecRule</code>) is almost fully compatible, so migrating an
+  old setup is mostly "swap the engine, keep the rules". The core idea is <b>one SecRule = variable
+  + operator + action</b>, combined with five processing phases and the OWASP CRS rule set: you can
+  adopt the community rules as-is or write your own targeted rules.</p>
+</blockquote>
+
+<h2>1. What Coraza is</h2>
+<p>Coraza is a Go-based, OWASP-compliant web application firewall engine, and the widely adopted
+replacement since ModSecurity v3 stopped being maintained. Three points worth calling out:</p>
+<ul>
+  <li><b>ModSecurity-compatible syntax</b>: directives you already wrote - <code>SecRule</code>,
+      <code>SecAction</code>, <code>SecRuleEngine</code> - and the OWASP CRS (Core Rule Set) run
+      on Coraza with almost no changes, so migration cost is minimal;</li>
+  <li><b>Pure Go, no C dependency</b>: it does not depend on the libmodsecurity C library, which
+      makes cross-compilation, containerization and embedding into your own Go program painless;</li>
+  <li><b>Library or gateway</b>: you can <code>import</code> it into a Go service for inline
+      inspection, or deploy it in front of traffic via a Caddy / Nginx connector or a standalone
+      gateway such as warden.</li>
+</ul>
+<p>It is Apache-2.0 licensed and a formal OWASP project.</p>
+
+<h2>2. What a rule is made of</h2>
+<p>Most of Coraza's protection logic lives in a single <code>SecRule</code>. The simplest rule
+looks like this:</p>
+<pre><code>SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|nikto|nmap)" \\
+    "id:1001,phase:1,deny,status:403,msg:'known scanner UA'"</code></pre>
+<p>It has three parts, in fixed order:</p>
+<table>
+  <tr><th>Part</th><th>Role</th><th>Example above</th></tr>
+  <tr><td>Variable</td><td>What data to inspect: headers, args, URI, body, IP...</td><td><code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td>Operator</td><td>How to decide a match; starts with @</td><td><code>@rx (?i)(sqlmap|nikto)</code></td></tr>
+  <tr><td>Action</td><td>What to do on match; comma-separated key/value pairs</td><td><code>id:1001,phase:1,deny,...</code></td></tr>
+</table>
+<p>The backslash <code>\\</code> is a line continuation, so a long rule can be split across lines for
+readability. Let's take the three parts apart.</p>
+
+<h2>3. Variables: which piece of data you inspect</h2>
+<p>Variables decide which part of the request a rule watches. The common ones:</p>
+<table>
+  <tr><th>Variable</th><th>Meaning</th></tr>
+  <tr><td><code>REQUEST_URI</code></td><td>Full request path (including query string); most used</td></tr>
+  <tr><td><code>REQUEST_LINE</code></td><td>Full request line, e.g. <code>GET /a?x=1 HTTP/1.1</code></td></tr>
+  <tr><td><code>REQUEST_HEADERS</code></td><td>All request headers; add a colon for one, e.g. <code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td><code>REQUEST_BODY</code></td><td>Request body (POST form / JSON / XML; requires the relevant parser on)</td></tr>
+  <tr><td><code>ARGS</code> / <code>ARGS_GET</code> / <code>ARGS_POST</code></td><td>All args / query string only / form only</td></tr>
+  <tr><td><code>QUERY_STRING</code></td><td>Query string only</td></tr>
+  <tr><td><code>REMOTE_ADDR</code></td><td>Client IP</td></tr>
+  <tr><td><code>RESPONSE_BODY</code></td><td>Response body (egress inspection, e.g. leaking card numbers)</td></tr>
+  <tr><td><code>TX</code></td><td>Transaction variable; rules pass data between each other with setvar</td></tr>
+</table>
+<p>Variables also carry count / collection semantics: <code>&amp;ARGS</code> counts the number of
+parameters, and <code>ARGS:username</code> selects only the parameter named username. Multiple
+variables are OR-ed with <code>|</code>: <code>REQUEST_HEADERS|REQUEST_BODY</code> means "match if
+either header or body hits".</p>
+
+<h2>4. Operators: how a match is decided</h2>
+<p>Operators decide the matching logic and all start with @. The most common is regex matching:</p>
+<pre><code>@rx &lt;regular expression&gt;   # regex match, returns true on hit
+@pm word1 word2 ...        # phrase match, multiple keywords OR-ed, faster than many @rx
+@pmFromFile /path/list     # read keywords from a file for phrase match (e.g. scanner UA list)</code></pre>
+<p>Other common operators:</p>
+<table>
+  <tr><th>Operator</th><th>Test</th></tr>
+  <tr><td><code>@eq</code> / <code>@gt</code> / <code>@lt</code> / <code>@ge</code> / <code>@le</code></td><td>equal / greater / less / greater-or-equal / less-or-equal (numeric)</td></tr>
+  <tr><td><code>@contains</code> / <code>@beginsWith</code> / <code>@endsWith</code></td><td>contains / prefix / suffix</td></tr>
+  <tr><td><code>@within</code></td><td>whether the target is within a given set (e.g. IP within a CIDR)</td></tr>
+  <tr><td><code>@ipMatch</code></td><td>whether the client IP matches a CIDR / IP list</td></tr>
+  <tr><td><code>@validateUrlEncoding</code></td><td>whether URL encoding is valid (catches %u and other malformed-encoding bypasses)</td></tr>
+  <tr><td><code>@validateUtf8Encoding</code></td><td>whether UTF-8 encoding is valid</td></tr>
+  <tr><td><code>@detectSQLi</code></td><td>built-in SQL injection detection (used by CRS)</td></tr>
+  <tr><td><code>@detectXSS</code></td><td>built-in XSS detection</td></tr>
+  <tr><td><code>@rx</code> with <code>!</code></td><td>negation: <code>@rx !...</code> matches when it does NOT match</td></tr>
+</table>
+<p>Tip: <code>@pm</code> is much faster than a chain of <code>@rx (a|b|c)</code> because it uses an
+internal Aho-Corasick multi-pattern matcher; when matching dozens of scanner keywords, prefer
+<code>@pmFromFile</code>.</p>
+
+<h2>5. Transforms: normalize before matching</h2>
+<p>Attackers mix case, double-URL-encode, and pad with whitespace to evade rules. A transform runs
+<b>before</b> matching to normalize those variations. It is written in the action list with a
+<code>t:</code> prefix and several can be stacked:</p>
+<pre><code>"id:1002,phase:2,deny,t:lowercase,t:urlDecode,t:removeWhitespace,t:compressWhitespace,@rx (?i)(union\\s+select|drop\\s+table)"</code></pre>
+<table>
+  <tr><th>Transform</th><th>What it does</th></tr>
+  <tr><td><code>t:none</code></td><td>Clears any previously accumulated transforms (usually placed first to reset)</td></tr>
+  <tr><td><code>t:lowercase</code></td><td>Lowercases, defeating case evasion</td></tr>
+  <tr><td><code>t:urlDecode</code> / <code>t:urlDecodeUni</code></td><td>URL-decode (including %u encoding)</td></tr>
+  <tr><td><code>t:removeWhitespace</code> / <code>t:compressWhitespace</code></td><td>Remove / compress runs of whitespace</td></tr>
+  <tr><td><code>t:htmlEntityDecode</code></td><td>Decode entities like <code>&amp;amp;</code> <code>&amp;#x3c;</code></td></tr>
+  <tr><td><code>t:base64Decode</code></td><td>Base64-decode</td></tr>
+  <tr><td><code>t:normalisePath</code> / <code>t:normalisePathWin</code></td><td>Normalize path (resolve ../ and extra slashes)</td></tr>
+  <tr><td><code>t:cmdLine</code></td><td>Normalize a command-line string (defeats spacing, quotes, path tricks)</td></tr>
+</table>
+
+<h2>6. Actions: what happens after a match</h2>
+<p>Actions fall into three groups. The disruptive actions decide the request's fate:</p>
+<table>
+  <tr><th>Disruptive</th><th>Effect</th></tr>
+  <tr><td><code>deny</code></td><td>Block immediately; pair with <code>status:403</code> (or 406, etc.)</td></tr>
+  <tr><td><code>block</code></td><td>Block per the current <code>SecDefaultAction</code> (more flexible)</td></tr>
+  <tr><td><code>pass</code></td><td>Allow but log / count (common for alert-only rules)</td></tr>
+  <tr><td><code>allow</code></td><td>Allow and skip remaining phase checks</td></tr>
+  <tr><td><code>redirect</code> + <code>location</code></td><td>302 redirect to a given URL</td></tr>
+</table>
+<p>Non-disruptive actions keep bookkeeping and context:</p>
+<pre><code>setvar:tx.sql_hits=+1     # increment a tx variable (block later when &gt; threshold)
+setvar:tx.block_flag=1    # set a flag later rules read to block
+capture                   # store @rx capture groups into TX.0 / TX.1 ...
+log / nolog               # whether to write to the log
+auditlog / noauditlog     # whether to enter the audit log</code></pre>
+<p>Some metadata actions must be on every rule for troubleshooting:</p>
+<pre><code>id:1003                  # rule ID (required, globally unique; CRS uses 900000+, custom 1000-7999)
+phase:2                  # processing phase
+msg:'sql injection'       # human-readable note recorded on match
+severity:'CRITICAL'       # level (EMERGENCY/ALERT/CRITICAL/ERROR/WARNING/NOTICE/INFO)
+tag:'attack-sqli'         # tag, handy for grouping stats</code></pre>
+
+<h2>7. Chains: multi-condition "AND"</h2>
+<p>A single rule expresses one "variable + operator". To express "A AND B", chain rules with
+<code>chain</code>; only when the whole chain matches does the last rule's disruptive action run:</p>
+<pre><code>SecRule ARGS_GET:q "@rx (?i)select" "id:2001,phase:2,chain,t:none,t:lowercase"
+    SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|havij)" "deny,status:403,msg:'sql tool'"</code></pre>
+<p>This means: block only when parameter <code>q</code> contains select <b>and</b> the UA is a
+scanner - avoiding a bare "select" blocking a legitimate search that happens to contain SQL
+keywords.</p>
+
+<h2>8. The five phases</h2>
+<p>Rules are distributed across request / response phases by <code>phase</code>; earlier is cheaper:</p>
+<table>
+  <tr><th>Phase</th><th>When</th><th>Good for</th></tr>
+  <tr><td>phase:1</td><td>Request headers just received</td><td>Coarse filter by IP / UA / Host (fastest)</td></tr>
+  <tr><td>phase:2</td><td>Request body parsed</td><td>Injection / XSS on args and body (most used)</td></tr>
+  <tr><td>phase:3</td><td>Before response headers</td><td>Egress header rewriting</td></tr>
+  <tr><td>phase:4</td><td>After response body</td><td>Egress data-leak inspection (card / ID numbers)</td></tr>
+  <tr><td>phase:5</td><td>At logging</td><td>Stats / logging only, never blocks</td></tr>
+</table>
+<p>Putting cheap coarse filters in phase:1 and expensive regex / decoding in phase:2 is the key to
+fewer false positives and lower overhead.</p>
+
+<h2>9. OWASP CRS: rules that work out of the box</h2>
+<p>Writing your own rules is the backstop; what actually stops day-to-day attacks is the <b>OWASP
+CRS (Core Rule Set)</b> - a community-maintained, general-purpose rule set covering SQLi, XSS,
+file inclusion, protocol violations and scanner fingerprints, shipped with Coraza. You enable it by
+Including it in your config:</p>
+<pre><code>Include /path/to/coraza.conf          # engine base config (SecRuleEngine, etc.)
+Include /path/to/crs-setup.conf       # CRS master switch and tuning
+Include /path/to/rules/*.conf          # the actual rule files</code></pre>
+<p>Handy CRS knobs (in <code>crs-setup.conf</code>):</p>
+<ul>
+  <li><code>tx.paranoia_level</code>: paranoia level 1-4; higher is stricter and noisier, default 1.
+      Start at 1 and raise it once things are stable;</li>
+  <li><code>tx.blocking_paranoia_level</code>: the level that actually blocks; can be lower than
+      <code>paranoia_level</code> so higher levels only log while lower levels block;</li>
+  <li><code>tx.anomaly_score_block</code>: block when the accumulated anomaly score passes a
+      threshold instead of on a single hit - far more stable than per-rule deny; each rule usually
+      only adds score, and the total decides, which sharply cuts false positives.</li>
+</ul>
+
+<h2>10. Hands-on: a custom anti-SQLi rule</h2>
+<p>Suppose your search endpoint <code>/search?q=</code> keeps getting injection probes and you want a
+targeted rule on top of CRS. Idea: normalize first, regex next, count rather than block on hit, and
+deny only past a threshold:</p>
+<pre><code># /etc/coraza/custom/search-sqli.conf
+SecRule REQUEST_URI "@rx (?i)/search" "id:900100,phase:1,pass,nolog,setvar:tx.on_search=1"
+
+SecRule ARGS_GET:q \\
+    "@rx (?i)(union\\s+select|select\\s+.*\\s+from|or\\s+1=1|'\\s+or\\s+'|drop\\s+table|insert\\s+into)" \\
+    "id:900101,phase:2,chain,t:none,t:lowercase,t:urlDecode,t:compressWhitespace"
+    SecRule TX:on_search "@eq 1" \\
+        "deny,status:403,msg:'SQLi in search q',severity:'CRITICAL',tag:'attack-sqli',\\
+         setvar:tx.sql_score=+5"
+
+SecAction "id:900102,phase:2,pass,setvar:tx.sql_score=0"
+SecRule TX:sql_score "@ge 5" "id:900103,phase:2,deny,status:403,msg:'SQLi score exceeded'"</code></pre>
+<p>This rule does three things: 1) it only applies on <code>/search</code>, leaving other endpoints
+alone; 2) it matches <code>q</code> case-insensitively and after decoding, and on a hit just stamps
+a <code>sql_score</code> flag; 3) the real block is the "score reached 5" rule, leaving a buffer for
+legitimate keyword searches so one bad match does not 403. Include the custom file in the main
+config; CRS itself stays untouched.</p>
+
+<h2>11. DetectionOnly vs On: observe before you block</h2>
+<p><code>SecRuleEngine</code> is the master switch; only two values matter:</p>
+<table>
+  <tr><th>Value</th><th>Behavior</th><th>When</th></tr>
+  <tr><td><code>DetectionOnly</code></td><td>Log only, never block</td><td>Run new rules / new sites for a while first</td></tr>
+  <tr><td><code>On</code></td><td>Act on matches per the actions</td><td>Once false positives are under control</td></tr>
+</table>
+<p>Rule of thumb: <b>any new rule, any newly onboarded site, runs in DetectionOnly for at least one
+to two weeks</b> first. Read the audit log to see whether legitimate traffic was flagged (typical
+false positives: searches containing "select", rich-text editing containing <code>&lt;</code>, or
+large JSON blobs of text). Once the false-positive rate is acceptable, switch the relevant rules to
+<code>On</code> or raise <code>blocking_paranoia_level</code>. <b>Going straight to On is the number
+one cause of a WAF blocking legitimate traffic.</b></p>
+
+<h2>12. How to actually run it</h2>
+<p>Coraza is not only a standalone box; four common ways to deploy:</p>
+<table>
+  <tr><th>Way</th><th>How</th><th>When</th></tr>
+  <tr><td>Go library inline</td><td><code>import github.com/corazawaf/coraza/v3</code> and call ProcessRequest in your handler</td><td>You write the Go service and want inline inspection</td></tr>
+  <tr><td>Caddy connector</td><td>Use the coraza-caddy plugin; a few lines in the Caddyfile</td><td>You already reverse-proxy with Caddy</td></tr>
+  <tr><td>Nginx connector</td><td>coraza-nginx dynamic module</td><td>You already use Nginx and want minimal change</td></tr>
+  <tr><td>Standalone gateway</td><td>E.g. warden, one binary packing Coraza + CC protection + dashboard</td><td>You want a panel and zero config fiddling</td></tr>
+</table>
+<p>For Caddy, the minimal config is just:</p>
+<pre><code>{
+    order coraza before reverse_proxy
+}
+example.com {
+    coraza {
+        directives `
+            Include /etc/coraza/coraza.conf
+            Include /etc/coraza/crs/crs-setup.conf
+            Include /etc/coraza/rules/*.conf
+        `
+    }
+    reverse_proxy 127.0.0.1:8000
+}</code></pre>
+
+<h2>13. Recap</h2>
+<p>Coraza brings ModSecurity's mature rule system to Go, at near-zero migration cost. Keep this
+spine in mind:</p>
+<table>
+  <tr><th>Concept</th><th>One line</th></tr>
+  <tr><td>One rule</td><td>variable + operator (starts with @) + action (id/phase/deny...)</td></tr>
+  <tr><td>Normalize</td><td>Use t: transforms to defeat evasion before matching</td></tr>
+  <tr><td>Multi-condition</td><td>chain for "AND", TX variable for cross-rule counting</td></tr>
+  <tr><td>Daily protection</td><td>Adopt OWASP CRS; do not hand-roll from scratch</td></tr>
+  <tr><td>Go-live discipline</td><td>DetectionOnly observe -&gt; then On; score-threshold blocking beats per-rule deny</td></tr>
+</table>
+<p>To see a real project that packs Coraza with CC protection and IP-origin blocking into a
+single-file gateway, read <a href="/en/blog/warden-go-waf/">warden: A Single-Binary Go
+Reverse-Proxy WAF</a>.</p>
+''',
+        'related': [
+            ('warden: A Single-Binary Go Reverse-Proxy WAF', 'blog/warden-go-waf/'),
+            ('Go toolchain command cheat sheet', 'go-cheatsheet/'),
+        ],
+    },
     'warden-go-waf': {
         'tags': ['Go', 'WAF', 'Open Source'],
         'title': ('warden: A Single-Binary Go Reverse-Proxy WAF with CC Protection '
@@ -229,6 +492,7 @@ least privilege, or secure coding in the backend.</p>
 include a <code>Signed-off-by</code> line (DCO) in your commit message.</p>
 ''',
         'related': [
+            ('Coraza Rules Explained', 'blog/coraza-waf-rules/'),
             ('Go toolchain command cheat sheet', 'go-cheatsheet/'),
             ('gofmt vs goimports', 'blog/gofmt-vs-goimports/'),
         ],

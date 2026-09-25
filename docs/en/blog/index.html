@@ -18,7 +18,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 2, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 2, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 3, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule", "url": "https://devtools.help/en/blog/coraza-waf-rules/"}, {"@type": "ListItem", "position": 2, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 3, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -55,6 +55,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
 .top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
 .top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
+.nav-group:first-child{border-left:none;padding-left:0}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
 .theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
 .theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
@@ -375,16 +377,29 @@ var _hmt = _hmt || [];
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
+    <span class="nav-group">JSON</span>
     <a class="top-nav-item" href="../../en/">JSON</a>
-    <a class="top-nav-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
-    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
-    <a class="top-nav-item" href="../../en/encode/">Encode</a>
-    <a class="top-nav-item" href="../../en/regex/">Regex</a>
-    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
-    <a class="top-nav-item" href="../../en/hash/">Hash</a>
+    <span class="nav-group">Convert</span>
     <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../en/yaml/">JSON ↔ YAML</a>
+    <a class="top-nav-item" href="../../en/toml/">JSON ↔ TOML</a>
+    <a class="top-nav-item" href="../../en/csv/">JSON ↔ CSV</a>
+    <a class="top-nav-item" href="../../en/color/">Color</a>
+    <span class="nav-group">Encode / Crypto</span>
+    <a class="top-nav-item" href="../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../en/jwt/">JWT decoder</a>
+    <span class="nav-group">Text / String</span>
+    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
     <a class="top-nav-item" href="../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../en/case/">Case style</a>
+    <span class="nav-group">Code / Gen</span>
+    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
     <a class="top-nav-item" href="../../en/generator/">Generators</a>
+    <span class="nav-group">Cheat Sheets</span>
+    <a class="top-nav-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <span class="nav-group">Content</span>
     <a class="top-nav-item" href="../../en/hotnews/">Tech News</a>
     <a class="top-nav-item active" href="../../en/blog/">Blog</a>
   </nav>
@@ -415,6 +430,11 @@ document.addEventListener("click", function (e) {
     <p class="blog-head-lead">Hands-on articles about developer tools and toolchains: troubleshooting, version migrations and CI practice, all verified against real setups. The Go series is running now; Rust and more are on the way.</p>
   </div>
   <div class="blog-list">
+    <a class="blog-card" href="../../en/blog/coraza-waf-rules/">
+      <p class="blog-card-title">Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule</p>
+      <p class="blog-card-desc">Coraza is a Go-based open-source WAF and the successor to ModSecurity, with largely compatible SecRule syntax. This post covers the three parts of a rule, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.</p>
+      <p class="blog-card-meta"><time datetime="2026-09-25">2026-09-25</time><span class="blog-tag">WAF</span><span class="blog-tag">Coraza</span><span class="blog-tag">Security</span><span class="blog-tag">ModSecurity</span><span class="blog-tag">OWASP</span></p>
+    </a>
     <a class="blog-card" href="../../en/blog/warden-go-waf/">
       <p class="blog-card-title">warden: A Single-Binary Go Reverse-Proxy WAF</p>
       <p class="blog-card-desc">L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.</p>
@@ -433,7 +453,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/color/">Color</a><a href="../../en/case/">Case style</a><a href="../../en/jwt/">JWT decoder</a><a href="../../en/yaml/">JSON ↔ YAML</a><a href="../../en/toml/">JSON ↔ TOML</a><a href="../../en/csv/">JSON ↔ CSV</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>

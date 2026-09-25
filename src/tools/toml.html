@@ -1,0 +1,51 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="tomlClear()">清空</button><button class="btn btn-sm" onclick="tomlSample()">示例</button></div></div>
+    <textarea class="ta-input" id="tomlInput" placeholder="Enter JSON or TOML to convert"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>转换方向</span>
+      <select id="tomlDir">
+        <option value="toToml">JSON → TOML</option>
+        <option value="toJson">TOML → JSON</option>
+      </select>
+    </div>
+    <div class="op-buttons"><button class="op-btn active" onclick="tomlConvert()">转换</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tomlResult')">复制</button></div></div>
+      <div class="result-content" id="tomlResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var _toml=null;
+  async function loadToml(){
+    if(_toml) return _toml;
+    _toml = await import('https://cdn.jsdelivr.net/npm/@iarna/toml@2.2.5/+esm');
+    return _toml;
+  }
+  async function tomlConvert(){
+    var text = getVal('tomlInput'); var dir = document.getElementById('tomlDir').value;
+    var out = document.getElementById('tomlResult');
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    try{
+      var TOML = await loadToml();
+      if(dir==='toToml'){
+        var obj = JSON.parse(text);
+        out.textContent = TOML.stringify(obj);
+      } else {
+        var data = TOML.parse(text);
+        out.textContent = JSON.stringify(data, null, 2);
+      }
+    }catch(e){
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+    }
+  }
+  window.tomlClear=function(){ setVal('tomlInput',''); tomlConvert(); };
+  window.tomlSample=function(){ setVal('tomlInput','{\n  "name": "DevTools",\n  "stars": 42,\n  "tags": ["json", "toml"]\n}'); tomlConvert(); };
+  var el=document.getElementById('tomlInput'); if(el){ el.addEventListener('input', tomlConvert); }
+  var sel=document.getElementById('tomlDir'); if(sel){ sel.addEventListener('change', tomlConvert); }
+  tomlConvert();
+})();
+</script>

@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page="color">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在线颜色转换工具 - Hex / RGB / HSL / 颜色名称 互转 | DevTools</title>
+<meta name="description" content="免费在线颜色转换：Hex、RGB、HSL 与 CSS 颜色名称互相转换，实时预览色块，支持 3 位 / 6 位 / 8 位十六进制、rgb()、hsl() 与 148 个 CSS 命名色。纯浏览器本地处理，不上传任何数据。">
+<meta name="keywords" content="颜色转换,十六进制转RGB,RGB转HSL,颜色选择器,Hex颜色,RGB颜色,HSL颜色,CSS颜色名称,在线颜色转换">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/color/">
+<meta property="og:title" content="在线颜色转换工具 - Hex / RGB / HSL / 颜色名称 互转 | DevTools">
+<meta property="og:description" content="免费在线颜色转换：Hex、RGB、HSL 与 CSS 颜色名称互相转换，实时预览色块，支持 3 位 / 6 位 / 8 位十六进制、rgb()、hsl() 与 148 个 CSS 命名色。纯浏览器本地处理，不上传任何数据。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/color/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/color/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/color/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/color/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线颜色转换工具（Hex / RGB / HSL / 名称）", "url": "https://devtools.help/color/", "description": "免费在线颜色转换：Hex、RGB、HSL 与 CSS 颜色名称互相转换，实时预览色块，支持 3 位 / 6 位 / 8 位十六进制、rgb()、hsl() 与 148 个 CSS 命名色。纯浏览器本地处理，不上传任何数据。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Hex 和 RGB 有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "它们是同一个颜色的两种写法：Hex 用十六进制表示红绿蓝三个分量，RGB 用十进制。#ff0000 与 rgb(255,0,0) 是完全等价的红色，只是书写习惯不同。"}}, {"@type": "Question", "name": "8 位十六进制里的最后两位是什么？", "acceptedAnswer": {"@type": "Answer", "text": "最后两位是 alpha（透明度）通道，两位十六进制表示 0~255 的透明度，对应 rgba() 里的第四个参数，00 表示完全透明、ff 表示完全不透明。"}}, {"@type": "Question", "name": "为什么有些颜色没有命名色？", "acceptedAnswer": {"@type": "Answer", "text": "CSS 只定义了 148 个命名色（如 red、blue、rebeccapurple），绝大多数颜色没有对应的英文名称，因此这一类会显示\"-\"，改用 Hex/RGB/HSL 表示即可。"}}]}]}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
+.nav-group:first-child{border-left:none;padding-left:0}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "./", "en": "../en/color/"}[want];
+    if (target && want !== 'zh') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../" aria-label="DevTools 首页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <span class="nav-group">JSON 工具</span>
+    <a class="top-nav-item" href="../">JSON 工具</a>
+    <span class="nav-group">格式转换</span>
+    <a class="top-nav-item" href="../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../yaml/">JSON↔YAML</a>
+    <a class="top-nav-item" href="../toml/">JSON↔TOML</a>
+    <a class="top-nav-item" href="../csv/">JSON↔CSV</a>
+    <a class="top-nav-item active" href="../color/">颜色转换</a>
+    <span class="nav-group">编码 / 加密</span>
+    <a class="top-nav-item" href="../encode/">编码解码</a>
+    <a class="top-nav-item" href="../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../jwt/">JWT 解码</a>
+    <span class="nav-group">文本 / 字符串</span>
+    <a class="top-nav-item" href="../diff/">文本比对</a>
+    <a class="top-nav-item" href="../string/">字符串</a>
+    <a class="top-nav-item" href="../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../case/">命名风格</a>
+    <span class="nav-group">代码 / 生成</span>
+    <a class="top-nav-item" href="../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../generator/">生成器</a>
+    <span class="nav-group">速查表</span>
+    <a class="top-nav-item" href="../go-cheatsheet/">Go 速查表</a>
+    <span class="nav-group">内容</span>
+    <a class="top-nav-item" href="../hotnews/">今日热榜</a>
+    <a class="top-nav-item" href="../blog/">博客</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/color/" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-color">
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 颜色值</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="colorClear()">清空</button><button class="btn btn-sm" onclick="colorSample()">示例</button></div></div>
+    <textarea class="ta-input" id="colorInput" placeholder="Enter a color: #ff0000, rgb(255,0,0), hsl(0,100%,50%) or red"></textarea>
+    <div id="colorPreview" style="height:64px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);border-top:1px solid var(--border)">预览</div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出格式</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('colorResult')">复制</button></div></div>
+      <div class="result-content" id="colorResult"><span style="color:var(--text-muted)">输入颜色后自动转换</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var NAMES = {aliceblue:'#f0f8ff',antiquewhite:'#faebd7',aqua:'#00ffff',aquamarine:'#7fffd4',azure:'#f0ffff',beige:'#f5f5dc',bisque:'#ffe4c4',black:'#000000',blanchedalmond:'#ffebcd',blue:'#0000ff',blueviolet:'#8a2be2',brown:'#a52a2a',burlywood:'#deb887',cadetblue:'#5f9ea0',chartreuse:'#7fff00',chocolate:'#d2691e',coral:'#ff7f50',cornflowerblue:'#6495ed',cornsilk:'#fff8dc',crimson:'#dc143c',cyan:'#00ffff',darkblue:'#00008b',darkcyan:'#008b8b',darkgoldenrod:'#b8860b',darkgray:'#a9a9a9',darkgreen:'#006400',darkkhaki:'#bdb76b',darkmagenta:'#8b008b',darkolivegreen:'#556b2f',darkorange:'#ff8c00',darkorchid:'#9932cc',darkred:'#8b0000',darksalmon:'#e9967a',darkseagreen:'#8fbc8f',darkslateblue:'#483d8b',darkslategray:'#2f4f4f',darkturquoise:'#00ced1',darkviolet:'#9400d3',deeppink:'#ff1493',deepskyblue:'#00bfff',dimgray:'#696969',dodgerblue:'#1e90ff',firebrick:'#b22222',floralwhite:'#fffaf0',forestgreen:'#228b22',fuchsia:'#ff00ff',gainsboro:'#dcdcdc',ghostwhite:'#f8f8ff',gold:'#ffd700',goldenrod:'#daa520',gray:'#808080',green:'#008000',greenyellow:'#adff2f',honeydew:'#f0fff0',hotpink:'#ff69b4',indianred:'#cd5c5c',indigo:'#4b0082',ivory:'#fffff0',khaki:'#f0e68c',lavender:'#e6e6fa',lavenderblush:'#fff0f5',lawngreen:'#7cfc00',lemonchiffon:'#fffacd',lightblue:'#add8e6',lightcoral:'#f08080',lightcyan:'#e0ffff',lightgoldenrodyellow:'#fafad2',lightgray:'#d3d3d3',lightgreen:'#90ee90',lightpink:'#ffb6c1',lightsalmon:'#ffa07a',lightseagreen:'#20b2aa',lightskyblue:'#87cefa',lightslategray:'#778899',lightsteelblue:'#b0c4de',lightyellow:'#ffffe0',lime:'#00ff00',limegreen:'#32cd32',linen:'#faf0e6',magenta:'#ff00ff',maroon:'#800000',mediumaquamarine:'#66cdaa',mediumblue:'#0000cd',mediumorchid:'#ba55d3',mediumpurple:'#9370db',mediumseagreen:'#3cb371',mediumslateblue:'#7b68ee',mediumspringgreen:'#00fa9a',mediumturquoise:'#48d1cc',mediumvioletred:'#c71585',midnightblue:'#191970',mintcream:'#f5fffa',mistyrose:'#ffe4e1',moccasin:'#ffe4b5',navajowhite:'#ffdead',navy:'#000080',oldlace:'#fdf5e6',olive:'#808000',olivedrab:'#6b8e23',orange:'#ffa500',orangered:'#ff4500',orchid:'#da70d6',palegoldenrod:'#eee8aa',palegreen:'#98fb98',paleturquoise:'#afeeee',palevioletred:'#db7093',papayawhip:'#ffefd5',peachpuff:'#ffdab9',peru:'#cd853f',pink:'#ffc0cb',plum:'#dda0dd',powderblue:'#b0e0e6',purple:'#800080',rebeccapurple:'#663399',red:'#ff0000',rosybrown:'#bc8f8f',royalblue:'#4169e1',saddlebrown:'#8b4513',salmon:'#fa8072',sandybrown:'#f4a460',seagreen:'#2e8b57',seashell:'#fff5ee',sienna:'#a0522d',silver:'#c0c0c0',skyblue:'#87ceeb',slateblue:'#6a5acd',slategray:'#708090',snow:'#fffafa',springgreen:'#00ff7f',steelblue:'#4682b4',tan:'#d2b48c',teal:'#008080',thistle:'#d8bfd8',tomato:'#ff6347',turquoise:'#40e0d0',violet:'#ee82ee',wheat:'#f5deb3',white:'#ffffff',whitesmoke:'#f5f5f5',yellow:'#ffff00',yellowgreen:'#9acd32'};
+  var NAMES_LOWER = {}; for (var k in NAMES){ NAMES_LOWER[k] = NAMES[k]; }
+  function clamp(v,a,b){ return Math.min(b,Math.max(a,v)); }
+  function toHex2(n){ n = clamp(Math.round(n),0,255).toString(16); return n.length===1?'0'+n:n; }
+  function rgbToHex(r,g,b,a){ var s='#'+toHex2(r)+toHex2(g)+toHex2(b); if(a!==undefined&&a<1){ s+=toHex2(a*255); } return s; }
+  function hexToRgb(hex){ hex=hex.replace('#',''); if(hex.length===3||hex.length===4){ hex=hex.split('').map(function(c){return c+c;}).join(''); } var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16); var a=hex.length>=8?parseInt(hex.substr(6,2),16)/255:1; return {r:r,g:g,b:b,a:a}; }
+  function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255; var max=Math.max(r,g,b),min=Math.min(r,g,b),h,s,l=(max+min)/2; if(max===min){h=s=0;}else{ var d=max-min; s=l>0.5?d/(2-max-min):d/(max+min); if(max===r){h=(g-b)/d+(g<b?6:0);}else if(max===g){h=(b-r)/d+2;}else{h=(r-g)/d+4;} h/=6; } return {h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)}; }
+  function hslToRgb(h,s,l){ h/=360;s/=100;l/=100; var r,g,b; if(s===0){r=g=b=l;}else{ var hue2rgb=function(p,q,t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p;}; var q=l<0.5?l*(1+s):l+s-l*s; var p=2*l-q; r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3); } return {r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)}; }
+  function parseColor(str){
+    str=(str||'').trim(); if(!str) return null;
+    var m;
+    if(/^#?[0-9a-fA-F]{3}$/.test(str)||/^#?[0-9a-fA-F]{4}$/.test(str)||/^#?[0-9a-fA-F]{6}$/.test(str)||/^#?[0-9a-fA-F]{8}$/.test(str)){
+      var h=str[0]==='#'?str:('#'+str); if(h.length===4||h.length===5){ h=h.replace(/([0-9a-fA-F])/g,'$1$1'); } return hexToRgb(h);
+    }
+    m=str.match(/^rgba?\(([^)]+)\)$/i); if(m){ var p=m[1].split(',').map(function(x){return parseFloat(x);}); return {r:p[0],g:p[1],b:p[2],a:p[3]===undefined?1:p[3]}; }
+    m=str.match(/^hsla?\(([^)]+)\)$/i); if(m){ var q=m[1].split(',').map(function(x){return parseFloat(x);}); var rgb=hslToRgb(q[0],q[1],q[2]); rgb.a=q[3]===undefined?1:q[3]; return rgb; }
+    var key=str.toLowerCase(); if(NAMES[key]){ return hexToRgb(NAMES[key]); }
+    return null;
+  }
+  function colorName(rgb){ var hex=rgbToHex(rgb.r,rgb.g,rgb.b,1).toLowerCase(); for(var k in NAMES){ if(NAMES[k]===hex) return k; } return '-'; }
+  function render(){
+    var raw=getVal('colorInput'); var rgb=parseColor(raw);
+    var prev=document.getElementById('colorPreview'); var out=document.getElementById('colorResult');
+    if(!rgb){ prev.style.background='transparent'; prev.style.color='var(--text-muted)'; prev.textContent='预览'; out.innerHTML='<span style="color:var(--text-muted)">输入颜色后自动转换</span>'; return; }
+    var hex=rgbToHex(rgb.r,rgb.g,rgb.b,rgb.a); var hsl=rgbToHsl(rgb.r,rgb.g,rgb.b);
+    var rgbStr='rgb('+rgb.r+','+rgb.g+','+rgb.b+(rgb.a<1?','+rgb.a:'')+')';
+    var hslStr='hsl('+hsl.h+','+hsl.s+'%,'+hsl.l+'%'+(rgb.a<1?'/'+rgb.a:'')+')';
+    prev.style.background=hex; prev.style.color=(hsl.l>55?'#222':'#fff'); prev.textContent=hex;
+    var name=colorName(rgb);
+    out.innerHTML='<div style="display:grid;grid-template-columns:90px 1fr;gap:6px 10px;align-items:center">'+
+      '<b>Hex</b><code>'+hex+'</code>'+
+      '<b>RGB</b><code>'+rgbStr+'</code>'+
+      '<b>HSL</b><code>'+hslStr+'</code>'+
+      '<b>Name</b><code>'+name+'</code></div>';
+  }
+  window.colorClear=function(){ setVal('colorInput',''); render(); };
+  window.colorSample=function(){ setVal('colorInput','#e6a23c'); render(); };
+  var el=document.getElementById('colorInput'); if(el){ el.addEventListener('input',render); }
+  render();
+})();
+</script>
+</div>
+
+<section class="seo-content">
+  <h1>在线颜色转换工具（Hex / RGB / HSL / 名称）</h1>
+  <p>输入任意一种颜色表示，页面会同时给出另外三种写法与对应的 CSS 命名色，并实时显示色块预览。支持 #rgb、#rrggbb、#rrggbbaa 十六进制，rgb()/rgba()、hsl()/hsla() 以及 red、rebeccapurple 这类命名色。</p>
+  <p>所有转换都在浏览器里完成，颜色值不会发送给任何服务器。</p>
+  <h2>主要功能</h2>
+  <ul class="seo-features">
+    <li><b>多格式互转</b>：Hex、RGB、HSL 与 CSS 命名色之间一键互转，结果同步展示。</li>
+    <li><b>命名色识别</b>：自动识别 148 个 CSS 标准命名色，反过来也能用名称查到对应的十六进制。</li>
+    <li><b>实时预览</b>：输入即转换，色块随输入实时变化，深色浅色自动切换文字对比。</li>
+    <li><b>透明通道</b>：8 位十六进制与 rgba() 中的 alpha 通道一并保留与转换。</li>
+  </ul>
+  <h2>使用步骤</h2>
+  <ol class="seo-steps">
+    <li>在左侧输入框填入颜色，可以是 #ff0000、rgb(255,0,0)、hsl(0,100%,50%) 或 red。</li>
+    <li>右侧会同步显示 Hex、RGB、HSL 与命名色四种表示。</li>
+    <li>点&quot;复制&quot;按钮取走需要的一种格式。</li>
+  </ol>
+  <h2>常见问题</h2>
+  <div class="faq">
+    <details><summary>Hex 和 RGB 有什么区别？</summary><p>它们是同一个颜色的两种写法：Hex 用十六进制表示红绿蓝三个分量，RGB 用十进制。#ff0000 与 rgb(255,0,0) 是完全等价的红色，只是书写习惯不同。</p></details>
+    <details><summary>8 位十六进制里的最后两位是什么？</summary><p>最后两位是 alpha（透明度）通道，两位十六进制表示 0~255 的透明度，对应 rgba() 里的第四个参数，00 表示完全透明、ff 表示完全不透明。</p></details>
+    <details><summary>为什么有些颜色没有命名色？</summary><p>CSS 只定义了 148 个命名色（如 red、blue、rebeccapurple），绝大多数颜色没有对应的英文名称，因此这一类会显示&quot;-&quot;，改用 Hex/RGB/HSL 表示即可。</p></details>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../">首页</a><a href="../hotnews/">今日热榜</a><a href="../go-cheatsheet/">Go 速查表</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../color/">颜色转换</a><a href="../case/">命名风格</a><a href="../jwt/">JWT 解码</a><a href="../yaml/">JSON↔YAML</a><a href="../toml/">JSON↔TOML</a><a href="../csv/">JSON↔CSV</a><a href="../blog/">博客</a><a href="../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<script>
+// json-tools.js
+// json-tools.js — JSON format, compress, validate, diff, convert, JSONPath, tree
+// ============================================================
+// DEMO DATA
+// ============================================================
+const demoJson = JSON.stringify({"name":"JSON Tools","version":"1.0.0","author":{"name":"Dev","email":"dev@example.com"},"tags":["json","formatter"],"settings":{"theme":"light","indent":4}}, null, 2);
+const demoJson2 = JSON.stringify({"name":"JSON Tools Pro","version":"2.0.0","author":{"name":"Dev Team","email":"team@example.com"},"tags":["json","formatter","diff"],"settings":{"theme":"dark","indent":2}}, null, 2);
+const jsonPathDemoData = JSON.stringify({"store":{"name":"图书商店","books":[{"title":"JS高级编程","price":89.9,"author":"Nicholas"},{"title":"Node.js深入浅出","price":69.9,"author":"朴灵"}],"location":{"city":"北京","address":"海淀区"}}}, null, 2);
+
+// ============================================================
+// 1. JSON TOOLS PAGE
+// ============================================================
+let jsonCurrentOp = 'format';
+let jsonTreeCollapsed = {}, jsonTreeData = null;
+
+function switchJsonTab(tabName) {
+  document.querySelectorAll('.json-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.json-tab-content').forEach(c => c.classList.remove('active'));
+  const tabBtn = document.querySelector(`.json-tab[data-tab="${tabName}"]`);
+  const tabContent = document.getElementById('jsonTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+  // Refresh editors after switching (they may have been 0-height when hidden)
+  setTimeout(() => {
+    if (tabName === 'diff') { editors['diffInputA']?.refresh(); editors['diffInputB']?.refresh(); }
+    if (tabName === 'convert') { editors['convertInput']?.refresh(); editors['convertOutput']?.refresh(); }
+    if (tabName === 'jsonpath') { editors['jsonpathInput']?.refresh(); }
+    resizeAllEditors();
+  }, 100);
+}
+
+function initJsonPage() {
+  // Create all editors
+  createCM('mainJsonInput');
+  createCM('diffInputA'); createCM('diffInputB');
+  createCM('convertInput'); createCM('convertOutput', true);
+  createCM('jsonpathInput');
+
+  // Tab click handlers
+  document.querySelectorAll('.json-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchJsonTab(tab.dataset.tab));
+  });
+
+  // Basic ops button handlers
+  document.querySelectorAll('#jsonOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#jsonOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      jsonCurrentOp = btn.dataset.op;
+      updateJsonOptions();
+      runJsonOp(jsonCurrentOp);
+    };
+  });
+  updateJsonOptions();
+
+  // Load demo data（延迟载入：若用户在这 300ms 内已经开始输入，就不要再覆盖他）
+  setTimeout(() => {
+    if (getVal('mainJsonInput').trim()) return;
+    setVal('mainJsonInput', demoJson); runJsonOp('format');
+    setVal('diffInputA', demoJson); setVal('diffInputB', demoJson2);
+    setVal('convertInput', demoJson);
+    setVal('jsonpathInput', jsonPathDemoData);
+    document.getElementById('jsonpathExpr').value = '$.store.books[0].title';
+  }, 300);
+}
+
+function updateJsonOptions() {
+  const o = document.getElementById('jsonOpOptions');
+  const titles = {format:'格式化结果',compress:'压缩结果',validate:'校验结果',sort:'排序结果',escape:'转义结果',tree:'树形视图'};
+  document.getElementById('jsonResultTitle').textContent = titles[jsonCurrentOp] || '结果';
+  switch (jsonCurrentOp) {
+    case 'format': o.innerHTML = '<span style="color:var(--text-secondary)">缩进:</span><select id="jsonIndent" onchange="runJsonOp(\'format\')"><option value="2">2空格</option><option value="4" selected>4空格</option><option value="tab">Tab</option></select>'; break;
+    case 'compress': case 'validate': o.innerHTML = ''; break;
+    case 'sort': o.innerHTML = '<span style="color:var(--text-secondary)">顺序:</span><select id="jsonSortOrder" onchange="runJsonOp(\'sort\')"><option value="asc">升序 A-Z</option><option value="desc">降序 Z-A</option></select>'; break;
+    case 'escape': o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runJsonOp(\'escape\')">转义</button><button class="btn btn-sm btn-primary" onclick="runJsonOp(\'unescape\')">去转义</button>'; break;
+    case 'tree': o.innerHTML = '<button class="btn btn-sm" onclick="jsonTreeExpandAll()">展开全部</button><button class="btn btn-sm" onclick="jsonTreeCollapseAll()">折叠全部</button>'; break;
+  }
+}
+
+function runJsonOp(op) {
+  const input = getVal('mainJsonInput');
+  if (!input.trim()) { toast('请先输入 JSON','error'); return; }
+  switch (op) {
+    case 'format': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const ind = document.getElementById('jsonIndent')?.value || '4';
+      const istr = ind === 'tab' ? '\t' : parseInt(ind);
+      const out = JSON.stringify(r.data, null, istr);
+      showJsonResult(out);
+      showJsonStats('📝 ' + formatBytes(new TextEncoder().encode(out).length));
+      toast('格式化完成'); break;
+    }
+    case 'compress': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const out = JSON.stringify(r.data);
+      const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(out).length;
+      showJsonResult(out);
+      showJsonStats('📊 ' + formatBytes(inS) + ' → ' + formatBytes(outS) + ' · 减小 ' + (inS>0?((1-outS/inS)*100).toFixed(1):0) + '%');
+      toast('压缩完成'); break;
+    }
+    case 'validate': {
+      const r = safeParse(input);
+      if (r.success) {
+        const d = r.data;
+        const t = Array.isArray(d) ? 'array[' + d.length + ']' : d === null ? 'null' : typeof d === 'object' ? 'object{' + Object.keys(d).length + ' keys}' : typeof d;
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card success"><div style="font-size:16px">✅ JSON 格式正确</div><div class="struct-badges"><span class="struct-badge">📦 ' + t + '</span><span class="struct-badge">📝 ' + formatBytes(new TextEncoder().encode(input).length) + '</span></div></div>';
+        hideJsonStats(); toast('✅ 校验通过');
+      } else {
+        document.getElementById('jsonResultContent').innerHTML = '<div class="validate-card error"><div style="font-size:16px">❌ JSON 格式错误</div><div>' + escHtml(r.error) + '</div></div>';
+        hideJsonStats(); toast('校验失败','error');
+      }
+      break;
+    }
+    case 'sort': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      const ord = document.getElementById('jsonSortOrder')?.value || 'asc';
+      const sorted = deepSortKeys(r.data, ord);
+      showJsonResult(JSON.stringify(sorted, null, 2));
+      showJsonStats('🔤 已按 key <b>' + (ord==='asc'?'升序':'降序') + '</b> 递归排序');
+      toast('排序完成'); break;
+    }
+    case 'escape':
+      showJsonResult(JSON.stringify(input).slice(1, -1));
+      showJsonStats('🔒 已转义特殊字符');
+      toast('转义完成'); break;
+    case 'unescape': {
+      let res = '';
+      for (let i = 0; i < input.length; i++) {
+        if (input[i] === '\\' && i + 1 < input.length) {
+          switch (input[i + 1]) {
+            case 'n': res += '\n'; i++; break; case 't': res += '\t'; i++; break;
+            case 'r': res += '\r'; i++; break; case 'f': res += '\f'; i++; break;
+            case 'b': res += '\b'; i++; break; case '"': res += '"'; i++; break;
+            case "'": res += "'"; i++; break; case '\\': res += '\\'; i++; break;
+            case '/': res += '/'; i++; break;
+            case 'u':
+              if (i + 5 < input.length) {
+                const h = input.substring(i + 2, i + 6);
+                if (/^[0-9a-fA-F]{4}$/.test(h)) { res += String.fromCharCode(parseInt(h, 16)); i += 5; break; }
+              }
+              res += input[i]; break;
+            default: res += input[i];
+          }
+        } else { res += input[i]; }
+      }
+      showJsonResult(res); showJsonStats('🔓 已去除转义'); toast('去转义完成'); break;
+    }
+    case 'tree': {
+      const r = safeParse(input);
+      if (!r.success) { showJsonError(r); return; }
+      jsonTreeData = r.data; jsonTreeCollapsed = {}; hideJsonStats();
+      renderJsonTree(); toast('树形视图已生成'); break;
+    }
+  }
+}
+
+function showJsonResult(t) { document.getElementById('jsonResultContent').innerHTML = '<pre style="margin:0;white-space:pre-wrap;word-break:break-all">' + escHtml(t) + '</pre>'; }
+function showJsonError(r) { document.getElementById('jsonResultContent').innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(r.error) + '</span>'; hideJsonStats(); toast('JSON格式错误','error'); }
+function showJsonStats(h) { const e = document.getElementById('jsonInfoStats'); e.innerHTML = h; e.style.display = 'flex'; }
+function hideJsonStats() { document.getElementById('jsonInfoStats').style.display = 'none'; }
+function copyJsonResult() { copyTextById('jsonResultContent'); }
+
+function deepSortKeys(obj, order) {
+  if (Array.isArray(obj)) return obj.map(i => deepSortKeys(i, order));
+  if (obj !== null && typeof obj === 'object') {
+    const keys = Object.keys(obj).sort();
+    if (order === 'desc') keys.reverse();
+    const o = {};
+    keys.forEach(k => o[k] = deepSortKeys(obj[k], order));
+    return o;
+  }
+  return obj;
+}
+
+function renderJsonTree() {
+  const el = document.getElementById('jsonResultContent');
+  el.innerHTML = '<div class="tree-view tree-root">' + buildJsonTree(jsonTreeData, '') + '</div>';
+  el.querySelectorAll('.tree-toggle').forEach(t => {
+    t.onclick = function() {
+      jsonTreeCollapsed[this.dataset.path] = !jsonTreeCollapsed[this.dataset.path];
+      renderJsonTree();
+    };
+  });
+}
+
+function buildJsonTree(obj, path) {
+  if (obj === null) return '<span class="tree-value-null">null</span>';
+  if (Array.isArray(obj)) {
+    if (!obj.length) return '<span class="tree-bracket">[]</span>';
+    const c = jsonTreeCollapsed[path];
+    let h = '<span class="tree-toggle" data-path="' + path + '">' + (c ? '▶' : '▼') + '</span><span class="tree-bracket">[</span>';
+    if (c) { h += '<span class="tree-value-null"> … (' + obj.length + ')</span>'; }
+    else {
+      h += '<div class="tree-node">';
+      obj.forEach((v, i) => { h += '<div><span class="tree-key">' + i + '</span>: ' + buildJsonTree(v, path + '[' + i + ']') + '</div>'; });
+      h += '</div>';
+    }
+    h += '<span class="tree-bracket">]</span>'; return h;
+  }
+  if (typeof obj === 'object') {
+    const keys = Object.keys(obj);
+    if (!keys.length) return '<span class="tree-bracket">{}</span>';
+    const c = jsonTreeCollapsed[path];
+    let h = '<span class="tree-toggle" data-path="' + path + '">' + (c ? '▶' : '▼') + '</span><span class="tree-bracket">{</span>';
+    if (c) { h += '<span class="tree-value-null"> … (' + keys.length + ')</span>'; }
+    else {
+      h += '<div class="tree-node">';
+      keys.forEach(k => {
+        h += '<div><span class="tree-key">"' + escHtml(k) + '"</span>: ' + buildJsonTree(obj[k], (path ? path + '.' : '') + k) + '</div>';
+      });
+      h += '</div>';
+    }
+    h += '<span class="tree-bracket">}</span>'; return h;
+  }
+  if (typeof obj === 'string') return '<span class="tree-value-string">"' + escHtml(obj) + '"</span>';
+  if (typeof obj === 'number') return '<span class="tree-value-number">' + obj + '</span>';
+  if (typeof obj === 'boolean') return '<span class="tree-value-boolean">' + obj + '</span>';
+  return '<span>' + escHtml(String(obj)) + '</span>';
+}
+
+function jsonTreeExpandAll() { jsonTreeCollapsed = {}; if (jsonTreeData) renderJsonTree(); }
+function jsonTreeCollapseAll() {
+  if (!jsonTreeData) return;
+  jsonTreeCollapsed = {};
+  (function collect(o, p) {
+    jsonTreeCollapsed[p] = true;
+    if (Array.isArray(o)) o.forEach((v, i) => { if (v && typeof v === 'object') collect(v, p + '[' + i + ']'); });
+    else if (o && typeof o === 'object') Object.entries(o).forEach(([k, v]) => { if (v && typeof v === 'object') collect(v, (p ? p + '.' : '') + k); });
+  })(jsonTreeData, '');
+  renderJsonTree();
+}
+
+// JSON Diff
+function doJsonDiff() {
+  const a = getVal('diffInputA'), b = getVal('diffInputB'), el = document.getElementById('diffResult');
+  if (!a.trim() && !b.trim()) { el.innerHTML = '请输入 JSON'; return; }
+  const sem = document.getElementById('semanticDiff').checked;
+  let la, lb;
+  if (sem) {
+    const pa = safeParse(a), pb = safeParse(b);
+    if (pa.success && pb.success) {
+      la = JSON.stringify(deepSortKeys(pa.data, 'asc'), null, 2).split(NL);
+      lb = JSON.stringify(deepSortKeys(pb.data, 'asc'), null, 2).split(NL);
+    } else { la = a.split(NL); lb = b.split(NL); }
+  } else { la = a.split(NL); lb = b.split(NL); }
+  const diff = lcsDiff(la, lb);
+  let html = '', ch = 0;
+  diff.forEach(d => {
+    if (d.type === 'equal') html += '<div class="diff-line diff-equal">  ' + escHtml(d.value) + '</div>';
+    else if (d.type === 'remove') { html += '<div class="diff-line diff-remove">- ' + escHtml(d.value) + '</div>'; ch++; }
+    else { html += '<div class="diff-line diff-add">+ ' + escHtml(d.value) + '</div>'; ch++; }
+  });
+  el.innerHTML = ch === 0 ? '<div style="color:var(--success)">✅ 两个 JSON 完全一致</div>' + html : '<div style="color:var(--warning);margin-bottom:6px">🔍 发现 ' + ch + ' 处差异</div>' + html;
+}
+
+function lcsDiff(la, lb) {
+  const n = la.length, m = lb.length;
+  const dp = Array.from({length: n + 1}, () => Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = la[i - 1] === lb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+  const res = []; let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && la[i - 1] === lb[j - 1]) { res.unshift({type: 'equal', value: la[i - 1]}); i--; j--; }
+    else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) { res.unshift({type: 'add', value: lb[j - 1]}); j--; }
+    else { res.unshift({type: 'remove', value: la[i - 1]}); i--; }
+  }
+  return res;
+}
+
+// JSON Convert
+function doConvert() {
+  const input = getVal('convertInput'), from = document.getElementById('convertFrom').value, to = document.getElementById('convertTo').value;
+  if (!input.trim()) { toast('请输入内容','error'); return; }
+  if (from === to) { setVal('convertOutput', input); return; }
+  try {
+    let r;
+    switch (from + '->' + to) {
+      case 'json->csv': r = jsonToCsv(input); break;
+      case 'json->xml': r = jsonToXml(input); break;
+      case 'json->yaml': r = jsonToYaml(input); break;
+      case 'csv->json': r = csvToJson(input); break;
+      case 'xml->json': r = xmlToJson(input); break;
+      case 'yaml->json': r = yamlToJson(input); break;
+      default: r = {success: false, error: '不支持 ' + from + ' → ' + to};
+    }
+    setVal('convertOutput', r.success ? r.data : '// ' + r.error);
+    toast(r.success ? '转换完成' : r.error, r.success ? 'success' : 'error');
+  } catch (e) { setVal('convertOutput', '// ' + e.message); }
+}
+function swapConvert() { const f = document.getElementById('convertFrom'), t = document.getElementById('convertTo'); [f.value, t.value] = [t.value, f.value]; }
+
+function jsonToCsv(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  const arr = Array.isArray(r.data) ? r.data : [r.data];
+  if (!arr.length) return {success: true, data: ''};
+  const keys = Object.keys(arr[0]);
+  const rows = arr.map(obj => keys.map(k => {
+    const v = obj[k]; if (v === null || v === undefined) return '';
+    const st = String(v);
+    return st.includes(',') || st.includes('"') || st.includes(NL) ? '"' + st.replace(/"/g, '""') + '"' : st;
+  }).join(','));
+  return {success: true, data: [keys.join(','), ...rows].join(NL)};
+}
+
+function jsonToXml(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  function tx(n, o) {
+    if (o === null) return '<' + n + '>null</' + n + '>';
+    if (typeof o === 'string' || typeof o === 'number' || typeof o === 'boolean')
+      return '<' + n + '>' + String(o).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</' + n + '>';
+    if (Array.isArray(o)) return o.map((v, i) => tx('item', v)).join(NL);
+    let x = '<' + n + '>';
+    for (const [k, v] of Object.entries(o)) x += NL + '  ' + tx(k, v).split(NL).join(NL + '  ');
+    x += NL + '</' + n + '>'; return x;
+  }
+  return {success: true, data: tx('root', r.data)};
+}
+
+function jsonToYaml(s) {
+  const r = safeParse(s); if (!r.success) return r;
+  function ty(o, ind) {
+    const p = '  '.repeat(ind);
+    if (o === null) return 'null';
+    if (typeof o === 'string') return o.includes(':') || o.includes('#') ? '"' + o.replace(/"/g, '\\"') + '"' : o;
+    if (typeof o === 'number' || typeof o === 'boolean') return String(o);
+    if (Array.isArray(o)) { if (!o.length) return '[]'; return o.map(v => p + '- ' + ty(v, ind + 1).trimStart()).join(NL); }
+    const keys = Object.keys(o); if (!keys.length) return '{}';
+    return keys.map(k => p + k + ': ' + ty(o[k], ind + 1).trimStart()).join(NL);
+  }
+  return {success: true, data: ty(r.data, 0)};
+}
+
+function csvToJson(s) {
+  try {
+    const lines = s.trim().split(NL);
+    if (lines.length < 2) return {success: false, error: 'CSV至少需要标题行和一行数据'};
+    const parse = l => {
+      const r = []; let c = '', q = false;
+      for (let i = 0; i < l.length; i++) {
+        if (q) { if (l[i]==='"') { if (l[i+1]==='"') { c+='"'; i++; } else q = false; } else c += l[i]; }
+        else { if (l[i]==='"') q = true; else if (l[i]===',') { r.push(c.trim()); c = ''; } else c += l[i]; }
+      }
+      r.push(c.trim()); return r;
+    };
+    const h = parse(lines[0]), d = [];
+    for (let i = 1; i < lines.length; i++) {
+      const v = parse(lines[i]), o = {};
+      h.forEach((hk, idx) => {
+        let vv = v[idx] || '';
+        if (vv === 'true') vv = true; else if (vv === 'false') vv = false;
+        else if (vv === 'null' || vv === '') vv = null;
+        else if (!isNaN(vv) && vv !== '') vv = Number(vv);
+        o[hk] = vv;
+      });
+      d.push(o);
+    }
+    return {success: true, data: JSON.stringify(d, null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function xmlToJson(s) {
+  try {
+    const p = new DOMParser(), d = p.parseFromString(s, 'text/xml'), err = d.querySelector('parsererror');
+    if (err) return {success: false, error: 'XML解析失败'};
+    function nt(n) {
+      const o = {};
+      if (n.attributes) for (const a of n.attributes) o['@' + a.name] = a.value;
+      const ch = Array.from(n.childNodes).filter(cn => cn.nodeType === 1);
+      if (!ch.length) {
+        const t = n.textContent.trim();
+        const tv = t === 'true' ? true : t === 'false' ? false : t === 'null' ? null : isNaN(Number(t)) || t === '' ? t : Number(t);
+        return Object.keys(o).length ? (o['#text'] = tv, o) : tv;
+      }
+      const g = {};
+      ch.forEach(cn => { const nm = cn.tagName; if (!g[nm]) g[nm] = []; g[nm].push(nt(cn)); });
+      for (const [k, v] of Object.entries(g)) o[k] = v.length === 1 ? v[0] : v;
+      return o;
+    }
+    return {success: true, data: JSON.stringify(nt(d.documentElement), null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function yamlToJson(s) {
+  try {
+    const lines = s.split(NL);
+    function pv(idx, bi) {
+      if (idx >= lines.length) return {value: null, nextIdx: idx};
+      const l = lines[idx];
+      if (!l || !l.trim() || l.trim().startsWith('#')) return pv(idx + 1, bi);
+      const tr = l.trim(), ind = l.search(/\S/);
+      if (ind < bi) return {value: null, nextIdx: idx};
+      if (tr.startsWith('- ')) {
+        const items = []; let i = idx;
+        while (i < lines.length) {
+          const cl = lines[i];
+          if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+          if (cl.search(/\S/) < ind) break;
+          if (cl.trim().startsWith('- ')) {
+            const rest = cl.trim().substring(2).trim(), ci2 = cl.search('- ') + 2;
+            if (rest && !rest.endsWith(':')) { items.push(ps(rest)); i++; }
+            else { const sub = pv(i + 1, ci2); items.push(sub.value); i = sub.nextIdx; }
+          } else break;
+        }
+        return {value: items, nextIdx: i};
+      }
+      const ci = tr.indexOf(':');
+      if (ci >= 0) {
+        const key = tr.substring(0, ci).trim(), rest = tr.substring(ci + 1).trim(), obj = {};
+        if (rest) {
+          obj[key] = ps(rest);
+          let i = idx + 1;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) !== ind) break;
+            const sub = pv(i, ind);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(obj, sub.value);
+            i = sub.nextIdx;
+          }
+          return {value: obj, nextIdx: i};
+        } else {
+          const nested = {}; let i = idx + 1, ci2 = ind + 2;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) < ci2) break;
+            if (cl.search(/\S/) > ci2) { i++; continue; }
+            const sub = pv(i, ci2);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(nested, sub.value);
+            if (sub.nextIdx === i) break;
+            i = sub.nextIdx;
+          }
+          obj[key] = nested;
+          while (i < lines.length) {
+            const cl = lines[i];
+            if (!cl || !cl.trim() || cl.trim().startsWith('#')) { i++; continue; }
+            if (cl.search(/\S/) !== ind) break;
+            const sub = pv(i, ind);
+            if (sub.value && typeof sub.value === 'object' && !Array.isArray(sub.value)) Object.assign(obj, sub.value);
+            if (sub.nextIdx === i) break;
+            i = sub.nextIdx;
+          }
+          return {value: obj, nextIdx: i};
+        }
+      }
+      return {value: ps(tr), nextIdx: idx + 1};
+    }
+    return {success: true, data: JSON.stringify(pv(0, 0).value, null, 2)};
+  } catch (e) { return {success: false, error: e.message}; }
+}
+
+function ps(s) {
+  if (!s || s === 'null' || s === '~') return null;
+  if (s === 'true') return true; if (s === 'false') return false;
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.slice(1, -1);
+  const n = Number(s); return !isNaN(n) && s !== '' ? n : s;
+}
+
+// JSONPath
+function doJsonPath() {
+  const input = getVal('jsonpathInput'), expr = document.getElementById('jsonpathExpr').value.trim(), el = document.getElementById('jsonpathResult');
+  if (!input.trim()) { toast('请输入JSON','error'); return; }
+  if (!expr) { toast('请输入表达式','error'); return; }
+  const r = safeParse(input);
+  if (!r.success) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + r.error + '</span>'; return; }
+  try {
+    const results = evalJsonPath(r.data, expr);
+    if (!results.length) { el.innerHTML = '<span style="color:var(--text-secondary)">未找到匹配结果</span>'; }
+    else {
+      let html = '<div>找到 <b>' + results.length + '</b> 个结果:</div>';
+      results.forEach((res, i) => {
+        html += '<div style="margin:4px 0;padding:8px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px"><div style="font-size:11px;color:var(--text-secondary)">[' + i + '] ' + escHtml(res.path) + '</div><pre style="margin:0;white-space:pre-wrap">' + escHtml(JSON.stringify(res.value, null, 2)) + '</pre></div>';
+      });
+      el.innerHTML = html;
+    }
+    toast('找到 ' + results.length + ' 个结果');
+  } catch (e) { el.innerHTML = '<span style="color:var(--danger)">❌ ' + escHtml(e.message) + '</span>'; }
+}
+
+function evalJsonPath(root, expr) {
+  const norm = expr.startsWith('$') ? expr.substring(1) : expr;
+  const results = [];
+  walkJsonPath(root, norm, root, '$', results);
+  return results;
+}
+
+function walkJsonPath(cur, expr, root, cpath, results) {
+  if (!expr) { results.push({path: cpath, value: cur}); return; }
+  if (expr.startsWith('..')) {
+    const rest = expr.substring(2);
+    if (rest) walkJsonPath(cur, rest, root, cpath, results);
+    else results.push({path: cpath, value: cur});
+    if (Array.isArray(cur)) cur.forEach((v, i) => walkJsonPath(v, expr, root, cpath + '[' + i + ']', results));
+    else if (cur && typeof cur === 'object') Object.entries(cur).forEach(([k, v]) => walkJsonPath(v, expr, root, cpath + '.' + k, results));
+    return;
+  }
+  if (expr.startsWith('.')) {
+    const m = expr.match(/^\.(\w+)(.*)/);
+    if (m && cur && typeof cur === 'object' && m[1] in cur) walkJsonPath(cur[m[1]], m[2], root, cpath + '.' + m[1], results);
+    return;
+  }
+  if (expr.startsWith('[')) {
+    let d = 0, close = -1;
+    for (let i = 0; i < expr.length; i++) { if (expr[i] === '[') d++; else if (expr[i] === ']') { d--; if (d === 0) { close = i; break; } } }
+    const inner = expr.substring(1, close), rest = expr.substring(close + 1);
+    if (inner.startsWith('?(') && inner.endsWith(')')) {
+      const fexpr = inner.substring(2, inner.length - 1);
+      if (Array.isArray(cur)) cur.forEach((v, i) => { if (evalJsonFilter(v, fexpr)) walkJsonPath(v, rest, root, cpath + '[' + i + ']', results); });
+      return;
+    }
+    if (inner === '*') {
+      if (Array.isArray(cur)) cur.forEach((v, i) => walkJsonPath(v, rest, root, cpath + '[' + i + ']', results));
+      else if (cur && typeof cur === 'object') Object.entries(cur).forEach(([k, v]) => walkJsonPath(v, rest, root, cpath + '.' + k, results));
+      return;
+    }
+    if (/^-?\d+$/.test(inner)) {
+      const idx = parseInt(inner), actual = idx < 0 && Array.isArray(cur) ? cur.length + idx : idx;
+      if (Array.isArray(cur) && actual >= 0 && actual < cur.length) walkJsonPath(cur[actual], rest, root, cpath + '[' + idx + ']', results);
+      return;
+    }
+    if ((inner.startsWith("'") && inner.endsWith("'")) || (inner.startsWith('"') && inner.endsWith('"'))) {
+      const k = inner.slice(1, -1);
+      if (cur && typeof cur === 'object' && k in cur) walkJsonPath(cur[k], rest, root, cpath + '["' + k + '"]', results);
+      return;
+    }
+    if (inner.includes(',')) {
+      inner.split(',').map(s => parseInt(s.trim())).forEach(i => {
+        if (Array.isArray(cur) && i >= 0 && i < cur.length) walkJsonPath(cur[i], rest, root, cpath + '[' + i + ']', results);
+      });
+      return;
+    }
+    if (inner.includes(':')) {
+      const parts = inner.split(':'), start = parseInt(parts[0]) || 0, end = parts[1] ? parseInt(parts[1]) : undefined;
+      if (Array.isArray(cur)) { const e = end !== undefined ? end : cur.length; for (let i = start; i < e; i++) if (i >= 0 && i < cur.length) walkJsonPath(cur[i], rest, root, cpath + '[' + i + ']', results); }
+      return;
+    }
+  }
+}
+
+function evalJsonFilter(item, expr) {
+  const m = expr.match(/@\.(\w+)\s*(==|!=|>=|<=|>|<)\s*(.+)/);
+  if (!m) return true;
+  const field = m[1], op = m[2];
+  let cmp = m[3].trim();
+  if (cmp === 'true') cmp = true; else if (cmp === 'false') cmp = false;
+  else if (cmp === 'null') cmp = null;
+  else if (/^-?\d+(\.\d+)?$/.test(cmp)) cmp = Number(cmp);
+  else if ((cmp.startsWith("'") && cmp.endsWith("'")) || (cmp.startsWith('"') && cmp.endsWith('"'))) cmp = cmp.slice(1, -1);
+  const v = item[field];
+  switch (op) { case '==': return v == cmp; case '!=': return v != cmp; case '>': return v > cmp; case '<': return v < cmp; case '>=': return v >= cmp; case '<=': return v <= cmp; }
+  return false;
+}
+
+
+</script>
+<script>
+// text-diff.js
+// text-diff.js — Generic text diff (like Beyond Compare)
+
+function initDiffPage() {
+  // Load demo data（用户已经开始输入就不要覆盖）
+  const a = document.getElementById('textDiffInputA');
+  const b = document.getElementById('textDiffInputB');
+  if (a.value.trim() || b.value.trim()) { setTimeout(doTextDiff, 200); return; }
+  a.value =
+    'function hello(name) {\n  console.log("Hello, " + name);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Bye!");\n  return false;\n}\n\nvar x = 100;\nvar y = 200;';
+  document.getElementById('textDiffInputB').value =
+    'function hello(name, age) {\n  console.log("Hello, " + name);\n  console.log("Age: " + age);\n  return true;\n}\n\nfunction goodbye() {\n  console.log("Goodbye!");\n  return false;\n}\n\nvar x = 100;\nvar z = 300;';
+  setTimeout(doTextDiff, 200);
+}
+
+function doTextDiff() {
+  const a = document.getElementById('textDiffInputA').value;
+  const b = document.getElementById('textDiffInputB').value;
+  const resultEl = document.getElementById('textDiffResult');
+  const statsEl = document.getElementById('diffStatsLabel');
+
+  if (!a.trim() && !b.trim()) {
+    resultEl.innerHTML = '<span style="color:var(--text-muted)">请输入文本</span>';
+    statsEl.textContent = '差异结果';
+    return;
+  }
+
+  const caseSensitive = document.getElementById('diffCaseSensitive').checked;
+  const ignoreWS = document.getElementById('diffIgnoreWS').checked;
+  const viewMode = document.getElementById('diffViewMode').value;
+
+  let linesA = a.split(NL);
+  let linesB = b.split(NL);
+
+  if (!caseSensitive) { linesA = linesA.map(l => l.toLowerCase()); linesB = linesB.map(l => l.toLowerCase()); }
+  if (ignoreWS) { linesA = linesA.map(l => l.replace(/\s+/g, ' ').trim()); linesB = linesB.map(l => l.replace(/\s+/g, ' ').trim()); }
+
+  const diff = computeDiff(linesA, linesB);
+  const adds = diff.filter(d => d.type === 'add').length;
+  const rems = diff.filter(d => d.type === 'remove').length;
+  statsEl.textContent = '差异结果 — 新增 ' + adds + ' 行, 删除 ' + rems + ' 行';
+
+  if (adds === 0 && rems === 0) {
+    resultEl.innerHTML = '<div style="padding:12px;color:var(--success);font-weight:500">✅ 两个文本完全一致</div>';
+    return;
+  }
+
+  if (viewMode === 'sidebyside') {
+    resultEl.innerHTML = renderSideBySide(diff, a, b);
+  } else {
+    resultEl.innerHTML = renderUnified(diff);
+  }
+}
+
+function computeDiff(la, lb) {
+  const n = la.length, m = lb.length;
+  const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= m; j++)
+      dp[i][j] = la[i - 1] === lb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+
+  const result = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && la[i - 1] === lb[j - 1]) {
+      result.unshift({ type: 'equal', value: la[i - 1], lineA: i, lineB: j });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      result.unshift({ type: 'add', value: lb[j - 1], lineB: j });
+      j--;
+    } else {
+      result.unshift({ type: 'remove', value: la[i - 1], lineA: i });
+      i--;
+    }
+  }
+  return result;
+}
+
+function renderUnified(diff) {
+  let html = '<div class="diff-unified">';
+  let lineA = 1, lineB = 1;
+  let hunkStarted = false;
+
+  for (let i = 0; i < diff.length; i++) {
+    const d = diff[i];
+
+    // Show context: 3 lines before/after changes
+    const hasChangeNearby = diff.slice(Math.max(0, i - 3), Math.min(diff.length, i + 4))
+      .some(x => x.type !== 'equal');
+
+    if (d.type === 'equal' && !hasChangeNearby) {
+      if (!hunkStarted) {
+        html += '<div class="diff-unified-header">... 跳过 ' + (lineB - (d.lineB || 1)) + ' 行 ...</div>';
+        hunkStarted = true;
+      }
+      lineA++; lineB++;
+      continue;
+    }
+    hunkStarted = false;
+
+    if (d.type === 'add') {
+      html += '<div class="diff-unified-line diff-unified-add">+ ' + escHtml(d.value) + '</div>';
+      lineB++;
+    } else if (d.type === 'remove') {
+      html += '<div class="diff-unified-line diff-unified-remove">- ' + escHtml(d.value) + '</div>';
+      lineA++;
+    } else {
+      html += '<div class="diff-unified-line diff-unified-equal">  ' + escHtml(d.value) + '</div>';
+      lineA++; lineB++;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderSideBySide(diff, originalA, originalB) {
+  let html = '<table class="diff-side-table"><colgroup><col style="width:3%"><col style="width:43%"><col style="width:4%"><col style="width:3%"><col style="width:43%"></colgroup>';
+  let i = 0;
+  while (i < diff.length) {
+    const d = diff[i];
+
+    if (d.type === 'equal') {
+      const nA = d.lineA || 0, nB = d.lineB || 0;
+      html += '<tr><td class="diff-side-num">' + nA + '</td><td>' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num">' + nB + '</td><td>' + escHtml(d.value) + '</td></tr>';
+      i++;
+    } else if (d.type === 'remove' && i + 1 < diff.length && diff[i + 1].type === 'add') {
+      // Paired change: show word diff
+      const rem = d, add = diff[i + 1];
+      const wordDiff = computeWordDiff(rem.value, add.value);
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (rem.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + formatWordDiff(wordDiff, 'remove') + '</td>';
+      html += '<td class="diff-side-num">' + (add.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + formatWordDiff(wordDiff, 'add') + '</td>';
+      html += '</tr>';
+      i += 2;
+    } else if (d.type === 'remove') {
+      html += '<tr>';
+      html += '<td class="diff-side-num">' + (d.lineA || '') + '</td>';
+      html += '<td class="diff-side-remove">' + escHtml(d.value) + '</td>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '</tr>';
+      i++;
+    } else if (d.type === 'add') {
+      html += '<tr>';
+      html += '<td class="diff-side-num"></td><td class="diff-side-empty"></td>';
+      html += '<td class="diff-side-num">' + (d.lineB || '') + '</td>';
+      html += '<td class="diff-side-add">' + escHtml(d.value) + '</td>';
+      html += '</tr>';
+      i++;
+    }
+  }
+  html += '</table>';
+  return html;
+}
+
+function computeWordDiff(a, b) {
+  // Simple character-level diff for inline highlighting
+  const wordsA = a.split(/(\s+)/g);
+  const wordsB = b.split(/(\s+)/g);
+  const result = [];
+  let i = 0, j = 0;
+  while (i < wordsA.length || j < wordsB.length) {
+    if (i < wordsA.length && j < wordsB.length && wordsA[i] === wordsB[j]) {
+      result.push({ type: 'equal', value: wordsA[i] });
+      i++; j++;
+    } else if (i < wordsA.length) {
+      result.push({ type: 'remove', value: wordsA[i] });
+      i++;
+      if (j < wordsB.length) { result.push({ type: 'add', value: wordsB[j] }); j++; }
+    } else if (j < wordsB.length) {
+      result.push({ type: 'add', value: wordsB[j] });
+      j++;
+    }
+  }
+  return result;
+}
+
+function formatWordDiff(wordDiff, side) {
+  return wordDiff.map(w => {
+    if (w.type === 'equal') return escHtml(w.value);
+    if (w.type === side) return '<span class="word-' + side + '">' + escHtml(w.value) + '</span>';
+    return '';
+  }).join('');
+}
+
+function updateDiffView() {
+  doTextDiff();
+}
+
+function copyTextDiffResult() {
+  const el = document.getElementById('textDiffResult');
+  navigator.clipboard.writeText(el.textContent || '').then(
+    () => toast('已复制'), () => toast('复制失败', 'error')
+  );
+}
+
+</script>
+<script>
+// encode.js
+// encode.js — Base64, URL, Unicode, HTML entity, Hex encode/decode
+// ============================================================
+// 2. ENCODE/DECODE PAGE
+// ============================================================
+let encodeCurrentOp = 'base64', encodeMode = 'encode';
+
+function initEncodePage() {
+  document.querySelectorAll('#encodeOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#encodeOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      encodeCurrentOp = btn.dataset.op;
+      updateEncodeTitle();
+      runEncodeOp(encodeMode);
+    };
+  });
+  updateEncodeTitle();
+}
+
+function updateEncodeTitle() {
+  const names = {base64:'Base64', url:'URL', unicode:'Unicode', htmlentity:'HTML实体', hex:'Hex'};
+  document.getElementById('encodeResultTitle').textContent = names[encodeCurrentOp] + (encodeMode === 'encode' ? ' 编码' : ' 解码') + ' 结果';
+}
+
+function runEncodeOp(mode) {
+  encodeMode = mode;
+  updateEncodeTitle();
+  const input = document.getElementById('encodeInput').value;
+  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  let result = '';
+  try {
+    switch (encodeCurrentOp) {
+      case 'base64':
+        if (mode === 'encode') result = btoa(String.fromCharCode(...new TextEncoder().encode(input)));
+        else result = new TextDecoder().decode(Uint8Array.from(atob(input), c => c.charCodeAt(0)));
+        break;
+      case 'url':
+        result = mode === 'encode' ? encodeURIComponent(input) : decodeURIComponent(input);
+        break;
+      case 'unicode':
+        if (mode === 'encode') { for (let i = 0; i < input.length; i++) { const c = input.charCodeAt(i); result += c > 127 ? '\\u' + c.toString(16).padStart(4, '0') : input[i]; } }
+        else result = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+        break;
+      case 'htmlentity':
+        if (mode === 'encode') result = input.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        else { const ta = document.createElement('textarea'); ta.innerHTML = input; result = ta.value; }
+        break;
+      case 'hex':
+        // 必须按 UTF-8 字节走：原实现用 charCodeAt 输出 UTF-16 码元，
+        // 「中」会编成 4e2d（4 个十六进制位），而解码端每次只读 2 位，
+        // 于是解出 'N-' 这种乱码——编码与解码不对称，中文无法往返。
+        if (mode === 'encode') {
+          result = Array.from(new TextEncoder().encode(input))
+            .map(b => b.toString(16).padStart(2, '0')).join(' ');
+        } else {
+          const pairs = input.replace(/[^0-9a-fA-F]/g, '').match(/[0-9a-fA-F]{1,2}/g) || [];
+          result = new TextDecoder().decode(Uint8Array.from(pairs.map(h => parseInt(h, 16))));
+        }
+        break;
+    }
+    document.getElementById('encodeResult').textContent = result;
+    toast(mode === 'encode' ? '编码完成' : '解码完成');
+  } catch (e) {
+    document.getElementById('encodeResult').textContent = '❌ 错误: ' + e.message;
+    toast('操作失败，请检查输入','error');
+  }
+}
+
+
+</script>
+<script>
+// regex.js
+// regex.js — Regular expression tester
+// ============================================================
+// 3. REGEX PAGE
+// ============================================================
+function setRegexPattern(pattern) {
+  document.getElementById('regexPattern').value = pattern;
+  liveRegex();
+}
+
+function initRegexPage() {
+  const input = document.getElementById('regexInput');
+  const pattern = document.getElementById('regexPattern');
+  // 用户已经开始输入就不要覆盖
+  if (input.value.trim() || pattern.value.trim()) { setTimeout(liveRegex, 200); return; }
+  input.value = 'test@example.com\nadmin@site.cn\n\n联系电话: 13812345678\n网址: https://www.example.com/path';
+  pattern.value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
+  setTimeout(liveRegex, 200);
+}
+
+function liveRegex() {
+  const pattern = document.getElementById('regexPattern').value;
+  const input = document.getElementById('regexInput').value;
+  const resultEl = document.getElementById('regexResult');
+  const countEl = document.getElementById('regexMatchCount');
+  const replaceEl = document.getElementById('regexReplaceResult');
+  const replacePanel = document.getElementById('regexReplacePanel');
+
+  if (!pattern.trim()) { resultEl.innerHTML = '<span style="color:var(--text-muted)">输入正则表达式</span>'; countEl.textContent = ''; replaceEl.innerHTML = ''; return; }
+  try {
+    let flags = '';
+    if (document.getElementById('regexFlagG').checked) flags += 'g';
+    if (document.getElementById('regexFlagI').checked) flags += 'i';
+    if (document.getElementById('regexFlagM').checked) flags += 'm';
+    if (document.getElementById('regexFlagS').checked) flags += 's';
+    if (document.getElementById('regexFlagU').checked) flags += 'u';
+    const re = new RegExp(pattern, flags);
+    const matches = [...input.matchAll(re)];
+    countEl.textContent = matches.length > 0 ? '(' + matches.length + ' 个匹配)' : '(无匹配)';
+
+    if (matches.length === 0) {
+      resultEl.innerHTML = '<span style="color:var(--text-secondary)">无匹配结果</span>';
+    } else {
+      const hasGroups = matches[0].length > 1;
+      let html = '';
+      matches.forEach((m, idx) => {
+        html += '<div class="match-group"><span class="group-label">匹配 ' + (idx + 1) + ':</span> <span class="group-val">' + escHtml(m[0]) + '</span>';
+        html += '<span style="font-size:10px;color:var(--text-muted);margin-left:8px">位置 ' + m.index + ', 长度 ' + m[0].length + '</span>';
+        if (hasGroups) {
+          for (let g = 1; g < m.length; g++) {
+            html += '<div style="margin:2px 0 0 12px"><span class="group-label">组 ' + g + ':</span> <span class="group-val">' + (m[g] !== undefined ? escHtml(m[g]) : '&lt;未匹配&gt;') + '</span></div>';
+          }
+        }
+        html += '</div>';
+      });
+      resultEl.innerHTML = html;
+    }
+
+    if (replacePanel.style.display !== 'none') {
+      const replaceWith = document.getElementById('regexReplaceWith').value;
+      try {
+        const replaced = input.replace(re, replaceWith);
+        replaceEl.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(replaced) + '</pre>';
+      } catch (e) { replaceEl.innerHTML = '<span style="color:var(--danger)">替换错误: ' + escHtml(e.message) + '</span>'; }
+    }
+  } catch (e) {
+    resultEl.innerHTML = '<span style="color:var(--danger)">正则表达式错误: ' + escHtml(e.message) + '</span>';
+    countEl.textContent = '(错误)';
+  }
+}
+
+function toggleReplacePanel() {
+  const panel = document.getElementById('regexReplacePanel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  if (panel.style.display !== 'none') liveRegex();
+}
+
+
+</script>
+<script>
+// timestamp.js
+// timestamp.js — Unix timestamp converter
+// ============================================================
+// 4. TIMESTAMP PAGE
+// ============================================================
+let tsCurrentFmt = 'iso';
+
+function initTimestampPage() {
+  document.querySelectorAll('#tsOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#tsOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tsCurrentFmt = btn.dataset.op;
+      document.getElementById('tsResultTitle').textContent = {iso:'ISO 8601 格式', rfc:'RFC 2822 格式', local:'本地格式', utc:'UTC 格式'}[tsCurrentFmt];
+      updateTsDisplay();
+    };
+  });
+  document.getElementById('dtInput').value = new Date().toISOString().slice(0, 16);
+  updateTsClock();                     // 立即刷一次，否则时钟要等 1 秒才从 "--" 变成数字
+  setInterval(updateTsClock, 1000);
+}
+
+function updateTsClock() {
+  const now = new Date();
+  // 不要用 toLocaleString()：它会按本地习惯加千位分隔符（1,700,000,000），
+  // 复制出来不是合法数字，粘进代码就报错。时间戳要的是可直接复制的纯数字。
+  document.getElementById('liveClock').textContent = String(Math.floor(now.getTime() / 1000));
+  document.getElementById('liveClockMs').textContent = String(now.getTime());
+  updateTsDisplay();
+}
+
+function updateTsDisplay() {
+  const now = new Date();
+  const tz = document.getElementById('tsTimezone').value;
+  let d;
+  try {
+    if (tz === 'local' || tz === 'UTC') {
+      d = tz === 'UTC' ? new Date(now.toUTCString()) : now;
+    } else {
+      d = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    }
+  } catch (e) { d = now; }
+  let result = '';
+  switch (tsCurrentFmt) {
+    case 'iso': result = d.toISOString(); break;
+    case 'rfc': result = d.toUTCString().replace('GMT', '+0000'); break;
+    case 'local': result = d.toString(); break;
+    case 'utc': result = d.toUTCString(); break;
+  }
+  document.getElementById('tsCurrentTime').textContent = result;
+}
+
+function tsToDate() {
+  const input = document.getElementById('tsInput').value.trim();
+  if (!input) { document.getElementById('tsToDateResult').textContent = '请输入时间戳'; return; }
+  let ts = parseInt(input);
+  // 秒 / 毫秒自动识别。原阈值写成 1e15（16 位），13 位的毫秒时间戳根本触发不到，
+  // 于是被当成秒解析，1700000000000 会算出公元 55840 年。
+  // 改用 1e11 作为分界：1e11 秒是公元 5138 年（现实中不会有人这么输入），
+  // 1e11 毫秒是 1973 年，因此 >= 1e11 一律按毫秒处理。
+  if (Math.abs(ts) >= 1e11) ts = Math.floor(ts / 1000);
+  const d = new Date(ts * 1000);
+  if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = '无效的时间戳'; return; }
+  document.getElementById('tsToDateResult').innerHTML =
+    '<b>本地:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
+    '<b>年:</b> ' + d.getFullYear() + ' <b>月:</b> ' + (d.getMonth()+1) + ' <b>日:</b> ' + d.getDate() + ' ' +
+    '<b>时:</b> ' + d.getHours() + ' <b>分:</b> ' + d.getMinutes() + ' <b>秒:</b> ' + d.getSeconds() + ' ' +
+    '<b>星期:</b> ' + ['日','一','二','三','四','五','六'][d.getDay()];
+}
+
+function dateToTs() {
+  const input = document.getElementById('dtInput').value;
+  if (!input) { document.getElementById('dateToTsResult').textContent = '请选择日期时间'; return; }
+  const d = new Date(input);
+  document.getElementById('dateToTsResult').innerHTML =
+    '<b>秒:</b> ' + Math.floor(d.getTime()/1000) + '<br><b>毫秒:</b> ' + d.getTime() + '<br><b>ISO8601:</b> ' + d.toISOString();
+}
+
+
+</script>
+<script>
+// hash.js
+// hash.js — MD5, SHA, HMAC, AES encryption/hashing
+// ============================================================
+// 5. HASH/CRYPTO PAGE
+// ============================================================
+let hashCurrentOp = 'md5';
+
+function initHashPage() {
+  document.querySelectorAll('#hashOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#hashOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      hashCurrentOp = btn.dataset.op;
+      updateHashOptions();
+      doHash();
+    };
+  });
+  updateHashOptions();
+}
+
+function updateHashOptions() {
+  const o = document.getElementById('hashOpOptions');
+  const titles = {md5:'MD5 哈希', sha1:'SHA-1 哈希', sha256:'SHA-256 哈希', sha512:'SHA-512 哈希', hmac:'HMAC 哈希', aes:'AES 加解密'};
+  document.getElementById('hashResultTitle').textContent = titles[hashCurrentOp] || '哈希结果';
+  if (hashCurrentOp === 'hmac') {
+    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="hmacKey" placeholder="输入HMAC密钥" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select>';
+  } else if (hashCurrentOp === 'aes') {
+    o.innerHTML = '<span style="font-size:12px">密钥:</span><input type="text" class="format-select" id="aesKey" placeholder="AES密钥" style="width:180px"><select class="format-select" id="aesMode"><option value="encrypt">加密</option><option value="decrypt">解密</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">执行</button>';
+  } else {
+    o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="doHash()">计算哈希</button>';
+  }
+}
+
+async function doHash() {
+  const input = document.getElementById('hashInput').value;
+  const resEl = document.getElementById('hashResult');
+  if (!input.trim() && hashCurrentOp !== 'aes') { resEl.textContent = '请输入文本'; return; }
+  try {
+    let result;
+    switch (hashCurrentOp) {
+      case 'md5': result = md5(input); break;
+      case 'sha1': result = await shaHash('SHA-1', input); break;
+      case 'sha256': result = await shaHash('SHA-256', input); break;
+      case 'sha512': result = await shaHash('SHA-512', input); break;
+      case 'hmac':
+        const key = document.getElementById('hmacKey').value;
+        const algo = document.getElementById('hmacAlgo').value;
+        if (!key) { resEl.textContent = '请输入 HMAC 密钥'; return; }
+        result = await hmacHash(algo, key, input);
+        break;
+      case 'aes':
+        const aesKey = document.getElementById('aesKey').value;
+        const mode = document.getElementById('aesMode').value;
+        if (!aesKey) { resEl.textContent = '请输入 AES 密钥'; return; }
+        result = await aesCrypt(aesKey, input, mode);
+        break;
+    }
+    resEl.textContent = result;
+    toast('计算完成');
+  } catch (e) {
+    resEl.textContent = '错误: ' + e.message;
+    toast('计算失败','error');
+  }
+}
+
+// MD5（RFC 1321）。
+//
+// 这里原本是一段被压缩坏掉的实现，有三处缺陷，导致「无论输入什么都返回同一个值」：
+//   1. 块数算成 `s.length+8>>6`，少了 +1 —— 56 字符以下的输入一次主循环都不跑，
+//      直接返回初始状态，输出恒为 0123456789abcdeffedcba9876543210；
+//   2. 循环左移写成 `<<(h=void 0)`，位移量恒为 0，轮函数完全失效；
+//   3. 长度字段写在 `p[a<<4]`（越过最后一个块），而不是末块的第 14 个字。
+// 另外它用 charCodeAt 取 UTF-16 码元，中文会算出与标准 MD5 不一致的结果。
+// 现改为干净可读、按 UTF-8 字节运算的标准实现。
+const MD5_S = [
+  7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+  5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+  4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+  6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+];
+const MD5_K = [
+  0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+  0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+  0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+  0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+  0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+  0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+  0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+  0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
+];
+
+function md5(input) {
+  const bytes = new TextEncoder().encode(input);
+  const bitLen = bytes.length * 8;
+  // 补齐到 64 字节整数倍；末 8 字节存比特长度（小端）
+  const buf = new Uint8Array((((bytes.length + 8) >> 6) + 1) << 6);
+  buf.set(bytes);
+  buf[bytes.length] = 0x80;
+  const dv = new DataView(buf.buffer);
+  dv.setUint32(buf.length - 8, bitLen >>> 0, true);
+  dv.setUint32(buf.length - 4, Math.floor(bitLen / 4294967296), true);
+
+  let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476;
+  const rotl = (x, c) => ((x << c) | (x >>> (32 - c))) >>> 0;
+  const w = new Uint32Array(16);
+
+  for (let off = 0; off < buf.length; off += 64) {
+    for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4, true);
+    let a = h0, b = h1, c = h2, d = h3;
+    for (let i = 0; i < 64; i++) {
+      let f, g;
+      if (i < 16) { f = (b & c) | (~b & d); g = i; }
+      else if (i < 32) { f = (d & b) | (~d & c); g = (5 * i + 1) & 15; }
+      else if (i < 48) { f = b ^ c ^ d; g = (3 * i + 5) & 15; }
+      else { f = c ^ (b | ~d); g = (7 * i) & 15; }
+      const tmp = d;
+      d = c; c = b;
+      b = (b + rotl((a + f + MD5_K[i] + w[g]) >>> 0, MD5_S[i])) >>> 0;
+      a = tmp;
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0;
+    h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
+  }
+  // MD5 输出按小端序拼接四个状态字
+  const word = n => {
+    let s = '';
+    for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0');
+    return s;
+  };
+  return word(h0) + word(h1) + word(h2) + word(h3);
+}
+
+async function shaHash(algo, input) {
+  const enc = new TextEncoder().encode(input);
+  const buf = await crypto.subtle.digest(algo, enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacHash(algo, key, input) {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: algo }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', k, enc.encode(input));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function aesCrypt(keyStr, input, mode) {
+  const enc = new TextEncoder();
+  const keyBytes = enc.encode(keyStr.padEnd(16).slice(0, 16));
+  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  if (mode === 'encrypt') {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(input));
+    const ct = new Uint8Array(encrypted);
+    return 'IV:' + Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('') + NL + '密文:' + Array.from(ct).map(b => b.toString(16).padStart(2, '0')).join('');
+  } else {
+    const lines = input.trim().split(NL);
+    if (lines.length < 2 || !lines[0].startsWith('IV:') || !lines[1].startsWith('密文:')) return '请输入完整的加密输出（含IV行和密文行）';
+    const iv = new Uint8Array(lines[0].replace('IV:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const ct = new Uint8Array(lines[1].replace('密文:', '').match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+    return new TextDecoder().decode(decrypted);
+  }
+}
+
+async function hashFile() {
+  const file = document.getElementById('hashFileInput').files[0];
+  const el = document.getElementById('hashFileResult');
+  if (!file) { el.innerHTML = '请选择文件'; return; }
+  try {
+    const buf = await file.arrayBuffer();
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    el.innerHTML = '<b>文件名:</b> ' + escHtml(file.name) + ' (' + formatBytes(file.size) + ')<br><b>SHA-256:</b> ' + hex;
+  } catch (e) { el.innerHTML = '文件哈希计算失败: ' + e.message; }
+}
+
+
+</script>
+<script>
+// formatter.js
+// formatter.js — HTML, CSS, JS, SQL, XML code formatter
+// 注意：这里必须先声明 codeDemos 对象。此前直接写 codeDemos.js = ... 会抛
+// ReferenceError，导致本文件后续所有函数（initFormatterPage / runCodeOp 等）
+// 都没有被定义，代码格式化页整页不可用。
+const codeDemos = {
+  html: '<div class="card"><h2 class="title">标题</h2><p>正文内容</p><ul><li>项目一</li><li>项目二</li></ul></div>',
+  css: '.card{padding:16px;border:1px solid #e1e5eb;border-radius:8px}.card .title{font-size:18px;color:#4a90d9;margin-bottom:8px}',
+  js: 'function hello(name){if(name){console.log("Hello, "+name+"!");return{greeted:true,name:name}}else{console.log("Hello!");return{greeted:false}}',
+  sql: 'SELECT u.id,u.name,u.email,o.total,o.created_at FROM users u INNER JOIN orders o ON u.id=o.user_id WHERE u.status=\'active\' AND o.total>100 GROUP BY u.id HAVING COUNT(o.id)>3 ORDER BY o.created_at DESC LIMIT 10',
+  xml: '<root><users><user id="1"><name>张三</name><email>zhangsan@example.com</email></user><user id="2"><name>李四</name><email>lisi@example.com</email></user></users></root>'
+};
+
+// ============================================================
+// 6. CODE FORMATTER PAGE
+// ============================================================
+let codeCurrentOp = 'html', codeCurrentMode = 'format';
+
+function initFormatterPage() {
+  document.querySelectorAll('#codeOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#codeOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      codeCurrentOp = btn.dataset.op;
+      updateCodeTitle();
+    };
+  });
+}
+
+function updateCodeTitle() {
+  const names = {html:'HTML', css:'CSS', js:'JavaScript', sql:'SQL', xml:'XML'};
+  document.getElementById('codeResultTitle').textContent = names[codeCurrentOp] + (codeCurrentMode === 'format' ? ' 格式化' : ' 压缩');
+}
+
+function runCodeOp(mode) {
+  codeCurrentMode = mode;
+  updateCodeTitle();
+  const input = document.getElementById('codeInput').value;
+  if (!input.trim()) { toast('请先输入代码','error'); return; }
+  const indent = document.getElementById('codeIndent')?.value || '4';
+  const istr = indent === 'tab' ? '\t' : ' '.repeat(parseInt(indent));
+  let result = '';
+  try {
+    if (mode === 'compress') {
+      result = input.replace(/\s+/g, ' ').trim();
+      if (codeCurrentOp === 'css') result = result.replace(/\s*([{}:;,])\s*/g, '$1');
+      else if (codeCurrentOp === 'html' || codeCurrentOp === 'xml') result = result.replace(/>\s+</g, '><');
+      else if (codeCurrentOp === 'js') result = result.replace(/\s*([{}();,:])\s*/g, '$1');
+      else if (codeCurrentOp === 'sql') result = result.replace(/\s+/g, ' ');
+    } else {
+      result = formatCode(input, codeCurrentOp, istr);
+    }
+    document.getElementById('codeResult').textContent = result;
+    const inS = new TextEncoder().encode(input).length, outS = new TextEncoder().encode(result).length;
+    document.getElementById('codeStats').innerHTML = '📝 ' + formatBytes(inS) + ' → ' + formatBytes(outS);
+    document.getElementById('codeStats').style.display = 'flex';
+    toast(mode === 'format' ? '格式化完成' : '压缩完成');
+  } catch (e) {
+    document.getElementById('codeResult').textContent = '❌ 错误: ' + e.message;
+    toast('格式化失败','error');
+  }
+}
+
+function loadCodeDemo() { document.getElementById('codeInput').value = codeDemos[codeCurrentOp] || codeDemos.html; }
+
+function formatCode(input, type, indent) {
+  switch (type) {
+    case 'html': return formatHtml(input, indent);
+    case 'css': return formatCss(input, indent);
+    case 'js': return formatJs(input, indent);
+    case 'sql': return formatSql(input, indent);
+    case 'xml': return formatXml(input, indent);
+    default: return input;
+  }
+}
+
+function formatHtml(input, indent) {
+  let result = '', depth = 0;
+  const tags = input.replace(/<!--[\s\S]*?-->/g, '').replace(/>\s+</g, '><').split(/(<[^>]+>)/g).filter(Boolean);
+  const selfClosing = /^(<area|<base|<br|<col|<embed|<hr|<img|<input|<link|<meta|<param|<source|<track|<wbr)/i;
+  for (let tag of tags) {
+    tag = tag.trim(); if (!tag) continue;
+    if (tag.startsWith('</')) { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + tag + NL; }
+    else if (tag.startsWith('<') && !selfClosing.test(tag) && !tag.endsWith('/>')) { result += indent.repeat(depth) + tag + NL; depth++; }
+    else if (tag.startsWith('<')) { result += indent.repeat(depth) + tag + NL; }
+    else { result += indent.repeat(depth) + tag + NL; }
+  }
+  return result.trim();
+}
+
+function formatCss(input, indent) {
+  let result = '', depth = 0;
+  const tokens = input.replace(/\/\*[\s\S]*?\*\//g, '').split(/([{;}])/g);
+  for (const token of tokens) {
+    const t = token.trim(); if (!t) continue;
+    if (t === '{') { result += ' {' + NL; depth++; }
+    else if (t === '}') { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + '}' + NL; }
+    else if (t === ';') { result += ';' + NL; }
+    else if (t.includes(':')) { result += indent.repeat(depth) + t; }
+    else { result += t; }
+  }
+  return result.trim();
+}
+
+function formatJs(input, indent) {
+  let result = '', depth = 0, i = 0;
+  while (i < input.length) {
+    const ch = input[i];
+    if (ch === '{' || ch === '[' || ch === '(') {
+      result += ch + NL; depth++;
+      result += indent.repeat(depth); i++;
+    } else if (ch === '}' || ch === ']' || ch === ')') {
+      depth = Math.max(0, depth - 1);
+      result = result.trimEnd();
+      result += NL + indent.repeat(depth) + ch; i++;
+    } else if (ch === ';') {
+      result += ';' + NL + indent.repeat(depth); i++;
+    } else if (ch === ',' && depth > 0) {
+      result += ', '; i++;
+    } else { result += ch; i++; }
+  }
+  return result;
+}
+
+function formatSql(input, indent) {
+  const keywords = ['SELECT','FROM','WHERE','AND','OR','JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','ON','GROUP BY','HAVING','ORDER BY','LIMIT','INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','CREATE TABLE','ALTER TABLE','DROP','UNION','ALL','AS','IN','NOT IN','BETWEEN','LIKE','IS NULL','IS NOT NULL','EXISTS','CASE','WHEN','THEN','ELSE','END'];
+  let result = input.replace(/\s+/g, ' ').trim();
+  keywords.forEach(kw => {
+    const re = new RegExp('\\b' + kw.replace(/ /g, '\\s+') + '\\b', 'gi');
+    result = result.replace(re, NL + kw.toUpperCase());
+  });
+  result = result.replace(/,\s*/g, ',' + NL + '  ');
+  return result.replace(/^\n/, '').trim();
+}
+
+function formatXml(input, indent) {
+  let result = '', depth = 0;
+  const tags = input.replace(/>\s+</g, '><').split(/(<[^?][^>]*>)/g).filter(Boolean);
+  for (let tag of tags) {
+    tag = tag.trim(); if (!tag) continue;
+    if (tag.startsWith('</')) { depth = Math.max(0, depth - 1); result += indent.repeat(depth) + tag + NL; }
+    else if (tag.startsWith('<?')) { result += tag + NL; }
+    else if (tag.endsWith('/>')) { result += indent.repeat(depth) + tag + NL; }
+    else { result += indent.repeat(depth) + tag + NL; depth++; }
+  }
+  return result.trim();
+}
+
+
+</script>
+<script>
+// string-tools.js
+// string-tools.js — String case, sort, dedup, replace, split/join tools
+// ============================================================
+// 7. STRING TOOLS PAGE
+// ============================================================
+let strCurrentOp = 'case';
+
+function initStringPage() {
+  document.querySelectorAll('#strOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#strOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      strCurrentOp = btn.dataset.op;
+      updateStrOptions();
+    };
+  });
+  updateStrOptions();
+}
+
+function updateStrOptions() {
+  const o = document.getElementById('strOpOptions');
+  const titles = {case:'大小写转换', sort:'排序结果', dedup:'去重结果', replace:'替换结果', splitjoin:'分割/合并', liner:'行操作'};
+  document.getElementById('strResultTitle').textContent = titles[strCurrentOp] || '结果';
+  switch (strCurrentOp) {
+    case 'case':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'upper\')">大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'lower\')">小写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'title\')">首字母大写</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'camel\')">驼峰命名</button>';
+      break;
+    case 'sort':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-asc\')">按行升序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-desc\')">按行降序</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'sort-len\')">按长度</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'shuffle\')">随机打乱</button>';
+      break;
+    case 'dedup':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'dedup\')">行去重</button><label class="checkbox-label"><input type="checkbox" id="strKeepEmpty">保留空行</label>';
+      break;
+    case 'replace':
+      o.innerHTML = '<span style="font-size:12px">查找:</span><input type="text" class="format-select" id="strFind" placeholder="文本或正则" style="width:150px"><span style="font-size:12px">替换:</span><input type="text" class="format-select" id="strReplace" placeholder="替换为" style="width:150px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'replace\')">替换</button>';
+      break;
+    case 'splitjoin':
+      o.innerHTML = '<span style="font-size:12px">分隔符:</span><input type="text" class="format-select" id="strSep" value="," style="width:80px"><button class="btn btn-sm btn-primary" onclick="runStrOp(\'split\')">分割</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'join\')">合并</button>';
+      break;
+    case 'liner':
+      o.innerHTML = '<button class="btn btn-sm btn-primary" onclick="runStrOp(\'addnum\')">添加行号</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'prefix\')">添加前缀</button><span style="font-size:12px"><input type="text" class="format-select" id="strLinerVal" placeholder="前缀/起始号" style="width:80px"></span><button class="btn btn-sm btn-primary" onclick="runStrOp(\'suffix\')">添加后缀</button><button class="btn btn-sm btn-primary" onclick="runStrOp(\'trim\')">去除首尾空格</button>';
+      break;
+  }
+}
+
+function autoStrCount() {
+  const t = document.getElementById('strInput').value;
+  document.getElementById('strStats').innerHTML = '字符: ' + t.length + ' | 单词: ' + t.split(/\s+/).filter(w => w.length).length + ' | 行: ' + t.split(NL).length + ' | 字节: ' + new TextEncoder().encode(t).length;
+}
+
+function runStrOp(op) {
+  const input = document.getElementById('strInput').value;
+  if (!input.trim()) { toast('请先输入文本','error'); return; }
+  const el = document.getElementById('strResult');
+  let result = '';
+  switch (op) {
+    case 'upper': result = input.toUpperCase(); break;
+    case 'lower': result = input.toLowerCase(); break;
+    case 'title': result = input.replace(/\b\w/g, c => c.toUpperCase()); break;
+    case 'camel': result = input.replace(/[-_\s]+(.)/g, (_, c) => c.toUpperCase()).replace(/^./, c => c.toLowerCase()); break;
+    case 'sort-asc': result = input.split(NL).sort().join(NL); break;
+    case 'sort-desc': result = input.split(NL).sort().reverse().join(NL); break;
+    case 'sort-len': result = input.split(NL).sort((a, b) => a.length - b.length).join(NL); break;
+    case 'shuffle':
+      const arr = input.split(NL);
+      for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+      result = arr.join(NL); break;
+    case 'dedup':
+      const keep = document.getElementById('strKeepEmpty')?.checked;
+      const lines = input.split(NL);
+      const seen = new Set();
+      result = lines.filter(l => { if (!keep && !l.trim()) return true; if (seen.has(l)) return false; seen.add(l); return true; }).join(NL);
+      break;
+    case 'replace':
+      const find = document.getElementById('strFind')?.value || '';
+      if (!find) { toast('请输入查找内容','error'); return; }
+      const repl = document.getElementById('strReplace')?.value || '';
+      try { result = input.replace(new RegExp(find, 'g'), repl); } catch (e) { result = input.split(find).join(repl); }
+      break;
+    case 'split':
+      const sep = document.getElementById('strSep')?.value || ',';
+      result = input.split(sep).map(s => s.trim()).join(NL); break;
+    case 'join':
+      const sep2 = document.getElementById('strSep')?.value || ',';
+      result = input.split(NL).filter(l => l.trim()).join(sep2); break;
+    case 'addnum':
+      const start = parseInt(document.getElementById('strLinerVal')?.value) || 1;
+      result = input.split(NL).map((l, i) => (start + i) + '. ' + l).join(NL); break;
+    case 'prefix':
+      const p = document.getElementById('strLinerVal')?.value || '';
+      result = input.split(NL).map(l => p + l).join(NL); break;
+    case 'suffix':
+      const s = document.getElementById('strLinerVal')?.value || '';
+      result = input.split(NL).map(l => l + s).join(NL); break;
+    case 'trim': result = input.split(NL).map(l => l.trim()).join(NL); break;
+  }
+  el.textContent = result;
+  toast('操作完成');
+}
+
+
+</script>
+<script>
+// generator.js
+// generator.js — UUID, password, QR code, Lorem Ipsum, sequence, random data
+// ============================================================
+// 8. GENERATOR PAGE
+// ============================================================
+let genCurrentOp = 'uuid';
+
+function initGeneratorPage() {
+  document.querySelectorAll('#genOpBtns .op-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#genOpBtns .op-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      genCurrentOp = btn.dataset.op;
+      updateGenConfig();
+    };
+  });
+  updateGenConfig();
+}
+
+function updateGenConfig() {
+  const cfg = document.getElementById('genConfig');
+  const titles = {uuid:'UUID 生成', password:'随机密码', qrcode:'二维码生成', lorem:'Lorem Ipsum', sequence:'数字序列', randomdata:'随机数据'};
+  document.getElementById('genResultTitle').textContent = titles[genCurrentOp] || '生成器';
+  switch (genCurrentOp) {
+    case 'uuid':
+      cfg.innerHTML = '<label class="form-label">版本</label><select class="format-select" id="uuidVersion"><option value="4">UUID v4 (随机)</option><option value="1">UUID v1 (时间戳)</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="uuidCount" value="5" min="1" max="100">';
+      break;
+    case 'password':
+      cfg.innerHTML = '<label class="form-label">长度</label><input type="number" class="num-input" id="pwdLen" value="16" min="4" max="128"><label class="form-label">数量</label><input type="number" class="num-input" id="pwdCount" value="5" min="1" max="50"><div class="row"><label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> 大写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> 小写字母</label><label class="checkbox-label"><input type="checkbox" id="pwdDigits" checked> 数字</label><label class="checkbox-label"><input type="checkbox" id="pwdSymbols"> 特殊字符</label></div>';
+      break;
+    case 'qrcode':
+      cfg.innerHTML = '<label class="form-label">内容 (文本或URL)</label><input type="text" class="expr-input" id="qrContent" value="https://www.example.com" style="width:100%"><label class="form-label">尺寸 (px)</label><input type="number" class="num-input" id="qrSize" value="200" min="100" max="600">';
+      break;
+    case 'lorem':
+      cfg.innerHTML = '<label class="form-label">类型</label><select class="format-select" id="loremType"><option value="paragraphs">段落</option><option value="sentences">句子</option><option value="words">单词</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="loremCount" value="3" min="1" max="100">';
+      break;
+    case 'sequence':
+      cfg.innerHTML = '<label class="form-label">起始值</label><input type="number" class="num-input" id="seqStart" value="1"><label class="form-label">结束值</label><input type="number" class="num-input" id="seqEnd" value="100"><label class="form-label">步长</label><input type="number" class="num-input" id="seqStep" value="1" min="1">';
+      break;
+    case 'randomdata':
+      cfg.innerHTML = '<label class="form-label">数据类型</label><select class="format-select" id="rdType"><option value="name">中文姓名</option><option value="email">邮箱</option><option value="phone">手机号</option><option value="idcard">身份证号</option><option value="address">地址</option></select><label class="form-label">数量</label><input type="number" class="num-input" id="rdCount" value="10" min="1" max="100">';
+      break;
+  }
+}
+
+function runGenOp() {
+  const el = document.getElementById('genResult');
+  try {
+    let result = '';
+    switch (genCurrentOp) {
+      case 'uuid':
+        const ver = document.getElementById('uuidVersion')?.value;
+        const cnt = parseInt(document.getElementById('uuidCount')?.value) || 5;
+        if (ver === '1') { for (let i = 0; i < cnt; i++) result += uuidV1() + NL; }
+        else { for (let i = 0; i < cnt; i++) result += crypto.randomUUID() + NL; }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'password':
+        const plen = parseInt(document.getElementById('pwdLen')?.value) || 16;
+        const pcnt = parseInt(document.getElementById('pwdCount')?.value) || 5;
+        let chars = '';
+        if (document.getElementById('pwdUpper')?.checked) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        if (document.getElementById('pwdLower')?.checked) chars += 'abcdefghjkmnpqrstuvwxyz';
+        if (document.getElementById('pwdDigits')?.checked) chars += '23456789';
+        if (document.getElementById('pwdSymbols')?.checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        if (!chars) chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+        const pwdArr = new Uint32Array(plen);
+        for (let j = 0; j < pcnt; j++) {
+          crypto.getRandomValues(pwdArr);
+          result += Array.from(pwdArr, n => chars[n % chars.length]).join('') + NL;
+        }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'qrcode':
+        const qrContent = document.getElementById('qrContent')?.value || '';
+        const qrSize = parseInt(document.getElementById('qrSize')?.value) || 200;
+        if (!qrContent) { el.innerHTML = '请输入二维码内容'; return; }
+        el.innerHTML = '<div class="qr-container">生成中...</div>';
+        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=' + qrSize + 'x' + qrSize + '&data=' + encodeURIComponent(qrContent);
+        el.innerHTML = '<div class="qr-container"><img src="' + qrUrl + '" alt="QR Code" style="max-width:100%"><span style="font-size:11px;color:var(--text-secondary)">' + escHtml(qrContent) + '</span><a href="' + qrUrl + '" download="qrcode.png" class="btn btn-sm">下载 PNG</a></div>';
+        toast('生成完成');
+        return;
+      case 'lorem':
+        const ltype = document.getElementById('loremType')?.value || 'paragraphs';
+        const lcnt = parseInt(document.getElementById('loremCount')?.value) || 3;
+        const loremWords = ['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco','laboris','nisi','ut','aliquip','ex','ea','commodo','consequat','duis','aute','irure','dolor','in','reprehenderit','voluptate','velit','esse','cillum','fugiat','nulla','pariatur','excepteur','sint','occaecat','cupidatat','non','proident','sunt','culpa','qui','officia','deserunt','mollit','anim','id','est','laborum'];
+        if (ltype === 'words') { for (let i = 0; i < lcnt; i++) result += loremWords[i % loremWords.length] + ' '; }
+        else if (ltype === 'sentences') { for (let i = 0; i < lcnt; i++) { let s = ''; for (let j = 0; j < 8 + Math.floor(Math.random() * 12); j++) s += loremWords[Math.floor(Math.random() * loremWords.length)] + ' '; result += s.charAt(0).toUpperCase() + s.slice(1).trim() + '. '; } }
+        else { for (let i = 0; i < lcnt; i++) { let p = ''; for (let j = 0; j < 4 + Math.floor(Math.random() * 6); j++) { let s = ''; for (let k = 0; k < 6 + Math.floor(Math.random() * 10); k++) s += loremWords[Math.floor(Math.random() * loremWords.length)] + ' '; p += s.charAt(0).toUpperCase() + s.slice(1).trim() + '. '; } result += p.trim() + NL + NL; } }
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'sequence':
+        const start = parseInt(document.getElementById('seqStart')?.value) || 1;
+        const end = parseInt(document.getElementById('seqEnd')?.value) || 100;
+        const step = parseInt(document.getElementById('seqStep')?.value) || 1;
+        const nums = [];
+        for (let i = start; i <= end; i += step) nums.push(i);
+        result = nums.join(NL);
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+      case 'randomdata':
+        const rdType = document.getElementById('rdType')?.value || 'name';
+        const rdcnt = parseInt(document.getElementById('rdCount')?.value) || 10;
+        result = generateRandomData(rdType, rdcnt);
+        el.innerHTML = '<pre style="margin:0;white-space:pre-wrap">' + escHtml(result) + '</pre>';
+        break;
+    }
+    toast('生成完成');
+  } catch (e) {
+    el.innerHTML = '❌ 错误: ' + escHtml(e.message);
+    toast('生成失败','error');
+  }
+}
+
+function copyGenResult() { copyTextById('genResult'); }
+
+function uuidV1() {
+  const now = Date.now();
+  return 'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (now + Math.random() * 16) % 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function generateRandomData(type, count) {
+  const surnames = ['张','王','李','赵','陈','杨','黄','周','吴','徐','孙','马','胡','朱','郭','何','罗','高','林','郑','梁'];
+  const names = ['伟','芳','秀英','敏','静','丽','强','磊','洋','勇','艳','杰','娟','涛','明','超','秀兰','霞','平','刚','桂英'];
+  const cities = ['北京','上海','广州','深圳','杭州','成都','武汉','南京','西安','重庆','苏州','天津','长沙','郑州','东莞','青岛','合肥','佛山','宁波','昆明'];
+  const streets = ['中山路','人民路','建设路','解放路','文化路','和平路','新华路','长江路','黄河路','长城路'];
+  const emails = ['@qq.com','@163.com','@gmail.com','@outlook.com','@sina.com','@126.com'];
+  let result = '';
+  for (let i = 0; i < count; i++) {
+    switch (type) {
+      case 'name': result += surnames[Math.floor(Math.random()*surnames.length)] + names[Math.floor(Math.random()*names.length)] + (Math.random()>0.5?names[Math.floor(Math.random()*names.length)]:'') + NL; break;
+      case 'email': result += Math.random().toString(36).substring(2,8) + emails[Math.floor(Math.random()*emails.length)] + NL; break;
+      case 'phone': result += '1' + ['3','5','7','8'][Math.floor(Math.random()*4)] + Math.random().toString().slice(2,11) + NL; break;
+      case 'idcard': result += Math.floor(110000+Math.random()*330000) + (1970+Math.floor(Math.random()*40)).toString() + String(Math.floor(Math.random()*12)+1).padStart(2,'0') + String(Math.floor(Math.random()*28)+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0') + NL; break;
+      case 'address': result += cities[Math.floor(Math.random()*cities.length)] + '市' + ['朝阳区','海淀区','浦东新区','天河区','西湖区','武侯区'][Math.floor(Math.random()*6)] + streets[Math.floor(Math.random()*streets.length)] + Math.floor(Math.random()*300+1) + '号' + NL; break;
+    }
+  }
+  return result.trim();
+}
+
+
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
+  </div>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
+  </div>
+  <p class="fb-note">
+    <span>其它：</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">查看已有反馈</a>
+    <span>·</span>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

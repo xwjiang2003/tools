@@ -31,6 +31,253 @@ def article_path(slug):
 
 ARTICLES = [
     {
+        'slug': 'coraza-waf-rules',
+        'date': '2026-09-25',
+        'updated': '2026-09-25',
+        'tags': ['WAF', 'Coraza', '安全', 'ModSecurity', 'OWASP'],
+        'title': ('Coraza 规则详解：从 SecRule 语法到写出第一条防护规则 '
+                  '| DevTools 博客'),
+        'description': (
+            'Coraza 是 Go 语言写的开源 WAF、ModSecurity 的官方接任者，规则语法（SecRule）'
+            '与 ModSecurity 几乎完全兼容。本文从「一条规则由什么组成」讲起，覆盖变量、'
+            '运算符、转换函数、动作、五个处理阶段、OWASP CRS 核心规则集，并手把手写一个 '
+            '防 SQL 注入的自定义规则，最后讲清 DetectionOnly 与 On 两种模式的取舍。'
+        ),
+        'keywords': (
+            'Coraza 规则,Coraza WAF,SecRule 语法,ModSecurity 替代,OWASP CRS,'
+            'Coraza 自定义规则,SecRuleEngine,@rx 运算符,WAF 规则编写'
+        ),
+        'h1': 'Coraza 规则详解：从 SecRule 语法到写出第一条防护规则',
+        'summary': (
+            'Coraza 是 Go 写的开源 WAF、ModSecurity 的接任者，SecRule 语法基本兼容。'
+            '讲清一条规则的三要素、五个处理阶段、OWASP CRS 规则集，并手把手写一个 '
+            '防 SQL 注入的自定义规则，以及 DetectionOnly 与 On 的取舍。'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：Coraza 是 Go 语言实现的开源 WAF、ModSecurity 的官方接任者，
+  规则语法（SecRule）与 ModSecurity 几乎完全兼容，老项目迁移基本是「换引擎、规则照抄」。
+  核心是<b>一条 SecRule = 变量 + 运算符 + 动作</b>，配合五个处理阶段与 OWASP CRS 规则集，
+  既能直接套用社区规则，也能自己写针对性规则。</p>
+</blockquote>
+
+<h2>一、Coraza 是什么</h2>
+<p>Coraza 是一个用 Go 写的、符合 <b>OWASP 标准</b>的 Web 应用防火墙引擎，也是 ModSecurity v3
+停止维护后被社区广泛采用的替代品。它最值得说的三点：</p>
+<ul>
+  <li><b>语法兼容 ModSecurity</b>：过去写的 <code>SecRule</code>、<code>SecAction</code>、
+      <code>SecRuleEngine</code> 等指令，以及 OWASP CRS（Core Rule Set）核心规则集，
+      基本可以原样跑在 Coraza 上，迁移成本极低；</li>
+  <li><b>纯 Go、无 C 依赖</b>：不依赖 libmodsecurity 那个 C 库，交叉编译、容器化、嵌入到
+      自己的 Go 程序里都顺手；</li>
+  <li><b>既能当库也能当网关</b>：可以 <code>import</code> 进 Go 服务做内联检测，也能通过
+      Caddy / Nginx 连接器或独立网关（如 warden）部署在流量前面。</li>
+</ul>
+<p>它遵循 Apache-2.0 许可，是 OWASP 基金会下的正式项目。</p>
+
+<h2>二、一条规则由什么组成</h2>
+<p>Coraza 的绝大多数防护逻辑都写在一条 <code>SecRule</code> 里。一条最朴素的规则长这样：</p>
+<pre><code>SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|nikto|nmap)" \\
+    "id:1001,phase:1,deny,status:403,msg:'known scanner UA'"</code></pre>
+<p>它由三个部分构成，顺序固定：</p>
+<table>
+  <tr><th>组成部分</th><th>作用</th><th>上例对应</th></tr>
+  <tr><td>变量（Variable）</td><td>指定检测哪份数据：请求头、参数、URI、body、IP……</td><td><code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td>运算符（Operator）</td><td>指定怎么判定命中，以 @ 开头</td><td><code>@rx (?i)(sqlmap|nikto)</code></td></tr>
+  <tr><td>动作（Action）</td><td>指定命中后做什么，逗号分隔的键值对</td><td><code>id:1001,phase:1,deny,...</code></td></tr>
+</table>
+<p>反斜杠 <code>\\</code> 是续行符，把一条长规则拆成多行更可读。下面分别拆看这三块。</p>
+
+<h2>三、变量：你要检测的是哪份数据</h2>
+<p>变量决定了规则盯着请求的哪一部分。常用的一批：</p>
+<table>
+  <tr><th>变量</th><th>含义</th></tr>
+  <tr><td><code>REQUEST_URI</code></td><td>完整请求路径（含查询串），最常用</td></tr>
+  <tr><td><code>REQUEST_LINE</code></td><td>完整请求行，如 <code>GET /a?x=1 HTTP/1.1</code></td></tr>
+  <tr><td><code>REQUEST_HEADERS</code></td><td>全部请求头；加冒号取单个，如 <code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td><code>REQUEST_BODY</code></td><td>请求体（POST 表单 / JSON / XML，需开启相应解析）</td></tr>
+  <tr><td><code>ARGS</code> / <code>ARGS_GET</code> / <code>ARGS_POST</code></td><td>所有参数 / 仅查询串 / 仅表单</td></tr>
+  <tr><td><code>QUERY_STRING</code></td><td>仅查询串部分</td></tr>
+  <tr><td><code>REMOTE_ADDR</code></td><td>客户端 IP</td></tr>
+  <tr><td><code>RESPONSE_BODY</code></td><td>响应体（出方向检测，如泄露银行卡号）</td></tr>
+  <tr><td><code>TX</code></td><td>事务变量，规则之间用 setvar 传递数据</td></tr>
+</table>
+<p>变量还能带计数 / 集合语义，比如 <code>&amp;ARGS</code> 统计参数个数，
+<code>ARGS:username</code> 只取名为 username 的参数。多个变量用 <code>|</code> 并联：
+<code>REQUEST_HEADERS|REQUEST_BODY</code> 表示「头或体任一命中即触发」。</p>
+
+<h2>四、运算符：怎么算命中</h2>
+<p>运算符决定匹配逻辑，都以 @ 开头。最常用的是正则匹配：</p>
+<pre><code>@rx &lt;正则表达式&gt;          # 正则匹配，命中返回 true
+@pm word1 word2 ...       # 短语匹配，多关键词「或」关系，性能优于挨个 @rx
+@pmFromFile /path/list    # 从文件批量读关键词做短语匹配（如扫描器 UA 清单）</code></pre>
+<p>其它常用运算符：</p>
+<table>
+  <tr><th>运算符</th><th>判定</th></tr>
+  <tr><td><code>@eq</code> / <code>@gt</code> / <code>@lt</code> / <code>@ge</code> / <code>@le</code></td><td>等于 / 大于 / 小于 / 大于等于 / 小于等于（数值）</td></tr>
+  <tr><td><code>@contains</code> / <code>@beginsWith</code> / <code>@endsWith</code></td><td>包含 / 前缀 / 后缀</td></tr>
+  <tr><td><code>@within</code></td><td>目标是否在给定集合内（如 IP 在 CIDR 内）</td></tr>
+  <tr><td><code>@ipMatch</code></td><td>客户端 IP 是否匹配某个 CIDR / IP 列表</td></tr>
+  <tr><td><code>@validateUrlEncoding</code></td><td>URL 编码是否合法（识别 %u 等畸形编码绕过）</td></tr>
+  <tr><td><code>@validateUtf8Encoding</code></td><td>UTF-8 编码是否合法</td></tr>
+  <tr><td><code>@detectSQLi</code></td><td>内置的 SQL 注入检测（CRS 在用）</td></tr>
+  <tr><td><code>@detectXSS</code></td><td>内置的 XSS 检测</td></tr>
+  <tr><td><code>@rx</code> 配合 <code>!</code></td><td>取反：<code>@rx !...</code> 表示不匹配才命中</td></tr>
+</table>
+<p>小提示：<code>@pm</code> 比一串 <code>@rx (a|b|c)</code> 快得多，它内部是 Aho-Corasick 多模匹配；
+要匹配几十个扫描器关键词时优先用 <code>@pmFromFile</code>。</p>
+
+<h2>五、转换函数（transforms）：匹配前先归一化</h2>
+<p>攻击者常用大小写混合、URL 双重编码、空白穿插来绕过规则。转换函数会在匹配<b>之前</b>
+对变量做变换，把变形归一化。写在动作里、用 <code>t:</code> 前缀，可叠加多个：</p>
+<pre><code>"id:1002,phase:2,deny,t:lowercase,t:urlDecode,t:removeWhitespace,t:compressWhitespace,@rx (?i)(union\\s+select|drop\\s+table)"</code></pre>
+<table>
+  <tr><th>转换函数</th><th>做了什么</th></tr>
+  <tr><td><code>t:none</code></td><td>先清空之前累积的转换（常放最前重置）</td></tr>
+  <tr><td><code>t:lowercase</code></td><td>转小写，抵消大小写绕过</td></tr>
+  <tr><td><code>t:urlDecode</code> / <code>t:urlDecodeUni</code></td><td>URL 解码（含 %u 编码）</td></tr>
+  <tr><td><code>t:removeWhitespace</code> / <code>t:compressWhitespace</code></td><td>去空白 / 压缩连续空白</td></tr>
+  <tr><td><code>t:htmlEntityDecode</code></td><td>解码 <code>&amp;amp;</code> <code>&amp;#x3c;</code> 这类 HTML 实体</td></tr>
+  <tr><td><code>t:base64Decode</code></td><td>Base64 解码</td></tr>
+  <tr><td><code>t:normalisePath</code> / <code>t:normalisePathWin</code></td><td>归一化路径（消解 ../ 与多余斜杠）</td></tr>
+  <tr><td><code>t:cmdLine</code></td><td>把命令行字符串归一化（抵消失空格、引号、路径变形）</td></tr>
+</table>
+
+<h2>六、动作：命中之后做什么</h2>
+<p>动作分三类。最常用的是破坏性动作（决定请求的最终命运）：</p>
+<table>
+  <tr><th>破坏性动作</th><th>效果</th></tr>
+  <tr><td><code>deny</code></td><td>立即拦截，可配 <code>status:403</code>（或 406 等）</td></tr>
+  <tr><td><code>block</code></td><td>按当前 <code>SecDefaultAction</code> 设定的方式拦截（更灵活）</td></tr>
+  <tr><td><code>pass</code></td><td>放行（但记录 / 计数，常用于只告警不拦）</td></tr>
+  <tr><td><code>allow</code></td><td>放行并跳过后续阶段检测</td></tr>
+  <tr><td><code>redirect</code> + <code>location</code></td><td>302 跳转到指定地址</td></tr>
+</table>
+<p>非破坏性动作负责记账与上下文：</p>
+<pre><code>setvar:tx.sql_hits=+1     # 给事务变量计数（配合 &gt; 阈值再拦）
+setvar:tx.block_flag=1    # 打个标记，后面规则读到就拦截
+capture                   # 把 @rx 的捕获组存进 TX.0 / TX.1 ...
+log / nolog               # 是否写日志
+auditlog / noauditlog     # 是否进审计日志</code></pre>
+<p>还有些元数据动作必须给每条规则带上，方便排障：</p>
+<pre><code>id:1003                  # 规则 ID（必填且全局唯一，CRS 占 900000+ 段，自定义建议 1000-7999）
+phase:2                  # 处理阶段
+msg:'sql injection'       # 命中时记录的可读信息
+severity:'CRITICAL'       # 严重级别（EMERGENCY/ALERT/CRITICAL/ERROR/WARNING/NOTICE/INFO）
+tag:'attack-sqli'         # 标签，便于归类统计</code></pre>
+
+<h2>七、规则链（chain）：多条件「且」关系</h2>
+<p>单条规则只能表达一个「变量 + 运算符」。要表达「A 且 B」用 <code>chain</code> 把多条规则串起来，
+只有整条链全部命中才执行最后一条的破坏性动作：</p>
+<pre><code>SecRule ARGS_GET:q "@rx (?i)select" "id:2001,phase:2,chain,t:none,t:lowercase"
+    SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|havij)" "deny,status:403,msg:'sql tool'"</code></pre>
+<p>上例含义：只有当参数 <code>q</code> 里出现 select <b>并且</b> UA 是扫描器时才拦截——
+避免单独一条 select 就把正常带 SQL 关键字的搜索请求误杀。</p>
+
+<h2>八、五个处理阶段（phase）</h2>
+<p>规则按 <code>phase</code> 分布在请求 / 响应的不同阶段，越靠前越省资源：</p>
+<table>
+  <tr><th>阶段</th><th>时机</th><th>适合放什么</th></tr>
+  <tr><td>phase:1</td><td>请求头刚收完</td><td>按 IP / UA / Host 做粗筛（最快）</td></tr>
+  <tr><td>phase:2</td><td>请求体解析完</td><td>参数、body 的注入 / XSS 检测（最常用）</td></tr>
+  <tr><td>phase:3</td><td>响应头生成前</td><td>出方向头改写</td></tr>
+  <tr><td>phase:4</td><td>响应体生成后</td><td>出方向数据泄露检测（卡号、身份证）</td></tr>
+  <tr><td>phase:5</td><td>日志记录时</td><td>仅做统计 / 记日志，不拦截</td></tr>
+</table>
+<p>把廉价的粗筛放 phase:1、把贵的正则 / 解码放 phase:2，是减少误杀和开销的关键。</p>
+
+<h2>九、OWASP CRS：开箱即用的规则集</h2>
+<p>自己写规则是兜底，真正扛住日常攻击的是 <b>OWASP CRS（Core Rule Set）</b>——
+一套社区维护、覆盖 SQLi / XSS / 文件包含 / 协议违规 / 扫描器指纹等场景的通用规则，随 Coraza
+一起分发。启用方式就是在配置文件里 Include 它：</p>
+<pre><code>Include /path/to/coraza.conf          # 引擎基础配置（SecRuleEngine 等）
+Include /path/to/crs-setup.conf       # CRS 总开关与调参
+Include /path/to/rules/*.conf          # 具体规则文件</code></pre>
+<p>CRS 的几个实用调参（在 <code>crs-setup.conf</code> 里）：</p>
+<ul>
+  <li><code>tx.paranoia_level</code>：偏执等级 1~4，越高规则越严、误报也越多，默认 1；
+      上线初期建议先 1，观察稳定后再上调；</li>
+  <li><code>tx.blocking_paranoia_level</code>：实际拦截的偏执等级，可低于 <code>paranoia_level</code>
+      做到「高级别只记录、低级别才拦」；</li>
+  <li><code>tx.anomaly_score_block</code>：把「累计异常分超阈值才拦」作为拦截策略，比单条命中就拦更稳；
+      单条规则命中通常只加分、不直接 deny，由总分决定是否拦截，显著降低误杀。</li>
+</ul>
+
+<h2>十、实战：写一个防 SQL 注入的自定义规则</h2>
+<p>假设搜索接口 <code>/search?q=</code> 老被注入探测，要在 CRS 之外加一条针对性规则。
+思路：先归一化、再正则、命中先计数而非直接拦、超阈值再 deny：</p>
+<pre><code># /etc/coraza/custom/search-sqli.conf
+SecRule REQUEST_URI "@rx (?i)/search" "id:900100,phase:1,pass,nolog,setvar:tx.on_search=1"
+
+SecRule ARGS_GET:q \\
+    "@rx (?i)(union\\s+select|select\\s+.*\\s+from|or\\s+1=1|'\\s+or\\s+'|drop\\s+table|insert\\s+into)" \\
+    "id:900101,phase:2,chain,t:none,t:lowercase,t:urlDecode,t:compressWhitespace"
+    SecRule TX:on_search "@eq 1" \\
+        "deny,status:403,msg:'SQLi in search q',severity:'CRITICAL',tag:'attack-sqli',\\
+         setvar:tx.sql_score=+5"
+
+SecAction "id:900102,phase:2,pass,setvar:tx.sql_score=0"
+SecRule TX:sql_score "@ge 5" "id:900103,phase:2,deny,status:403,msg:'SQLi score exceeded'"</code></pre>
+<p>这条规则做了三件事：①只在 <code>/search</code> 路径启用，不影响别的接口；
+②对 <code>q</code> 参数做大小写无关、解码后的正则匹配，命中先打 <code>sql_score</code> 标记；
+③真正拦截的是「分数累计到 5」那条，给正常关键词搜索留了缓冲，避免一次误匹配就 403。</p>
+<p>把自定义文件 Include 进主配置即可，无需改动 CRS 本身。</p>
+
+<h2>十一、DetectionOnly 与 On：先观察再拦截</h2>
+<p><code>SecRuleEngine</code> 是总开关，只有两个值值得记住：</p>
+<table>
+  <tr><th>取值</th><th>行为</th><th>何时用</th></tr>
+  <tr><td><code>DetectionOnly</code></td><td>只记录、不拦截</td><td>新规则 / 新站点上线前先跑一段时间</td></tr>
+  <tr><td><code>On</code></td><td>命中即按动作处理</td><td>确认误报可控之后</td></tr>
+</table>
+<p>经验之谈：<b>任何新规则、任何新接入的站点，先用 DetectionOnly 跑至少一到两周</b>，
+翻审计日志看有没有把正常业务算成攻击（典型误杀：带 <code>select</code> 的搜索、带
+<code>&lt;</code> 的富文本编辑、JSON 里的大段文本）。确认误报率可接受，再把对应规则切到
+<code>On</code> 或调高 <code>blocking_paranoia_level</code>。<b>直接 On 上线是 WAF 误杀的头号原因。</b></p>
+
+<h2>十二、怎么把它跑起来</h2>
+<p>Coraza 不是只能当独立盒子，常见四种落地姿势：</p>
+<table>
+  <tr><th>方式</th><th>怎么做</th><th>适合</th></tr>
+  <tr><td>Go 库内联</td><td><code>import github.com/corazawaf/coraza/v3</code>，在 handler 里 ProcessRequest</td><td>自己写 Go 服务、想内联检测</td></tr>
+  <tr><td>Caddy 连接器</td><td>用 coraza-caddy 插件，Caddyfile 里加几行即可</td><td>已在用 Caddy 反代</td></tr>
+  <tr><td>Nginx 连接器</td><td>coraza-nginx 动态模块</td><td>已在用 Nginx、想最小改动</td></tr>
+  <tr><td>独立网关</td><td>如 warden，一个二进制把 Coraza + CC 防护 + 后台打包</td><td>不想碰配置、要开箱即用的面板</td></tr>
+</table>
+<p>以 Caddy 为例，最小配置只是：</p>
+<pre><code>{
+    order coraza before reverse_proxy
+}
+example.com {
+    coraza {
+        directives `
+            Include /etc/coraza/coraza.conf
+            Include /etc/coraza/crs/crs-setup.conf
+            Include /etc/coraza/rules/*.conf
+        `
+    }
+    reverse_proxy 127.0.0.1:8000
+}</code></pre>
+
+<h2>十三、小结</h2>
+<p>Coraza 把 ModSecurity 那套成熟的规则体系搬到了 Go 上，迁移几乎零成本。记住这条主线：</p>
+<table>
+  <tr><th>概念</th><th>一句话</th></tr>
+  <tr><td>一条规则</td><td>变量 + 运算符（@ 开头）+ 动作（id/phase/deny…）</td></tr>
+  <tr><td>归一化</td><td>用 t: 转换函数在匹配前消解变形绕过</td></tr>
+  <tr><td>多条件</td><td>chain 表达「且」，TX 变量做跨规则计数</td></tr>
+  <tr><td>日常防护</td><td>直接上 OWASP CRS，别从零手搓</td></tr>
+  <tr><td>上线纪律</td><td>DetectionOnly 观察 → 再 On；异常分阈值拦截比单条 deny 稳</td></tr>
+</table>
+<p>想看一个把 Coraza 和 CC 防护、IP 归属拦截打包成单文件网关的真实项目，见
+<a href="/blog/warden-go-waf/">warden：一个单文件部署的 Go 反向代理 WAF</a>。</p>
+''',
+        'related': [
+            ('warden：一个单文件部署的 Go 反向代理 WAF', 'blog/warden-go-waf/'),
+            ('Go 工具链命令速查表', 'go-cheatsheet/'),
+        ],
+    },
+    {
         'slug': 'warden-go-waf',
         'date': '2026-09-25',
         'updated': '2026-09-25',
@@ -220,6 +467,7 @@ CC 防护同理：先只开验证码挑战，看真实用户的通过率，再�
 <code>Signed-off-by</code>（DCO）。</p>
 ''',
         'related': [
+            ('Coraza 规则详解', 'blog/coraza-waf-rules/'),
             ('Go 工具链命令速查表', 'go-cheatsheet/'),
             ('gofmt 和 goimports 的区别', 'blog/gofmt-vs-goimports/'),
         ],

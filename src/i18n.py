@@ -407,4 +407,21 @@ EN = {
     '屏幕: ': 'Screen: ',
     '主题: ': 'Theme: ',
     '时间: ': 'Time: ',
+
+    # ---------- 新增工具（颜色 / 命名风格 / JWT / YAML / TOML / CSV）----------
+    '颜色值': 'Color',
+    '颜色预览': 'Preview',
+    '颜色名称': 'Name',
+    '输出格式': 'Output format',
+    '输入颜色后自动转换': 'Enter a color to convert',
+    '十六进制': 'Hex',
+    'RGB': 'RGB',
+    'HSL': 'HSL',
+    '输入文本': 'Input text',
+    '目标风格': 'Target style',
+    '输出结果': 'Output',
+    '粘贴 JWT': 'Paste a JWT',
+    '签名验证': 'Signature verification',
+    '解码结果': 'Decoded',
+    '转换方向': 'Direction',
 }
