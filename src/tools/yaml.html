@@ -1,0 +1,45 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="yamlClear()">清空</button><button class="btn btn-sm" onclick="yamlSample()">示例</button></div></div>
+    <textarea class="ta-input" id="yamlInput" placeholder="Enter JSON or YAML to convert"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>转换方向</span>
+      <select id="yamlDir">
+        <option value="toYaml">JSON → YAML</option>
+        <option value="toJson">YAML → JSON</option>
+      </select>
+    </div>
+    <div class="op-buttons"><button class="op-btn active" onclick="yamlConvert()">转换</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('yamlResult')">复制</button></div></div>
+      <div class="result-content" id="yamlResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script>
+(function(){
+  function yamlConvert(){
+    var text = getVal('yamlInput'); var dir = document.getElementById('yamlDir').value;
+    var out = document.getElementById('yamlResult');
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    try{
+      if(dir==='toYaml'){
+        var obj = JSON.parse(text);
+        out.textContent = jsyaml.dump(obj, {indent:2, lineWidth:120});
+      } else {
+        var data = jsyaml.load(text);
+        out.textContent = JSON.stringify(data, null, 2);
+      }
+    }catch(e){
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+    }
+  }
+  window.yamlClear=function(){ setVal('yamlInput',''); yamlConvert(); };
+  window.yamlSample=function(){ setVal('yamlInput','{\n  "name": "DevTools",\n  "stars": 42,\n  "tags": ["json", "yaml"]\n}'); yamlConvert(); };
+  var el=document.getElementById('yamlInput'); if(el){ el.addEventListener('input', yamlConvert); }
+  var sel=document.getElementById('yamlDir'); if(sel){ sel.addEventListener('change', yamlConvert); }
+  yamlConvert();
+})();
+</script>

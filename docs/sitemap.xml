@@ -80,6 +80,48 @@
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
+    <loc>https://devtools.help/color/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/color/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/color/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/color/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/case/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/case/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/case/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/case/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/jwt/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/jwt/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/jwt/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/jwt/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/yaml/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/yaml/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/yaml/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/yaml/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/toml/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/toml/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/toml/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/toml/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/csv/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/csv/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/csv/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://devtools.help/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>
@@ -93,6 +135,14 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/"/>
     <changefreq>weekly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/blog/coraza-waf-rules/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/coraza-waf-rules/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/coraza-waf-rules/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/coraza-waf-rules/"/>
+    <changefreq>monthly</changefreq><priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtools.help/blog/warden-go-waf/</loc>

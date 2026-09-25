@@ -1,0 +1,91 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 粘贴 JWT</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="jwtClear()">清空</button><button class="btn btn-sm" onclick="jwtSample()">示例</button></div></div>
+    <textarea class="ta-input" id="jwtInput" placeholder="Paste a JWT: three dot-separated segments (header.payload.signature)"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>签名验证</span>
+      <input id="jwtSecret" type="text" placeholder="HS256/384/512 secret (optional)" style="flex:1;min-width:120px;padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px">
+    </div>
+    <div class="op-buttons"><button class="op-btn active" onclick="jwtDecode()">解码</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">解码结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('jwtResult')">复制</button></div></div>
+      <div class="result-content" id="jwtResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function b64urlDecode(s){
+    s = s.replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length%4) s+='=';
+    var bin = atob(s);
+    try { return decodeURIComponent(escape(bin)); } catch(e){ return bin; }
+  }
+  function pretty(obj){ return JSON.stringify(obj,null,2); }
+  function fmtTime(v){
+    if(typeof v!=='number') return String(v);
+    var d = new Date(v*1000);
+    if(isNaN(d)) return String(v);
+    return d.toISOString().replace('T',' ').replace(/\.\d+Z$/,' UTC');
+  }
+  function setStatus(msg, ok){
+    var el=document.getElementById('jwtStatus');
+    if(!el) return;
+    el.textContent=msg;
+    el.style.color = ok===null ? 'var(--text-secondary)' : (ok ? '#16a34a' : '#dc2626');
+  }
+  async function verifyHS(token, secret, alg){
+    try{
+      var enc = new TextEncoder();
+      var key = await crypto.subtle.importKey('raw', enc.encode(secret), {name:'HMAC', hash:{name: alg.replace('HS','SHA-')}}, false, ['sign']);
+      var sig = b64urlDecode(token.split('.')[2]);
+      // sig is base64url binary string -> bytes
+      var bin = atob(sig.replace(/-/g,'+').replace(/_/g,'/'));
+      var sigBytes = new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) sigBytes[i]=bin.charCodeAt(i);
+      var mac = await crypto.subtle.sign('HMAC', key, enc.encode(token.split('.')[0]+'.'+token.split('.')[1]));
+      var macBytes = new Uint8Array(mac);
+      if(sigBytes.length!==macBytes.length) return false;
+      for(var j=0;j<macBytes.length;j++){ if(sigBytes[j]!==macBytes[j]) return false; }
+      return true;
+    }catch(e){ return null; }
+  }
+  async function jwtDecode(){
+    var token = (getVal('jwtInput')||'').trim();
+    var out = document.getElementById('jwtResult');
+    if(!token){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; setStatus('',null); return; }
+    var parts = token.split('.');
+    if(parts.length!==3){ out.innerHTML='<span style="color:#dc2626">Invalid JWT: expects exactly 3 segments separated by dots</span>'; setStatus('Invalid JWT',false); return; }
+    var header, payload;
+    try { header = JSON.parse(b64urlDecode(parts[0])); } catch(e){ out.innerHTML='<span style="color:#dc2626">Header is not valid base64url JSON</span>'; setStatus('Invalid JWT',false); return; }
+    try { payload = JSON.parse(b64urlDecode(parts[1])); } catch(e){ out.innerHTML='<span style="color:#dc2626">Payload is not valid base64url JSON</span>'; setStatus('Invalid JWT',false); return; }
+    var html = '<div style="margin-bottom:10px"><b>Header</b><pre style="white-space:pre-wrap;margin:4px 0">'+escHtml(pretty(header))+'</pre></div>';
+    html += '<div style="margin-bottom:10px"><b>Payload</b><pre style="white-space:pre-wrap;margin:4px 0">'+escHtml(pretty(payload))+'</pre></div>';
+    html += '<div><b>Signature</b><br><code style="word-break:break-all">'+escHtml(parts[2])+'</code></div>';
+    var claims='';
+    if(payload.exp!==undefined) claims+='Expires at: '+fmtTime(payload.exp)+'<br>';
+    if(payload.iat!==undefined) claims+='Issued at: '+fmtTime(payload.iat)+'<br>';
+    if(payload.nbf!==undefined) claims+='Not before: '+fmtTime(payload.nbf)+'<br>';
+    if(claims) html+='<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">'+claims+'</div>';
+    out.innerHTML=html;
+    var alg = (header.alg||'');
+    var secret = document.getElementById('jwtSecret').value;
+    if(secret && alg.indexOf('HS')===0){
+      var v = await verifyHS(token, secret, alg);
+      setStatus(v===null?'Signature: verification failed ('+alg+')':(v?'Signature valid ('+alg+')':'Signature invalid ('+alg+')'), v);
+    } else if(alg.indexOf('HS')===0 && !secret){
+      setStatus('No secret provided - signature not verified', null);
+    } else {
+      setStatus('Algorithm: '+alg+' (asymmetric signatures are not verified client-side)', null);
+    }
+  }
+  window.jwtClear=function(){ setVal('jwtInput',''); jwtDecode(); };
+  window.jwtSample=function(){ setVal('jwtInput','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5NjIyMzkwMjJ9.2ZgJRaXK2fUJ8KKb8b9c9KJqJ9wY7W4X9Yd8eE'); jwtDecode(); };
+  // status bar under input
+  var statusEl=document.createElement('div'); statusEl.id='jwtStatus'; statusEl.style.cssText='padding:8px 12px;font-size:12px;color:var(--text-secondary);border-top:1px solid var(--border)';
+  var inPanel=document.querySelector('#jwtInput').closest('.input-panel'); if(inPanel) inPanel.appendChild(statusEl);
+  var el=document.getElementById('jwtInput'); if(el){ el.addEventListener('input', jwtDecode); }
+  var sec=document.getElementById('jwtSecret'); if(sec){ sec.addEventListener('input', jwtDecode); }
+  jwtDecode();
+})();
+</script>

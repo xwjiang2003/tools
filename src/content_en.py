@@ -698,6 +698,229 @@ TOOLS_EN = {
              'affiliate parameters and no redirect layer.'),
         ],
     },
+    'color': {
+        'nav': 'Color',
+        'title': 'Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools',
+        'description': (
+            'Convert colors between Hex, RGB, HSL and CSS color names with a live preview. '
+            'Supports 3/6/8-digit Hex, rgb()/rgba(), hsl()/hsla() and all 148 CSS named colors. '
+            'Everything runs locally in your browser.'
+        ),
+        'keywords': 'color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color',
+        'h1': 'Color Converter (Hex / RGB / HSL / Name)',
+        'intro': [
+            'Type any color and the tool shows the other three representations plus the matching CSS '
+            'color name, with a live swatch. It accepts #rgb, #rrggbb, #rrggbbaa, rgb()/rgba(), '
+            'hsl()/hsla() and named colors like red or rebeccapurple.',
+            'All conversion happens in your browser — no color value is ever sent anywhere.',
+        ],
+        'features': [
+            ('Bidirectional', 'Switch between Hex, RGB, HSL and CSS name; all four update together.'),
+            ('Name lookup', 'Recognises the 148 standard CSS named colors and finds a name for any color.'),
+            ('Live preview', 'The swatch updates as you type, flipping text contrast for light or dark colors.'),
+            ('Alpha channel', '8-digit Hex and rgba() alpha values are kept through conversion.'),
+        ],
+        'steps': [
+            'Enter a color on the left — #ff0000, rgb(255,0,0), hsl(0,100%,50%) or red.',
+            'The right side shows Hex, RGB, HSL and the name together.',
+            'Click Copy to take the format you need.',
+        ],
+        'faq': [
+            ('What is the difference between Hex and RGB?',
+             'They are two notations for the same color: Hex is base-16, RGB is base-10. '
+             '#ff0000 and rgb(255,0,0) are the identical red, just written differently.'),
+            ('What is the last pair in 8-digit Hex?',
+             'It is the alpha (transparency) channel — two Hex digits for 0..255, matching the '
+             'fourth argument of rgba(): 00 is fully transparent and ff is fully opaque.'),
+            ('Why do some colors show no name?',
+             'CSS only defines 148 named colors such as red, blue and rebeccapurple. Most colors '
+             'have no English name, so this field shows "-" — use Hex/RGB/HSL instead.'),
+        ],
+    },
+    'case': {
+        'nav': 'Case style',
+        'title': 'Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools',
+        'description': (
+            'Convert identifiers between camelCase, snake_case, kebab-case, PascalCase and '
+            'CONSTANT_CASE. Auto-splits camelCase and underscores, handles digit boundaries, '
+            'and runs entirely in your browser.'
+        ),
+        'keywords': 'case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming',
+        'h1': 'Case Style Converter',
+        'intro': [
+            'Re-pack an identifier into the target style after splitting it into words: camelCase, '
+            'snake_case, kebab-case, PascalCase or CONSTANT_CASE. Handy when renaming legacy code or '
+            'matching a different language SDK.',
+            'Splitting recognises camelCase boundaries, underscores, hyphens and digit/letter edges; '
+            'everything stays local to the browser.',
+        ],
+        'features': [
+            ('Five styles', 'One click between camelCase, snake_case, kebab-case, PascalCase, CONSTANT_CASE.'),
+            ('Smart split', 'Detects camelCase, underscores, hyphens and digit edges without mangling myVar.'),
+            ('Live', 'Converts as you type — no button needed to see the result.'),
+            ('Copy', 'Copy the converted identifier straight from the result panel.'),
+        ],
+        'steps': [
+            'Enter text on the left, e.g. my_variable_name or MyVariableName.',
+            'Pick the target style on the right.',
+            'The result updates instantly; click Copy to take it.',
+        ],
+        'faq': [
+            ('How are digits handled?',
+             'Digits are treated as their own word segment — v2api splits into v, 2, api, so the '
+             'number is preserved intact rather than glued to a neighbouring letter.'),
+            ('CONSTANT_CASE vs snake_case?',
+             'Both separate words with underscores; CONSTANT_CASE is all uppercase (used for macros, '
+             'constants and enums), while snake_case is all lowercase (common for Python names).'),
+        ],
+    },
+    'jwt': {
+        'nav': 'JWT decoder',
+        'title': 'JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools',
+        'description': (
+            'Decode JWTs online: parse the Header and Payload, turn exp/iat/nbf into readable times, '
+            'and verify HS256/384/512 signatures with a secret. Decoding and verification happen '
+            'locally in your browser.'
+        ),
+        'keywords': 'jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify',
+        'h1': 'JWT Decoder & Signature Verifier',
+        'intro': [
+            'Paste a JWT (three dot-separated segments) to decode the Header and Payload JSON and turn '
+            'exp (expiry), iat (issued at) and nbf (not before) into readable UTC times.',
+            'For HS256/384/512 tokens, supply the secret to verify the signature locally. Decoding and '
+            'verification run in your browser — the token and secret never leave your device.',
+        ],
+        'features': [
+            ('Header / Payload', 'base64url-decode both segments and pretty-print them for inspection.'),
+            ('Readable times', 'exp/iat/nbf become ISO 8601 times so you can see expiry at a glance.'),
+            ('Symmetric verify', 'With a secret, verify HS256/384/512 signatures locally, live.'),
+            ('Local first', 'No backend involved; token and secret are processed only on your device.'),
+        ],
+        'steps': [
+            'Paste the full JWT (three segments joined by ".") on the left.',
+            'The decoded Header, Payload and time fields appear on the right immediately.',
+            'To verify a signature, enter the HS algorithm secret in the Signature verification box.',
+        ],
+        'faq': [
+            ('Does decoding a JWT prove identity?',
+             'No. Decoding only makes the content readable; anyone can decode a JWT. Trust depends on '
+             'the server checking the signature with its key. This tool only does a local HS verification '
+             'when you provide a secret; RS/ES algorithms are not verified here.'),
+            ('Why does it still say not verified with a secret?',
+             'Only alg values of HS256/384/512 are verified with the secret. For RS256/ES256 and other '
+             'asymmetric algorithms the signature must be checked with a public key on the server, which '
+             'the browser cannot do safely — the tool says so explicitly.'),
+            ('If exp has passed, is it definitely invalid?',
+             'Yes, exp is the expiry time and servers reject expired tokens. This tool only decodes and '
+             'displays; whether a token is accepted is always up to your server.'),
+        ],
+    },
+    'yaml': {
+        'nav': 'JSON ↔ YAML',
+        'title': 'JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools',
+        'description': (
+            'Convert between JSON and YAML online: JSON to YAML and YAML to JSON, preserving structure. '
+            'Parsed with js-yaml and processed locally in your browser.'
+        ),
+        'keywords': 'json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter',
+        'h1': 'JSON ↔ YAML Converter',
+        'intro': [
+            'Enter JSON or YAML on the left, pick a direction, and get the other notation. Useful for '
+            'turning API JSON into readable YAML config, or turning YAML config back into parseable JSON.',
+            'Conversion uses the js-yaml library loaded in your browser; no text is uploaded.',
+        ],
+        'features': [
+            ('Two-way', 'Swap between JSON → YAML and YAML → JSON with one click.'),
+            ('Faithful', 'Objects, arrays, nesting, booleans and nulls are all preserved.'),
+            ('Instant', 'Converts as you type; parse errors point at the problem.'),
+        ],
+        'steps': [
+            'Enter JSON or YAML on the left.',
+            'Pick the direction on the right.',
+            'The result appears instantly; click Copy to take it.',
+        ],
+        'faq': [
+            ('Are YAML and JSON losslessly convertible?',
+             'Mostly. YAML is a superset of JSON, so anything JSON expresses is valid YAML. But YAML '
+             'anchors, multi-document streams and complex type tags have no JSON equivalent and may be '
+             'lost when converted.'),
+            ('Does conversion need a network?',
+             'The js-yaml parser loads from a public CDN, so the first page open needs network; once '
+             'loaded, plain-text conversion runs locally.'),
+        ],
+    },
+    'toml': {
+        'nav': 'JSON ↔ TOML',
+        'title': 'JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools',
+        'description': (
+            'Convert between JSON and TOML online: JSON to TOML and TOML to JSON, suited to Go / Rust '
+            'config files. Parsed with @iarna/toml and processed locally in your browser.'
+        ),
+        'keywords': 'json to toml,toml to json,json toml converter,online toml,toml formatter,go config',
+        'h1': 'JSON ↔ TOML Converter',
+        'intro': [
+            'Enter JSON or TOML on the left, pick a direction, and get the other notation. TOML is the '
+            'config format behind Go and Rust projects (e.g. Cargo.toml); converting to and from JSON '
+            'makes it easy to move data between editors, APIs and config files.',
+            'Conversion uses the @iarna/toml library loaded in your browser; no text is uploaded.',
+        ],
+        'features': [
+            ('Two-way', 'Swap between JSON → TOML and TOML → JSON with one click.'),
+            ('Config friendly', 'Tailored to config files in Go / Rust projects.'),
+            ('Instant', 'Converts as you type; parse errors point at the problem.'),
+        ],
+        'steps': [
+            'Enter JSON or TOML on the left.',
+            'Pick the direction on the right.',
+            'The result appears instantly; click Copy to take it.',
+        ],
+        'faq': [
+            ('Is TOML better than JSON for config?',
+             'For config it is often clearer: comments, unquoted keys and explicit grouping (tables) '
+             'mean fewer braces and quotes than JSON, and none of YAML\u2019s indentation traps — which '
+             'is why many language templates adopt it by default.'),
+            ('Does conversion need a network?',
+             'The @iarna/toml parser loads from a public CDN, so the first page open needs network; '
+             'once loaded, plain-text conversion runs locally.'),
+        ],
+    },
+    'csv': {
+        'nav': 'JSON ↔ CSV',
+        'title': 'JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools',
+        'description': (
+            'Convert between JSON and CSV online: JSON arrays (of objects or 2-D arrays) to CSV, and '
+            'CSV back to JSON using the first row as header. Handles quoting and comma escaping, all '
+            'locally in your browser.'
+        ),
+        'keywords': 'json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter',
+        'h1': 'JSON ↔ CSV Converter',
+        'intro': [
+            'Turn a JSON array (of objects or 2-D arrays) into CSV, or turn CSV back into a JSON array '
+            'of objects using the first row as the header — handy for moving data between spreadsheets '
+            'and programs.',
+            'Fields containing commas, quotes or newlines are quoted correctly, so the result pastes '
+            'cleanly into Excel or a database import script.',
+        ],
+        'features': [
+            ('Two-way', 'Swap between JSON → CSV and CSV → JSON with one click.'),
+            ('Auto header', 'CSV → JSON treats the first row as field names, one object per remaining row.'),
+            ('Safe escaping', 'Commas, quotes and newlines inside a field are quoted properly.'),
+        ],
+        'steps': [
+            'Enter a JSON array or CSV text on the left.',
+            'Pick the direction on the right.',
+            'The result appears instantly; click Copy to take it.',
+        ],
+        'faq': [
+            ('How is the header determined for CSV → JSON?',
+             'The first CSV row is taken as field names (the header), and each later row becomes one '
+             'object. Rows with fewer columns than the header get empty strings so the JSON stays '
+             'structurally complete.'),
+            ('What column order is used for JSON → CSV?',
+             'Columns follow the keys of the first object; extra keys from later objects are appended '
+             'at the end, keeping the table tidy without dropping data.'),
+        ],
+    },
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.
@@ -747,11 +970,12 @@ PRIVACY_BODY_EN = """
 <p>To keep the pages lightweight, this site loads the following third-party resources from public CDNs. Your browser communicates with those services when they load, and their own privacy policies apply:</p>
 <ul>
   <li><strong>cdnjs.cloudflare.com</strong> — provides the CodeMirror code editor and the QR code generation library.</li>
+  <li><strong>cdn.jsdelivr.net</strong> — provides the YAML / TOML conversion libraries, loaded on demand (only on the relevant tool pages).</li>
   <li><strong>busuanzi.ibruce.info</strong> — the visit counter in the footer.</li>
   <li><strong>hm.baidu.com</strong> — Baidu Analytics, used for site statistics.</li>
 </ul>
 <p>
-  No third-party domains beyond these three are requested. If you work in a privacy-sensitive
+  No third-party domains beyond these four are requested. If you work in a privacy-sensitive
   environment you can block them; apart from the visit counter and the editor's syntax highlighting,
   every tool keeps working, because all computation happens locally and does not depend on these
   external resources.

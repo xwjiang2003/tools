@@ -559,6 +559,228 @@ TOOLS = [
              '二维码只是载体，不改变内容本身的责任归属。'),
         ],
     },
+    {
+        'slug': 'color',
+        'path': 'color/',
+        'nav': '颜色转换',
+        'title': '在线颜色转换工具 - Hex / RGB / HSL / 颜色名称 互转 | DevTools',
+        'description': (
+            '免费在线颜色转换：Hex、RGB、HSL 与 CSS 颜色名称互相转换，实时预览色块，'
+            '支持 3 位 / 6 位 / 8 位十六进制、rgb()、hsl() 与 148 个 CSS 命名色。'
+            '纯浏览器本地处理，不上传任何数据。'
+        ),
+        'keywords': '颜色转换,十六进制转RGB,RGB转HSL,颜色选择器,Hex颜色,RGB颜色,HSL颜色,CSS颜色名称,在线颜色转换',
+        'h1': '在线颜色转换工具（Hex / RGB / HSL / 名称）',
+        'intro': [
+            '输入任意一种颜色表示，页面会同时给出另外三种写法与对应的 CSS 命名色，并实时显示色块预览。'
+            '支持 #rgb、#rrggbb、#rrggbbaa 十六进制，rgb()/rgba()、hsl()/hsla() 以及 red、rebeccapurple 这类命名色。',
+            '所有转换都在浏览器里完成，颜色值不会发送给任何服务器。',
+        ],
+        'features': [
+            ('多格式互转', 'Hex、RGB、HSL 与 CSS 命名色之间一键互转，结果同步展示。'),
+            ('命名色识别', '自动识别 148 个 CSS 标准命名色，反过来也能用名称查到对应的十六进制。'),
+            ('实时预览', '输入即转换，色块随输入实时变化，深色浅色自动切换文字对比。'),
+            ('透明通道', '8 位十六进制与 rgba() 中的 alpha 通道一并保留与转换。'),
+        ],
+        'steps': [
+            '在左侧输入框填入颜色，可以是 #ff0000、rgb(255,0,0)、hsl(0,100%,50%) 或 red。',
+            '右侧会同步显示 Hex、RGB、HSL 与命名色四种表示。',
+            '点"复制"按钮取走需要的一种格式。',
+        ],
+        'faq': [
+            ('Hex 和 RGB 有什么区别？',
+             '它们是同一个颜色的两种写法：Hex 用十六进制表示红绿蓝三个分量，RGB 用十进制。'
+             '#ff0000 与 rgb(255,0,0) 是完全等价的红色，只是书写习惯不同。'),
+            ('8 位十六进制里的最后两位是什么？',
+             '最后两位是 alpha（透明度）通道，两位十六进制表示 0~255 的透明度，'
+             '对应 rgba() 里的第四个参数，00 表示完全透明、ff 表示完全不透明。'),
+            ('为什么有些颜色没有命名色？',
+             'CSS 只定义了 148 个命名色（如 red、blue、rebeccapurple），'
+             '绝大多数颜色没有对应的英文名称，因此这一类会显示"-"，改用 Hex/RGB/HSL 表示即可。'),
+        ],
+    },
+    {
+        'slug': 'case',
+        'path': 'case/',
+        'nav': '命名风格',
+        'title': '命名风格转换工具 - camelCase / snake_case / kebab-case / PascalCase 互转 | DevTools',
+        'description': (
+            '免费在线命名风格转换：camelCase、snake_case、kebab-case、PascalCase、CONSTANT_CASE 互相转换。'
+            '自动切分驼峰与下划线，处理数字边界，纯浏览器本地处理。'
+        ),
+        'keywords': '命名风格转换,camelCase转换,snake_case转换,kebab-case转换,PascalCase,变量命名,驼峰转下划线',
+        'h1': '在线命名风格转换工具',
+        'intro': [
+            '把一段标识符按单词切分后重新拼装成目标风格：camelCase、snake_case、kebab-case、PascalCase 或 CONSTANT_CASE。'
+            '无论是改祖传代码的命名规范，还是对接不同语言的 SDK，都能省去手工改名的麻烦。',
+            '切分时可识别驼峰边界、下划线、连字符、点号以及数字与字母的边界，转换全程在浏览器本地完成。',
+        ],
+        'features': [
+            ('五种风格', 'camelCase、snake_case、kebab-case、PascalCase、CONSTANT_CASE 一键切换。'),
+            ('智能切分', '自动识别大小写驼峰、下划线、连字符与数字边界，不会把 myVar 错切成 m y Var。'),
+            ('实时转换', '输入即转换，无需点击按钮即可看到结果。'),
+            ('一键复制', '结果面板直接复制转换后的标识符。'),
+        ],
+        'steps': [
+            '在左侧输入待转换的文本，例如 my_variable_name 或 MyVariableName。',
+            '在右侧选择目标风格。',
+            '结果即时生成，点"复制"取走。',
+        ],
+        'faq': [
+            ('数字会怎样处理？',
+             '数字被视为独立的分词单元，例如 v2api 会被切分为 v、2、api，'
+             '重新拼装时数字会原样保留，不会与相邻字母粘连。'),
+            ('CONSTANT_CASE 和 snake_case 有什么不同？',
+             '两者都用下划线分隔单词，区别在于 CONSTANT_CASE 全部大写，'
+             '常用于宏、常量与枚举值；snake_case 全小写，常用于 Python 变量与函数名。'),
+        ],
+    },
+    {
+        'slug': 'jwt',
+        'path': 'jwt/',
+        'nav': 'JWT 解码',
+        'title': 'JWT 在线解码与验证工具 - 解析 Header/Payload、查看过期时间 | DevTools',
+        'description': (
+            '免费在线 JWT 解码：解析 Header 与 Payload，把 exp/iat/nbf 等时间字段转成可读时间，'
+            '支持 HS256/384/512 密钥签名验证。纯浏览器本地解码，密钥与令牌不上传。'
+        ),
+        'keywords': 'JWT解码,JWT在线解析,JWT验证,JWT过期时间,JSON Web Token,HS256验证,Bearer Token解析',
+        'h1': '在线 JWT 解码与签名验证工具',
+        'intro': [
+            '把一段 JWT（以"."分隔的三段）粘贴进来，即可解码出 Header 与 Payload 的 JSON 内容，'
+            '并把 exp（过期时间）、iat（签发时间）、nbf（生效时间）转换成可读的 UTC 时间。',
+            '如果令牌用的是 HS256/384/512 对称算法，填入密钥后还能在本地验证签名是否有效。'
+            '解码与验签全部在浏览器内完成，令牌和密钥都不会离开你的设备。',
+        ],
+        'features': [
+            ('Header / Payload 解析', 'base64url 解码两段内容并格式化展示，方便核对声明字段。'),
+            ('时间字段可读化', '自动把 exp/iat/nbf 这类 Unix 时间戳转成 ISO 8601 时间，一眼看出是否过期。'),
+            ('对称签名验证', '提供密钥后可本地验证 HS256/384/512 签名，结果实时显示有效或无效。'),
+            ('本地优先', '不涉及任何后端接口，令牌与密钥仅在本地处理。'),
+        ],
+        'steps': [
+            '在左侧粘贴完整 JWT（三段，用"."分隔）。',
+            '右侧立即显示解码后的 Header、Payload 与时间字段。',
+            '如需验证签名，在"签名验证"输入框填入 HS 算法的密钥。',
+        ],
+        'faq': [
+            ('解码 JWT 等于验证身份吗？',
+             '不等于。解码只是把令牌内容还原成可读 JSON，任何人都能解码。'
+             '令牌是否可信，取决于服务端用密钥对签名做校验——本工具只在你提供密钥时对 HS 算法做本地验签，'
+             'RS/ES 等非对称算法不在此处验证。'),
+            ('为什么填了密钥仍提示"未验证"？',
+             '只有 alg 为 HS256/384/512 时才会用密钥验签；'
+             '如果是 RS256 / ES256 等非对称算法，签名需要使用公钥在后端验证，浏览器端无法安全完成，本工具会明确标注不验证。'),
+            ('exp 已经过去就一定失效了吗？',
+             '对，exp 是过期时间，服务端在收到令牌时会据此拒绝过期请求。'
+             '但本工具只做解码展示，不作任何放行或拒绝判断，是否过期以你的服务端为准。'),
+        ],
+    },
+    {
+        'slug': 'yaml',
+        'path': 'yaml/',
+        'nav': 'JSON↔YAML',
+        'title': 'JSON 与 YAML 在线互转工具 - JSON 转 YAML / YAML 转 JSON | DevTools',
+        'description': (
+            '免费在线 JSON 与 YAML 互转：JSON 转 YAML、YAML 转 JSON，保持结构一致。'
+            '基于 js-yaml 解析，支持注释与多文档之外的常见语法，纯浏览器本地处理。'
+        ),
+        'keywords': 'JSON转YAML,YAML转JSON,JSON YAML互转,在线YAML,JSON转YML,YAML格式化,配置文件转换',
+        'h1': '在线 JSON 与 YAML 互转工具',
+        'intro': [
+            '在左侧输入 JSON 或 YAML，选择方向后即可得到另一种写法。'
+            '常用于把接口返回的 JSON 整理成更易读的 YAML 配置文件，或把 YAML 配置回填成程序可解析的 JSON。',
+            '转换依赖浏览器内加载的 js-yaml 库，文本不会上传到服务器。',
+        ],
+        'features': [
+            ('双向转换', 'JSON → YAML 与 YAML → JSON 一键互换。'),
+            ('结构保真', '对象、数组、嵌套层级、布尔与空值都准确保留。'),
+            ('即时反馈', '输入即转换，解析错误会直接提示出错位置。'),
+        ],
+        'steps': [
+            '在左侧输入 JSON 或 YAML。',
+            '在右侧选择转换方向。',
+            '结果即时生成，点"复制"取走。',
+        ],
+        'faq': [
+            ('YAML 和 JSON 能互相无损转换吗？',
+             '大多数情况下可以。YAML 是 JSON 的超集，JSON 能表达的结构在 YAML 里都能表示；'
+             '但 YAML 的锚点、多文档、复杂类型标签等 JSON 没有对应物，这类写法转成 JSON 后可能丢失信息。'),
+            ('转换需要联网吗？',
+             '解析库（js-yaml）从公共 CDN 加载，首次打开页面需要联网；'
+             '一旦加载完成，纯文本转换在本地即可进行。'),
+        ],
+    },
+    {
+        'slug': 'toml',
+        'path': 'toml/',
+        'nav': 'JSON↔TOML',
+        'title': 'JSON 与 TOML 在线互转工具 - JSON 转 TOML / TOML 转 JSON | DevTools',
+        'description': (
+            '免费在线 JSON 与 TOML 互转：JSON 转 TOML、TOML 转 JSON，适合 Go / Rust 等项目的配置文件。'
+            '基于 @iarna/toml 解析，纯浏览器本地处理。'
+        ),
+        'keywords': 'JSON转TOML,TOML转JSON,JSON TOML互转,在线TOML,TOML格式化,Go配置,TOML转JSON',
+        'h1': '在线 JSON 与 TOML 互转工具',
+        'intro': [
+            '在左侧输入 JSON 或 TOML，选择方向即可得到另一种写法。'
+            'TOML 是 Go、Rust 等生态里常见的配置文件格式（如 Cargo.toml），'
+            '把它和 JSON 之间互转，便于在编辑器、接口与配置文件之间搬运数据。',
+            '转换依赖浏览器内加载的 @iarna/toml 库，文本不会上传到服务器。',
+        ],
+        'features': [
+            ('双向转换', 'JSON → TOML 与 TOML → JSON 一键互换。'),
+            ('配置友好', '适合 Go / Rust 项目里的 Cargo.toml、pyproject 等配置文件场景。'),
+            ('即时反馈', '输入即转换，解析错误会直接提示。'),
+        ],
+        'steps': [
+            '在左侧输入 JSON 或 TOML。',
+            '在右侧选择转换方向。',
+            '结果即时生成，点"复制"取走。',
+        ],
+        'faq': [
+            ('TOML 比 JSON 更适合做配置吗？',
+             '在配置场景下 TOML 往往更直观：支持注释、不带引号的键名、清晰的分组（表），'
+             '比 JSON 少了一堆花括号和引号，也比 YAML 少了缩进敏感的坑，因此在很多语言的项目模板里被默认采用。'),
+            ('转换需要联网吗？',
+             '解析库（@iarna/toml）从公共 CDN 加载，首次打开页面需要联网；加载完成后纯文本转换在本地进行。'),
+        ],
+    },
+    {
+        'slug': 'csv',
+        'path': 'csv/',
+        'nav': 'JSON↔CSV',
+        'title': 'JSON 与 CSV 在线互转工具 - JSON 数组转 CSV / CSV 转 JSON | DevTools',
+        'description': (
+            '免费在线 JSON 与 CSV 互转：JSON 数组（对象数组 / 二维数组）转 CSV，CSV 按首行表头转回 JSON。'
+            '正确处理引号与逗号转义，纯浏览器本地处理。'
+        ),
+        'keywords': 'JSON转CSV,CSV转JSON,JSON数组转CSV,CSV转JSON对象,在线CSV,表格转换,数据转换',
+        'h1': '在线 JSON 与 CSV 互转工具',
+        'intro': [
+            '把 JSON 数组（对象数组或二维数组）转成 CSV，或把 CSV 按首行表头转回 JSON 对象数组，'
+            '方便在表格软件与程序之间搬运数据。',
+            '转换时正确处理包含逗号、引号与换行的字段，结果可直接粘贴进 Excel 或数据库导入脚本。',
+        ],
+        'features': [
+            ('双向转换', 'JSON → CSV 与 CSV → JSON 一键互换。'),
+            ('表头自动识别', 'CSV → JSON 时以首行为字段名，每行生成一条对象。'),
+            ('安全转义', '字段中的逗号、引号与换行都会被妥善加引号转义。'),
+        ],
+        'steps': [
+            '在左侧输入 JSON 数组或 CSV 文本。',
+            '在右侧选择转换方向。',
+            '结果即时生成，点"复制"取走。',
+        ],
+        'faq': [
+            ('CSV 转 JSON 时表头是怎么确定的？',
+             '默认把 CSV 的第一行当作字段名（表头），其后的每一行对应一条对象。'
+             '如果某些行的列数少于表头，缺失字段会补为空字符串，保证生成的 JSON 结构完整。'),
+            ('对象数组转 CSV 后字段顺序怎么定？',
+             '列顺序以第一个对象出现的键为准，后续对象多出来的键会追加在末尾，'
+             '这样既能保持表格整齐，又不至于漏掉数据。'),
+        ],
+    },
 ]
 
 BY_SLUG = {t['slug']: t for t in TOOLS}
@@ -607,6 +829,7 @@ PRIVACY_BODY_ZH = """\
 <p>为了保持页面简洁，本站从公共 CDN 加载以下第三方资源，加载时你的浏览器会与这些服务通信，对方的隐私政策独立适用：</p>
 <ul>
   <li><strong>cdnjs.cloudflare.com</strong> — 提供 CodeMirror 代码编辑器与二维码生成库。</li>
+  <li><strong>cdn.jsdelivr.net</strong> — 提供 YAML / TOML 等格式转换库的按需加载（仅在对应工具页）。</li>
   <li><strong>busuanzi.ibruce.info</strong> — 页脚访问量统计。</li>
   <li><strong>hm.baidu.com</strong> — 百度统计，站点分析。</li>
 </ul>

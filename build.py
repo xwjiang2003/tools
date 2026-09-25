@@ -314,27 +314,40 @@ def autodetect_html(lang, other_url):
 </script>'''
 
 
-def nav_html(active_slug, base, labels):
-    """顶部导航：工具在前，内容板块（今日热榜、博客）排到末尾。
+# 顶部导航分组（工具在前、内容在后）。展示顺序即列表顺序；
+# slugs 必须覆盖 TOOLS 的全部条目（含首页 JSON 工具），否则该条目不会出现在导航里。
+NAV_GROUPS = [
+    {'zh': 'JSON 工具', 'en': 'JSON', 'slugs': ['json']},
+    {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'yaml', 'toml', 'csv', 'color']},
+    {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
+    {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
+    {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['timestamp', 'generator']},
+    {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
+]
+CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
 
-    工具 = TOOLS 中除 hotnews/blog 外的所有项（含首页 JSON 工具）；
-    内容 = 今日热榜（NEWS_SLUG）与博客（BLOG_INDEX），二者在各自页面高亮。
+_TOOL_BY_SLUG = {t['slug']: t for t in TOOLS}
+
+
+def nav_html(active_slug, base, labels, lang='zh'):
+    """顶部导航按分类分组：工具板块在前，内容板块（今日热榜、博客）排到最后。
+
+    每个分类以一个 muted 分组标题（nav-group）开头；内容板块同样作为独立分组置于末尾。
     """
     out = []
-    for t in TOOLS:
-        if t['slug'] in (NEWS_SLUG, 'blog'):
-            continue  # 内容板块统一排到导航末尾
-        href = base + t['path'] if t['path'] else (base or './')
-        cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
-        out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
-    # 内容板块：今日热榜 + 博客，置于导航最后。
-    content_items = [
-        (NEWS_SLUG, base + 'hotnews/', NEWS_SLUG),
-        ('blog', base + BLOG_INDEX, '_blog'),
-    ]
-    for slug, href, lbl in content_items:
-        cls = 'top-nav-item active' if active_slug == slug else 'top-nav-item'
-        out.append(f'    <a class="{cls}" href="{href}">{esc(labels[lbl])}</a>')
+    for g in NAV_GROUPS + [CONTENT_GROUP]:
+        out.append(f'    <span class="nav-group">{esc(g[lang])}</span>')
+        for slug in g['slugs']:
+            if slug == 'blog':
+                cls = 'top-nav-item active' if active_slug == 'blog' else 'top-nav-item'
+                out.append(f'    <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
+                continue
+            t = _TOOL_BY_SLUG.get(slug)
+            if not t:
+                continue
+            href = base + t['path'] if t['path'] else (base or './')
+            cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
+            out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
     return '\n'.join(out)
 
 
@@ -519,7 +532,7 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     active = None if path == PRIVACY_FILE else _slug_of(path)
     if slug and str(slug).startswith('blog'):
         active = 'blog'
-    page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang]))
+    page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang], lang))
     page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))
     page = page.replace('{{JSONLD}}', ld)
     page = page.replace('{{TOOL}}', body)

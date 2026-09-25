@@ -53,6 +53,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
 .top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
 .top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
+.nav-group:first-child{border-left:none;padding-left:0}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
 .theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
 .theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
@@ -373,16 +375,29 @@ var _hmt = _hmt || [];
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
+    <span class="nav-group">JSON</span>
     <a class="top-nav-item" href="../en/">JSON</a>
-    <a class="top-nav-item" href="../en/go-cheatsheet/">Go Cheat Sheet</a>
-    <a class="top-nav-item" href="../en/diff/">Text Diff</a>
-    <a class="top-nav-item" href="../en/encode/">Encode</a>
-    <a class="top-nav-item" href="../en/regex/">Regex</a>
-    <a class="top-nav-item" href="../en/timestamp/">Timestamp</a>
-    <a class="top-nav-item" href="../en/hash/">Hash</a>
+    <span class="nav-group">Convert</span>
     <a class="top-nav-item" href="../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../en/yaml/">JSON ↔ YAML</a>
+    <a class="top-nav-item" href="../en/toml/">JSON ↔ TOML</a>
+    <a class="top-nav-item" href="../en/csv/">JSON ↔ CSV</a>
+    <a class="top-nav-item" href="../en/color/">Color</a>
+    <span class="nav-group">Encode / Crypto</span>
+    <a class="top-nav-item" href="../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../en/jwt/">JWT decoder</a>
+    <span class="nav-group">Text / String</span>
+    <a class="top-nav-item" href="../en/diff/">Text Diff</a>
     <a class="top-nav-item" href="../en/string/">Strings</a>
+    <a class="top-nav-item" href="../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../en/case/">Case style</a>
+    <span class="nav-group">Code / Gen</span>
+    <a class="top-nav-item" href="../en/timestamp/">Timestamp</a>
     <a class="top-nav-item" href="../en/generator/">Generators</a>
+    <span class="nav-group">Cheat Sheets</span>
+    <a class="top-nav-item" href="../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <span class="nav-group">Content</span>
     <a class="top-nav-item" href="../en/hotnews/">Tech News</a>
     <a class="top-nav-item" href="../en/blog/">Blog</a>
   </nav>
@@ -444,11 +459,12 @@ document.addEventListener("click", function (e) {
 <p>To keep the pages lightweight, this site loads the following third-party resources from public CDNs. Your browser communicates with those services when they load, and their own privacy policies apply:</p>
 <ul>
   <li><strong>cdnjs.cloudflare.com</strong> — provides the CodeMirror code editor and the QR code generation library.</li>
+  <li><strong>cdn.jsdelivr.net</strong> — provides the YAML / TOML conversion libraries, loaded on demand (only on the relevant tool pages).</li>
   <li><strong>busuanzi.ibruce.info</strong> — the visit counter in the footer.</li>
   <li><strong>hm.baidu.com</strong> — Baidu Analytics, used for site statistics.</li>
 </ul>
 <p>
-  No third-party domains beyond these three are requested. If you work in a privacy-sensitive
+  No third-party domains beyond these four are requested. If you work in a privacy-sensitive
   environment you can block them; apart from the visit counter and the editor's syntax highlighting,
   every tool keeps working, because all computation happens locally and does not depend on these
   external resources.
@@ -492,7 +508,7 @@ clear or block them at any time in your browser.</p>
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../en/">Home</a><a href="../en/hotnews/">Tech News</a><a href="../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../en/diff/">Text Diff</a><a href="../en/encode/">Encode</a><a href="../en/regex/">Regex</a><a href="../en/timestamp/">Timestamp</a><a href="../en/hash/">Hash</a><a href="../en/formatter/">Formatter</a><a href="../en/string/">Strings</a><a href="../en/generator/">Generators</a><a href="../en/blog/">Blog</a><a href="../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../en/">Home</a><a href="../en/hotnews/">Tech News</a><a href="../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../en/diff/">Text Diff</a><a href="../en/encode/">Encode</a><a href="../en/regex/">Regex</a><a href="../en/timestamp/">Timestamp</a><a href="../en/hash/">Hash</a><a href="../en/formatter/">Formatter</a><a href="../en/string/">Strings</a><a href="../en/generator/">Generators</a><a href="../en/color/">Color</a><a href="../en/case/">Case style</a><a href="../en/jwt/">JWT decoder</a><a href="../en/yaml/">JSON ↔ YAML</a><a href="../en/toml/">JSON ↔ TOML</a><a href="../en/csv/">JSON ↔ CSV</a><a href="../en/blog/">Blog</a><a href="../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
 </footer>
 

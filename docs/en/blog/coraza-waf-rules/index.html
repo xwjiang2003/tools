@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en" data-page="blog-coraza-waf-rules">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule | DevTools Blog</title>
+<meta name="description" content="Coraza is a Go-based open-source WAF and the community successor to ModSecurity, with SecRule syntax that is almost fully compatible. This post starts from &quot;what a rule is made of&quot; and covers variables, operators, transforms, actions, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.">
+<meta name="keywords" content="coraza rules,coraza waf,secrule syntax,modsecurity alternative,owasp crs,coraza custom rule,secruleengine,@rx operator,waf rule writing">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/en/blog/coraza-waf-rules/">
+<meta property="og:title" content="Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule | DevTools Blog">
+<meta property="og:description" content="Coraza is a Go-based open-source WAF and the community successor to ModSecurity, with SecRule syntax that is almost fully compatible. This post starts from &quot;what a rule is made of&quot; and covers variables, operators, transforms, actions, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/en/blog/coraza-waf-rules/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/coraza-waf-rules/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/coraza-waf-rules/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/coraza-waf-rules/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule", "description": "Coraza is a Go-based open-source WAF and the successor to ModSecurity, with largely compatible SecRule syntax. This post covers the three parts of a rule, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.", "url": "https://devtools.help/en/blog/coraza-waf-rules/", "datePublished": "2026-09-25", "dateModified": "2026-09-25", "inLanguage": "en", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "coraza rules,coraza waf,secrule syntax,modsecurity alternative,owasp crs,coraza custom rule,secruleengine,@rx operator,waf rule writing"}]}</script>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.top-nav::-webkit-scrollbar{display:none}
+.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
+.nav-group:first-child{border-left:none;padding-left:0}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
+.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+/* JSON tool tabs */
+.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
+.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
+.json-tab:hover{color:var(--text);background:var(--tab-hover)}
+.json-tab.active{background:var(--primary);color:#fff}
+.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.json-tab-content.active{display:flex}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
+.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
+.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.diff-add{background:var(--diff-add);color:#155724}
+.diff-remove{background:var(--diff-remove);color:#721c24}
+.diff-equal{color:var(--text-secondary)}
+.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
+.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
+.tree-node{margin-left:20px}.tree-root{margin-left:0}
+.tree-key{color:var(--primary)}
+.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
+.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
+.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
+.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
+.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}
+.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
+.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
+.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
+.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
+.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
+/* Text diff */
+.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
+.diff-page-layout .diff-textarea{min-height:200px;flex:1}
+.diff-unified{padding:2px 0}
+.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
+.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
+.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
+.diff-unified-equal{color:var(--text-secondary)}
+.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
+.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
+.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
+.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
+.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
+.diff-side-add{background:var(--diff-add)}
+.diff-side-remove{background:var(--diff-remove)}
+.diff-side-empty{background:var(--tab-hover)}
+.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
+.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（分段控件） */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
+.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
+.lang-link+.lang-link{border-left:1px solid var(--border)}
+.lang-link:hover{background:var(--tab-hover);color:var(--text)}
+.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
+/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+/* ==================== 今日热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
+   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+.news{display:flex;flex-direction:column;gap:16px}
+.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-head-row{margin-bottom:12px}
+.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
+.news-updated b{color:var(--text-secondary);font-weight:600}
+.news-dot{margin:0 6px;opacity:.5}
+.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.news-tab.active .news-tab-n{opacity:.85}
+.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.news-group[data-on="0"]{display:none}
+.news-group+.news-group{margin-top:16px}
+.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
+.news-group-name:hover{color:var(--primary);text-decoration:underline}
+.news-group-desc{font-size:12px;color:var(--text-muted)}
+.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
+.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
+.news-list{list-style:none;margin:0;padding:0}
+.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
+.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
+.news-main{flex:1;min-width:0}
+.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
+.news-title:hover{color:var(--primary)}
+.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
+.news-title:hover .news-ext{opacity:1}
+.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
+.news-meta time{font-variant-numeric:tabular-nums}
+.news-heat{color:var(--warning);font-weight:600}
+.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
+/* ==================== Go 速查表（/go-cheatsheet/） ====================
+   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
+   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+.gocs{display:flex;flex-direction:column;gap:16px}
+.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.gocs-meta b{color:var(--text-secondary);font-weight:600}
+.gocs-dot{margin:0 6px;opacity:.5}
+.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
+.gocs-search:focus{border-color:var(--primary)}
+.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.gocs-group[data-on="0"]{display:none}
+.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
+.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item[data-on="0"]{display:none}
+.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
+.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
+.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
+.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
+.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
+.gocs-pit b{color:var(--warning);margin-right:6px}
+.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 博客（/blog/） ==================== */
+.blog-list{display:flex;flex-direction:column;gap:12px}
+.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
+.blog-card:hover{box-shadow:var(--shadow-md)}
+.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
+.blog-card:hover .blog-card-title{color:var(--primary)}
+.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
+.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
+.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
+.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 文章页 */
+.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
+.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
+.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
+.post p{margin-bottom:12px}
+.post ul,.post ol{margin:0 0 12px 22px}
+.post li{margin-bottom:6px}
+.post b,.post strong{color:var(--text)}
+.post a{color:var(--primary)}
+.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
+.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
+.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
+.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
+.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
+.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
+.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
+.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.post-related h2{margin-top:0}
+@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
+
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
+// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var preferZh = false;
+    for (var i = 0; i < langs.length; i++) {
+      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+    }
+    var want = preferZh ? 'zh' : 'en';
+    var target = {"zh": "../../../blog/coraza-waf-rules/", "en": "./"}[want];
+    if (target && want !== 'en') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?d052ce9e23ea8d3ec643b0d49eb5b96a";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../../en/" aria-label="DevTools home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    DevTools
+  </a>
+  <nav class="top-nav" id="topNav">
+    <span class="nav-group">JSON</span>
+    <a class="top-nav-item" href="../../../en/">JSON</a>
+    <span class="nav-group">Convert</span>
+    <a class="top-nav-item" href="../../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../../en/yaml/">JSON ↔ YAML</a>
+    <a class="top-nav-item" href="../../../en/toml/">JSON ↔ TOML</a>
+    <a class="top-nav-item" href="../../../en/csv/">JSON ↔ CSV</a>
+    <a class="top-nav-item" href="../../../en/color/">Color</a>
+    <span class="nav-group">Encode / Crypto</span>
+    <a class="top-nav-item" href="../../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../../en/jwt/">JWT decoder</a>
+    <span class="nav-group">Text / String</span>
+    <a class="top-nav-item" href="../../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../../en/case/">Case style</a>
+    <span class="nav-group">Code / Gen</span>
+    <a class="top-nav-item" href="../../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../../en/generator/">Generators</a>
+    <span class="nav-group">Cheat Sheets</span>
+    <a class="top-nav-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <span class="nav-group">Content</span>
+    <a class="top-nav-item" href="../../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item active" href="../../../en/blog/">Blog</a>
+  </nav>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../../blog/coraza-waf-rules/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+<script>
+// 记住手动选择：下次访问不再自动跳转
+document.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest("[data-lang-set]");
+  if (!a) return;
+  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
+}, true);
+</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-blog-coraza-waf-rules">
+<article class="post" lang="en">
+  <h1>Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule</h1>
+  <div class="post-meta"><time datetime="2026-09-25">Published 2026-09-25</time><span class="blog-tag">WAF</span><span class="blog-tag">Coraza</span><span class="blog-tag">Security</span><span class="blog-tag">ModSecurity</span><span class="blog-tag">OWASP</span></div>
+<blockquote>
+  <p><b>TL;DR</b>: Coraza is an open-source WAF written in Go and the community successor to
+  ModSecurity. Its rule syntax (<code>SecRule</code>) is almost fully compatible, so migrating an
+  old setup is mostly "swap the engine, keep the rules". The core idea is <b>one SecRule = variable
+  + operator + action</b>, combined with five processing phases and the OWASP CRS rule set: you can
+  adopt the community rules as-is or write your own targeted rules.</p>
+</blockquote>
+
+<h2>1. What Coraza is</h2>
+<p>Coraza is a Go-based, OWASP-compliant web application firewall engine, and the widely adopted
+replacement since ModSecurity v3 stopped being maintained. Three points worth calling out:</p>
+<ul>
+  <li><b>ModSecurity-compatible syntax</b>: directives you already wrote - <code>SecRule</code>,
+      <code>SecAction</code>, <code>SecRuleEngine</code> - and the OWASP CRS (Core Rule Set) run
+      on Coraza with almost no changes, so migration cost is minimal;</li>
+  <li><b>Pure Go, no C dependency</b>: it does not depend on the libmodsecurity C library, which
+      makes cross-compilation, containerization and embedding into your own Go program painless;</li>
+  <li><b>Library or gateway</b>: you can <code>import</code> it into a Go service for inline
+      inspection, or deploy it in front of traffic via a Caddy / Nginx connector or a standalone
+      gateway such as warden.</li>
+</ul>
+<p>It is Apache-2.0 licensed and a formal OWASP project.</p>
+
+<h2>2. What a rule is made of</h2>
+<p>Most of Coraza's protection logic lives in a single <code>SecRule</code>. The simplest rule
+looks like this:</p>
+<pre><code>SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|nikto|nmap)" \
+    "id:1001,phase:1,deny,status:403,msg:'known scanner UA'"</code></pre>
+<p>It has three parts, in fixed order:</p>
+<table>
+  <tr><th>Part</th><th>Role</th><th>Example above</th></tr>
+  <tr><td>Variable</td><td>What data to inspect: headers, args, URI, body, IP...</td><td><code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td>Operator</td><td>How to decide a match; starts with @</td><td><code>@rx (?i)(sqlmap|nikto)</code></td></tr>
+  <tr><td>Action</td><td>What to do on match; comma-separated key/value pairs</td><td><code>id:1001,phase:1,deny,...</code></td></tr>
+</table>
+<p>The backslash <code>\</code> is a line continuation, so a long rule can be split across lines for
+readability. Let's take the three parts apart.</p>
+
+<h2>3. Variables: which piece of data you inspect</h2>
+<p>Variables decide which part of the request a rule watches. The common ones:</p>
+<table>
+  <tr><th>Variable</th><th>Meaning</th></tr>
+  <tr><td><code>REQUEST_URI</code></td><td>Full request path (including query string); most used</td></tr>
+  <tr><td><code>REQUEST_LINE</code></td><td>Full request line, e.g. <code>GET /a?x=1 HTTP/1.1</code></td></tr>
+  <tr><td><code>REQUEST_HEADERS</code></td><td>All request headers; add a colon for one, e.g. <code>REQUEST_HEADERS:User-Agent</code></td></tr>
+  <tr><td><code>REQUEST_BODY</code></td><td>Request body (POST form / JSON / XML; requires the relevant parser on)</td></tr>
+  <tr><td><code>ARGS</code> / <code>ARGS_GET</code> / <code>ARGS_POST</code></td><td>All args / query string only / form only</td></tr>
+  <tr><td><code>QUERY_STRING</code></td><td>Query string only</td></tr>
+  <tr><td><code>REMOTE_ADDR</code></td><td>Client IP</td></tr>
+  <tr><td><code>RESPONSE_BODY</code></td><td>Response body (egress inspection, e.g. leaking card numbers)</td></tr>
+  <tr><td><code>TX</code></td><td>Transaction variable; rules pass data between each other with setvar</td></tr>
+</table>
+<p>Variables also carry count / collection semantics: <code>&amp;ARGS</code> counts the number of
+parameters, and <code>ARGS:username</code> selects only the parameter named username. Multiple
+variables are OR-ed with <code>|</code>: <code>REQUEST_HEADERS|REQUEST_BODY</code> means "match if
+either header or body hits".</p>
+
+<h2>4. Operators: how a match is decided</h2>
+<p>Operators decide the matching logic and all start with @. The most common is regex matching:</p>
+<pre><code>@rx &lt;regular expression&gt;   # regex match, returns true on hit
+@pm word1 word2 ...        # phrase match, multiple keywords OR-ed, faster than many @rx
+@pmFromFile /path/list     # read keywords from a file for phrase match (e.g. scanner UA list)</code></pre>
+<p>Other common operators:</p>
+<table>
+  <tr><th>Operator</th><th>Test</th></tr>
+  <tr><td><code>@eq</code> / <code>@gt</code> / <code>@lt</code> / <code>@ge</code> / <code>@le</code></td><td>equal / greater / less / greater-or-equal / less-or-equal (numeric)</td></tr>
+  <tr><td><code>@contains</code> / <code>@beginsWith</code> / <code>@endsWith</code></td><td>contains / prefix / suffix</td></tr>
+  <tr><td><code>@within</code></td><td>whether the target is within a given set (e.g. IP within a CIDR)</td></tr>
+  <tr><td><code>@ipMatch</code></td><td>whether the client IP matches a CIDR / IP list</td></tr>
+  <tr><td><code>@validateUrlEncoding</code></td><td>whether URL encoding is valid (catches %u and other malformed-encoding bypasses)</td></tr>
+  <tr><td><code>@validateUtf8Encoding</code></td><td>whether UTF-8 encoding is valid</td></tr>
+  <tr><td><code>@detectSQLi</code></td><td>built-in SQL injection detection (used by CRS)</td></tr>
+  <tr><td><code>@detectXSS</code></td><td>built-in XSS detection</td></tr>
+  <tr><td><code>@rx</code> with <code>!</code></td><td>negation: <code>@rx !...</code> matches when it does NOT match</td></tr>
+</table>
+<p>Tip: <code>@pm</code> is much faster than a chain of <code>@rx (a|b|c)</code> because it uses an
+internal Aho-Corasick multi-pattern matcher; when matching dozens of scanner keywords, prefer
+<code>@pmFromFile</code>.</p>
+
+<h2>5. Transforms: normalize before matching</h2>
+<p>Attackers mix case, double-URL-encode, and pad with whitespace to evade rules. A transform runs
+<b>before</b> matching to normalize those variations. It is written in the action list with a
+<code>t:</code> prefix and several can be stacked:</p>
+<pre><code>"id:1002,phase:2,deny,t:lowercase,t:urlDecode,t:removeWhitespace,t:compressWhitespace,@rx (?i)(union\s+select|drop\s+table)"</code></pre>
+<table>
+  <tr><th>Transform</th><th>What it does</th></tr>
+  <tr><td><code>t:none</code></td><td>Clears any previously accumulated transforms (usually placed first to reset)</td></tr>
+  <tr><td><code>t:lowercase</code></td><td>Lowercases, defeating case evasion</td></tr>
+  <tr><td><code>t:urlDecode</code> / <code>t:urlDecodeUni</code></td><td>URL-decode (including %u encoding)</td></tr>
+  <tr><td><code>t:removeWhitespace</code> / <code>t:compressWhitespace</code></td><td>Remove / compress runs of whitespace</td></tr>
+  <tr><td><code>t:htmlEntityDecode</code></td><td>Decode entities like <code>&amp;amp;</code> <code>&amp;#x3c;</code></td></tr>
+  <tr><td><code>t:base64Decode</code></td><td>Base64-decode</td></tr>
+  <tr><td><code>t:normalisePath</code> / <code>t:normalisePathWin</code></td><td>Normalize path (resolve ../ and extra slashes)</td></tr>
+  <tr><td><code>t:cmdLine</code></td><td>Normalize a command-line string (defeats spacing, quotes, path tricks)</td></tr>
+</table>
+
+<h2>6. Actions: what happens after a match</h2>
+<p>Actions fall into three groups. The disruptive actions decide the request's fate:</p>
+<table>
+  <tr><th>Disruptive</th><th>Effect</th></tr>
+  <tr><td><code>deny</code></td><td>Block immediately; pair with <code>status:403</code> (or 406, etc.)</td></tr>
+  <tr><td><code>block</code></td><td>Block per the current <code>SecDefaultAction</code> (more flexible)</td></tr>
+  <tr><td><code>pass</code></td><td>Allow but log / count (common for alert-only rules)</td></tr>
+  <tr><td><code>allow</code></td><td>Allow and skip remaining phase checks</td></tr>
+  <tr><td><code>redirect</code> + <code>location</code></td><td>302 redirect to a given URL</td></tr>
+</table>
+<p>Non-disruptive actions keep bookkeeping and context:</p>
+<pre><code>setvar:tx.sql_hits=+1     # increment a tx variable (block later when &gt; threshold)
+setvar:tx.block_flag=1    # set a flag later rules read to block
+capture                   # store @rx capture groups into TX.0 / TX.1 ...
+log / nolog               # whether to write to the log
+auditlog / noauditlog     # whether to enter the audit log</code></pre>
+<p>Some metadata actions must be on every rule for troubleshooting:</p>
+<pre><code>id:1003                  # rule ID (required, globally unique; CRS uses 900000+, custom 1000-7999)
+phase:2                  # processing phase
+msg:'sql injection'       # human-readable note recorded on match
+severity:'CRITICAL'       # level (EMERGENCY/ALERT/CRITICAL/ERROR/WARNING/NOTICE/INFO)
+tag:'attack-sqli'         # tag, handy for grouping stats</code></pre>
+
+<h2>7. Chains: multi-condition "AND"</h2>
+<p>A single rule expresses one "variable + operator". To express "A AND B", chain rules with
+<code>chain</code>; only when the whole chain matches does the last rule's disruptive action run:</p>
+<pre><code>SecRule ARGS_GET:q "@rx (?i)select" "id:2001,phase:2,chain,t:none,t:lowercase"
+    SecRule REQUEST_HEADERS:User-Agent "@rx (?i)(sqlmap|havij)" "deny,status:403,msg:'sql tool'"</code></pre>
+<p>This means: block only when parameter <code>q</code> contains select <b>and</b> the UA is a
+scanner - avoiding a bare "select" blocking a legitimate search that happens to contain SQL
+keywords.</p>
+
+<h2>8. The five phases</h2>
+<p>Rules are distributed across request / response phases by <code>phase</code>; earlier is cheaper:</p>
+<table>
+  <tr><th>Phase</th><th>When</th><th>Good for</th></tr>
+  <tr><td>phase:1</td><td>Request headers just received</td><td>Coarse filter by IP / UA / Host (fastest)</td></tr>
+  <tr><td>phase:2</td><td>Request body parsed</td><td>Injection / XSS on args and body (most used)</td></tr>
+  <tr><td>phase:3</td><td>Before response headers</td><td>Egress header rewriting</td></tr>
+  <tr><td>phase:4</td><td>After response body</td><td>Egress data-leak inspection (card / ID numbers)</td></tr>
+  <tr><td>phase:5</td><td>At logging</td><td>Stats / logging only, never blocks</td></tr>
+</table>
+<p>Putting cheap coarse filters in phase:1 and expensive regex / decoding in phase:2 is the key to
+fewer false positives and lower overhead.</p>
+
+<h2>9. OWASP CRS: rules that work out of the box</h2>
+<p>Writing your own rules is the backstop; what actually stops day-to-day attacks is the <b>OWASP
+CRS (Core Rule Set)</b> - a community-maintained, general-purpose rule set covering SQLi, XSS,
+file inclusion, protocol violations and scanner fingerprints, shipped with Coraza. You enable it by
+Including it in your config:</p>
+<pre><code>Include /path/to/coraza.conf          # engine base config (SecRuleEngine, etc.)
+Include /path/to/crs-setup.conf       # CRS master switch and tuning
+Include /path/to/rules/*.conf          # the actual rule files</code></pre>
+<p>Handy CRS knobs (in <code>crs-setup.conf</code>):</p>
+<ul>
+  <li><code>tx.paranoia_level</code>: paranoia level 1-4; higher is stricter and noisier, default 1.
+      Start at 1 and raise it once things are stable;</li>
+  <li><code>tx.blocking_paranoia_level</code>: the level that actually blocks; can be lower than
+      <code>paranoia_level</code> so higher levels only log while lower levels block;</li>
+  <li><code>tx.anomaly_score_block</code>: block when the accumulated anomaly score passes a
+      threshold instead of on a single hit - far more stable than per-rule deny; each rule usually
+      only adds score, and the total decides, which sharply cuts false positives.</li>
+</ul>
+
+<h2>10. Hands-on: a custom anti-SQLi rule</h2>
+<p>Suppose your search endpoint <code>/search?q=</code> keeps getting injection probes and you want a
+targeted rule on top of CRS. Idea: normalize first, regex next, count rather than block on hit, and
+deny only past a threshold:</p>
+<pre><code># /etc/coraza/custom/search-sqli.conf
+SecRule REQUEST_URI "@rx (?i)/search" "id:900100,phase:1,pass,nolog,setvar:tx.on_search=1"
+
+SecRule ARGS_GET:q \
+    "@rx (?i)(union\s+select|select\s+.*\s+from|or\s+1=1|'\s+or\s+'|drop\s+table|insert\s+into)" \
+    "id:900101,phase:2,chain,t:none,t:lowercase,t:urlDecode,t:compressWhitespace"
+    SecRule TX:on_search "@eq 1" \
+        "deny,status:403,msg:'SQLi in search q',severity:'CRITICAL',tag:'attack-sqli',\
+         setvar:tx.sql_score=+5"
+
+SecAction "id:900102,phase:2,pass,setvar:tx.sql_score=0"
+SecRule TX:sql_score "@ge 5" "id:900103,phase:2,deny,status:403,msg:'SQLi score exceeded'"</code></pre>
+<p>This rule does three things: 1) it only applies on <code>/search</code>, leaving other endpoints
+alone; 2) it matches <code>q</code> case-insensitively and after decoding, and on a hit just stamps
+a <code>sql_score</code> flag; 3) the real block is the "score reached 5" rule, leaving a buffer for
+legitimate keyword searches so one bad match does not 403. Include the custom file in the main
+config; CRS itself stays untouched.</p>
+
+<h2>11. DetectionOnly vs On: observe before you block</h2>
+<p><code>SecRuleEngine</code> is the master switch; only two values matter:</p>
+<table>
+  <tr><th>Value</th><th>Behavior</th><th>When</th></tr>
+  <tr><td><code>DetectionOnly</code></td><td>Log only, never block</td><td>Run new rules / new sites for a while first</td></tr>
+  <tr><td><code>On</code></td><td>Act on matches per the actions</td><td>Once false positives are under control</td></tr>
+</table>
+<p>Rule of thumb: <b>any new rule, any newly onboarded site, runs in DetectionOnly for at least one
+to two weeks</b> first. Read the audit log to see whether legitimate traffic was flagged (typical
+false positives: searches containing "select", rich-text editing containing <code>&lt;</code>, or
+large JSON blobs of text). Once the false-positive rate is acceptable, switch the relevant rules to
+<code>On</code> or raise <code>blocking_paranoia_level</code>. <b>Going straight to On is the number
+one cause of a WAF blocking legitimate traffic.</b></p>
+
+<h2>12. How to actually run it</h2>
+<p>Coraza is not only a standalone box; four common ways to deploy:</p>
+<table>
+  <tr><th>Way</th><th>How</th><th>When</th></tr>
+  <tr><td>Go library inline</td><td><code>import github.com/corazawaf/coraza/v3</code> and call ProcessRequest in your handler</td><td>You write the Go service and want inline inspection</td></tr>
+  <tr><td>Caddy connector</td><td>Use the coraza-caddy plugin; a few lines in the Caddyfile</td><td>You already reverse-proxy with Caddy</td></tr>
+  <tr><td>Nginx connector</td><td>coraza-nginx dynamic module</td><td>You already use Nginx and want minimal change</td></tr>
+  <tr><td>Standalone gateway</td><td>E.g. warden, one binary packing Coraza + CC protection + dashboard</td><td>You want a panel and zero config fiddling</td></tr>
+</table>
+<p>For Caddy, the minimal config is just:</p>
+<pre><code>{
+    order coraza before reverse_proxy
+}
+example.com {
+    coraza {
+        directives `
+            Include /etc/coraza/coraza.conf
+            Include /etc/coraza/crs/crs-setup.conf
+            Include /etc/coraza/rules/*.conf
+        `
+    }
+    reverse_proxy 127.0.0.1:8000
+}</code></pre>
+
+<h2>13. Recap</h2>
+<p>Coraza brings ModSecurity's mature rule system to Go, at near-zero migration cost. Keep this
+spine in mind:</p>
+<table>
+  <tr><th>Concept</th><th>One line</th></tr>
+  <tr><td>One rule</td><td>variable + operator (starts with @) + action (id/phase/deny...)</td></tr>
+  <tr><td>Normalize</td><td>Use t: transforms to defeat evasion before matching</td></tr>
+  <tr><td>Multi-condition</td><td>chain for "AND", TX variable for cross-rule counting</td></tr>
+  <tr><td>Daily protection</td><td>Adopt OWASP CRS; do not hand-roll from scratch</td></tr>
+  <tr><td>Go-live discipline</td><td>DetectionOnly observe -&gt; then On; score-threshold blocking beats per-rule deny</td></tr>
+</table>
+<p>To see a real project that packs Coraza with CC protection and IP-origin blocking into a
+single-file gateway, read <a href="/en/blog/warden-go-waf/">warden: A Single-Binary Go
+Reverse-Proxy WAF</a>.</p>
+  <div class="post-related">
+    <h2>Further reading</h2>
+    <ul>
+      <li><a href="../../../en/blog/warden-go-waf/">warden: A Single-Binary Go Reverse-Proxy WAF</a></li>
+      <li><a href="../../../en/go-cheatsheet/">Go toolchain command cheat sheet</a></li>
+      <li><a href="../../../en/blog/">All articles</a></li>
+    </ul>
+  </div>
+</article>
+</div>
+
+
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../../en/">Home</a><a href="../../../en/hotnews/">Tech News</a><a href="../../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../../en/diff/">Text Diff</a><a href="../../../en/encode/">Encode</a><a href="../../../en/regex/">Regex</a><a href="../../../en/timestamp/">Timestamp</a><a href="../../../en/hash/">Hash</a><a href="../../../en/formatter/">Formatter</a><a href="../../../en/string/">Strings</a><a href="../../../en/generator/">Generators</a><a href="../../../en/color/">Color</a><a href="../../../en/case/">Case style</a><a href="../../../en/jwt/">JWT decoder</a><a href="../../../en/yaml/">JSON ↔ YAML</a><a href="../../../en/toml/">JSON ↔ TOML</a><a href="../../../en/csv/">JSON ↔ CSV</a><a href="../../../en/blog/">Blog</a><a href="../../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Feedback</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+  </div>
+  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
+    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
+  </div>
+  <p class="fb-note">
+    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>·</span>
+    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page: ' + location.href,
+      'Browser: ' + navigator.userAgent,
+      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
+      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Time: ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
+      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

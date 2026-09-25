@@ -1,0 +1,91 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="csvClear()">清空</button><button class="btn btn-sm" onclick="csvSample()">示例</button></div></div>
+    <textarea class="ta-input" id="csvInput" placeholder="Enter JSON array of objects, or CSV text"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>转换方向</span>
+      <select id="csvDir">
+        <option value="toCsv">JSON → CSV</option>
+        <option value="toJson">CSV → JSON</option>
+      </select>
+    </div>
+    <div class="op-buttons"><button class="op-btn active" onclick="csvConvert()">转换</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('csvResult')">复制</button></div></div>
+      <div class="result-content" id="csvResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function csvEscape(v){
+    if(v===null||v===undefined) return '';
+    var s = (typeof v==='object') ? JSON.stringify(v) : String(v);
+    if(/[",\n\r]/.test(s)){ s = '"' + s.replace(/"/g,'""') + '"'; }
+    return s;
+  }
+  function jsonToCsv(data){
+    var rows=[];
+    if(Array.isArray(data)){
+      if(data.length && Array.isArray(data[0])){
+        for(var i=0;i<data.length;i++){ rows.push(data[i].map(csvEscape).join(',')); }
+        return rows.join('\n');
+      }
+      var headers=[];
+      for(var i=0;i<data.length;i++){ for(var k in data[i]){ if(headers.indexOf(k)<0) headers.push(k); } }
+      rows.push(headers.map(csvEscape).join(','));
+      for(var i=0;i<data.length;i++){ var row=[]; for(var h=0;h<headers.length;h++){ row.push(csvEscape(data[i][headers[h]])); } rows.push(row.join(',')); }
+      return rows.join('\n');
+    }
+    if(typeof data==='object'){
+      var keys=Object.keys(data); var row=[]; for(var j=0;j<keys.length;j++) row.push(csvEscape(data[keys[j]]));
+      return keys.map(csvEscape).join(',')+'\n'+row.join(',');
+    }
+    throw new Error('Input must be an array or object');
+  }
+  function parseCsv(text){
+    var rows=[]; var row=[]; var field=''; var i=0; var inQ=false;
+    while(i<text.length){
+      var c=text[i];
+      if(inQ){
+        if(c==='"'){ if(text[i+1]==='"'){ field+='"'; i+=2; continue; } inQ=false; i++; continue; }
+        field+=c; i++; continue;
+      }
+      if(c==='"'){ inQ=true; i++; continue; }
+      if(c===','){ row.push(field); field=''; i++; continue; }
+      if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(field); rows.push(row); row=[]; field=''; i++; continue; }
+      field+=c; i++;
+    }
+    if(field.length||row.length){ row.push(field); rows.push(row); }
+    return rows;
+  }
+  function csvToJson(text){
+    var rows = parseCsv(text);
+    if(rows.length<2) return [];
+    var headers = rows[0].map(function(h){ return h.trim(); });
+    var out=[];
+    for(var r=1;r<rows.length;r++){
+      if(rows[r].length===1 && rows[r][0]==='') continue;
+      var obj={}; for(var c=0;c<headers.length;c++){ obj[headers[c]] = rows[r][c]===undefined?'':rows[r][c]; }
+      out.push(obj);
+    }
+    return out;
+  }
+  function csvConvert(){
+    var text = getVal('csvInput'); var dir = document.getElementById('csvDir').value;
+    var out = document.getElementById('csvResult');
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    try{
+      out.textContent = dir==='toCsv' ? jsonToCsv(JSON.parse(text)) : JSON.stringify(csvToJson(text), null, 2);
+    }catch(e){
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+    }
+  }
+  window.csvClear=function(){ setVal('csvInput',''); csvConvert(); };
+  window.csvSample=function(){ setVal('csvInput','[\n  {"name":"Alice","age":30,"city":"Beijing"},\n  {"name":"Bob","age":25,"city":"Shanghai"}\n]'); csvConvert(); };
+  var el=document.getElementById('csvInput'); if(el){ el.addEventListener('input', csvConvert); }
+  var sel=document.getElementById('csvDir'); if(sel){ sel.addEventListener('change', csvConvert); }
+  csvConvert();
+})();
+</script>

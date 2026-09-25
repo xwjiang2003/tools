@@ -1,0 +1,58 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入文本</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="caseClear()">清空</button><button class="btn btn-sm" onclick="caseSample()">示例</button></div></div>
+    <textarea class="ta-input" id="caseInput" placeholder="Enter text: my_variable_name, MyVariableName, my-variable-name..."></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>目标风格</span>
+      <select id="caseStyle">
+        <option value="camel">camelCase</option>
+        <option value="snake">snake_case</option>
+        <option value="kebab">kebab-case</option>
+        <option value="pascal">PascalCase</option>
+        <option value="constant">CONSTANT_CASE</option>
+      </select>
+    </div>
+    <div class="op-buttons"><button class="op-btn active" onclick="caseConvert()">转换</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('caseResult')">复制</button></div></div>
+      <div class="result-content" id="caseResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function splitWords(s){
+    if(!s) return [];
+    s = s.replace(/[_\.\-\/\s]+/g,' ');
+    s = s.replace(/([a-z0-9])([A-Z])/g,'$1 $2');
+    s = s.replace(/([A-Z]+)([A-Z][a-z])/g,'$1 $2');
+    s = s.replace(/([0-9])([A-Za-z])/g,'$1 $2');
+    s = s.replace(/([A-Za-z])([0-9])/g,'$1 $2');
+    return s.trim().split(/\s+/).filter(Boolean);
+  }
+  function cap(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
+  function convert(words, style){
+    if(!words.length) return '';
+    var low = words.map(function(w){ return w.toLowerCase(); });
+    if(style==='camel'){ return low[0] + words.slice(1).map(cap).join(''); }
+    if(style==='snake'){ return low.join('_'); }
+    if(style==='kebab'){ return low.join('-'); }
+    if(style==='pascal'){ return words.map(cap).join(''); }
+    if(style==='constant'){ return words.map(function(w){return w.toUpperCase();}).join('_'); }
+    return words.join(' ');
+  }
+  function caseConvert(){
+    var words = splitWords(getVal('caseInput'));
+    var style = document.getElementById('caseStyle').value;
+    var out = document.getElementById('caseResult');
+    if(!words.length){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    out.textContent = convert(words, style);
+  }
+  window.caseClear=function(){ setVal('caseInput',''); caseConvert(); };
+  window.caseSample=function(){ setVal('caseInput','my_variable_name'); caseConvert(); };
+  var el=document.getElementById('caseInput'); if(el){ el.addEventListener('input', caseConvert); }
+  var sel=document.getElementById('caseStyle'); if(sel){ sel.addEventListener('change', caseConvert); }
+  caseConvert();
+})();
+</script>

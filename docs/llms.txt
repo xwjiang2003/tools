@@ -31,6 +31,18 @@ Key facts:
   - English: [Online String & Text Tools](https://devtools.help/en/string/) — Convert case and naming style, sort, dedupe, find and replace, split or join text and add line numbers, with live character, word, line and byte counts.
 - [UUID / 密码 / 二维码在线生成](https://devtools.help/generator/): 在线生成工具：UUID v4 批量生成、可配置规则的高强度随机密码、文本转二维码并可下载 PNG、Lorem Ipsum 占位文本、数字序列与随机测试数据。全部在浏览器本地生成。
   - English: [UUID / Password / QR Code Generator](https://devtools.help/en/generator/) — Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.
+- [在线颜色转换工具（Hex / RGB / HSL / 名称）](https://devtools.help/color/): 免费在线颜色转换：Hex、RGB、HSL 与 CSS 颜色名称互相转换，实时预览色块，支持 3 位 / 6 位 / 8 位十六进制、rgb()、hsl() 与 148 个 CSS 命名色。纯浏览器本地处理，不上传任何数据。
+  - English: [Color Converter (Hex / RGB / HSL / Name)](https://devtools.help/en/color/) — Convert colors between Hex, RGB, HSL and CSS color names with a live preview. Supports 3/6/8-digit Hex, rgb()/rgba(), hsl()/hsla() and all 148 CSS named colors. Everything runs locally in your browser.
+- [在线命名风格转换工具](https://devtools.help/case/): 免费在线命名风格转换：camelCase、snake_case、kebab-case、PascalCase、CONSTANT_CASE 互相转换。自动切分驼峰与下划线，处理数字边界，纯浏览器本地处理。
+  - English: [Case Style Converter](https://devtools.help/en/case/) — Convert identifiers between camelCase, snake_case, kebab-case, PascalCase and CONSTANT_CASE. Auto-splits camelCase and underscores, handles digit boundaries, and runs entirely in your browser.
+- [在线 JWT 解码与签名验证工具](https://devtools.help/jwt/): 免费在线 JWT 解码：解析 Header 与 Payload，把 exp/iat/nbf 等时间字段转成可读时间，支持 HS256/384/512 密钥签名验证。纯浏览器本地解码，密钥与令牌不上传。
+  - English: [JWT Decoder & Signature Verifier](https://devtools.help/en/jwt/) — Decode JWTs online: parse the Header and Payload, turn exp/iat/nbf into readable times, and verify HS256/384/512 signatures with a secret. Decoding and verification happen locally in your browser.
+- [在线 JSON 与 YAML 互转工具](https://devtools.help/yaml/): 免费在线 JSON 与 YAML 互转：JSON 转 YAML、YAML 转 JSON，保持结构一致。基于 js-yaml 解析，支持注释与多文档之外的常见语法，纯浏览器本地处理。
+  - English: [JSON ↔ YAML Converter](https://devtools.help/en/yaml/) — Convert between JSON and YAML online: JSON to YAML and YAML to JSON, preserving structure. Parsed with js-yaml and processed locally in your browser.
+- [在线 JSON 与 TOML 互转工具](https://devtools.help/toml/): 免费在线 JSON 与 TOML 互转：JSON 转 TOML、TOML 转 JSON，适合 Go / Rust 等项目的配置文件。基于 @iarna/toml 解析，纯浏览器本地处理。
+  - English: [JSON ↔ TOML Converter](https://devtools.help/en/toml/) — Convert between JSON and TOML online: JSON to TOML and TOML to JSON, suited to Go / Rust config files. Parsed with @iarna/toml and processed locally in your browser.
+- [在线 JSON 与 CSV 互转工具](https://devtools.help/csv/): 免费在线 JSON 与 CSV 互转：JSON 数组（对象数组 / 二维数组）转 CSV，CSV 按首行表头转回 JSON。正确处理引号与逗号转义，纯浏览器本地处理。
+  - English: [JSON ↔ CSV Converter](https://devtools.help/en/csv/) — Convert between JSON and CSV online: JSON arrays (of objects or 2-D arrays) to CSV, and CSV back to JSON using the first row as header. Handles quoting and comma escaping, all locally in your browser.
 
 ## Cheatsheet / 速查表
 
@@ -39,6 +51,8 @@ Key facts:
 
 ## Blog / 文章
 
+- [Coraza 规则详解：从 SecRule 语法到写出第一条防护规则](https://devtools.help/blog/coraza-waf-rules/): Coraza 是 Go 写的开源 WAF、ModSecurity 的接任者，SecRule 语法基本兼容。讲清一条规则的三要素、五个处理阶段、OWASP CRS 规则集，并手把手写一个 防 SQL 注入的自定义规则，以及 DetectionOnly 与 On 的取舍。
+  - English: [Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule](https://devtools.help/en/blog/coraza-waf-rules/) — Coraza is a Go-based open-source WAF and the successor to ModSecurity, with largely compatible SecRule syntax. This post covers the three parts of a rule, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.
 - [沃盾 warden：一个单文件部署的 Go 反向代理 WAF](https://devtools.help/blog/warden-go-waf/): 把 L4 连接限流、频率限制、CC 挑战、IP 归属拦截和 OWASP Coraza 规则检测做进一个 Go 可执行文件，管理后台用 go:embed 内嵌。讲清它解决什么问题、为什么这么选型，以及上线前必须知道的五件事。
   - English: [warden: A Single-Binary Go Reverse-Proxy WAF](https://devtools.help/en/blog/warden-go-waf/) — L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.
 - [gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败](https://devtools.help/blog/gofmt-vs-goimports/): gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。
