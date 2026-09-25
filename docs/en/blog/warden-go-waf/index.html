@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" data-page="blog">
+<html lang="en" data-page="blog-warden-go-waf">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blog - Go Toolchain &amp; Developer How-Tos | DevTools</title>
-<meta name="description" content="Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.">
-<meta name="keywords" content="go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice">
+<title>warden: A Single-Binary Go Reverse-Proxy WAF with CC Protection | DevTools Blog</title>
+<meta name="description" content="warden is a lightweight reverse-proxy WAF written in Go: connection limiting, rate limiting, CC protection, IP origin blocking and OWASP Coraza rule detection all live in one executable, with the admin dashboard embedded via go:embed and a pure-Go SQLite that needs no cgo. This post covers the problem it solves, the key design trade-offs, a three-minute deployment, and five things to know before putting it in front of production traffic.">
+<meta name="keywords" content="go waf,open source waf,reverse proxy waf,cc attack protection,self hosted waf,coraza waf,go embed,single binary,ip geolocation blocking,warden waf">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://devtools.help/en/blog/">
-<meta property="og:title" content="Blog - Go Toolchain &amp; Developer How-Tos | DevTools">
-<meta property="og:description" content="Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.">
+<link rel="canonical" href="https://devtools.help/en/blog/warden-go-waf/">
+<meta property="og:title" content="warden: A Single-Binary Go Reverse-Proxy WAF with CC Protection | DevTools Blog">
+<meta property="og:description" content="warden is a lightweight reverse-proxy WAF written in Go: connection limiting, rate limiting, CC protection, IP origin blocking and OWASP Coraza rule detection all live in one executable, with the admin dashboard embedded via go:embed and a pure-Go SQLite that needs no cgo. This post covers the problem it solves, the key design trade-offs, a three-minute deployment, and five things to know before putting it in front of production traffic.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://devtools.help/en/blog/">
+<meta property="og:url" content="https://devtools.help/en/blog/warden-go-waf/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/">
-<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/">
-<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 2, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 2, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/warden-go-waf/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/warden-go-waf/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/warden-go-waf/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "warden: A Single-Binary Go Reverse-Proxy WAF", "description": "L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.", "url": "https://devtools.help/en/blog/warden-go-waf/", "datePublished": "2026-09-25", "dateModified": "2026-09-25", "inLanguage": "en", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "go waf,open source waf,reverse proxy waf,cc attack protection,self hosted waf,coraza waf,go embed,single binary,ip geolocation blocking,warden waf"}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -352,7 +352,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
       if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
     }
     var want = preferZh ? 'zh' : 'en';
-    var target = {"zh": "../../blog/", "en": "./"}[want];
+    var target = {"zh": "../../../blog/warden-go-waf/", "en": "./"}[want];
     if (target && want !== 'en') location.replace(target);
   } catch (e) {}
 })();
@@ -370,24 +370,24 @@ var _hmt = _hmt || [];
 </head>
 <body>
 <header class="header">
-  <a class="logo" href="../../en/" aria-label="DevTools home">
+  <a class="logo" href="../../../en/" aria-label="DevTools home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <a class="top-nav-item" href="../../en/">JSON</a>
-    <a class="top-nav-item" href="../../en/hotnews/">Tech News</a>
-    <a class="top-nav-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
-    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
-    <a class="top-nav-item" href="../../en/encode/">Encode</a>
-    <a class="top-nav-item" href="../../en/regex/">Regex</a>
-    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
-    <a class="top-nav-item" href="../../en/hash/">Hash</a>
-    <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
-    <a class="top-nav-item" href="../../en/string/">Strings</a>
-    <a class="top-nav-item" href="../../en/generator/">Generators</a>
+    <a class="top-nav-item" href="../../../en/">JSON</a>
+    <a class="top-nav-item" href="../../../en/hotnews/">Tech News</a>
+    <a class="top-nav-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    <a class="top-nav-item" href="../../../en/diff/">Text Diff</a>
+    <a class="top-nav-item" href="../../../en/encode/">Encode</a>
+    <a class="top-nav-item" href="../../../en/regex/">Regex</a>
+    <a class="top-nav-item" href="../../../en/timestamp/">Timestamp</a>
+    <a class="top-nav-item" href="../../../en/hash/">Hash</a>
+    <a class="top-nav-item" href="../../../en/formatter/">Formatter</a>
+    <a class="top-nav-item" href="../../../en/string/">Strings</a>
+    <a class="top-nav-item" href="../../../en/generator/">Generators</a>
   </nav>
-  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../blog/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../../blog/warden-go-waf/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
 <script>
 // 记住手动选择：下次访问不再自动跳转
 document.addEventListener("click", function (e) {
@@ -408,31 +408,223 @@ document.addEventListener("click", function (e) {
 </div>
 
 <main class="main">
-<div class="page active" id="page-blog">
-<div class="blog">
-  <div class="blog-head">
-    <p class="blog-head-lead">Hands-on articles about developer tools and toolchains: troubleshooting, version migrations and CI practice, all verified against real setups. The Go series is running now; Rust and more are on the way.</p>
+<div class="page active" id="page-blog-warden-go-waf">
+<article class="post" lang="en">
+  <h1>warden: A Single-Binary Go Reverse-Proxy WAF</h1>
+  <div class="post-meta"><time datetime="2026-09-25">Published 2026-09-25</time><span class="blog-tag">Go</span><span class="blog-tag">WAF</span><span class="blog-tag">Open Source</span></div>
+<blockquote>
+  <p><b>TL;DR</b>: warden is a self-hosted WAF for small sites that are bothered by CC floods
+  and scanners, but cannot justify a commercial WAF and do not want to change DNS for a cloud
+  one. Drop a single binary on the server and point your Nginx traffic at it. Current release
+  is <b>v1.0.1</b>, licensed Apache-2.0, shipping for Windows and Linux (amd64 + arm64).</p>
+</blockquote>
+
+<h2>1. The problem it targets</h2>
+<p>Small sites - company homepages, school portals, internal business systems - are drained by
+two kinds of traffic:</p>
+<ol>
+  <li><b>CC floods and scraping</b>: many IPs hammering hot pages (news listings, detail pages,
+      search endpoints). Every single request looks legitimate; together they saturate the
+      backend.</li>
+  <li><b>Scanner probing</b>: path scans for <code>/wp-admin</code>, <code>/.env</code>,
+      <code>/phpmyadmin</code>, plus the fingerprints of tools like sqlmap and nikto.</li>
+</ol>
+<p>Every off-the-shelf option has a catch: commercial WAFs cost money; cloud WAFs require a DNS
+change and route traffic through someone else; Nginx's native <code>limit_req</code> can rate
+limit but is limited at <b>telling real users from scripts</b> - rate limiting is allow or deny,
+with nothing in between.</p>
+<p>warden's position: <b>one small self-hosted program covering L4-L7 protection, CC challenges
+and observability</b>. Its guiding principle is "better one extra CAPTCHA than blocking a real
+user" - suspected scripts get a challenge first, and passing it issues a trust credential that
+puts them on the fast path.</p>
+
+<h2>2. Three choices made for deployability</h2>
+<p>The most interesting part of this project is not the feature list but how far it pushes down
+deployment complexity.</p>
+<h3>a. The frontend is embedded with go:embed</h3>
+<p>The admin dashboard is a single-file Vue3 + Element Plus + ECharts app, embedded directly
+into the executable with <code>go:embed</code>: <b>no separate frontend deployment, no static
+location in Nginx</b>. Third-party libraries are vendored locally in <code>web/vendor/</code>
+rather than loaded from a CDN, so it works on isolated networks.</p>
+<pre><code>// edit web/admin.html, rebuild, and the assets are baked in
+go build -o warden ./cmd/warden</code></pre>
+<h3>b. Pure-Go SQLite, no cgo</h3>
+<p>It uses <code>modernc.org/sqlite</code> instead of the cgo-based mattn driver. The direct
+benefit: <b>cross-compilation is painless</b>, so you can produce Linux binaries from Windows
+with no cross toolchain.</p>
+<pre><code>CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o warden-linux-arm64 ./cmd/warden</code></pre>
+<p>One release zip contains <code>warden.exe</code> (Windows/amd64), <code>warden</code>
+(Linux/amd64) and <code>warden-linux-arm64</code>, all flat in the root, and
+<code>run.sh</code> picks the right one via <code>uname -m</code>.</p>
+<h3>c. Every in-memory state has a TTL and a sweeper</h3>
+<p>Token buckets, trusted IPs, behavior state and offense records all expire and are cleaned up
+by background goroutines, so memory does not grow without bound. That is what makes a
+self-hosted daemon safe to deploy and forget.</p>
+
+<h2>3. How a request travels</h2>
+<pre><code>client --&gt; [Nginx / LB, optional] --&gt; warden :81 --&gt; backend :8002</code></pre>
+<p>Internally, two layers:</p>
+<p><b>TCP layer</b>: <code>ConnLimitListener</code> applies a token bucket at the
+<code>accept</code> stage and <b>drops excess connections outright, before any HTTP work</b>.
+That is where the most resource-hungry connection floods get stopped.</p>
+<p><b>HTTP middleware chain</b>, outside in:</p>
+<pre><code>1. IP blocklist     -- hit -&gt; block
+2. URL allow/deny   -- hit -&gt; allow / block
+3. IP allowlist     -- hit -&gt; pass through (skips every check below)
+4. CC protection    -- flood / behavior / rate -&gt; CAPTCHA challenge
+5. Rate limiting    -- hot path / site-wide / subnet -&gt; 429
+6. Coraza WAF       -- OWASP CRS rule detection
+7. Multi-site router-- reverse proxy by Host</code></pre>
+<p>The order is the strategy: allowlisted IPs bypass everything, and <b>the expensive check
+(Coraza) sits near the end</b>, so traffic already blocked upstream never reaches the rule
+engine.</p>
+
+<h2>4. How CC protection decides "this is a script"</h2>
+<p>This is where warden differs most from plain rate limiting. It does not rely on a single
+threshold; it stacks several signals:</p>
+<table>
+  <tr><th>Mechanism</th><th>Signal</th></tr>
+  <tr><td>New-IP flood detection</td><td>Sliding-window ratio of new vs. known IPs; above the threshold it is a flood and every new IP must pass a CAPTCHA</td></tr>
+  <tr><td>Behavior detection</td><td>Suspiciously uniform request intervals, or hitting only one or two paths forever -&gt; script</td></tr>
+  <tr><td>Trusted-IP fast path</td><td>Cumulative visits above a threshold promote the IP to trusted, with its own high-quota bucket; persisted to SQLite</td></tr>
+  <tr><td>Trusted-session fast path</td><td>Passing a CAPTCHA issues a cookie, so multiple users behind one IP do not interfere</td></tr>
+  <tr><td>Per-IP rate limit</td><td>Separate token bucket for untrusted IPs; exceeding it <b>raises a CAPTCHA instead of dropping the connection</b></td></tr>
+  <tr><td>Shared token bucket</td><td>Total untrusted capacity guard; under congestion it self-recovers via CAPTCHAs</td></tr>
+</table>
+<p>A few details show it was honed against real traffic:</p>
+<ul>
+  <li><b>Static assets are exempt</b>: images, JS, CSS and fonts pass straight through, so one
+      article loading dozens of resources is not mistaken for an attack.</li>
+  <li><b>CAPTCHAs are reused per (session, IP)</b>: regenerating does not clobber the code the
+      user is currently typing.</li>
+  <li><b>Search-engine allowlist</b>: crawler user agents get rate limiting instead of
+      CAPTCHAs, so indexing is unaffected.</li>
+  <li><b>Escalation needs two conditions</b>: an offense count <i>and</i> sustained offending
+      beyond <code>offender_persist_sec</code> before kernel-level blocking kicks in - a
+      one-off IP should not create a firewall rule and bloat the rule table.</li>
+</ul>
+<p>There is also <b>IP origin blocking</b> backed by an offline xdb database: foreign IPs and
+cloud/IDC ranges can be blocked independently. Real users rarely come from a Tencent Cloud or
+Alibaba Cloud data center, so this is effective against bot traffic - and it makes
+<b>no external requests</b>, so there is no third-party API dependency.</p>
+
+<h2>5. Up and running in three minutes</h2>
+<p>With a release zip, no compilation needed:</p>
+<pre><code>mkdir -p /opt/warden &amp;&amp; cd /opt/warden
+unzip ~/warden-v1.0.1.zip
+chmod +x run.sh warden warden-linux-arm64   # zip does not preserve executable bits
+./run.sh</code></pre>
+<p>Building it yourself (Go 1.23+):</p>
+<pre><code># Windows
+$env:GOPROXY = "https://goproxy.cn,https://goproxy.io,direct"
+go mod tidy
+go build -o warden.exe ./cmd/warden
+
+# Linux
+export GOPROXY=https://goproxy.cn,https://goproxy.io,direct
+go build -o warden ./cmd/warden
+./warden -config config.json</code></pre>
+<p>The minimal config is two lines - it sits in front of your backend:</p>
+<pre><code>{
+  "listen": ":81",
+  "backend": "http://127.0.0.1:8002"
+}</code></pre>
+<p>Verify:</p>
+<pre><code>curl http://127.0.0.1:81/healthz   # health check
+curl -I  http://127.0.0.1:81/      # should be proxied to the backend</code></pre>
+<p>The dashboard defaults to <code>http://127.0.0.1:9090</code> and shows live blocking
+counters, QPS/block-rate trends, a breakdown of block categories, CPU and memory, paginated
+attack logs and the trusted IP list.</p>
+<p>Three deployment shapes to choose from:</p>
+<table>
+  <tr><th>Option</th><th>Path</th><th>When</th></tr>
+  <tr><td>A. Nginx in front (recommended)</td><td>:443 -&gt; Nginx (TLS) -&gt; warden:81 -&gt; backend</td><td>You need TLS and already run Nginx</td></tr>
+  <tr><td>B. warden exposed directly</td><td>:80 -&gt; warden -&gt; backend</td><td>You want one hop less (on Windows, port 80 needs admin)</td></tr>
+  <tr><td>C. Multi-site</td><td>Route by Host to different upstreams</td><td>One machine proxying several sites</td></tr>
+</table>
+<p>For long-term operation, register it as a service with systemd (Linux) or NSSM (Windows);
+the README has a ready-made unit file.</p>
+
+<h2>6. Five things to know before going live</h2>
+<h3>a. Observe with DetectionOnly, then switch to On</h3>
+<p>Set <code>SecRuleEngine DetectionOnly</code> in <code>rules/coraza.conf</code>, watch for
+false positives for a while, and only then switch to <code>On</code>. Do the same with CC
+protection: start with CAPTCHA challenges only, check the real-user pass rate, then tighten
+thresholds gradually. <b>Going straight to On is the number one cause of a WAF blocking
+legitimate traffic.</b></p>
+<h3>b. Editing config.json has no effect</h3>
+<p>Config resolution is <b>SQLite config table first, config.json as fallback</b>. The first
+start seeds the database from config.json; after that <b>the database wins</b>. Change settings
+in the dashboard and restart.</p>
+<h3>c. Nginx on Windows caps out at 1024 connections</h3>
+<p>The Windows build of Nginx uses the <code>select()</code> event model, so a single worker
+handles roughly 1024 concurrent connections no matter how large
+<code>worker_connections</code> is. For higher concurrency, run Nginx on Linux or WSL2, or let
+warden listen directly (Go uses IOCP on Windows and has no such limit).</p>
+<h3>d. Align upstream keepalive timeouts</h3>
+<p>The idle-connection reclaim time from warden to the backend must be <b>shorter</b> than the
+backend's own (for example Tomcat's <code>connectionTimeout</code>), otherwise warden reuses
+connections the backend already closed, causing <code>connection reset</code> and intermittent
+502s.</p>
+<h3>e. Firewall blocking is off by default - keep it that way at first</h3>
+<p>An early version created two <code>netsh</code> rules per IP, which under attack volume
+quickly accumulated into tens of thousands; Windows Firewall recompiles the entire rule table
+on every add or remove, so operations got slower and slower. It is therefore <b>disabled by
+default</b> now, and enabling it means committing to periodic rule cleanup.</p>
+
+<h2>7. Two engineering details worth stealing</h2>
+<p>The dashboard runs in the <b>same process</b> as the WAF, so polling overhead lands directly
+on the serving path. Two optimizations address that:</p>
+<ul>
+  <li><b>Memory stats avoid <code>runtime.ReadMemStats</code></b>: it triggers a stop-the-world
+      pause, measured at about 8.7 microseconds per call; reading the same metric through
+      <code>runtime/metrics</code> takes about 0.3 microseconds (roughly 27x faster) with
+      identical values. The dashboard polls <code>/api/stats</code> every 3 seconds, which
+      amplifies the difference.</li>
+  <li><b>CPU usage is sampled continuously</b>: <code>GetSystemTimes</code> and
+      <code>/proc/stat</code> return cumulative values since boot, so a rate needs two samples.
+      Sampling only when the endpoint is called means that after leaving the dashboard for a
+      while, the first reading covers the whole gap - possibly an average over several minutes.
+      A background loop samples every second and caches; the endpoint only reads the cache.</li>
+</ul>
+
+<h2>8. Who it is for, and who it is not</h2>
+<p><b>For</b>: company homepages, school and government sites, internal business systems -
+cases where the backend is not very robust, traffic patterns are fairly stable, and nobody is
+doing security ops full time. Also for anyone who wants to self-host and fully control their
+data and rules.</p>
+<p><b>Not for</b>: teams needing enterprise-grade rule operations, volumetric DDoS scrubbing
+(that belongs at the ISP or CDN layer), or anyone expecting install-and-forget. The README says
+it plainly: this is <b>application-layer protection</b> and does not replace system patching,
+least privilege, or secure coding in the backend.</p>
+
+<h2>9. Project facts</h2>
+<ul>
+  <li>License: <b>Apache-2.0</b> (includes an explicit patent grant; commercial use and
+      closed-source integration allowed)</li>
+  <li>Stack: Go 1.23+, OWASP Coraza v3, pure-Go SQLite, Vue3 + Element Plus + ECharts</li>
+  <li>Current version: v1.0.1 (single cross-platform package)</li>
+  <li>Gitee: <a href="https://gitee.com/jxw1111/warden" rel="nofollow noopener" target="_blank">gitee.com/jxw1111/warden</a></li>
+  <li>GitHub: <a href="https://github.com/xwjiang2003/warden" rel="nofollow noopener" target="_blank">github.com/xwjiang2003/warden</a></li>
+</ul>
+<p>Issues and PRs are welcome. Contributions are licensed under Apache-2.0 by default; please
+include a <code>Signed-off-by</code> line (DCO) in your commit message.</p>
+  <div class="post-related">
+    <h2>Further reading</h2>
+    <ul>
+      <li><a href="../../../en/go-cheatsheet/">Go toolchain command cheat sheet</a></li>
+      <li><a href="../../../en/blog/gofmt-vs-goimports/">gofmt vs goimports</a></li>
+      <li><a href="../../../en/blog/">All articles</a></li>
+    </ul>
   </div>
-  <div class="blog-list">
-    <a class="blog-card" href="../../en/blog/warden-go-waf/">
-      <p class="blog-card-title">warden: A Single-Binary Go Reverse-Proxy WAF</p>
-      <p class="blog-card-desc">L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.</p>
-      <p class="blog-card-meta"><time datetime="2026-09-25">2026-09-25</time><span class="blog-tag">Go</span><span class="blog-tag">WAF</span><span class="blog-tag">Open Source</span></p>
-    </a>
-    <a class="blog-card" href="../../en/blog/gofmt-vs-goimports/">
-      <p class="blog-card-title">gofmt vs goimports: Why Your CI Formatting Check Fails</p>
-      <p class="blog-card-desc">gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.</p>
-      <p class="blog-card-meta"><time datetime="2026-09-24">2026-09-24</time><span class="blog-tag">Go</span><span class="blog-tag">Toolchain</span><span class="blog-tag">CI</span></p>
-    </a>
-  </div>
-</div>
+</article>
 </div>
 
 
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../../../en/">Home</a><a href="../../../en/hotnews/">Tech News</a><a href="../../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../../en/diff/">Text Diff</a><a href="../../../en/encode/">Encode</a><a href="../../../en/regex/">Regex</a><a href="../../../en/timestamp/">Timestamp</a><a href="../../../en/hash/">Hash</a><a href="../../../en/formatter/">Formatter</a><a href="../../../en/string/">Strings</a><a href="../../../en/generator/">Generators</a><a href="../../../en/blog/">Blog</a><a href="../../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>

@@ -18,7 +18,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools 博客", "url": "https://devtools.help/blog/", "description": "Go 工具链实战文章：错误排查、版本迁移、CI 实践，每篇都经过真实验证。当前连载 Go 专题，后续会有 Rust 等更多专题。", "inLanguage": "zh-CN", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 1, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败", "url": "https://devtools.help/blog/gofmt-vs-goimports/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools 博客", "url": "https://devtools.help/blog/", "description": "Go 工具链实战文章：错误排查、版本迁移、CI 实践，每篇都经过真实验证。当前连载 Go 专题，后续会有 Rust 等更多专题。", "inLanguage": "zh-CN", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 2, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "沃盾 warden：一个单文件部署的 Go 反向代理 WAF", "url": "https://devtools.help/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 2, "name": "gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败", "url": "https://devtools.help/blog/gofmt-vs-goimports/"}]}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -414,6 +414,11 @@ document.addEventListener("click", function (e) {
     <p class="blog-head-lead">开发工具与工具链的实战文章：错误排查、版本迁移、CI 实践，每篇都经过真实验证。当前连载 Go 工具链专题，后续会有 Rust 等更多专题。</p>
   </div>
   <div class="blog-list">
+    <a class="blog-card" href="../blog/warden-go-waf/">
+      <p class="blog-card-title">沃盾 warden：一个单文件部署的 Go 反向代理 WAF</p>
+      <p class="blog-card-desc">把 L4 连接限流、频率限制、CC 挑战、IP 归属拦截和 OWASP Coraza 规则检测做进一个 Go 可执行文件，管理后台用 go:embed 内嵌。讲清它解决什么问题、为什么这么选型，以及上线前必须知道的五件事。</p>
+      <p class="blog-card-meta"><time datetime="2026-09-25">2026-09-25</time><span class="blog-tag">Go</span><span class="blog-tag">WAF</span><span class="blog-tag">开源项目</span></p>
+    </a>
     <a class="blog-card" href="../blog/gofmt-vs-goimports/">
       <p class="blog-card-title">gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败</p>
       <p class="blog-card-desc">gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。</p>

@@ -88,11 +88,19 @@
   </url>
   <url>
     <loc>https://devtools.help/blog/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-09-25</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/"/>
     <changefreq>weekly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/blog/warden-go-waf/</loc>
+    <lastmod>2026-09-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/warden-go-waf/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/warden-go-waf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/warden-go-waf/"/>
+    <changefreq>monthly</changefreq><priority>0.7</priority>
   </url>
   <url>
     <loc>https://devtools.help/blog/gofmt-vs-goimports/</loc>

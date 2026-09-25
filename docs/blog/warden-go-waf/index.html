@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" data-page="blog">
+<html lang="zh-CN" data-page="blog-warden-go-waf">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blog - Go Toolchain &amp; Developer How-Tos | DevTools</title>
-<meta name="description" content="Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.">
-<meta name="keywords" content="go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice">
+<title>沃盾 warden：单文件部署的 Go 反向代理 WAF（CC 防护 + 内嵌后台） | DevTools 博客</title>
+<meta name="description" content="沃盾（warden）是一个用 Go 写的轻量级反向代理 WAF：连接限流、频率限制、CC 防护、IP 归属拦截与 OWASP Coraza 规则检测都在一个可执行文件里，管理后台通过 go:embed 内嵌，无需额外部署前端，SQLite 为纯 Go 实现不需要 cgo。本文讲清它解决什么问题、几个关键设计取舍、三分钟上手的部署方式，以及上线前必须知道的五件事。">
+<meta name="keywords" content="Go WAF,开源 WAF,反向代理 WAF,CC 防护,自托管 WAF,Coraza WAF,go:embed,单文件部署,IP 归属拦截,沃盾 warden,CC 攻击防护,轻量 WAF">
 <meta name="robots" content="index, follow">
 <meta name="author" content="DevTools">
-<link rel="canonical" href="https://devtools.help/en/blog/">
-<meta property="og:title" content="Blog - Go Toolchain &amp; Developer How-Tos | DevTools">
-<meta property="og:description" content="Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.">
+<link rel="canonical" href="https://devtools.help/blog/warden-go-waf/">
+<meta property="og:title" content="沃盾 warden：单文件部署的 Go 反向代理 WAF（CC 防护 + 内嵌后台） | DevTools 博客">
+<meta property="og:description" content="沃盾（warden）是一个用 Go 写的轻量级反向代理 WAF：连接限流、频率限制、CC 防护、IP 归属拦截与 OWASP Coraza 规则检测都在一个可执行文件里，管理后台通过 go:embed 内嵌，无需额外部署前端，SQLite 为纯 Go 实现不需要 cgo。本文讲清它解决什么问题、几个关键设计取舍、三分钟上手的部署方式，以及上线前必须知道的五件事。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://devtools.help/en/blog/">
+<meta property="og:url" content="https://devtools.help/blog/warden-go-waf/">
 <meta property="og:site_name" content="DevTools">
 <meta name="theme-color" content="#4a90d9">
-<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/">
-<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/">
-<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 2, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 2, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/warden-go-waf/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/warden-go-waf/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/warden-go-waf/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "沃盾 warden：一个单文件部署的 Go 反向代理 WAF", "description": "把 L4 连接限流、频率限制、CC 挑战、IP 归属拦截和 OWASP Coraza 规则检测做进一个 Go 可执行文件，管理后台用 go:embed 内嵌。讲清它解决什么问题、为什么这么选型，以及上线前必须知道的五件事。", "url": "https://devtools.help/blog/warden-go-waf/", "datePublished": "2026-09-25", "dateModified": "2026-09-25", "inLanguage": "zh-CN", "isAccessibleForFree": true, "author": {"@type": "Organization", "name": "DevTools"}, "keywords": "Go WAF,开源 WAF,反向代理 WAF,CC 防护,自托管 WAF,Coraza WAF,go:embed,单文件部署,IP 归属拦截,沃盾 warden,CC 攻击防护,轻量 WAF"}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -352,8 +352,8 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
       if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
     }
     var want = preferZh ? 'zh' : 'en';
-    var target = {"zh": "../../blog/", "en": "./"}[want];
-    if (target && want !== 'en') location.replace(target);
+    var target = {"zh": "./", "en": "../../en/blog/warden-go-waf/"}[want];
+    if (target && want !== 'zh') location.replace(target);
   } catch (e) {}
 })();
 </script>
@@ -370,24 +370,24 @@ var _hmt = _hmt || [];
 </head>
 <body>
 <header class="header">
-  <a class="logo" href="../../en/" aria-label="DevTools home">
+  <a class="logo" href="../../" aria-label="DevTools 首页">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <a class="top-nav-item" href="../../en/">JSON</a>
-    <a class="top-nav-item" href="../../en/hotnews/">Tech News</a>
-    <a class="top-nav-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
-    <a class="top-nav-item" href="../../en/diff/">Text Diff</a>
-    <a class="top-nav-item" href="../../en/encode/">Encode</a>
-    <a class="top-nav-item" href="../../en/regex/">Regex</a>
-    <a class="top-nav-item" href="../../en/timestamp/">Timestamp</a>
-    <a class="top-nav-item" href="../../en/hash/">Hash</a>
-    <a class="top-nav-item" href="../../en/formatter/">Formatter</a>
-    <a class="top-nav-item" href="../../en/string/">Strings</a>
-    <a class="top-nav-item" href="../../en/generator/">Generators</a>
+    <a class="top-nav-item" href="../../">JSON 工具</a>
+    <a class="top-nav-item" href="../../hotnews/">今日热榜</a>
+    <a class="top-nav-item" href="../../go-cheatsheet/">Go 速查表</a>
+    <a class="top-nav-item" href="../../diff/">文本比对</a>
+    <a class="top-nav-item" href="../../encode/">编码解码</a>
+    <a class="top-nav-item" href="../../regex/">正则表达式</a>
+    <a class="top-nav-item" href="../../timestamp/">时间戳</a>
+    <a class="top-nav-item" href="../../hash/">加密哈希</a>
+    <a class="top-nav-item" href="../../formatter/">代码格式化</a>
+    <a class="top-nav-item" href="../../string/">字符串</a>
+    <a class="top-nav-item" href="../../generator/">生成器</a>
   </nav>
-  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../blog/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../../en/blog/warden-go-waf/" data-lang-set="en">English</a></div>
 <script>
 // 记住手动选择：下次访问不再自动跳转
 document.addEventListener("click", function (e) {
@@ -395,7 +395,7 @@ document.addEventListener("click", function (e) {
   if (!a) return;
   try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
 }, true);
-</script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
+</script><button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
 
 <!-- Ad slot: top banner 970x90 / 728x90.
@@ -408,36 +408,195 @@ document.addEventListener("click", function (e) {
 </div>
 
 <main class="main">
-<div class="page active" id="page-blog">
-<div class="blog">
-  <div class="blog-head">
-    <p class="blog-head-lead">Hands-on articles about developer tools and toolchains: troubleshooting, version migrations and CI practice, all verified against real setups. The Go series is running now; Rust and more are on the way.</p>
+<div class="page active" id="page-blog-warden-go-waf">
+<article class="post" lang="zh-CN">
+  <h1>沃盾 warden：一个单文件部署的 Go 反向代理 WAF</h1>
+  <div class="post-meta"><time datetime="2026-09-25">发布于 2026-09-25</time><span class="blog-tag">Go</span><span class="blog-tag">WAF</span><span class="blog-tag">开源项目</span></div>
+<blockquote>
+  <p><b>一句话结论</b>：warden 是给「被 CC 和扫描器困扰、但用不起商业 WAF、也不想改 DNS
+  上云 WAF」的小站准备的自托管方案——一个二进制丢到服务器上，把 Nginx 的流量指过去就行。
+  当前版本 <b>v1.0.1</b>，Apache-2.0 开源，支持 Windows / Linux（amd64 + arm64）。</p>
+</blockquote>
+
+<h2>一、它要解决的是什么问题</h2>
+<p>企业官网、学校站点、内网业务系统这类小站，常年被两类流量消耗：</p>
+<ol>
+  <li><b>CC / 爬虫刷量</b>：大量 IP 高频请求热点页面（新闻列表、详情页、搜索接口），
+      请求单看每一个都「合法」，合起来把后端打满；</li>
+  <li><b>扫描器探测</b>：<code>/wp-admin</code>、<code>/.env</code>、<code>/phpmyadmin</code>
+      这类路径扫描，以及 sqlmap、nikto 等工具的特征流量。</li>
+</ol>
+<p>可选的现成方案各有各的别扭：商业 WAF 贵；云 WAF 要改 DNS 解析、流量要绕一圈；
+Nginx 原生的 <code>limit_req</code> 能做限速，但在<b>「怎么区分正常用户和脚本」</b>这件事上手段有限——
+限速要么放行要么拒绝，没有中间态。</p>
+<p>warden 的定位是：<b>用一个小巧的自托管程序，把 L4~L7 的防护 + CC 挑战 + 可观测性一次性解决</b>。
+它的核心设计取向是「宁可多一次验证码，也不要误杀真实用户」——疑似脚本先弹验证码，
+验证通过就发可信凭证，之后走快路径。</p>
+
+<h2>二、三个为了「好部署」的选型</h2>
+<p>这个项目最值得说的其实不是功能，而是它把部署复杂度压到了什么程度。</p>
+<h3>1. 前端用 go:embed 打进二进制</h3>
+<p>管理后台是 Vue3 + Element Plus + ECharts 写的单文件应用，但通过
+<code>go:embed</code> 直接编进可执行文件，<b>不需要额外部署前端、不需要 Nginx 配静态目录</b>。
+第三方库也全部本地化放在 <code>web/vendor/</code>，不走 CDN——内网、离线环境照常打开。</p>
+<pre><code>// 改完 web/admin.html 重新 go build 即可，资源自动打进二进制
+go build -o warden ./cmd/warden</code></pre>
+<h3>2. SQLite 用纯 Go 实现，不需要 cgo</h3>
+<p>用的是 <code>modernc.org/sqlite</code> 而不是需要 cgo 的 mattn 版本。带来的直接好处是
+<b>交叉编译没有负担</b>：在 Windows 上直接编出 Linux 产物，不需要装交叉工具链。</p>
+<pre><code>CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o warden-linux-arm64 ./cmd/warden</code></pre>
+<p>发布包一个 zip 同时含 <code>warden.exe</code>（Windows/amd64）、<code>warden</code>（Linux/amd64）、
+<code>warden-linux-arm64</code> 三个产物，平铺在根目录，<code>run.sh</code> 按
+<code>uname -m</code> 自动挑对应的二进制。</p>
+<h3>3. 所有内存状态都有 TTL 和清扫协程</h3>
+<p>令牌桶、可信 IP、行为状态、违规记录全部带过期时间和后台清扫，长时间运行不会无界增长。
+这是自托管程序能不能「丢上去就忘了」的前提。</p>
+
+<h2>三、请求是怎么走一遍的</h2>
+<pre><code>客户端 ──▶ [Nginx / LB，可选] ──▶ warden :81 ──▶ 业务后端 :8002</code></pre>
+<p>warden 内部分两层：</p>
+<p><b>TCP 层</b>：<code>ConnLimitListener</code> 在 <code>accept</code> 阶段用令牌桶限流，
+超额的<b>直接丢弃，根本不进入 HTTP 处理</b>——这一层挡的是最消耗资源的连接洪水。</p>
+<p><b>HTTP 中间件链</b>，由外到内七道：</p>
+<pre><code>1. IP 黑名单      ── 命中 → 拦截
+2. URL 白/黑名单  ── 命中 → 放行 / 拦截
+3. IP 白名单      ── 命中 → 直通（跳过后续所有检测）
+4. CC 防护        ── 泛洪 / 行为 / 限速 → 验证码挑战
+5. 频率限制       ── 热点 / 整站 / 子网 → 429
+6. Coraza WAF     ── OWASP CRS 规则检测
+7. 多站点 Router  ── 按 Host 反代到上游</code></pre>
+<p>顺序本身就是策略：白名单在最前面直通，<b>代价高的检测（Coraza）放在后面</b>，
+能被前面拦掉的流量不会走到规则引擎。</p>
+
+<h2>四、CC 防护怎么判断「这是脚本」</h2>
+<p>这是 warden 与「单纯限速」最大的区别。它不靠单一阈值，而是几条线索叠加：</p>
+<table>
+  <tr><th>手段</th><th>判断依据</th></tr>
+  <tr><td>新 IP 泛洪检测</td><td>滑动窗口统计新 / 老 IP 占比，超过阈值判定泛洪，新 IP 一律先过验证码</td></tr>
+  <tr><td>行为检测</td><td>请求间隔高度均匀、或长期只访问 1~2 个路径 → 判为脚本</td></tr>
+  <tr><td>可信 IP 快路</td><td>累计访问达阈值即晋升可信，走独立高配额通道；可信列表持久化到 SQLite</td></tr>
+  <tr><td>可信会话快路</td><td>验证码通过后签发 Cookie，同一 IP 下多用户互不影响</td></tr>
+  <tr><td>每 IP 限速</td><td>未可信 IP 独立令牌桶，超限<b>弹验证码而不是直接断连</b></td></tr>
+  <tr><td>共享令牌桶</td><td>未可信总量保护，拥堵时用验证码自我恢复</td></tr>
+</table>
+<p>几个细节能看出它是真在真实攻击里打磨过的：</p>
+<ul>
+  <li><b>静态资源免检</b>：图片 / JS / CSS / 字体直接放行，避免「一篇文章几十个请求」被误伤；</li>
+  <li><b>验证码按 (会话, IP) 复用</b>：不会重复生成把用户正在填的验证码冲掉；</li>
+  <li><b>爬虫白名单</b>：识别搜索引擎 UA，不弹验证码（改走限速），不影响收录；</li>
+  <li><b>违规升级要双条件</b>：违规次数达标 <b>且</b> 持续违规超过 <code>offender_persist_sec</code>
+      才升级为内核层封禁——避免一次性 IP 也建规则，把系统防火墙规则表撑爆。</li>
+</ul>
+<p>此外还有基于离线 xdb 库的 <b>IP 归属拦截</b>：可分别开关「国外 IP」与「云厂商 / IDC IP」。
+真实用户几乎不会来自腾讯云、阿里云机房，这个开关对刷量特别有效，且<b>无外部请求</b>，
+不依赖第三方 API。</p>
+
+<h2>五、三分钟上手</h2>
+<p>不需要编译的话，直接用 Release 里的 zip：</p>
+<pre><code>mkdir -p /opt/warden &amp;&amp; cd /opt/warden
+unzip ~/warden-v1.0.1.zip
+chmod +x run.sh warden warden-linux-arm64   # zip 不保留可执行位
+./run.sh</code></pre>
+<p>要自己编译的话（Go 1.23+）：</p>
+<pre><code># Windows
+$env:GOPROXY = "https://goproxy.cn,https://goproxy.io,direct"
+go mod tidy
+go build -o warden.exe ./cmd/warden
+
+# Linux
+export GOPROXY=https://goproxy.cn,https://goproxy.io,direct
+go build -o warden ./cmd/warden
+./warden -config config.json</code></pre>
+<p>最小配置只要两行，把自己放在业务前面：</p>
+<pre><code>{
+  "listen": ":81",
+  "backend": "http://127.0.0.1:8002"
+}</code></pre>
+<p>验证：</p>
+<pre><code>curl http://127.0.0.1:81/healthz   # 健康检查
+curl -I  http://127.0.0.1:81/      # 应转发到后端</code></pre>
+<p>管理后台默认 <code>http://127.0.0.1:9090</code>，能看到实时拦截指标、QPS / 拦截率趋势、
+拦截分类占比、CPU / 内存、攻击日志分页查询与可信 IP 列表。</p>
+<p>三种部署形态按需要选：</p>
+<table>
+  <tr><th>方案</th><th>链路</th><th>适用</th></tr>
+  <tr><td>A. Nginx 前置（推荐）</td><td>:443 → Nginx(TLS 卸载) → warden:81 → 后端</td><td>需要 TLS、已有 Nginx</td></tr>
+  <tr><td>B. WAF 直接对外</td><td>:80 → warden → 后端</td><td>想少一跳（Windows 下监听 80 需管理员）</td></tr>
+  <tr><td>C. 多站点</td><td>按 Host 路由到不同上游</td><td>一台机器反代多个站点</td></tr>
+</table>
+<p>长期跑就用 systemd（Linux）或 NSSM（Windows）注册成服务，README 里有现成的 unit 文件。</p>
+
+<h2>六、上线前必须知道的五件事</h2>
+<h3>1. 先用 DetectionOnly 观察，再切 On</h3>
+<p>把 <code>rules/coraza.conf</code> 里的 <code>SecRuleEngine</code> 设成
+<code>DetectionOnly</code>，先观察一段时间有没有误报，确认真实业务不受影响后再改成 <code>On</code>。
+CC 防护同理：先只开验证码挑战，看真实用户的通过率，再逐步收紧阈值。
+<b>直接开 On 上线是 WAF 误杀的头号原因。</b></p>
+<h3>2. 改 config.json 不会生效</h3>
+<p>配置读取顺序是 <b>SQLite config 表 → 回退 config.json</b>。首次启动会用 config.json
+初始化数据库，之后<b>一律以 DB 为准</b>。请在管理后台修改并重启。</p>
+<h3>3. Windows 版 Nginx 有 1024 连接上限</h3>
+<p>Windows 版 Nginx 用 <code>select()</code> 事件模型，单 worker 最多约 1024 并发连接，
+<code>worker_connections</code> 设再大也不生效。并发较高时，把 Nginx 放到 Linux / WSL2，
+或者让 warden 直接对外（Go 在 Windows 上用 IOCP，无此限制）。</p>
+<h3>4. 上游 keepalive 超时要对齐</h3>
+<p>warden 到后端的空闲连接回收时间要<b>短于</b>后端（如 Tomcat 的 <code>connectionTimeout</code>），
+否则会复用已被后端关闭的连接，触发 <code>connection reset</code> → 间歇 502。</p>
+<h3>5. 防火墙封禁默认关闭，别急着开</h3>
+<p>早期版本会为每个 IP 创建 in/out 两条 <code>netsh</code> 规则，攻击量下能迅速累积到上万条，
+而 Windows 防火墙每次增删规则都要重编译整张规则表，操作会越来越慢。
+所以现在<b>默认关闭</b>，要开就得配合定期清理。</p>
+
+<h2>七、两个有意思的工程细节</h2>
+<p>管理后台和 WAF 跑在<b>同一个进程</b>里，所以轮询开销直接叠加在业务上，这两处做了优化：</p>
+<ul>
+  <li><b>读内存不用 <code>runtime.ReadMemStats</code></b>：它会触发 STW 停顿，实测单次约
+      8.7µs；改用 <code>runtime/metrics</code> 读同样指标仅约 0.3µs（快约 27 倍），
+      而取值一致。前端是按 3 秒轮询 <code>/api/stats</code> 的，这个差别会被放大。</li>
+  <li><b>CPU 使用率常驻采样</b>：<code>GetSystemTimes</code> / <code>/proc/stat</code> 给的是
+      自开机以来的累计值，必须两次采样求差。若只在接口被请求时才采样，离开仪表盘再切回来，
+      第一次读数会是整段空档的平均值（可能是几分钟）。所以后台以 1 秒间隔常驻采样并缓存，
+      接口只读缓存。</li>
+</ul>
+
+<h2>八、适合谁，不适合谁</h2>
+<p><b>适合</b>：企业官网、学校 / 政府站点、内网业务系统这类「后端不太健壮、流量模式相对固定、
+没人专门做安全运维」的场景；想自建、想完全掌控数据与规则的人。</p>
+<p><b>不适合</b>：需要企业级规则运营、DDoS 大流量清洗（那应该在运营商 / CDN 侧做）、
+或者指望装完就不管的场景。README 里也写得很清楚：这是<b>应用层防护手段</b>，
+不能替代系统补丁、最小权限和后端自身的安全编码。</p>
+
+<h2>九、项目信息</h2>
+<ul>
+  <li>许可证：<b>Apache-2.0</b>（含明确的专利授权，允许商业使用与闭源集成）</li>
+  <li>语言 / 依赖：Go 1.23+、OWASP Coraza v3、纯 Go SQLite、Vue3 + Element Plus + ECharts</li>
+  <li>当前版本：v1.0.1（跨平台单包分发）</li>
+  <li>Gitee：<a href="https://gitee.com/jxw1111/warden" rel="nofollow noopener" target="_blank">gitee.com/jxw1111/warden</a></li>
+  <li>GitHub：<a href="https://github.com/xwjiang2003/warden" rel="nofollow noopener" target="_blank">github.com/xwjiang2003/warden</a></li>
+</ul>
+<p>欢迎提交 Issue / PR，贡献默认按 Apache-2.0 授权，建议在提交信息里附
+<code>Signed-off-by</code>（DCO）。</p>
+  <div class="post-related">
+    <h2>相关阅读</h2>
+    <ul>
+      <li><a href="../../go-cheatsheet/">Go 工具链命令速查表</a></li>
+      <li><a href="../../blog/gofmt-vs-goimports/">gofmt 和 goimports 的区别</a></li>
+      <li><a href="../../blog/">全部文章</a></li>
+    </ul>
   </div>
-  <div class="blog-list">
-    <a class="blog-card" href="../../en/blog/warden-go-waf/">
-      <p class="blog-card-title">warden: A Single-Binary Go Reverse-Proxy WAF</p>
-      <p class="blog-card-desc">L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.</p>
-      <p class="blog-card-meta"><time datetime="2026-09-25">2026-09-25</time><span class="blog-tag">Go</span><span class="blog-tag">WAF</span><span class="blog-tag">Open Source</span></p>
-    </a>
-    <a class="blog-card" href="../../en/blog/gofmt-vs-goimports/">
-      <p class="blog-card-title">gofmt vs goimports: Why Your CI Formatting Check Fails</p>
-      <p class="blog-card-desc">gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.</p>
-      <p class="blog-card-meta"><time datetime="2026-09-24">2026-09-24</time><span class="blog-tag">Go</span><span class="blog-tag">Toolchain</span><span class="blog-tag">CI</span></p>
-    </a>
-  </div>
-</div>
+</article>
 </div>
 
 
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
-  <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
+  <nav class="footer-links"><a href="../../">首页</a><a href="../../hotnews/">今日热榜</a><a href="../../go-cheatsheet/">Go 速查表</a><a href="../../diff/">文本比对</a><a href="../../encode/">编码解码</a><a href="../../regex/">正则表达式</a><a href="../../timestamp/">时间戳</a><a href="../../hash/">加密哈希</a><a href="../../formatter/">代码格式化</a><a href="../../string/">字符串</a><a href="../../generator/">生成器</a><a href="../../blog/">博客</a><a href="../../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
   <div class="footer-stats" id="footerStats">
-    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>
     <span class="stat-dot" aria-hidden="true">·</span>
-    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+    <span id="busuanzi_container_site_uv" style="display:none">访客数 <em id="busuanzi_value_site_uv">-</em> 人</span>
   </div>
 </footer>
 <div class="toast-container" id="toastContainer"></div>
@@ -529,7 +688,7 @@ function toast(msg, type) {
 function copyTextById(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
 }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
@@ -593,29 +752,29 @@ document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog class="feedback-modal" id="feedbackModal">
   <div class="fb-head">
-    <h3>Feedback</h3>
-    <button class="fb-close" type="button" data-feedback-close aria-label="Close">&times;</button>
+    <h3>问题反馈</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="关闭">&times;</button>
   </div>
-  <p class="fb-lead">This site is front-end only — no backend, no accounts — so feedback goes to GitHub Issues, Discussions, or email.</p>
+  <p class="fb-lead">本站是纯前端静态站，没有后端也没有账号系统，反馈走 GitHub Issues、讨论区或邮件。</p>
   <div class="fb-links">
     <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
-      <b>🐞 Report a bug</b><span>Crashes, wrong output, broken layout</span>
+      <b>🐞 报告问题</b><span>工具报错、结果不对、页面异常</span>
     </a>
     <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
-      <b>💡 Request a feature</b><span>A new tool, or a better experience</span>
+      <b>💡 功能建议</b><span>想要新工具或改进体验</span>
     </a>
     <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
-      <b>💬 Discussions</b><span>Usage questions, tips, or anything you are not sure counts as a bug</span>
+      <b>💬 讨论区</b><span>使用问题、经验交流、不确定算不算 bug 的反馈</span>
     </a>
   </div>
   <div class="fb-diag">
-    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copy diagnostics</button>
-    <span class="fb-hint">Paste it into the issue or email to help track it down — it never includes anything you typed</span>
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 复制诊断信息</button>
+    <span class="fb-hint">粘贴到 issue 或邮件里能帮我更快定位问题，其中不含你输入的任何内容</span>
   </div>
   <p class="fb-note">
-    <span>Also: </span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Browse existing issues</a>
+    <span>其它：</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">查看已有反馈</a>
     <span>·</span>
-    <span>Email feedback (no GitHub account needed): </span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+    <span>邮件反馈（无需 GitHub 账号）：</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
   </p>
 </dialog>
 <script>
@@ -638,16 +797,16 @@ document.addEventListener('DOMContentLoaded', init);
   var copy = document.getElementById('fbCopyDiag');
   if (copy) copy.addEventListener('click', function () {
     var text = [
-      'Page: ' + location.href,
-      'Browser: ' + navigator.userAgent,
-      'Language: ' + (navigator.language || '') + ' / UI: ' + document.documentElement.lang,
-      'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
-      'Theme: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
-      'Time: ' + new Date().toISOString()
+      '页面: ' + location.href,
+      '浏览器: ' + navigator.userAgent,
+      '语言: ' + (navigator.language || '') + ' / 界面: ' + document.documentElement.lang,
+      '屏幕: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      '主题: ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      '时间: ' + new Date().toISOString()
     ].join('\n');
     function done(ok) {
-      copy.textContent = ok ? '✅ Copied' : '❌ Copy failed';
-      setTimeout(function () { copy.textContent = '📋 Copy diagnostics'; }, 1600);
+      copy.textContent = ok ? '✅ 已复制' : '❌ 复制失败';
+      setTimeout(function () { copy.textContent = '📋 复制诊断信息'; }, 1600);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });

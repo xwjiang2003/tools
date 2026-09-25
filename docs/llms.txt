@@ -39,6 +39,8 @@ Key facts:
 
 ## Blog / 文章
 
+- [沃盾 warden：一个单文件部署的 Go 反向代理 WAF](https://devtools.help/blog/warden-go-waf/): 把 L4 连接限流、频率限制、CC 挑战、IP 归属拦截和 OWASP Coraza 规则检测做进一个 Go 可执行文件，管理后台用 go:embed 内嵌。讲清它解决什么问题、为什么这么选型，以及上线前必须知道的五件事。
+  - English: [warden: A Single-Binary Go Reverse-Proxy WAF](https://devtools.help/en/blog/warden-go-waf/) — L4 connection limiting, rate limiting, CC challenges, IP origin blocking and OWASP Coraza rules packed into one Go executable, with the admin dashboard embedded via go:embed. What problem it solves, why it is built this way, and five things to check before going live.
 - [gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败](https://devtools.help/blog/gofmt-vs-goimports/): gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。
   - English: [gofmt vs goimports: Why Your CI Formatting Check Fails](https://devtools.help/en/blog/gofmt-vs-goimports/) — gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.
 
