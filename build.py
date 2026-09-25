@@ -317,7 +317,7 @@ def autodetect_html(lang, other_url):
 # 顶部导航分组（工具在前、内容在后）。展示顺序即列表顺序；
 # slugs 必须覆盖 TOOLS 的全部条目（含首页 JSON 工具），否则该条目不会出现在导航里。
 NAV_GROUPS = [
-    {'zh': 'JSON 工具', 'en': 'JSON', 'slugs': ['json']},
+    {'zh': 'JSON', 'en': 'JSON', 'slugs': ['json']},
     {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'yaml', 'toml', 'csv', 'color']},
     {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
@@ -332,23 +332,31 @@ _TOOL_BY_SLUG = {t['slug']: t for t in TOOLS}
 def nav_html(active_slug, base, labels, lang='zh'):
     """顶部导航按分类分组：工具板块在前，内容板块（今日热榜、博客）排到最后。
 
-    每个分类以一个 muted 分组标题（nav-group）开头；内容板块同样作为独立分组置于末尾。
+    每个分类渲染成一个独立的 .nav-group-block 容器（标题 + 链接），容器之间自动换行，
+    不再把全部链接挤成一条横向滚动条。内容板块同样作为独立分组置于末尾。
     """
-    out = []
+    blocks = []
     for g in NAV_GROUPS + [CONTENT_GROUP]:
-        out.append(f'    <span class="nav-group">{esc(g[lang])}</span>')
+        items = []
         for slug in g['slugs']:
             if slug == 'blog':
                 cls = 'top-nav-item active' if active_slug == 'blog' else 'top-nav-item'
-                out.append(f'    <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
+                items.append(f'      <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
                 continue
             t = _TOOL_BY_SLUG.get(slug)
             if not t:
                 continue
             href = base + t['path'] if t['path'] else (base or './')
             cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
-            out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
-    return '\n'.join(out)
+            items.append(f'      <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
+        block = [
+            '    <div class="nav-group-block">',
+            f'      <span class="nav-group">{esc(g[lang])}</span>',
+        ]
+        block.extend(items)
+        block.append('    </div>')
+        blocks.append('\n'.join(block))
+    return '\n'.join(blocks)
 
 
 def footer_links_html(base, labels):

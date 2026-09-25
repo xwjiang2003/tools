@@ -47,16 +47,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
 .ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
 @media(max-width:900px){.ad-container{padding:4px 8px 0}}
-.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:52px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:4px}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;flex-wrap:wrap;min-height:52px;height:auto;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:8px}
 .logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo svg{width:24px;height:24px}
-.top-nav{display:flex;gap:2px;height:100%;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
-.top-nav::-webkit-scrollbar{display:none}
-.top-nav-item{padding:0 14px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);border-bottom:2px solid transparent;height:100%;display:flex;align-items:center;white-space:nowrap;border-radius:0}
+.top-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px;flex:1;min-width:0}
+.nav-group-block{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--toolbar-bg)}
+.top-nav-item{padding:5px 12px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);white-space:nowrap;border-radius:var(--radius-sm);text-decoration:none;line-height:1.4;display:flex;align-items:center}
 .top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
-.top-nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
-.nav-group{display:flex;align-items:center;padding:0 8px 0 10px;margin-left:2px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;border-left:1px solid var(--border)}
-.nav-group:first-child{border-left:none;padding-left:0}
+.top-nav-item.active{color:var(--tab-active-text);background:var(--tab-active-bg);font-weight:600}
+.nav-group{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;padding-right:6px;text-transform:uppercase}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
 .theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
 .theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
@@ -377,31 +376,45 @@ var _hmt = _hmt || [];
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <span class="nav-group">JSON</span>
-    <a class="top-nav-item" href="../../../en/">JSON</a>
-    <span class="nav-group">Convert</span>
-    <a class="top-nav-item" href="../../../en/formatter/">Formatter</a>
-    <a class="top-nav-item" href="../../../en/yaml/">JSON ↔ YAML</a>
-    <a class="top-nav-item" href="../../../en/toml/">JSON ↔ TOML</a>
-    <a class="top-nav-item" href="../../../en/csv/">JSON ↔ CSV</a>
-    <a class="top-nav-item" href="../../../en/color/">Color</a>
-    <span class="nav-group">Encode / Crypto</span>
-    <a class="top-nav-item" href="../../../en/encode/">Encode</a>
-    <a class="top-nav-item" href="../../../en/hash/">Hash</a>
-    <a class="top-nav-item" href="../../../en/jwt/">JWT decoder</a>
-    <span class="nav-group">Text / String</span>
-    <a class="top-nav-item" href="../../../en/diff/">Text Diff</a>
-    <a class="top-nav-item" href="../../../en/string/">Strings</a>
-    <a class="top-nav-item" href="../../../en/regex/">Regex</a>
-    <a class="top-nav-item" href="../../../en/case/">Case style</a>
-    <span class="nav-group">Code / Gen</span>
-    <a class="top-nav-item" href="../../../en/timestamp/">Timestamp</a>
-    <a class="top-nav-item" href="../../../en/generator/">Generators</a>
-    <span class="nav-group">Cheat Sheets</span>
-    <a class="top-nav-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
-    <span class="nav-group">Content</span>
-    <a class="top-nav-item" href="../../../en/hotnews/">Tech News</a>
-    <a class="top-nav-item active" href="../../../en/blog/">Blog</a>
+    <div class="nav-group-block">
+      <span class="nav-group">JSON</span>
+      <a class="top-nav-item" href="../../../en/">JSON</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Convert</span>
+      <a class="top-nav-item" href="../../../en/formatter/">Formatter</a>
+      <a class="top-nav-item" href="../../../en/yaml/">JSON ↔ YAML</a>
+      <a class="top-nav-item" href="../../../en/toml/">JSON ↔ TOML</a>
+      <a class="top-nav-item" href="../../../en/csv/">JSON ↔ CSV</a>
+      <a class="top-nav-item" href="../../../en/color/">Color</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Encode / Crypto</span>
+      <a class="top-nav-item" href="../../../en/encode/">Encode</a>
+      <a class="top-nav-item" href="../../../en/hash/">Hash</a>
+      <a class="top-nav-item" href="../../../en/jwt/">JWT decoder</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Text / String</span>
+      <a class="top-nav-item" href="../../../en/diff/">Text Diff</a>
+      <a class="top-nav-item" href="../../../en/string/">Strings</a>
+      <a class="top-nav-item" href="../../../en/regex/">Regex</a>
+      <a class="top-nav-item" href="../../../en/case/">Case style</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Code / Gen</span>
+      <a class="top-nav-item" href="../../../en/timestamp/">Timestamp</a>
+      <a class="top-nav-item" href="../../../en/generator/">Generators</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Cheat Sheets</span>
+      <a class="top-nav-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
+    </div>
+    <div class="nav-group-block">
+      <span class="nav-group">Content</span>
+      <a class="top-nav-item" href="../../../en/hotnews/">Tech News</a>
+      <a class="top-nav-item active" href="../../../en/blog/">Blog</a>
+    </div>
   </nav>
   <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../../blog/coraza-waf-rules/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
 <script>
