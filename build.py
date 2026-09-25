@@ -315,17 +315,26 @@ def autodetect_html(lang, other_url):
 
 
 def nav_html(active_slug, base, labels):
+    """顶部导航：工具在前，内容板块（今日热榜、博客）排到末尾。
+
+    工具 = TOOLS 中除 hotnews/blog 外的所有项（含首页 JSON 工具）；
+    内容 = 今日热榜（NEWS_SLUG）与博客（BLOG_INDEX），二者在各自页面高亮。
+    """
     out = []
     for t in TOOLS:
+        if t['slug'] in (NEWS_SLUG, 'blog'):
+            continue  # 内容板块统一排到导航末尾
         href = base + t['path'] if t['path'] else (base or './')
         cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
         out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
-        # 博客是站点级内容板块（非工具），紧跟「Go 速查表」之后作为第四个导航入口，
-        # 让全站顶部导航都能直达博客，博客索引页与文章页都会高亮它。
-        if t['slug'] == CHEAT_SLUG:
-            bcls = 'top-nav-item active' if active_slug == 'blog' else 'top-nav-item'
-            out.append(f'    <a class="{bcls}" href="{base}{BLOG_INDEX}">'
-                       f'{esc(labels["_blog"])}</a>')
+    # 内容板块：今日热榜 + 博客，置于导航最后。
+    content_items = [
+        (NEWS_SLUG, base + 'hotnews/', NEWS_SLUG),
+        ('blog', base + BLOG_INDEX, '_blog'),
+    ]
+    for slug, href, lbl in content_items:
+        cls = 'top-nav-item active' if active_slug == slug else 'top-nav-item'
+        out.append(f'    <a class="{cls}" href="{href}">{esc(labels[lbl])}</a>')
     return '\n'.join(out)
 
 
