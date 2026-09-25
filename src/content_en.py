@@ -635,7 +635,7 @@ TOOLS_EN = {
         'nav': 'Tech News',
         'title': "Today's Tech News — Live Headlines for Developers | DevTools",
         'description': (
-            'A tech news page rebuilt every day at 08:00 (UTC+8) from Hacker News, TechCrunch, '
+            'A tech news page rebuilt automatically every day from Hacker News, TechCrunch, '
             'The Verge and Ars Technica. Every headline links straight to the original article. '
             'No signup, no ads, no tracking.'
         ),
@@ -649,7 +649,7 @@ TOOLS_EN = {
             'feeds of Hacker News, TechCrunch, The Verge and Ars Technica into a single list, keeps '
             'the source\u2019s own ordering, and links every headline straight to the original '
             'article. Nothing is republished here — the copyright stays with each publisher.',
-            'The list is refreshed and the page rebuilt once a day at 08:00 (UTC+8). Because the '
+            'The list is refreshed and the page rebuilt once a day. Because the '
             'result is baked into plain HTML at build time rather than loaded by JavaScript, the '
             'page works with no API calls, loads in one request, and is fully readable by search '
             'engines and text browsers. There is no signup, no popup, no interstitial and no cookie.',
@@ -661,8 +661,8 @@ TOOLS_EN = {
             ('Straight to the original',
              'Every headline is a direct link to the publisher, opened in a new tab with no '
              'redirect page and no tracking parameters added.'),
-            ('Updated daily at 08:00',
-             'A scheduled job refetches every source and rebuilds the page each morning, so what '
+            ('Updated daily',
+             'A scheduled job refetches every source and rebuilds the page each day, so what '
              'you open is always the current edition.'),
             ('Community signal',
              'Hacker News entries keep their point count, which is often the clearest read on how '
@@ -681,7 +681,7 @@ TOOLS_EN = {
         ],
         'faq': [
             ('How often is this page updated?',
-             'Once a day at 08:00 UTC+8. The scheduled job refetches every source and rebuilds the '
+             'Once a day. The scheduled job refetches every source and rebuilds the '
              'page, so everyone sees the same edition at the same time. The exact timestamp is '
              'printed at the top of the list.'),
             ('Did you write these articles?',
