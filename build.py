@@ -320,6 +320,12 @@ def nav_html(active_slug, base, labels):
         href = base + t['path'] if t['path'] else (base or './')
         cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
         out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
+        # 博客是站点级内容板块（非工具），紧跟「Go 速查表」之后作为第四个导航入口，
+        # 让全站顶部导航都能直达博客，博客索引页与文章页都会高亮它。
+        if t['slug'] == CHEAT_SLUG:
+            bcls = 'top-nav-item active' if active_slug == 'blog' else 'top-nav-item'
+            out.append(f'    <a class="{bcls}" href="{base}{BLOG_INDEX}">'
+                       f'{esc(labels["_blog"])}</a>')
     return '\n'.join(out)
 
 
@@ -501,8 +507,10 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{ANALYTICS}}', analytics_html())
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
-    page = page.replace('{{NAV}}', nav_html(None if path == PRIVACY_FILE else _slug_of(path),
-                                            base, NAV_LABELS[lang]))
+    active = None if path == PRIVACY_FILE else _slug_of(path)
+    if slug and str(slug).startswith('blog'):
+        active = 'blog'
+    page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang]))
     page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))
     page = page.replace('{{JSONLD}}', ld)
     page = page.replace('{{TOOL}}', body)
@@ -553,8 +561,10 @@ def build():
             pages[out_path(lang, t['path'])] = page
 
         # ---------------- 博客：索引页 + 文章页 ----------------
-        # 文章不是工具：不进 TOOLS / 顶部导航，走与热榜相同的轻量模板（只有 core.js），
-        # 但拥有独立的 URL、canonical、hreflang、JSON-LD（TechArticle）与 sitemap 条目。
+        # 文章不是工具：不进 TOOLS，但顶部导航里已单独辟出「博客」入口
+        # （nav_html 在 Go 速查表之后插入，博客页/文章页高亮）。页面走与热榜相同的
+        # 轻量模板（只有 core.js），拥有独立的 URL、canonical、hreflang、
+        # JSON-LD（TechArticle）与 sitemap 条目。
         lang_articles = articles_for(lang, ARTICLES_EN)
         bt = BLOG_TEXT[lang]
 
