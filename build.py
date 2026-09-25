@@ -330,33 +330,50 @@ _TOOL_BY_SLUG = {t['slug']: t for t in TOOLS}
 
 
 def nav_html(active_slug, base, labels, lang='zh'):
-    """顶部导航按分类分组：工具板块在前，内容板块（今日热榜、博客）排到最后。
+    """顶部导航 = 下拉式 Mega Menu。
 
-    每个分类渲染成一个独立的 .nav-group-block 容器（标题 + 链接），容器之间自动换行，
-    不再把全部链接挤成一条横向滚动条。内容板块同样作为独立分组置于末尾。
+    工具板块（NAV_GROUPS）每个分类渲染成一个 .nav-dropdown：触发按钮 + 悬停展开的工具面板，
+    表头始终一行、不横向滚动；当前所处工具的分类触发词会高亮。内容板块（CONTENT_GROUP：
+    今日热榜、博客）作为平级链接排在分类之后。面板用 CSS :hover / :focus-within 展开，
+    无需 JS，移动端点击触发词（按钮获得焦点）即可展开。
     """
-    blocks = []
-    for g in NAV_GROUPS + [CONTENT_GROUP]:
-        items = []
+    out = []
+    # 工具板块 -> 下拉
+    for g in NAV_GROUPS:
+        items, group_active = [], False
         for slug in g['slugs']:
-            if slug == 'blog':
-                cls = 'top-nav-item active' if active_slug == 'blog' else 'top-nav-item'
-                items.append(f'      <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
-                continue
             t = _TOOL_BY_SLUG.get(slug)
             if not t:
                 continue
             href = base + t['path'] if t['path'] else (base or './')
-            cls = 'top-nav-item active' if t['slug'] == active_slug else 'top-nav-item'
-            items.append(f'      <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
-        block = [
-            '    <div class="nav-group-block">',
-            f'      <span class="nav-group">{esc(g[lang])}</span>',
-        ]
-        block.extend(items)
-        block.append('    </div>')
-        blocks.append('\n'.join(block))
-    return '\n'.join(blocks)
+            if t['slug'] == active_slug:
+                group_active = True
+                items.append(f'        <a class="nav-panel-item active" href="{href}">{esc(labels[t["slug"]])}</a>')
+            else:
+                items.append(f'        <a class="nav-panel-item" href="{href}">{esc(labels[t["slug"]])}</a>')
+        if not items:
+            continue
+        trig_cls = 'nav-trigger active' if group_active else 'nav-trigger'
+        out.append('    <div class="nav-dropdown">')
+        out.append(f'      <button class="{trig_cls}" type="button" aria-haspopup="true" aria-expanded="false">{esc(g[lang])}<span class="caret" aria-hidden="true"></span></button>')
+        out.append('      <div class="nav-panel" role="menu">')
+        out.append(f'        <div class="nav-panel-title">{esc(g[lang])}</div>')
+        out.extend(items)
+        out.append('      </div>')
+        out.append('    </div>')
+    # 内容板块 -> 平级链接
+    for slug in CONTENT_GROUP['slugs']:
+        if slug == 'blog':
+            cls = 'top-nav-link active' if active_slug == 'blog' else 'top-nav-link'
+            out.append(f'    <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
+            continue
+        t = _TOOL_BY_SLUG.get(slug)
+        if not t:
+            continue
+        href = base + t['path'] if t['path'] else (base or './')
+        cls = 'top-nav-link active' if t['slug'] == active_slug else 'top-nav-link'
+        out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
+    return '\n'.join(out)
 
 
 def footer_links_html(base, labels):

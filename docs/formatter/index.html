@@ -52,12 +52,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;flex-wrap:wrap;min-height:52px;height:auto;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:8px}
 .logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo svg{width:24px;height:24px}
-.top-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px;row-gap:8px;flex:1;min-width:0}
-.nav-group-block{display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--toolbar-bg)}
-.top-nav-item{padding:5px 12px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:500;transition:all var(--transition);white-space:nowrap;border-radius:var(--radius-sm);text-decoration:none;line-height:1.4;display:flex;align-items:center}
-.top-nav-item:hover{color:var(--text);background:var(--tab-hover)}
-.top-nav-item.active{color:var(--tab-active-text);background:var(--tab-active-bg);font-weight:600}
-.nav-group{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;white-space:nowrap;padding-right:6px;text-transform:uppercase}
+.top-nav{display:flex;flex-wrap:wrap;align-items:center;gap:2px;flex:1;min-width:0}
+.nav-dropdown{position:relative;display:flex;align-items:center}
+.nav-trigger{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid transparent;background:none;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text-secondary);font-weight:500;white-space:nowrap;border-radius:var(--radius-sm);transition:background var(--transition),color var(--transition),border-color var(--transition);line-height:1.3}
+.nav-trigger:hover,.nav-trigger:focus-visible{color:var(--text);background:var(--tab-hover);outline:none}
+.nav-trigger.active{color:var(--primary);background:var(--tab-active-bg);border-color:var(--primary)}
+.caret{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;opacity:.55;transition:transform var(--transition),opacity var(--transition)}
+.nav-dropdown:hover .caret,.nav-dropdown:focus-within .caret{opacity:1}
+.nav-panel{position:absolute;top:calc(100% + 8px);left:0;min-width:216px;background:var(--header-bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity var(--transition),transform var(--transition),visibility var(--transition);z-index:200;display:flex;flex-direction:column;gap:2px}
+.nav-dropdown:hover .nav-panel,.nav-dropdown:focus-within .nav-panel{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-panel-title{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px 7px}
+.nav-panel-item{display:block;padding:8px 10px;border-radius:var(--radius-sm);font-size:13.5px;color:var(--text);text-decoration:none;white-space:nowrap;transition:background var(--transition),color var(--transition)}
+.nav-panel-item:hover{background:var(--tab-hover);color:var(--primary)}
+.nav-panel-item.active{background:var(--tab-active-bg);color:var(--primary);font-weight:600}
+.top-nav-link{display:inline-flex;align-items:center;padding:7px 12px;font-size:14px;color:var(--text-secondary);text-decoration:none;white-space:nowrap;border-radius:var(--radius-sm);border:1px solid transparent;transition:background var(--transition),color var(--transition)}
+.top-nav-link:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-link.active{color:var(--primary);background:var(--tab-active-bg);border-color:var(--primary);font-weight:600}
+.nav-dropdown:last-of-type .nav-panel{left:auto;right:0}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
 .theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
 .theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
@@ -378,45 +389,60 @@ var _hmt = _hmt || [];
     DevTools
   </a>
   <nav class="top-nav" id="topNav">
-    <div class="nav-group-block">
-      <span class="nav-group">JSON</span>
-      <a class="top-nav-item" href="../">JSON 工具</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">JSON<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">JSON</div>
+        <a class="nav-panel-item" href="../">JSON 工具</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">格式转换</span>
-      <a class="top-nav-item active" href="../formatter/">代码格式化</a>
-      <a class="top-nav-item" href="../yaml/">JSON↔YAML</a>
-      <a class="top-nav-item" href="../toml/">JSON↔TOML</a>
-      <a class="top-nav-item" href="../csv/">JSON↔CSV</a>
-      <a class="top-nav-item" href="../color/">颜色转换</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">格式转换<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">格式转换</div>
+        <a class="nav-panel-item active" href="../formatter/">代码格式化</a>
+        <a class="nav-panel-item" href="../yaml/">JSON↔YAML</a>
+        <a class="nav-panel-item" href="../toml/">JSON↔TOML</a>
+        <a class="nav-panel-item" href="../csv/">JSON↔CSV</a>
+        <a class="nav-panel-item" href="../color/">颜色转换</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">编码 / 加密</span>
-      <a class="top-nav-item" href="../encode/">编码解码</a>
-      <a class="top-nav-item" href="../hash/">加密哈希</a>
-      <a class="top-nav-item" href="../jwt/">JWT 解码</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">编码 / 加密<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">编码 / 加密</div>
+        <a class="nav-panel-item" href="../encode/">编码解码</a>
+        <a class="nav-panel-item" href="../hash/">加密哈希</a>
+        <a class="nav-panel-item" href="../jwt/">JWT 解码</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">文本 / 字符串</span>
-      <a class="top-nav-item" href="../diff/">文本比对</a>
-      <a class="top-nav-item" href="../string/">字符串</a>
-      <a class="top-nav-item" href="../regex/">正则表达式</a>
-      <a class="top-nav-item" href="../case/">命名风格</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">文本 / 字符串<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">文本 / 字符串</div>
+        <a class="nav-panel-item" href="../diff/">文本比对</a>
+        <a class="nav-panel-item" href="../string/">字符串</a>
+        <a class="nav-panel-item" href="../regex/">正则表达式</a>
+        <a class="nav-panel-item" href="../case/">命名风格</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">代码 / 生成</span>
-      <a class="top-nav-item" href="../timestamp/">时间戳</a>
-      <a class="top-nav-item" href="../generator/">生成器</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">代码 / 生成</div>
+        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
+        <a class="nav-panel-item" href="../generator/">生成器</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">速查表</span>
-      <a class="top-nav-item" href="../go-cheatsheet/">Go 速查表</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">速查表<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">速查表</div>
+        <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
+      </div>
     </div>
-    <div class="nav-group-block">
-      <span class="nav-group">内容</span>
-      <a class="top-nav-item" href="../hotnews/">今日热榜</a>
-      <a class="top-nav-item" href="../blog/">博客</a>
-    </div>
+    <a class="top-nav-link" href="../hotnews/">今日热榜</a>
+    <a class="top-nav-link" href="../blog/">博客</a>
   </nav>
   <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/formatter/" data-lang-set="en">English</a></div>
 <script>
