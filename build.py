@@ -68,6 +68,27 @@ CHEAT_SLUG = 'go-cheatsheet'
 # 不用再改代码；换域名/换平台要删除时，也只要从这里删掉即可。
 ROOT_FILES = ROOT / 'root_files'
 
+# 第三方 CDN 资源自托管。
+#
+# 起因（2026-10-10 实测）：cdnjs.cloudflare.com 对 Baiduspider UA 会确定性返回 403
+# ——同一个 URL 用普通浏览器 UA 是 200，换成百度蜘蛛的 UA 就是 403。全站 422 处引用、
+# 每个工具页 14 个依赖，于是百度蜘蛛虽然拿到了 HTML（200），但 CodeMirror 初始化必然
+# 失败，渲染出来是编辑器空白的残页。这比单纯慢更致命：慢只是抓得慢，资源 403 是
+# 抓到了也是个坏页面。
+#
+# 做法：用 fetch_cdn.py 把资源下载到 src/cdn/，构建时输出到 assets/cdn/，
+# 并把页面里的 https://cdnjs.cloudflare.com/ajax/libs/X 改写为同源 /assets/cdn/X。
+#
+# 两个刻意的选择：
+# 1. 不自内联 —— 全内联会让首页 HTML 从 143 KB 涨到 300 KB+，之前的优化就白做了；
+#    输出成独立文件既同源又能被浏览器长期缓存。
+# 2. 用绝对路径而不是相对路径 —— 页面分布在 /、/en/、/blog/<slug>/ 好几层深度，
+#    相对路径要在每处单独算层级，将来加一层目录就会错。
+CDN_ORIGIN = 'https://cdnjs.cloudflare.com/ajax/libs/'
+CDN_SRC = SRC / 'cdn'
+CDN_OUT = Path('assets') / 'cdn'
+CDN_LOCAL_URL = '/' + CDN_OUT.as_posix() + '/'
+
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
     'timestamp.js', 'hash.js', 'formatter.js',
@@ -705,6 +726,21 @@ def build(clean=True):
             if extra.is_file():
                 pages[Path(extra.name)] = extra.read_text('utf-8')
 
+    # 把第三方 CDN 资源读进来，并把 HTML 里的外链改写成同源路径。
+    # 放在这里而不是逐个页面处理：上面几十处 pages[...] = ... 任何一处都可能引入
+    # CDN 链接，收口在落盘前统一替换一次，以后加页面也不用记得再改一遍。
+    cdn_assets = {}
+    if CDN_SRC.is_dir():
+        for fp in sorted(CDN_SRC.rglob('*')):
+            if fp.is_file():
+                rel = fp.relative_to(CDN_SRC).as_posix()
+                cdn_assets[CDN_OUT / rel] = fp.read_bytes()
+        if cdn_assets:
+            pages = {k: (v.replace(CDN_ORIGIN, CDN_LOCAL_URL) if k.suffix == '.html' else v)
+                     for k, v in pages.items()}
+    else:
+        print('  ⚠ src/cdn/ 不存在：页面保留 cdnjs 外链，百度蜘蛛会拿到 403')
+
     for outdir in (DIST, DOCS):
         if clean and outdir.exists():
             _safe_rmtree(outdir)
@@ -712,8 +748,16 @@ def build(clean=True):
             fp = outdir / rel
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_text(content, 'utf-8')
+        # 二进制写入：这些是压缩过的产物，不能用 write_text，
+        # 否则 Windows 上会把内部的 \n 转成 \r\n，文件就废了。
+        for rel, data in cdn_assets.items():
+            fp = outdir / rel
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_bytes(data)
 
-    print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块 × 2 语言')
+    n_cdn = len(cdn_assets)
+    print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块 × 2 语言'
+          + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else ''))
     for rel in sorted(pages, key=str):
         print(f'  ✓ {str(rel):28s} {len(pages[rel]) / 1024:7.1f} KB')
     print(f'\n✅ {len(pages)} 个文件 → dist/ (本地预览) + docs/ (GitHub Pages 发布)')
