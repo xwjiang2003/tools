@@ -19,8 +19,8 @@
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/hash/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/hash/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "MD5 / SHA-256 Hash & Checksum Tool", "url": "https://devtools.help/en/hash/", "description": "Compute MD5, SHA-1, SHA-256 and SHA-512 hashes of text or files, with HMAC and AES encryption, all in the browser. Nothing is uploaded to a server.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is MD5 still usable?", "acceptedAnswer": {"@type": "Answer", "text": "MD5 collisions can be constructed deliberately, so it must not be used for signatures, certificates or password storage. It remains fine for non-adversarial integrity checks such as confirming a download completed, since it is faster than SHA-256 and almost every download page publishes MD5 values. For anything security-related, use SHA-256 or better."}}, {"@type": "Question", "name": "Is it safe to compute hashes here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The computation runs entirely inside your browser and neither the text nor the file leaves your machine. That said, if you are handling sensitive data in an untrusted environment, a local command-line tool is still the safer choice, since browser extensions or page scripts can add risk."}}, {"@type": "Question", "name": "Why is a SHA-256 hash 64 characters long?", "acceptedAnswer": {"@type": "Answer", "text": "SHA-256 produces a 256-bit digest, and hexadecimal notation uses two characters per byte, so 32 bytes x 2 = 64 characters. By the same logic SHA-512 gives 128 characters and MD5 gives 32."}}, {"@type": "Question", "name": "Why does the same string always produce the same hash?", "acceptedAnswer": {"@type": "Answer", "text": "Hash functions are deterministic: the same input must produce the same output, and that is precisely what makes them useful for verification. If you need unpredictable output, add a random salt to the input."}}]}]}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -536,18 +536,18 @@ document.addEventListener("click", function (e) {
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation

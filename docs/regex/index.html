@@ -19,8 +19,8 @@
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/regex/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/regex/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "正则表达式在线测试与替换", "url": "https://devtools.help/regex/", "description": "在线正则表达式测试工具：实时高亮匹配结果，支持 g/i/m/s/u 标志、捕获分组查看、替换预览与常用正则速查（邮箱、手机号、URL）。浏览器本地运行，不收集输入内容。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这里用的是哪种正则引擎？", "acceptedAnswer": {"@type": "Answer", "text": "用的是浏览器原生的 JavaScript RegExp，遵循 ECMAScript 语法。它与 Python、PCRE、Java 的写法大体相通，但 (?P<name>...) 命名分组、变长后行断言等特性支持情况不同，跨语言使用时需要留意。"}}, {"@type": "Question", "name": "为什么我的正则匹配不到内容？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因有三类：一是忘了勾选 g 标志导致只匹配第一处；二是特殊字符没有转义，例如匹配小数点应当写 \\.；三是没勾选 m 或 s，导致 ^ $ 与 . 的行为和预期不符。"}}, {"@type": "Question", "name": "贪婪匹配和非贪婪匹配有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "量词 * 和 + 默认是贪婪的，会尽可能多地匹配字符；在量词后加问号变成 *? 或 +? 即为非贪婪，尽可能少地匹配。例如对 <a><b> 使用 <.+> 会匹配整串，而 <.+?> 只匹配 <a>。"}}, {"@type": "Question", "name": "页面会记录我输入的正则和文本吗？", "acceptedAnswer": {"@type": "Answer", "text": "不会。匹配、替换全部在浏览器内完成，输入内容不会发送到服务器。"}}]}]}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -554,18 +554,18 @@ document.addEventListener("click", function (e) {
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation

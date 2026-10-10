@@ -19,8 +19,8 @@
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/encode/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/encode/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Base64 / URL / Unicode 在线编码解码", "url": "https://devtools.help/encode/", "description": "免费在线编码解码工具：Base64 编解码、URL 百分号编码、Unicode 转中文、HTML 实体转义、Hex 十六进制转换。中文不乱码，纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Base64 是加密吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。Base64 只是一种把二进制数据表示成可打印字符的编码方式，任何人都能直接还原，不提供任何保密能力。需要保密请使用 AES 等真正的加密算法。"}}, {"@type": "Question", "name": "为什么 Base64 结果末尾会有等号？", "acceptedAnswer": {"@type": "Answer", "text": "等号是填充符。Base64 把每 3 个字节编码成 4 个字符，当原始数据长度不是 3 的倍数时，用 1 到 2 个等号补齐，保证结果长度是 4 的倍数。"}}, {"@type": "Question", "name": "encodeURI 和 encodeURIComponent 用哪个？", "acceptedAnswer": {"@type": "Answer", "text": "拼接查询参数的值时用 encodeURIComponent，它会把 & = ? / 等也一并转义；整条 URL 保留结构地转义时用 encodeURI，它不会转义这些具有语法含义的字符。"}}, {"@type": "Question", "name": "解码后出现乱码怎么办？", "acceptedAnswer": {"@type": "Answer", "text": "多半是编码时用的字符集不是 UTF-8，或者内容被做了两次编码。可以试试先解码一次，看结果是否还像编码后的形式；本页对中文按 UTF-8 处理。"}}]}]}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -531,18 +531,18 @@ document.addEventListener("click", function (e) {
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation

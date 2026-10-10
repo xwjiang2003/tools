@@ -828,11 +828,14 @@ PRIVACY_BODY_ZH = """\
 <h2>三、第三方资源</h2>
 <p>为了保持页面简洁，本站从公共 CDN 加载以下第三方资源，加载时你的浏览器会与这些服务通信，对方的隐私政策独立适用：</p>
 <ul>
-  <li><strong>cdnjs.cloudflare.com</strong> — 提供 CodeMirror 代码编辑器与二维码生成库。</li>
   <li><strong>cdn.jsdelivr.net</strong> — 提供 YAML / TOML 等格式转换库的按需加载（仅在对应工具页）。</li>
   <li><strong>busuanzi.ibruce.info</strong> — 页脚访问量统计。</li>
   <li><strong>hm.baidu.com</strong> — 百度统计，站点分析。</li>
 </ul>
+<p>
+  代码编辑器（CodeMirror）与二维码生成库原先由 <code>cdnjs.cloudflare.com</code> 提供，
+  现已改为由本站自身域名下的 <code>/assets/cdn/</code> 目录提供——加载它们不会再与 Cloudflare 通信。
+</p>
 <p>
   除以上三个域名外，本站不请求其他第三方资源。若你处于对隐私要求极高的环境，
   可以拦截上述请求，除访问量计数与代码编辑器的语法高亮外，其余工具功能不受影响

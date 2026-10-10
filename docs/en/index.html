@@ -19,8 +19,8 @@
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON Formatter, Validator & Converter", "url": "https://devtools.help/en/", "description": "Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is my JSON uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Parsing, formatting, diffing and conversion are all done by JavaScript in your browser, and the page contains no code that sends JSON to a backend. You can keep using these features offline once the editor dependency has loaded."}}, {"@type": "Question", "name": "Validation fails, but the JSON looks fine. Why?", "acceptedAnswer": {"@type": "Answer", "text": "The four usual suspects are a trailing comma after the last item of an object or array, single quotes instead of double quotes, a literal newline inside a string that was never escaped, and an invisible BOM at the start of the file. The error message includes the position, so moving the cursor there usually reveals the problem."}}, {"@type": "Question", "name": "How is JSON different from a JavaScript object literal?", "acceptedAnswer": {"@type": "Answer", "text": "JSON requires double-quoted keys, forbids trailing commas and comments, and has no undefined, functions or single-quoted strings. Object literals allow all of those, which is why copying an object straight out of JavaScript source often fails validation."}}, {"@type": "Question", "name": "How large a JSON document can it handle?", "acceptedAnswer": {"@type": "Answer", "text": "That depends on the memory your browser has available; a few tens of megabytes is normally fine. For hundreds of megabytes, reach for a command-line tool such as jq — the browser editor gets noticeably sluggish at that size."}}]}]}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -593,18 +593,18 @@ document.addEventListener("click", function (e) {
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation

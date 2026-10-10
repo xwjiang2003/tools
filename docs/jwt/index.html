@@ -19,8 +19,8 @@
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/jwt/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/jwt/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线 JWT 解码与签名验证工具", "url": "https://devtools.help/jwt/", "description": "免费在线 JWT 解码：解析 Header 与 Payload，把 exp/iat/nbf 等时间字段转成可读时间，支持 HS256/384/512 密钥签名验证。纯浏览器本地解码，密钥与令牌不上传。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "解码 JWT 等于验证身份吗？", "acceptedAnswer": {"@type": "Answer", "text": "不等于。解码只是把令牌内容还原成可读 JSON，任何人都能解码。令牌是否可信，取决于服务端用密钥对签名做校验——本工具只在你提供密钥时对 HS 算法做本地验签，RS/ES 等非对称算法不在此处验证。"}}, {"@type": "Question", "name": "为什么填了密钥仍提示\"未验证\"？", "acceptedAnswer": {"@type": "Answer", "text": "只有 alg 为 HS256/384/512 时才会用密钥验签；如果是 RS256 / ES256 等非对称算法，签名需要使用公钥在后端验证，浏览器端无法安全完成，本工具会明确标注不验证。"}}, {"@type": "Question", "name": "exp 已经过去就一定失效了吗？", "acceptedAnswer": {"@type": "Answer", "text": "对，exp 是过期时间，服务端在收到令牌时会据此拒绝过期请求。但本工具只做解码展示，不作任何放行或拒绝判断，是否过期以你的服务端为准。"}}]}]}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -598,18 +598,18 @@ document.addEventListener("click", function (e) {
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation

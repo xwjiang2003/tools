@@ -969,13 +969,17 @@ PRIVACY_BODY_EN = """
 <h2>3. Third-Party Resources</h2>
 <p>To keep the pages lightweight, this site loads the following third-party resources from public CDNs. Your browser communicates with those services when they load, and their own privacy policies apply:</p>
 <ul>
-  <li><strong>cdnjs.cloudflare.com</strong> — provides the CodeMirror code editor and the QR code generation library.</li>
   <li><strong>cdn.jsdelivr.net</strong> — provides the YAML / TOML conversion libraries, loaded on demand (only on the relevant tool pages).</li>
   <li><strong>busuanzi.ibruce.info</strong> — the visit counter in the footer.</li>
   <li><strong>hm.baidu.com</strong> — Baidu Analytics, used for site statistics.</li>
 </ul>
 <p>
-  No third-party domains beyond these four are requested. If you work in a privacy-sensitive
+  The code editor (CodeMirror) and the QR code generation library used to come from
+  <code>cdnjs.cloudflare.com</code>. They are now served from <code>/assets/cdn/</code> under this
+  site's own domain, so loading them no longer involves any communication with Cloudflare.
+</p>
+<p>
+  No third-party domains beyond these three are requested. If you work in a privacy-sensitive
   environment you can block them; apart from the visit counter and the editor's syntax highlighting,
   every tool keeps working, because all computation happens locally and does not depend on these
   external resources.
