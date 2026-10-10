@@ -377,6 +377,7 @@ EN = {
 
     # ---------- 页眉 / 页脚 ----------
     '切换暗色模式': 'Toggle dark mode',
+    '打开导航菜单': 'Open navigation menu',
     'DevTools 首页': 'DevTools home',
     '工具输入的数据仅在浏览器本地处理，不会上传到服务器': 'Data you enter is processed locally in your browser and is never uploaded',
     '隐私政策': 'Privacy Policy',

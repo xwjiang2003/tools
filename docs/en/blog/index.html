@@ -336,6 +336,74 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .post-related h2{margin-top:0}
 @media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
 
+/* ============================================================
+   窄屏导航（2026-10-10）
+   ------------------------------------------------------------
+   问题：.header 是 sticky + flex-wrap:wrap，而 6 个分类下拉 + 2 个平级链接
+   + 右侧 3 个按钮在 390px 屏上会换行成 7 行，占掉屏幕顶部约三分之一，
+   且右侧按钮组被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
+
+   方案：<=900px 时 header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
+   ☰ 抽屉；抽屉里的分类下拉由浮层改为原地展开（position:static + max-height
+   过渡），因为浮层在窄屏上会向右溢出视口。
+
+   开关状态放在 body.nav-open 上而不是 :focus-within —— 移动浏览器点击
+   <button> 的聚焦行为不一致，靠焦点展开会时灵时不灵；点击外部关闭也只有 JS 能做。
+   ============================================================ */
+
+/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体查询里塞一大坨 */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;padding:0 8px;flex:none;cursor:pointer;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);transition:background var(--transition),border-color var(--transition)}
+.nav-toggle:hover{background:var(--tab-hover)}
+.nav-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.nav-toggle span{display:block;width:100%;height:2px;border-radius:1px;background:var(--text);transition:transform var(--transition),opacity var(--transition)}
+/* 展开时三条线变成 ✕ */
+body.nav-open .nav-toggle span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+body.nav-open .nav-toggle span:nth-child(2){opacity:0}
+body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+@media(max-width:900px){
+  .header{flex-wrap:nowrap;padding:8px 12px;gap:6px}
+  .logo{order:1;margin-right:0}
+  .header-actions{order:2;margin-left:auto;gap:4px}
+  .nav-toggle{order:3;display:inline-flex}
+
+  /* 抽屉本体：吸附在 header 下沿，独立滚动，不挤占页面内容 */
+  .top-nav{order:4;position:absolute;top:100%;left:0;right:0;z-index:150;display:none;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto;background:var(--header-bg);border-bottom:1px solid var(--border);box-shadow:var(--shadow-md);padding:10px 12px 16px;max-height:calc(100vh - 60px);overflow-y:auto;overscroll-behavior:contain}
+  body.nav-open .top-nav{display:flex}
+
+  /* 抽屉内所有项一律整行，触发按钮占满宽度、箭头推到最右 */
+  .nav-dropdown{display:block;width:100%;position:static}
+  .nav-trigger{width:100%;justify-content:space-between;text-align:left;padding:12px 10px;font-size:15px;border-radius:var(--radius-sm)}
+  .nav-trigger.active{background:var(--tab-active-bg)}
+
+  /* 分类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
+  .nav-panel{position:static;left:auto;right:auto;min-width:0;opacity:1;visibility:visible;transform:none;background:transparent;border:0;box-shadow:none;padding:0 0 0 12px;max-height:0;overflow:hidden;transition:max-height .22s ease}
+  .nav-dropdown.open .nav-panel{max-height:420px;padding-bottom:6px}
+  .nav-dropdown.open .caret{transform:rotate(180deg)}
+  /* 分类名已经在触发按钮上，面板里重复的表头去掉 */
+  .nav-panel-title{display:none}
+  .nav-panel-item{padding:11px 10px;font-size:14.5px;white-space:normal}
+
+  /* 平级链接（今日热榜 / 博客）同样整行 */
+  .top-nav-link{width:100%;padding:12px 10px;font-size:15px;justify-content:flex-start}
+
+}
+
+/* 实测各元素宽度：logo 109 + header-actions 195（反馈 40 / 语言 101 / 主题 40）
+   + ☰ 36 + 间距内边距 42 ≈ 382px。375px 机型减去滚动条约 360px 可用 → 会溢出，
+   ☰ 被挤出视口，菜单就再也打不开了。所以手机档必须再让出 40 多像素。
+   反馈按钮优先让位：页脚有同样的「问题反馈」入口，而 ☰ 是唯一入口。 */
+@media(max-width:430px){
+  .header-actions .feedback-btn{display:none}
+  .header{padding:8px 10px;gap:5px}
+  .lang-switch{margin-right:0}
+}
+
+/* 320px 档（iPhone SE 等）：logo 文字也让位。总宽降到约 252px，留足余量 */
+@media(max-width:359px){
+  .logo-text{display:none}
+}
+
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
      2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
@@ -347,6 +415,10 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
 <!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<!-- JS 不可用时的兜底：窄屏抽屉靠 body.nav-open 打开，没有 JS 就永远打不开。
+     这里把导航退回成可用的换行布局（会多占几行，但菜单一定点得到）。
+     放在 head 里是为了避免加载后再回退造成的闪烁。 -->
+<noscript><style>@media(max-width:900px){.nav-toggle{display:none}.top-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;border-bottom:0;box-shadow:none;padding:6px 0 0;max-height:none;overflow:visible}.nav-dropdown{width:auto}.nav-trigger{width:auto;font-size:14px}}</style></noscript>
 <script>
 // 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
 // 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
@@ -386,8 +458,15 @@ var _hmt = _hmt || [];
 <header class="header">
   <a class="logo" href="../../en/" aria-label="DevTools home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    DevTools
+    <span class="logo-text">DevTools</span>
   </a>
+  <!-- 窄屏导航开关：桌面端由 CSS 隐藏，手机端把整个导航收进抽屉。
+       不加这个的话，6 个分类下拉 + 2 个平级链接会让 sticky 的 header 在
+       390px 屏上换行成 7 行、占掉屏幕顶部约三分之一，右侧按钮还会被挤出视口。 -->
+  <button class="nav-toggle" id="navToggle" type="button"
+          aria-label="Open navigation menu" aria-expanded="false" aria-controls="topNav">
+    <span></span><span></span><span></span>
+  </button>
   <nav class="top-nav" id="topNav">
     <div class="nav-dropdown">
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">JSON<span class="caret" aria-hidden="true"></span></button>
@@ -631,6 +710,69 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+// MOBILE NAV（窄屏抽屉）
+// ============================================================
+// 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
+// 窄屏下把导航收进 ☰ 抽屉，分类下拉从浮层改成原地展开（配合 style.css 的媒体查询）。
+//
+// 为什么不用 :focus-within 纯 CSS：移动浏览器点击 <button> 是否获得焦点行为不一致，
+// 靠焦点展开会时灵时不灵；"点外面关闭"更是只有 JS 能做。
+(function () {
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('topNav');
+  var header = document.querySelector('.header');
+  if (!toggle || !nav || !header) return;
+
+  function isOpen() { return document.body.classList.contains('nav-open'); }
+  function setOpen(open) {
+    document.body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) {
+      // 收起抽屉时把展开的分类也一并复位，下次打开是干净的初始状态
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (dd) {
+        dd.classList.remove('open');
+      });
+    }
+  }
+
+  toggle.addEventListener('click', function () { setOpen(!isOpen()); });
+
+  // 抽屉里的分类：点分类名原地展开/收起，同时只留一个展开的
+  Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown'), function (dd) {
+    var trig = dd.querySelector('.nav-trigger');
+    if (!trig) return;
+    trig.addEventListener('click', function () {
+      var willOpen = !dd.classList.contains('open');
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (o) {
+        if (o !== dd) o.classList.remove('open');
+      });
+      dd.classList.toggle('open', willOpen);
+    });
+  });
+
+  // 点 drawer 以外的地方关闭。header 内的点击（含 ☰ 本身）都交给上面的处理器
+  document.addEventListener('click', function (e) {
+    if (isOpen() && !header.contains(e.target)) setOpen(false);
+  });
+
+  // Esc 关闭并把焦点还给 ☰，键盘用户不会迷失位置
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
+  });
+
+  // 抽屉里点链接：跨页跳转会重载页面、自然关闭；同页锚点不会，所以手动关一次
+  Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+
+  // 转到桌面宽度时清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
+  // 桌面上打开着抽屉布局（虽然桌面媒体查询不生效，但 aria-expanded 会误导读屏软件）
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 900 && isOpen()) setOpen(false);
+  });
+})();
 </script>
 <!-- ========== Analytics: busuanzi ==========
      Loaded on production only; skipped for file:// previews and localhost so local

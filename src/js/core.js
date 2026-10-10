@@ -123,3 +123,66 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+// MOBILE NAV（窄屏抽屉）
+// ============================================================
+// 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
+// 窄屏下把导航收进 ☰ 抽屉，分类下拉从浮层改成原地展开（配合 style.css 的媒体查询）。
+//
+// 为什么不用 :focus-within 纯 CSS：移动浏览器点击 <button> 是否获得焦点行为不一致，
+// 靠焦点展开会时灵时不灵；"点外面关闭"更是只有 JS 能做。
+(function () {
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('topNav');
+  var header = document.querySelector('.header');
+  if (!toggle || !nav || !header) return;
+
+  function isOpen() { return document.body.classList.contains('nav-open'); }
+  function setOpen(open) {
+    document.body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) {
+      // 收起抽屉时把展开的分类也一并复位，下次打开是干净的初始状态
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (dd) {
+        dd.classList.remove('open');
+      });
+    }
+  }
+
+  toggle.addEventListener('click', function () { setOpen(!isOpen()); });
+
+  // 抽屉里的分类：点分类名原地展开/收起，同时只留一个展开的
+  Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown'), function (dd) {
+    var trig = dd.querySelector('.nav-trigger');
+    if (!trig) return;
+    trig.addEventListener('click', function () {
+      var willOpen = !dd.classList.contains('open');
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (o) {
+        if (o !== dd) o.classList.remove('open');
+      });
+      dd.classList.toggle('open', willOpen);
+    });
+  });
+
+  // 点 drawer 以外的地方关闭。header 内的点击（含 ☰ 本身）都交给上面的处理器
+  document.addEventListener('click', function (e) {
+    if (isOpen() && !header.contains(e.target)) setOpen(false);
+  });
+
+  // Esc 关闭并把焦点还给 ☰，键盘用户不会迷失位置
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
+  });
+
+  // 抽屉里点链接：跨页跳转会重载页面、自然关闭；同页锚点不会，所以手动关一次
+  Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+
+  // 转到桌面宽度时清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
+  // 桌面上打开着抽屉布局（虽然桌面媒体查询不生效，但 aria-expanded 会误导读屏软件）
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 900 && isOpen()) setOpen(false);
+  });
+})();
