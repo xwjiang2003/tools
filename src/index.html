@@ -30,6 +30,10 @@
 <!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
 <!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
 <!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<!-- JS 不可用时的兜底：窄屏抽屉靠 body.nav-open 打开，没有 JS 就永远打不开。
+     这里把导航退回成可用的换行布局（会多占几行，但菜单一定点得到）。
+     放在 head 里是为了避免加载后再回退造成的闪烁。 -->
+<noscript><style>@media(max-width:900px){.nav-toggle{display:none}.top-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;border-bottom:0;box-shadow:none;padding:6px 0 0;max-height:none;overflow:visible}.nav-dropdown{width:auto}.nav-trigger{width:auto;font-size:14px}}</style></noscript>
 {{AUTODETECT}}
 {{ANALYTICS}}
 </head>
@@ -37,8 +41,15 @@
 <header class="header">
   <a class="logo" href="{{HOME}}" aria-label="DevTools 首页">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    DevTools
+    <span class="logo-text">DevTools</span>
   </a>
+  <!-- 窄屏导航开关：桌面端由 CSS 隐藏，手机端把整个导航收进抽屉。
+       不加这个的话，6 个分类下拉 + 2 个平级链接会让 sticky 的 header 在
+       390px 屏上换行成 7 行、占掉屏幕顶部约三分之一，右侧按钮还会被挤出视口。 -->
+  <button class="nav-toggle" id="navToggle" type="button"
+          aria-label="打开导航菜单" aria-expanded="false" aria-controls="topNav">
+    <span></span><span></span><span></span>
+  </button>
   <nav class="top-nav" id="topNav">
 {{NAV}}
   </nav>
