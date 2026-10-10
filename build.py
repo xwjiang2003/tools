@@ -627,7 +627,7 @@ def _safe_rmtree(path):
         pass
 
 
-def build(clean=True):
+def build(clean=True, outdirs=None):
     tpl = inline_assets((SRC / 'index.html').read_text('utf-8'))
     # 热榜页只需要 core.js（主题、语言切换、反馈弹窗）：编辑器模块和 CodeMirror/QRCode
     # 的 CDN 标签对它毫无用处，去掉后单页体积与外部请求都只剩零头。
@@ -741,7 +741,12 @@ def build(clean=True):
     else:
         print('  ⚠ src/cdn/ 不存在：页面保留 cdnjs 外链，百度蜘蛛会拿到 403')
 
-    for outdir in (DIST, DOCS):
+    # 默认同时写两个目录：dist/（被 .gitignore 忽略，本地预览用）与 docs/
+    # （发布目录）。传了 outdirs 就只写指定的目录 —— 服务器定时任务靠这个把
+    # 「构建」和「发布」分开：先构建到暂存区，校验通过后再原子切换，
+    # 这样构建中途失败时线上仍是上一版，不会被 rmtree 清成空目录。
+    targets = (DIST, DOCS) if outdirs is None else outdirs
+    for outdir in targets:
         if clean and outdir.exists():
             _safe_rmtree(outdir)
         for rel, content in pages.items():
@@ -760,7 +765,8 @@ def build(clean=True):
           + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else ''))
     for rel in sorted(pages, key=str):
         print(f'  ✓ {str(rel):28s} {len(pages[rel]) / 1024:7.1f} KB')
-    print(f'\n✅ {len(pages)} 个文件 → dist/ (本地预览) + docs/ (GitHub Pages 发布)')
+    where = ' + '.join(d.name for d in targets)
+    print(f'\n✅ {len(pages)} 个文件 → {where}')
     return True
 
 
@@ -960,8 +966,17 @@ def watch():
 
 if __name__ == '__main__':
     no_clean = '--no-clean' in sys.argv
-    if '--watch' in sys.argv or '-w' in sys.argv:
-        build(clean=not no_clean)
+    # --out <dir> 可重复；不传就按默认的 dist/ + docs/ 两个目录输出。
+    # 用法示例（服务器定时构建）：
+    #   python3 build.py --out dist    只构建到暂存区，校验通过后再发布
+    outs = []
+    rest = sys.argv[1:]
+    while '--out' in rest:
+        i = rest.index('--out')
+        outs.append(ROOT / rest[i + 1])
+        rest = rest[:i] + rest[i + 2:]
+    if '--watch' in rest or '-w' in rest:
+        build(clean=not no_clean, outdirs=outs or None)
         watch()
     else:
-        build(clean=not no_clean)
+        build(clean=not no_clean, outdirs=outs or None)
