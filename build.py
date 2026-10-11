@@ -89,6 +89,12 @@ CDN_SRC = SRC / 'cdn'
 CDN_OUT = Path('assets') / 'cdn'
 CDN_LOCAL_URL = '/' + CDN_OUT.as_posix() + '/'
 
+# src/static/ 里的文件按原样复制到发布目录根。目前放 favicon（.svg/.ico）和
+# apple-touch-icon.png——它们必须落在根路径，浏览器才会自动发现 /favicon.ico。
+# 这些是二进制，写盘必须走 write_bytes：write_text 在 Windows 上会把内部的
+# \n 转成 \r\n，图片文件就废了。
+STATIC_SRC = SRC / 'static'
+
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
     'timestamp.js', 'hash.js', 'formatter.js',
@@ -741,6 +747,14 @@ def build(clean=True, outdirs=None):
     else:
         print('  ⚠ src/cdn/ 不存在：页面保留 cdnjs 外链，百度蜘蛛会拿到 403')
 
+    # src/static/ → 发布目录根，原样复制不做改写。favicon.ico 必须在根路径，
+    # 否则浏览器默认请求 /favicon.ico 会 404（不知道 <link rel=icon> 的老客户端也走这条）。
+    static_assets = {}
+    if STATIC_SRC.is_dir():
+        for fp in sorted(STATIC_SRC.rglob('*')):
+            if fp.is_file():
+                static_assets[fp.relative_to(STATIC_SRC)] = fp.read_bytes()
+
     # 默认同时写两个目录：dist/（被 .gitignore 忽略，本地预览用）与 docs/
     # （发布目录）。传了 outdirs 就只写指定的目录 —— 服务器定时任务靠这个把
     # 「构建」和「发布」分开：先构建到暂存区，校验通过后再原子切换，
@@ -755,14 +769,16 @@ def build(clean=True, outdirs=None):
             fp.write_text(content, 'utf-8')
         # 二进制写入：这些是压缩过的产物，不能用 write_text，
         # 否则 Windows 上会把内部的 \n 转成 \r\n，文件就废了。
-        for rel, data in cdn_assets.items():
+        for rel, data in {**cdn_assets, **static_assets}.items():
             fp = outdir / rel
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_bytes(data)
 
     n_cdn = len(cdn_assets)
+    n_static = len(static_assets)
     print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块 × 2 语言'
-          + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else ''))
+          + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else '')
+          + (f'\n  ✓ 静态资源 {n_static} 个 → 发布根（favicon 等）' if n_static else ''))
     for rel in sorted(pages, key=str):
         print(f'  ✓ {str(rel):28s} {len(pages[rel]) / 1024:7.1f} KB')
     where = ' + '.join(d.name for d in targets)
