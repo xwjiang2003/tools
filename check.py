@@ -124,17 +124,30 @@ def main():
             d = xml.dom.minidom.parse(str(sm))
             urls = d.getElementsByTagName('url')
             n = len(urls)
-            # 中英两个版本共用一条 <url>，靠 xhtml:link 声明 hreflang，
-            # 所以条数应等于「非 /en/ 页面数」。
-            # 注意用 as_posix()：Windows 上 str(Path) 是反斜杠，直接比较 'en/'
-            # 会让所有英文页都被算成中文页。
-            zh_pages = [f for f in pages
-                        if not f.relative_to(target).as_posix().startswith('en/')]
-            ok = n == len(zh_pages)
+            # 中英各自独立成条（满足 ahrefs「每个可索引页都要在 sitemap 里有独立 <loc>」），
+            # 所以条数应等于「全部内容页面数」（含 /en/）。早期中英共用一条、英文页只当
+            # xhtml:link alternate，导致 ahrefs 报「22 个可索引页不在 sitemap」。
+            loc_set = {u.getElementsByTagName('loc')[0].firstChild.data for u in urls}
+            # 逐页校验：每个页面的 canonical 都必须能在 sitemap 找到同名 <loc>。
+            # 这正是 ahrefs「Indexable page not in sitemap」的对症检查。
+            canon_re = re.compile(
+                r'<link[^>]*rel=["\']canonical["\'][^>]*href=["\']([^"\']+)["\']', re.I)
+            missing = []
+            for f in pages:
+                m = canon_re.search(f.read_text('utf-8'))
+                if not m:
+                    missing.append(f'{f.relative_to(target)}(无canonical)')
+                elif m.group(1) not in loc_set:
+                    missing.append(f'{f.relative_to(target)}({m.group(1)})')
+            ok = (n == len(pages)) and not missing
             print(f'  {"✅" if ok else "❌"} sitemap.xml 合法，含 {n} 条 url'
-                  f'（中文页面 {len(zh_pages)} 个，中英共用条目）')
-            if not ok:
-                errors.append(f'sitemap url 数 {n} != 中文页面数 {len(zh_pages)}')
+                  f'（内容页面 {len(pages)} 个，中英各自成条）')
+            if n != len(pages):
+                errors.append(f'sitemap url 数 {n} != 页面数 {len(pages)}')
+            if missing:
+                shown = '、'.join(missing[:5])
+                more = f' …等 {len(missing)} 个' if len(missing) > 5 else ''
+                errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data
                       for u in urls if len(u.getElementsByTagName('xhtml:link')) != 3]
             if no_alt:

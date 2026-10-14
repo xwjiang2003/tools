@@ -809,15 +809,22 @@ def sitemap_xml(news=None):
         zh = SITE['base_url'] + p
         en = SITE['base_url'] + EN_DIR + p
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
-        rows.append(
-            '  <url>\n'
-            f'    <loc>{zh}</loc>{lastmod}\n'
+        alternates = (
             f'    <xhtml:link rel="alternate" hreflang="zh-CN" href="{zh}"/>\n'
             f'    <xhtml:link rel="alternate" hreflang="en" href="{en}"/>\n'
             f'    <xhtml:link rel="alternate" hreflang="x-default" href="{zh}"/>\n'
-            f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
-            '  </url>'
         )
+        meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
+        # 中英各自独立成条：英文页有自己的 canonical、是独立的可索引 URL。
+        # 早期只把它们挂在 zh 条目下当 xhtml:link alternate、不给独立 <loc>，
+        # 结果 ahrefs 报「22 个可索引页不在 sitemap」——那 22 个正好等于英文页数。
+        for loc in (zh, en):
+            rows.append(
+                '  <url>\n'
+                f'    <loc>{loc}</loc>{lastmod}\n'
+                + alternates + meta +
+                '  </url>'
+            )
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
             '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
