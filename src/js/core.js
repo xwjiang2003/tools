@@ -107,6 +107,17 @@ function initPage(name) {
     case 'encode': initEncodePage(); break;
     case 'regex': initRegexPage(); break;
     case 'timestamp': initTimestampPage(); break;
+    case 'batch': initBatchPage(); break;
+    case 'timestamp-list': initTimestampListPage(); break;
+    case 'timezones': initTimezonesPage(); break;
+    case 'weeknumbers': initWeeknumbersPage(); break;
+    case 'daynumbers': initDaynumbersPage(); break;
+    case 'years': initYearsPage(); break;
+    case 'world-clock': initWorldClockPage(); break;
+    case 'countdown': initCountdownPage(); break;
+    case 'date-difference': initDateDifferencePage(); break;
+    case 'date-calculator': initDateCalculatorPage(); break;
+    case 'duration': initDurationPage(); break;
     case 'hash': initHashPage(); break;
     case 'formatter': initFormatterPage(); break;
     case 'string': initStringPage(); break;

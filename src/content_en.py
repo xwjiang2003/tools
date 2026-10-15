@@ -921,6 +921,404 @@ TOOLS_EN = {
              'at the end, keeping the table tidy without dropping data.'),
         ],
     },
+    'batch': {
+        'nav': 'Batch TS',
+        'title': 'Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools',
+        'description': (
+            'Bulk-convert Unix timestamps online: paste many timestamps or dates at once to convert '
+            'between seconds/milliseconds timestamps and dates, with timezone selection and '
+            'CSV-style table output. All processed locally in your browser.'
+        ),
+        'keywords': 'batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch',
+        'h1': 'Batch Timestamp & Date Conversion',
+        'intro': [
+            'Paste multiple timestamps or dates, one per line, choose the direction (timestamp → date '
+            'or date → timestamp) and a time zone, and the results appear instantly in a table you can '
+            'copy or export. Handy for logs, exported data tables and bulk API parameters.',
+            'Every conversion runs in your browser, so nothing you paste is sent to any server.',
+        ],
+        'features': [
+            ('Bulk both ways', 'One input per line; seconds and milliseconds are auto-detected; dates accept "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD".'),
+            ('Time zone options', 'Results are interpreted and shown in local time, UTC, Beijing, New York, London, Tokyo and more.'),
+            ('Table output', 'Results render as a two-column table; invalid rows are flagged in red for easy checking.'),
+            ('Local first', 'No backend is involved, so even large batches never leave your device.'),
+        ],
+        'steps': [
+            'Paste one timestamp or date per line in the left text box.',
+            'Choose the conversion direction and time zone above.',
+            'Results show instantly in the right-hand table; click "Copy" to take them.',
+        ],
+        'faq': [
+            ('How much data can the batch converter handle?',
+             'It depends on browser memory; a few thousand rows usually convert instantly. For very large inputs, paste in chunks to avoid building one huge table at once.'),
+            ('What happens to a row with the wrong date format?',
+             'Unparseable rows are flagged in red and marked "invalid"; the other valid rows still convert, so the whole batch does not fail.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp & Date Converter (single)', 'timestamp/'),
+            ('Timestamp cheat sheet', 'timestamp-list/'),
+            ('World time zones & current time', 'timezones/'),
+        ],
+    },
+    'timestamp-list': {
+        'nav': 'TS Reference',
+        'title': 'Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools',
+        'description': (
+            'Timestamp cheat sheet: seconds and milliseconds Unix timestamps plus the matching date '
+            'for common reference points — now, start of today, this Monday, 1st of month, start of '
+            'year, +1h, +7d, the 2038 limit and the epoch. Computed locally.'
+        ),
+        'keywords': 'timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp',
+        'h1': 'Timestamp Cheat Sheet',
+        'intro': [
+            'When writing code you often need fixed timestamps: the current second, midnight today, the '
+            '2038 limit 2147483647... This sheet lists common reference points once, with their '
+            'seconds, milliseconds and readable date, updating instantly when you switch time zone.',
+            'Values are computed locally in your browser and need no network.',
+        ],
+        'features': [
+            ('Common anchors', 'Covers now, start of today / this week / this month / this year, +1h, +7d, +1y, the 2038 limit and the epoch start.'),
+            ('Two units', 'Each anchor shows both the seconds and the milliseconds timestamp.'),
+            ('Time zone switch', 'Anchors like "midnight today" are interpreted in the time zone you pick.'),
+        ],
+        'steps': [
+            'Pick a time zone in the dropdown.',
+            'The table shows each anchor\'s seconds, milliseconds and date instantly.',
+        ],
+        'faq': [
+            ('Which time zone is "midnight today" computed in?',
+             'The time zone you select. "Local time" means your browser\'s zone; "UTC" means midnight UTC.'),
+            ('What is the 2038 limit?',
+             'The largest seconds timestamp a signed 32-bit integer can hold is 2147483647, which is '
+             '2038-01-19 03:14:07 UTC. Systems past that overflow — this is the year-2038 problem.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp & Date Converter', 'timestamp/'),
+            ('Batch timestamp conversion', 'batch/'),
+        ],
+    },
+    'timezones': {
+        'nav': 'Time Zones',
+        'title': 'World Time Zones — UTC Offset & Current Time | DevTools',
+        'description': (
+            'World time zone reference: UTC offset and current time for UTC, Beijing, Tokyo, London, '
+            'New York, Paris, Sydney and other major zones, with automatic daylight-saving adjustment, '
+            'refreshed every second. Computed locally.'
+        ),
+        'keywords': 'time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone',
+        'h1': 'World Time Zones & Current Time',
+        'intro': [
+            'When collaborating across zones, the annoying part is working out "what time is it for '
+            'them". This table lists each major zone\'s current UTC offset and local time together, and '
+            'handles daylight saving automatically — you do not need to remember who moves the clock an '
+            'hour each season.',
+            'Times are computed locally in your browser and refreshed every second, with no network needed.',
+        ],
+        'features': [
+            ('Major zones', 'Covers UTC and 14 common IANA zones across China, Japan, India, Europe and the Americas.'),
+            ('Automatic DST', 'Offsets follow the current date\'s daylight-saving rules; no manual add or subtract.'),
+            ('Live refresh', 'Current time updates every second for direct comparison.'),
+        ],
+        'steps': [
+            'The table already lists each zone\'s offset and current time.',
+            'For another zone, convert by its IANA name or send feedback to add it.',
+        ],
+        'faq': [
+            ('Why does the offset sometimes change?',
+             'Regions with daylight saving move the clock forward an hour in summer, so the same '
+             'zone\'s UTC offset differs by month. The page applies the current-date rule automatically.'),
+            ('Are "UTC" and "GMT" the same?',
+             'For everyday use, essentially yes; strictly, UTC is atomic-clock based and GMT is '
+             'astronomical, and they agree to the second. This site labels offsets with UTC.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp & Date Converter', 'timestamp/'),
+            ('World clock', 'world-clock/'),
+        ],
+    },
+    'weeknumbers': {
+        'nav': 'ISO Week',
+        'title': 'ISO 8601 Week Number — Current Week & Year | DevTools',
+        'description': (
+            'ISO 8601 week number lookup: shows the current ISO week number and the ISO week-year '
+            '(week starts Monday) in real time. Computed locally, refreshed each minute.'
+        ),
+        'keywords': 'iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number',
+        'h1': 'Current ISO 8601 Week Number',
+        'intro': [
+            'ISO 8601 puts Monday at the start of the week and defines week 1 as the week containing the '
+            'first Thursday of the year — which means a few days at the start of January may belong to '
+            'week 52 or 53 of the previous year. This tool matches the week numbering of many European systems.',
+            'The week number is computed locally and refreshes each minute (auto-updates across week boundaries).',
+        ],
+        'features': [
+            ('ISO 8601 compliant', 'Monday-start, Thursday-rule week numbering, consistent with European enterprise systems.'),
+            ('Week-year shown', 'Also shows the ISO week-year the week belongs to (which may differ from the calendar year).'),
+            ('Live refresh', 'Updates automatically across week boundaries.'),
+        ],
+        'steps': [
+            'Open the page to see the current ISO week number and week-year.',
+        ],
+        'faq': [
+            ('Why can January 1 show week 52?',
+             'By the Thursday rule, if Jan 1 is Fri/Sat/Sun, most of its week falls in the previous '
+             'year, so it is counted as week 52 or 53 of that year — which is why the ISO week-year can '
+             'differ from the calendar year.'),
+            ('How is the ISO week number different from the common one?',
+             'Many US-style systems start the week on Sunday and count the week containing Jan 1 as week '
+             '1; ISO starts on Monday and uses the Thursday rule, so the two can differ by a week at year start/end.'),
+        ],
+        'seealso': [
+            ('Current day of the year', 'daynumbers/'),
+            ('Leap years & days per year', 'years/'),
+        ],
+    },
+    'daynumbers': {
+        'nav': 'Day of Year',
+        'title': 'Day of the Year — Current Day Number | DevTools',
+        'description': (
+            'Compute which day of the year the current date is (1–366). Leap years are detected '
+            'automatically and the result refreshes live. Computed locally.'
+        ),
+        'keywords': 'day of year,current day number,julian day,days into the year,leap year days,day number',
+        'h1': 'Current Day of the Year',
+        'intro': [
+            'Counting from January 1 (day 1), how many days have passed to today — a common year has 365 '
+            'days, a leap year 366. This day count appears in some log formats, fiscal quarters and '
+            'astronomical calculations.',
+            'The value is computed locally and refreshes each minute.',
+        ],
+        'features': [
+            ('Auto leap year', 'Leap years (366 days) and common years (365 days) are detected automatically.'),
+            ('Live refresh', 'Updates automatically across day boundaries.'),
+        ],
+        'steps': [
+            'Open the page to see the current day of the year.',
+        ],
+        'faq': [
+            ('Is this the same as a "Julian day"?',
+             'No. Here it is "day of the year" (restarting at 1 each year); a Julian day is a '
+             'continuous count from 4713 BCE, not reset annually, and is used in astronomy and historiography.'),
+        ],
+        'seealso': [
+            ('ISO 8601 week number', 'weeknumbers/'),
+            ('Leap years & days per year', 'years/'),
+        ],
+    },
+    'years': {
+        'nav': 'Leap Year',
+        'title': 'Leap Year Lookup — Leap Years 1800–2100 | DevTools',
+        'description': (
+            'Leap year lookup: lists whether each year from 1800 to 2100 is a leap year, its day count '
+            'and ISO starting week, and highlights the current year. Computed locally.'
+        ),
+        'keywords': 'leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator',
+        'h1': 'Leap Years & Days per Year (1800–2100)',
+        'intro': [
+            'Leap-year rule: divisible by 4 but not by 100, or divisible by 400. Such years have 366 '
+            'days with 29 days in February; the rest are common years with 365. This table lists every '
+            'year from 1800 to 2100 for quick checking.',
+            'Data is computed locally in your browser.',
+        ],
+        'features': [
+            ('Three-century span', 'Covers 1800–2100, enough for almost all historical and future date checks.'),
+            ('Leap flag', 'Each year is marked "Leap / Common" with its day count.'),
+            ('ISO start week', 'Shows which ISO week the first week of each year starts at.'),
+        ],
+        'steps': [
+            'The page shows the full leap-year table on open, with the current year highlighted.',
+        ],
+        'faq': [
+            ('Why is 1900 not a leap year?',
+             'The leap rule has an exception: a year divisible by 100 must also be divisible by 400 to '
+             'be a leap year. 1900 is divisible by 100 but not by 400, so it is a common year; 2000 is '
+             'divisible by 400, so it is a leap year.'),
+        ],
+        'seealso': [
+            ('ISO 8601 week number', 'weeknumbers/'),
+            ('Current day of the year', 'daynumbers/'),
+        ],
+    },
+    'world-clock': {
+        'nav': 'World Clock',
+        'title': 'World Clock — Current Time in Major Cities | DevTools',
+        'description': (
+            'Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New '
+            'York, Paris, Sydney and other major cities at once, refreshed every second with daylight '
+            'saving. Computed locally.'
+        ),
+        'keywords': 'world clock,multi-city time,city time comparison,world time,online clock,time zone comparison',
+        'h1': 'World Clock',
+        'intro': [
+            'Put the current time of multiple cities in one table, so you can see at a glance "what time '
+            'is it for them" before a cross-border meeting or remote collaboration. Times are computed '
+            'locally and refreshed every second, with offsets auto-adjusted for daylight saving by the '
+            'current date.',
+            'All computation happens on your device.',
+        ],
+        'features': [
+            ('Many cities at once', 'UTC and 14 major cities side by side.'),
+            ('Offset & DST', 'Each city shows its current UTC offset, with daylight saving handled automatically.'),
+            ('Live refresh', 'Updates every second.'),
+        ],
+        'steps': [
+            'The table lists each city\'s current time and offset.',
+        ],
+        'faq': [
+            ('Why is a city\'s offset different from last time I looked?',
+             'Cities with daylight saving move the clock forward an hour in certain months, so the '
+             'offset changes; the page handles it automatically.'),
+        ],
+        'seealso': [
+            ('World time zones & current time', 'timezones/'),
+            ('Unix Timestamp & Date Converter', 'timestamp/'),
+        ],
+    },
+    'countdown': {
+        'nav': 'Countdown',
+        'title': 'Countdown to a Unix Timestamp | DevTools',
+        'description': (
+            'Online countdown: enter a Unix timestamp (seconds or milliseconds, auto-detected) to see in '
+            'real time how long until that moment, or how long since. Supports a shareable link. Computed locally.'
+        ),
+        'keywords': 'countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown',
+        'h1': 'Countdown to a Target Timestamp',
+        'intro': [
+            'Enter the timestamp of a future (or past) moment and the tool counts down in real time how '
+            'many days / hours / minutes / seconds remain; if that moment has passed, it shows how long '
+            'ago. You can also copy a share link with the target parameter so the other person opens the '
+            'same target.',
+            'All computation happens locally in your browser.',
+        ],
+        'features': [
+            ('Seconds/ms auto-detect', '10 digits read as seconds, 13 as milliseconds — no manual switch.'),
+            ('Live countdown', 'Days/hours/minutes/seconds remaining or elapsed, refreshed every second.'),
+            ('Shareable link', 'Generates a link with ?target= so the recipient reproduces the same target.'),
+        ],
+        'steps': [
+            'Enter the target timestamp in the input box.',
+            'The page shows the countdown instantly.',
+            'Click "Copy share link" to share the result page with others.',
+        ],
+        'faq': [
+            ('The time shown when I open the share link differs from yours?',
+             'The target timestamp in the link is an absolute UTC instant; the "time remaining" depends '
+             'on the opener\'s local current time, so different people and times see different '
+             'remainders, but the target moment itself is the same.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp & Date Converter', 'timestamp/'),
+            ('Date difference', 'date-difference/'),
+        ],
+    },
+    'date-difference': {
+        'nav': 'Date Diff',
+        'title': 'Date Difference Calculator — Days/Hours/Min/Sec | DevTools',
+        'description': (
+            'Online date difference: pick or enter two date-times and compute the interval between them '
+            '(days, hours, minutes, seconds). Interpreted in local time zone. Computed locally.'
+        ),
+        'keywords': 'date difference,days between dates,date calculator,time difference,days calculator,date interval',
+        'h1': 'Difference Between Two Dates',
+        'intro': [
+            'Enter a start and an end date-time and the tool computes how many days, hours, minutes and '
+            'seconds lie between them. Common for project durations, remaining membership time and event intervals.',
+            'Computation happens locally in your browser, with no network needed.',
+        ],
+        'features': [
+            ('Absolute interval', 'Whichever date is earlier, the interval is always given as an absolute value.'),
+            ('Down to the second', 'Shows days, hours, minutes, seconds and total seconds.'),
+            ('Local time zone', 'Input date-times are interpreted in your browser\'s local time zone.'),
+        ],
+        'steps': [
+            'Pick a start and an end date-time.',
+            'The result shows the interval instantly.',
+        ],
+        'faq': [
+            ('How are cross-time-zone inputs computed?',
+             'The page interprets the entered date-time in your browser\'s local time zone. If you need '
+             'it in another zone, convert it to your local wall-clock time first, then enter it.'),
+        ],
+        'seealso': [
+            ('Date add / subtract', 'date-calculator/'),
+            ('Countdown', 'countdown/'),
+        ],
+    },
+    'date-calculator': {
+        'nav': 'Date Calc',
+        'title': 'Date Add / Subtract — Add/Sub Years/Months/Days | DevTools',
+        'description': (
+            'Online date add/subtract: add or subtract years, months and days from a base date, with '
+            'automatic month-end and year-end handling (e.g. Feb 28 + 1 day = Mar 1). Computed locally.'
+        ),
+        'keywords': 'date add subtract,date calculator,add days to date,subtract days,date offset,add months',
+        'h1': 'Date Add / Subtract',
+        'intro': [
+            'Given a base date, enter the years, months and days to add or subtract and the tool computes '
+            'the target date and its timestamp. It handles month-end and year-end correctly: for example '
+            'Feb 28 plus 1 day becomes Mar 1, and Dec 31 plus 1 year is still Dec 31.',
+            'All computation happens in your browser.',
+        ],
+        'features': [
+            ('Years/months/days separately', 'Three independent fields, any combination.'),
+            ('Month-end clamp', 'E.g. Jan 31 plus 1 month becomes Feb 28/29, not an overflow into March.'),
+            ('With timestamp', 'The result also gives the matching Unix seconds timestamp.'),
+        ],
+        'steps': [
+            'Pick a base date.',
+            'Enter the years / months / days to add or subtract (may be negative).',
+            'The result shows the target date and timestamp instantly.',
+        ],
+        'faq': [
+            ('Why is "Jan 31 plus 1 month" Feb 28, not Mar 3?',
+             'February has no 31st, so adding a month directly would "overflow" into early March, which '
+             'feels wrong in most cases. This tool clamps the day to the last day of the target month, '
+             'giving Feb 28 (or 29 in a leap year).'),
+        ],
+        'seealso': [
+            ('Date difference', 'date-difference/'),
+            ('Leap years & days per year', 'years/'),
+        ],
+    },
+    'duration': {
+        'nav': 'Duration',
+        'title': 'ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools',
+        'description': (
+            'Online ISO 8601 duration converter: convert between a PnYnMnDTnHnMnS duration string and '
+            'seconds. Supports P1W, PT1H30M and more. Computed locally.'
+        ),
+        'keywords': 'iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration',
+        'h1': 'ISO 8601 Duration String ↔ Seconds',
+        'intro': [
+            'ISO 8601 expresses a duration as "PnYnMnDTnHnMnS": after P come years/months/weeks/days, '
+            'after T come hours/minutes/seconds. This tool converts between that human-readable string '
+            'and the seconds value machines use.',
+            'Years use 365 days and months use 30 days as approximations (without a reference date the '
+            'real month length is unknown). Computation is local.',
+        ],
+        'features': [
+            ('Two-way', 'Duration string → seconds, seconds → duration string.'),
+            ('Format friendly', 'Supports any combination of PnY/PnM/PnW/PnD and TnH/TnM/TnS, e.g. P1W, PT1H30M.'),
+            ('Instant validation', 'Flags an illegal format immediately.'),
+        ],
+        'steps': [
+            'Enter a duration string (e.g. P1DT12H) in the top box to get seconds.',
+            'Enter seconds in the bottom box to get an ISO duration string.',
+        ],
+        'faq': [
+            ('Why is "1 month" only approximate in seconds?',
+             'Different months have different lengths (28/29/30/31), and without a specific reference '
+             'date the real month length cannot be determined, so this tool uses 30 days; years and '
+             'months are for rough conversion only — for exact durations use days/hours/minutes/seconds.'),
+            ('Can P1Y2M3DT4H5M6S be round-tripped?',
+             'Yes. As long as you do not mix approximate units like month/year, the round trip is '
+             'consistent and exact; conversions involving years/months carry rounding error from the approximation.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp & Date Converter', 'timestamp/'),
+            ('Date difference', 'date-difference/'),
+        ],
+    },
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.

@@ -91,7 +91,7 @@ CDN_LOCAL_URL = '/' + CDN_OUT.as_posix() + '/'
 
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
-    'timestamp.js', 'hash.js', 'formatter.js',
+    'timestamp.js', 'datetime-tools.js', 'hash.js', 'formatter.js',
     'string-tools.js', 'generator.js',
 ]
 
@@ -351,6 +351,9 @@ NAV_GROUPS = [
     {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
     {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['timestamp', 'generator']},
+    {'zh': '时间 / 日期', 'en': 'Time / Date', 'slugs': [
+        'batch', 'timestamp-list', 'timezones', 'weeknumbers', 'daynumbers',
+        'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
@@ -451,7 +454,7 @@ def seo_section(c):
     return '\n'.join(p)
 
 
-def jsonld(c, url, lang, news=None):
+def jsonld(c, url, lang, news=None, slug=None, path=None):
     graph = []
     if c.get('slug') == NEWS_SLUG:
         # 热榜页不是「应用」，而是一个每天更新的列表页：用 CollectionPage + ItemList
@@ -498,6 +501,26 @@ def jsonld(c, url, lang, news=None):
                 {'@type': 'Question', 'name': q,
                  'acceptedAnswer': {'@type': 'Answer', 'text': a}}
                 for q, a in c['faq']
+            ],
+        })
+    # BreadcrumbList：首页 > [分类] > 工具（仅工具页；新闻页 / 博客页另行处理）
+    if (slug or c.get('slug')) != NEWS_SLUG:
+        crumbs = [{'name': SITE.get('name', 'DevTools'), 'url': canonical_url(lang, '')}]
+        s = slug or c.get('slug')
+        group = next((g for g in NAV_GROUPS if s in g['slugs']), None)
+        if group:
+            first = next((s2 for s2 in group['slugs'] if _TOOL_BY_SLUG.get(s2)), None)
+            if first:
+                crumbs.append({'name': group[lang],
+                               'url': canonical_url(lang, _TOOL_BY_SLUG[first]['path'])})
+        crumbs.append({'name': c['h1'],
+                       'url': canonical_url(lang, path or c.get('path', ''))})
+        graph.append({
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {'@type': 'ListItem', 'position': i + 1,
+                 'name': crumbs[i]['name'], 'item': crumbs[i]['url']}
+                for i in range(len(crumbs))
             ],
         })
     return _jsonld_raw(graph)
@@ -653,7 +676,8 @@ def build(clean=True, outdirs=None):
             c['_base'] = base     # seo_section 的「相关工具与阅读」链接要用
             page = apply_common(page_tpl, lang, t['slug'], t['path'], c['title'],
                                 c['description'], c['keywords'], body, seo_section(c),
-                                jsonld(c, canonical_url(lang, t['path']), lang, news),
+                                jsonld(c, canonical_url(lang, t['path']), lang, news,
+                                      t['slug'], t['path']),
                                 base, home)
             if lang == 'en':
                 page = localize(page)

@@ -17,6 +17,21 @@ function initTimestampPage() {
   document.getElementById('dtInput').value = new Date().toISOString().slice(0, 16);
   updateTsClock();                     // 立即刷一次，否则时钟要等 1 秒才从 "--" 变成数字
   setInterval(updateTsClock, 1000);
+  // 结果 deep-link：?ts= 回放并自动转换（对方无此能力，我们反超）
+  try {
+    var tsParam = new URLSearchParams(location.search).get('ts');
+    if (tsParam) { document.getElementById('tsInput').value = tsParam; tsToDate(); }
+  } catch (e) {}
+}
+
+// timestamp 页「复制分享链接」：把当前输入的时间戳编码进 URL
+function shareTimestampLink() {
+  var v = document.getElementById('tsInput').value.trim();
+  if (!v) { toast('请先输入时间戳', 'error'); return; }
+  var url = location.origin + location.pathname + '?ts=' + encodeURIComponent(v);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function () { toast('已复制分享链接'); }, function () { toast('复制失败', 'error'); });
+  } else { toast('复制失败', 'error'); }
 }
 
 function updateTsClock() {
