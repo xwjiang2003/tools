@@ -81,11 +81,13 @@
   }
   window.jwtClear=function(){ setVal('jwtInput',''); jwtDecode(); };
   window.jwtSample=function(){ setVal('jwtInput','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5NjIyMzkwMjJ9.2ZgJRaXK2fUJ8KKb8b9c9KJqJ9wY7W4X9Yd8eE'); jwtDecode(); };
+  window.jwtDecode=jwtDecode;
   // status bar under input
   var statusEl=document.createElement('div'); statusEl.id='jwtStatus'; statusEl.style.cssText='padding:8px 12px;font-size:12px;color:var(--text-secondary);border-top:1px solid var(--border)';
   var inPanel=document.querySelector('#jwtInput').closest('.input-panel'); if(inPanel) inPanel.appendChild(statusEl);
   var el=document.getElementById('jwtInput'); if(el){ el.addEventListener('input', jwtDecode); }
   var sec=document.getElementById('jwtSecret'); if(sec){ sec.addEventListener('input', jwtDecode); }
-  jwtDecode();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', jwtDecode); } else { jwtDecode(); }
 })();
 </script>

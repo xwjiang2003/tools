@@ -763,9 +763,11 @@ document.addEventListener("click", function (e) {
   }
   window.caseClear=function(){ setVal('caseInput',''); caseConvert(); };
   window.caseSample=function(){ setVal('caseInput','my_variable_name'); caseConvert(); };
+  window.caseConvert=caseConvert;
   var el=document.getElementById('caseInput'); if(el){ el.addEventListener('input', caseConvert); }
   var sel=document.getElementById('caseStyle'); if(sel){ sel.addEventListener('change', caseConvert); }
-  caseConvert();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', caseConvert); } else { caseConvert(); }
 })();
 </script>
 </div>

@@ -51,6 +51,7 @@
   window.colorClear=function(){ setVal('colorInput',''); render(); };
   window.colorSample=function(){ setVal('colorInput','#e6a23c'); render(); };
   var el=document.getElementById('colorInput'); if(el){ el.addEventListener('input',render); }
-  render();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', render); } else { render(); }
 })();
 </script>

@@ -796,9 +796,11 @@ document.addEventListener("click", function (e) {
   }
   window.csvClear=function(){ setVal('csvInput',''); csvConvert(); };
   window.csvSample=function(){ setVal('csvInput','[\n  {"name":"Alice","age":30,"city":"Beijing"},\n  {"name":"Bob","age":25,"city":"Shanghai"}\n]'); csvConvert(); };
+  window.csvConvert=csvConvert;
   var el=document.getElementById('csvInput'); if(el){ el.addEventListener('input', csvConvert); }
   var sel=document.getElementById('csvDir'); if(sel){ sel.addEventListener('change', csvConvert); }
-  csvConvert();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', csvConvert); } else { csvConvert(); }
 })();
 </script>
 </div>

@@ -44,8 +44,10 @@
   }
   window.tomlClear=function(){ setVal('tomlInput',''); tomlConvert(); };
   window.tomlSample=function(){ setVal('tomlInput','{\n  "name": "DevTools",\n  "stars": 42,\n  "tags": ["json", "toml"]\n}'); tomlConvert(); };
+  window.tomlConvert=tomlConvert;
   var el=document.getElementById('tomlInput'); if(el){ el.addEventListener('input', tomlConvert); }
   var sel=document.getElementById('tomlDir'); if(sel){ sel.addEventListener('change', tomlConvert); }
-  tomlConvert();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', tomlConvert); } else { tomlConvert(); }
 })();
 </script>
