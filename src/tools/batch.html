@@ -1,0 +1,29 @@
+<div class="tool-layout" id="batchTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 批量时间戳互转</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <div class="op-buttons" id="batchMode">
+          <button class="op-btn active" data-op="ts2date">时间戳 → 日期</button>
+          <button class="op-btn" data-op="date2ts">日期 → 时间戳</button>
+        </div>
+        <select class="format-select" id="batchTz">
+          <option value="local">本地时间</option>
+          <option value="UTC">UTC</option>
+          <option value="Asia/Shanghai">北京时间</option>
+          <option value="America/New_York">纽约</option>
+          <option value="Europe/London">伦敦</option>
+          <option value="Asia/Tokyo">东京</option>
+        </select>
+      </div>
+      <textarea class="expr-input" id="batchInput" style="min-height:220px" placeholder="每行一个时间戳，如 1700000000"></textarea>
+      <div class="hash-output" id="batchInfo"></div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">转换结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('batchResult')">复制</button></div></div>
+      <div class="result-content" id="batchResult" style="overflow:auto"></div>
+    </div>
+  </div>
+</div>

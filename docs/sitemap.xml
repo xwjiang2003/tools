@@ -242,6 +242,160 @@
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
+    <loc>https://devtools.help/batch/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/batch/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/batch/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/batch/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/batch/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/batch/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/batch/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/batch/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/timestamp-list/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timestamp-list/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/timestamp-list/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/timestamp-list/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/timestamp-list/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timestamp-list/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/timestamp-list/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/timestamp-list/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/timezones/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timezones/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/timezones/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/timezones/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/timezones/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timezones/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/timezones/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/timezones/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeknumbers/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeknumbers/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeknumbers/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeknumbers/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeknumbers/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeknumbers/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeknumbers/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeknumbers/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/daynumbers/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/daynumbers/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/daynumbers/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/daynumbers/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/daynumbers/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/daynumbers/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/daynumbers/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/daynumbers/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/years/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/years/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/years/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/years/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/years/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/years/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/years/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/years/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/world-clock/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/world-clock/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/world-clock/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/world-clock/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/world-clock/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/world-clock/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/world-clock/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/world-clock/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/countdown/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/countdown/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/countdown/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/countdown/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/countdown/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/countdown/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/countdown/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/countdown/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/date-difference/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-difference/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/date-difference/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/date-difference/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/date-difference/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-difference/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/date-difference/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/date-difference/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/date-calculator/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/date-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/date-calculator/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/date-calculator/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/date-calculator/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/date-calculator/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/duration/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/duration/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/duration/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/duration/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/duration/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/duration/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/duration/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/duration/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://devtools.help/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>

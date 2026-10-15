@@ -43,6 +43,28 @@ Key facts:
   - English: [JSON ↔ TOML Converter](https://devtools.help/en/toml/) — Convert between JSON and TOML online: JSON to TOML and TOML to JSON, suited to Go / Rust config files. Parsed with @iarna/toml and processed locally in your browser.
 - [在线 JSON 与 CSV 互转工具](https://devtools.help/csv/): 免费在线 JSON 与 CSV 互转：JSON 数组（对象数组 / 二维数组）转 CSV，CSV 按首行表头转回 JSON。正确处理引号与逗号转义，纯浏览器本地处理。
   - English: [JSON ↔ CSV Converter](https://devtools.help/en/csv/) — Convert between JSON and CSV online: JSON arrays (of objects or 2-D arrays) to CSV, and CSV back to JSON using the first row as header. Handles quoting and comma escaping, all locally in your browser.
+- [批量时间戳与日期互转](https://devtools.help/batch/): 在线批量时间戳转换：一次粘贴多行时间戳或日期，批量完成秒/毫秒时间戳与日期的互转，支持选择时区与 CSV 风格的表格输出。纯浏览器本地处理，数据不上传服务器。
+  - English: [Batch Timestamp & Date Conversion](https://devtools.help/en/batch/) — Bulk-convert Unix timestamps online: paste many timestamps or dates at once to convert between seconds/milliseconds timestamps and dates, with timezone selection and CSV-style table output. All processed locally in your browser.
+- [时间戳速查表](https://devtools.help/timestamp-list/): 时间戳速查表：列出当前时刻、今天 0 点、本周一、本月 1 日、本年初、1 小时后、7 天后、2038 问题临界点等常见时间点的秒级与毫秒级 Unix 时间戳及对应日期。纯浏览器本地计算。
+  - English: [Timestamp Cheat Sheet](https://devtools.help/en/timestamp-list/) — Timestamp cheat sheet: seconds and milliseconds Unix timestamps plus the matching date for common reference points — now, start of today, this Monday, 1st of month, start of year, +1h, +7d, the 2038 limit and the epoch. Computed locally.
+- [世界时区与当前时间对照](https://devtools.help/timezones/): 在线世界时区对照：列出 UTC、北京时间、东京、伦敦、纽约、巴黎、悉尼等主要时区相对 UTC 的偏移与当前时间，含夏令时自动调整，每秒刷新。纯浏览器本地计算。
+  - English: [World Time Zones & Current Time](https://devtools.help/en/timezones/) — World time zone reference: UTC offset and current time for UTC, Beijing, Tokyo, London, New York, Paris, Sydney and other major zones, with automatic daylight-saving adjustment, refreshed every second. Computed locally.
+- [当前 ISO 8601 周数](https://devtools.help/weeknumbers/): 在线 ISO 8601 周数查询：实时显示当前所处的 ISO 周数与对应的 ISO 周年（周一为一周之始）。纯浏览器本地计算，结果即时刷新。
+  - English: [Current ISO 8601 Week Number](https://devtools.help/en/weeknumbers/) — ISO 8601 week number lookup: shows the current ISO week number and the ISO week-year (week starts Monday) in real time. Computed locally, refreshed each minute.
+- [当前是一年中的第几天](https://devtools.help/daynumbers/): 在线计算当前日期是一年中的第几天（1–366）。闰年自动识别，结果即时刷新。纯浏览器本地计算。
+  - English: [Current Day of the Year](https://devtools.help/en/daynumbers/) — Compute which day of the year the current date is (1–366). Leap years are detected automatically and the result refreshes live. Computed locally.
+- [闰年与年内天数（1800–2100）](https://devtools.help/years/): 在线闰年查询：列出 1800 至 2100 每年是否为闰年、全年天数与 ISO 起始周，并标注当前年份。纯浏览器本地计算。
+  - English: [Leap Years & Days per Year (1800–2100)](https://devtools.help/en/years/) — Leap year lookup: lists whether each year from 1800 to 2100 is a leap year, its day count and ISO starting week, and highlights the current year. Computed locally.
+- [世界时钟](https://devtools.help/world-clock/): 在线世界时钟：同时显示 UTC、北京、东京、伦敦、纽约、巴黎、悉尼等主要城市的当前时间与 UTC 偏移，每秒刷新，含夏令时。纯浏览器本地计算。
+  - English: [World Clock](https://devtools.help/en/world-clock/) — Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New York, Paris, Sydney and other major cities at once, refreshed every second with daylight saving. Computed locally.
+- [到指定时间戳的倒计时](https://devtools.help/countdown/): 在线倒计时：输入一个 Unix 时间戳（秒或毫秒，自动识别），实时显示距离该时刻还有多久，或已过去多久。支持生成可分享链接。纯浏览器本地计算。
+  - English: [Countdown to a Target Timestamp](https://devtools.help/en/countdown/) — Online countdown: enter a Unix timestamp (seconds or milliseconds, auto-detected) to see in real time how long until that moment, or how long since. Supports a shareable link. Computed locally.
+- [两个日期之间相差多久](https://devtools.help/date-difference/): 在线日期差值计算：选择或输入两个日期时间，计算它们之间的间隔（天、时、分、秒）。按本地时区解释。纯浏览器本地计算。
+  - English: [Difference Between Two Dates](https://devtools.help/en/date-difference/) — Online date difference: pick or enter two date-times and compute the interval between them (days, hours, minutes, seconds). Interpreted in local time zone. Computed locally.
+- [日期加 / 减计算](https://devtools.help/date-calculator/): 在线日期加减：在基准日期上增加或减少若干年、月、日，自动处理月末与跨年（如 2 月 28 日加 1 天得 3 月 1 日）。纯浏览器本地计算。
+  - English: [Date Add / Subtract](https://devtools.help/en/date-calculator/) — Online date add/subtract: add or subtract years, months and days from a base date, with automatic month-end and year-end handling (e.g. Feb 28 + 1 day = Mar 1). Computed locally.
+- [ISO 8601 时长字符串与秒数互转](https://devtools.help/duration/): 在线 ISO 8601 时长换算：在 PnYnMnDTnHnMnS 时长字符串与秒数之间互转。支持 P1W、PT1H30M 等格式。纯浏览器本地计算。
+  - English: [ISO 8601 Duration String ↔ Seconds](https://devtools.help/en/duration/) — Online ISO 8601 duration converter: convert between a PnYnMnDTnHnMnS duration string and seconds. Supports P1W, PT1H30M and more. Computed locally.
 
 ## Cheatsheet / 速查表
 

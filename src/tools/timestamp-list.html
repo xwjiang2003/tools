@@ -1,0 +1,19 @@
+<div class="tool-card" id="tsListTool">
+  <div class="tool-card-title">时间戳速查表</div>
+  <div class="tool-card-desc">常用时间点的秒级 / 毫秒级时间戳，以及对应日期。切换时区即时更新。</div>
+  <div class="row" style="margin-bottom:12px;gap:10px;align-items:center">
+    <span class="form-label" style="margin:0">时区</span>
+    <select class="format-select" id="tsListTz">
+      <option value="local">本地时间</option>
+      <option value="UTC">UTC</option>
+      <option value="Asia/Shanghai">北京时间</option>
+      <option value="America/New_York">纽约</option>
+      <option value="Europe/London">伦敦</option>
+      <option value="Asia/Tokyo">东京</option>
+    </select>
+  </div>
+  <table class="dt-table">
+    <thead><tr><th>说明</th><th>秒</th><th>毫秒</th><th>日期</th></tr></thead>
+    <tbody id="tsListBody"></tbody>
+  </table>
+</div>
