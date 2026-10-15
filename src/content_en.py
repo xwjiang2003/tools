@@ -1597,6 +1597,63 @@ TOOLS_EN = {
             ('Hex to RGB color', 'color/'),
         ],
     },
+    'snippets': {
+        'nav': 'Code Snippets',
+        'title': 'Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools',
+        'description': (
+            'A library of common code snippets in six languages - Go, Python, JavaScript, Shell, SQL and Git - '
+            '46 copy-ready snippets covering env vars, HTTP timeouts, concurrent error collection, debounce and '
+            'retry, deep pagination, window functions, upsert, recursive queries and git rescue. Bilingual, fully local.'
+        ),
+        'keywords': (
+            'code snippets,common code snippets,code snippet library,go snippets,python snippets,'
+            'javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code'
+        ),
+        'h1': 'Common Code Snippets',
+        'intro': [
+            'The snippets you reach for again and again, in six groups: Go, Python, JavaScript, Shell, SQL and Git - '
+            '46 in total. Each one is the smallest complete answer to a concrete problem, not a syntax gallery.',
+            'Every code block has a copy button in its top-right corner; language tabs filter the list and the '
+            'search box matches titles, descriptions and code. All content is baked into the page at build time, '
+            'so it stays fully readable with JavaScript disabled.',
+        ],
+        'features': [
+            ('Six languages, 46 snippets', 'Go, Python, JavaScript, Shell, SQL and Git - env vars, HTTP timeouts, concurrent error collection, debounce and retry, deep pagination, window functions, upsert, recursive queries, git rescue and more.'),
+            ('One-click copy', 'A copy button sits in the top-right of every code block; one click puts it on your clipboard.'),
+            ('Language tabs + full-text search', 'Filter to one language with the tabs; the search box matches titles, descriptions and code at once.'),
+            ('Readable without JS', 'Every snippet is baked into the HTML at build time, so it stays fully visible with JavaScript disabled or for crawlers that never run scripts.'),
+            ('English code comments', 'All code comments are in English, so snippets drop straight into any project without half-translated remarks.'),
+            ('Local and private', 'A plain static page: no login, no ads, no tracking of anything you type.'),
+        ],
+        'steps': [
+            'Click a language tab (Go / Python / JavaScript / Shell / SQL / Git) to filter to that group.',
+            'Or type a keyword such as timeout, dedupe, pagination or rebase into the search box to filter instantly.',
+            'Click the Copy button in the top-right of a code block, paste it into your project and adjust as needed.',
+            'To format what you pasted, use the code formatter; for Go commands see the Go cheatsheet.',
+        ],
+        'faq': [
+            ('Can I use these snippets in production?',
+             'Yes. They apply standard-library or idiomatic techniques, depend on no particular framework and carry '
+             'no license restrictions - copy them and adjust the naming to taste. Still run them against your own '
+             'edge cases first: a snippet solves a common problem, it does not replace your tests.'),
+            ('Why are the code comments in English?',
+             'This page ships in Chinese and English. Chinese comments would mean maintaining two copies of every '
+             'snippet, and any missed edit shows readers a half-translated mess; English comments avoid that at the '
+             'source and work in projects of either language.'),
+            ('Will more languages be added?',
+             'Yes. Rust, Java, C# and Kotlin are on the list, prioritised by what readers of this site actually use. '
+             'You can nominate a language or a specific snippet via the feedback button.'),
+            ('How often are snippets updated?',
+             'The page header shows the last update. Entries affected by a new language release (Go, Python, ...) '
+             'are revised afterwards, and better approaches are folded in as they are found.'),
+        ],
+        'seealso': [
+            ('Go toolchain cheatsheet', 'go-cheatsheet/'),
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('JSON formatter & validator', './'),
+            ('Any-Base Converter', 'base/'),
+        ],
+    },
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.

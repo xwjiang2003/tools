@@ -299,7 +299,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
 .gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
 .gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
-.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item{min-width:0;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
 .gocs-item[data-on="0"]{display:none}
 .gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
 .gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
@@ -310,6 +310,40 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .gocs-pit b{color:var(--warning);margin-right:6px}
 .gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
 @media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 代码片段库（/snippets/） ====================
+   与 .gocs-* 同型（构建期烘焙 + 无 JS 全可见 + JS 只过滤），
+   差别在卡片：代码块 + 右上角复制按钮。 */
+.snp{display:flex;flex-direction:column;gap:16px}
+.snp-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.snp-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.snp-meta b{color:var(--text-secondary);font-weight:600}
+.snp-dot{margin:0 6px;opacity:.5}
+.snp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.snp-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm);font-family:inherit}
+.snp-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.snp-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.snp-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.snp-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none}
+.snp-search:focus{border-color:var(--primary)}
+.snp-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-group[data-on="0"]{display:none}
+.snp-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.snp-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.snp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:12px}
+.snp-item{min-width:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.snp-item[data-on="0"]{display:none}
+.snp-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.snp-title{margin:0;font-size:14px;font-weight:600;color:var(--text)}
+.snp-lang{flex:none;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:10px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.3px}
+.snp-desc{margin:0 0 10px;font-size:13px;color:var(--text-secondary);line-height:1.65}
+.snp-code-wrap{position:relative;margin-top:auto}
+.snp-code{margin:0;padding:10px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.snp-code code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre;tab-size:4}
+.snp-copy{position:absolute;top:6px;right:6px;opacity:.85}
+.snp-copy:hover{opacity:1}
+.snp-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.snp-head,.snp-group{padding:14px 14px}.snp-items{grid-template-columns:1fr}.snp-copy{opacity:1}}
 /* ==================== 博客（/blog/） ==================== */
 .blog-list{display:flex;flex-direction:column;gap:12px}
 .blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
@@ -630,6 +664,13 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">代码片段</div>
+        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link active" href="../hotnews/">今日热榜</a>
@@ -1739,7 +1780,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../">首页</a><a href="../hotnews/">今日热榜</a><a href="../go-cheatsheet/">Go 速查表</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../color/">颜色转换</a><a href="../case/">命名风格</a><a href="../jwt/">JWT 解码</a><a href="../yaml/">JSON↔YAML</a><a href="../toml/">JSON↔TOML</a><a href="../csv/">JSON↔CSV</a><a href="../batch/">批量时间戳</a><a href="../timestamp-list/">时间戳速查</a><a href="../timezones/">时区转换</a><a href="../weeknumbers/">ISO 周数</a><a href="../daynumbers/">年内第几天</a><a href="../years/">闰年天数</a><a href="../world-clock/">世界时钟</a><a href="../countdown/">倒计时</a><a href="../date-difference/">日期差值</a><a href="../date-calculator/">日期加减</a><a href="../duration/">时长换算</a><a href="../uuid/">UUID</a><a href="../snowflake/">Snowflake</a><a href="../tid/">Twitter ID</a><a href="../objectid/">ObjectId</a><a href="../firebase/">Firebase ID</a><a href="../base/">任意进制转换</a><a href="../binary/">二进制转换</a><a href="../hex/">十六进制转换</a><a href="../blog/">博客</a><a href="../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
+  <nav class="footer-links"><a href="../">首页</a><a href="../hotnews/">今日热榜</a><a href="../go-cheatsheet/">Go 速查表</a><a href="../diff/">文本比对</a><a href="../encode/">编码解码</a><a href="../regex/">正则表达式</a><a href="../timestamp/">时间戳</a><a href="../hash/">加密哈希</a><a href="../formatter/">代码格式化</a><a href="../string/">字符串</a><a href="../generator/">生成器</a><a href="../color/">颜色转换</a><a href="../case/">命名风格</a><a href="../jwt/">JWT 解码</a><a href="../yaml/">JSON↔YAML</a><a href="../toml/">JSON↔TOML</a><a href="../csv/">JSON↔CSV</a><a href="../batch/">批量时间戳</a><a href="../timestamp-list/">时间戳速查</a><a href="../timezones/">时区转换</a><a href="../weeknumbers/">ISO 周数</a><a href="../daynumbers/">年内第几天</a><a href="../years/">闰年天数</a><a href="../world-clock/">世界时钟</a><a href="../countdown/">倒计时</a><a href="../date-difference/">日期差值</a><a href="../date-calculator/">日期加减</a><a href="../duration/">时长换算</a><a href="../uuid/">UUID</a><a href="../snowflake/">Snowflake</a><a href="../tid/">Twitter ID</a><a href="../objectid/">ObjectId</a><a href="../firebase/">Firebase ID</a><a href="../base/">任意进制转换</a><a href="../binary/">二进制转换</a><a href="../hex/">十六进制转换</a><a href="../snippets/">代码片段</a><a href="../blog/">博客</a><a href="../privacy.html">隐私政策</a><a href="#" data-feedback-open>问题反馈</a></nav>
   <div class="footer-note">工具输入的数据仅在浏览器本地处理，不会上传到服务器</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">本站总访问量 <em id="busuanzi_value_site_pv">-</em> 次</span>

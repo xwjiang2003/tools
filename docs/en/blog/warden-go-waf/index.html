@@ -299,7 +299,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
 .gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
 .gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
-.gocs-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.gocs-item{min-width:0;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
 .gocs-item[data-on="0"]{display:none}
 .gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
 .gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
@@ -310,6 +310,40 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .gocs-pit b{color:var(--warning);margin-right:6px}
 .gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
 @media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
+/* ==================== 代码片段库（/snippets/） ====================
+   与 .gocs-* 同型（构建期烘焙 + 无 JS 全可见 + JS 只过滤），
+   差别在卡片：代码块 + 右上角复制按钮。 */
+.snp{display:flex;flex-direction:column;gap:16px}
+.snp-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.snp-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.snp-meta b{color:var(--text-secondary);font-weight:600}
+.snp-dot{margin:0 6px;opacity:.5}
+.snp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.snp-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm);font-family:inherit}
+.snp-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.snp-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.snp-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.snp-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none}
+.snp-search:focus{border-color:var(--primary)}
+.snp-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-group[data-on="0"]{display:none}
+.snp-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.snp-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.snp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:12px}
+.snp-item{min-width:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.snp-item[data-on="0"]{display:none}
+.snp-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.snp-title{margin:0;font-size:14px;font-weight:600;color:var(--text)}
+.snp-lang{flex:none;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:10px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.3px}
+.snp-desc{margin:0 0 10px;font-size:13px;color:var(--text-secondary);line-height:1.65}
+.snp-code-wrap{position:relative;margin-top:auto}
+.snp-code{margin:0;padding:10px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.snp-code code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre;tab-size:4}
+.snp-copy{position:absolute;top:6px;right:6px;opacity:.85}
+.snp-copy:hover{opacity:1}
+.snp-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.snp-head,.snp-group{padding:14px 14px}.snp-items{grid-template-columns:1fr}.snp-copy{opacity:1}}
 /* ==================== 博客（/blog/） ==================== */
 .blog-list{display:flex;flex-direction:column;gap:12px}
 .blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
@@ -632,6 +666,13 @@ var _hmt = _hmt || [];
         <a class="nav-panel-item" href="../../../en/go-cheatsheet/">Go Cheat Sheet</a>
       </div>
     </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Code Snippets<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Code Snippets</div>
+        <a class="nav-panel-item" href="../../../en/snippets/">Code Snippets</a>
+      </div>
+    </div>
     <a class="top-nav-link" href="../../../en/hotnews/">Tech News</a>
     <a class="top-nav-link active" href="../../../en/blog/">Blog</a>
     <div class="nav-dropdown">
@@ -883,7 +924,7 @@ include a <code>Signed-off-by</code> line (DCO) in your commit message.</p>
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../../en/">Home</a><a href="../../../en/hotnews/">Tech News</a><a href="../../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../../en/diff/">Text Diff</a><a href="../../../en/encode/">Encode</a><a href="../../../en/regex/">Regex</a><a href="../../../en/timestamp/">Timestamp</a><a href="../../../en/hash/">Hash</a><a href="../../../en/formatter/">Formatter</a><a href="../../../en/string/">Strings</a><a href="../../../en/generator/">Generators</a><a href="../../../en/color/">Color</a><a href="../../../en/case/">Case style</a><a href="../../../en/jwt/">JWT decoder</a><a href="../../../en/yaml/">JSON ↔ YAML</a><a href="../../../en/toml/">JSON ↔ TOML</a><a href="../../../en/csv/">JSON ↔ CSV</a><a href="../../../en/batch/">Batch TS</a><a href="../../../en/timestamp-list/">TS Reference</a><a href="../../../en/timezones/">Time Zones</a><a href="../../../en/weeknumbers/">ISO Week</a><a href="../../../en/daynumbers/">Day of Year</a><a href="../../../en/years/">Leap Year</a><a href="../../../en/world-clock/">World Clock</a><a href="../../../en/countdown/">Countdown</a><a href="../../../en/date-difference/">Date Diff</a><a href="../../../en/date-calculator/">Date Calc</a><a href="../../../en/duration/">Duration</a><a href="../../../en/uuid/">UUID</a><a href="../../../en/snowflake/">Snowflake</a><a href="../../../en/tid/">Twitter ID</a><a href="../../../en/objectid/">ObjectId</a><a href="../../../en/firebase/">Firebase ID</a><a href="../../../en/base/">Base Converter</a><a href="../../../en/binary/">Binary Converter</a><a href="../../../en/hex/">Hex Converter</a><a href="../../../en/blog/">Blog</a><a href="../../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../../../en/">Home</a><a href="../../../en/hotnews/">Tech News</a><a href="../../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../../en/diff/">Text Diff</a><a href="../../../en/encode/">Encode</a><a href="../../../en/regex/">Regex</a><a href="../../../en/timestamp/">Timestamp</a><a href="../../../en/hash/">Hash</a><a href="../../../en/formatter/">Formatter</a><a href="../../../en/string/">Strings</a><a href="../../../en/generator/">Generators</a><a href="../../../en/color/">Color</a><a href="../../../en/case/">Case style</a><a href="../../../en/jwt/">JWT decoder</a><a href="../../../en/yaml/">JSON ↔ YAML</a><a href="../../../en/toml/">JSON ↔ TOML</a><a href="../../../en/csv/">JSON ↔ CSV</a><a href="../../../en/batch/">Batch TS</a><a href="../../../en/timestamp-list/">TS Reference</a><a href="../../../en/timezones/">Time Zones</a><a href="../../../en/weeknumbers/">ISO Week</a><a href="../../../en/daynumbers/">Day of Year</a><a href="../../../en/years/">Leap Year</a><a href="../../../en/world-clock/">World Clock</a><a href="../../../en/countdown/">Countdown</a><a href="../../../en/date-difference/">Date Diff</a><a href="../../../en/date-calculator/">Date Calc</a><a href="../../../en/duration/">Duration</a><a href="../../../en/uuid/">UUID</a><a href="../../../en/snowflake/">Snowflake</a><a href="../../../en/tid/">Twitter ID</a><a href="../../../en/objectid/">ObjectId</a><a href="../../../en/firebase/">Firebase ID</a><a href="../../../en/base/">Base Converter</a><a href="../../../en/binary/">Binary Converter</a><a href="../../../en/hex/">Hex Converter</a><a href="../../../en/snippets/">Code Snippets</a><a href="../../../en/blog/">Blog</a><a href="../../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
