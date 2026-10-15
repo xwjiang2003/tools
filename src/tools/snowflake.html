@@ -1,0 +1,42 @@
+<div class="tool-layout" id="sfTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> Snowflake ID 解析与构造</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <select class="format-select" id="sfPreset">
+          <option value="twitter">Twitter</option>
+          <option value="discord">Discord</option>
+          <option value="custom">自定义</option>
+        </select>
+      </div>
+      <div id="sfEpochRow" style="display:none" class="row">
+        <label class="hash-output" style="min-height:auto;flex:1">自定义纪元(毫秒)</label>
+        <input type="number" class="num-input" id="sfEpoch" value="1288834974657" style="flex:1" />
+      </div>
+      <input type="text" class="expr-input" id="sfId" placeholder="粘贴 Snowflake ID，如 1888944671579078978" />
+      <div class="result-panel" style="min-height:auto">
+        <div class="result-panel-header"><span class="result-panel-title">解码结果</span></div>
+        <div class="result-content" id="sfDecodeResult" style="overflow:auto"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">构造结果</span></div>
+      <div class="result-content" style="overflow:auto;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">时间（本地）</label>
+          <input type="datetime-local" class="expr-input" id="sfDate" style="flex:1;min-width:200px" />
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">节点 ID</label>
+          <input type="number" class="num-input" id="sfNode" value="1" style="width:90px" />
+          <label style="font-size:13px">序列号</label>
+          <input type="number" class="num-input" id="sfStep" value="0" style="width:90px" />
+        </div>
+        <button class="btn" id="sfEncodeBtn">构造 ID</button>
+        <div id="sfEncodeResult"></div>
+      </div>
+    </div>
+  </div>
+</div>

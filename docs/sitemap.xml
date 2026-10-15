@@ -396,6 +396,76 @@
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
+    <loc>https://devtools.help/uuid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/uuid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/uuid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/uuid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/uuid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/uuid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/uuid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/uuid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/snowflake/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/snowflake/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/snowflake/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/snowflake/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/snowflake/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/snowflake/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/snowflake/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/snowflake/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/tid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/tid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/tid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/tid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/tid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/tid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/tid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/tid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/objectid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/objectid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/objectid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/objectid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/objectid/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/objectid/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/objectid/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/objectid/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/firebase/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/firebase/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/firebase/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/firebase/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/firebase/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/firebase/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/firebase/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/firebase/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://devtools.help/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>

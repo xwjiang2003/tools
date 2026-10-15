@@ -1,0 +1,24 @@
+<div class="tool-layout" id="fbTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> Firebase Push ID 解析与生成</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <input type="text" class="expr-input" id="fbInput" placeholder="粘贴 Firebase ID（20 位）" />
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <button class="btn" id="fbGenBtn">生成（当前时间）</button>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">解析结果</span></div>
+      <div class="result-content" style="overflow:auto;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">时间（本地）</label>
+          <input type="datetime-local" class="expr-input" id="fbDate" style="flex:1;min-width:200px" />
+        </div>
+        <button class="btn" id="fbGenDateBtn">按指定时间生成</button>
+        <div id="fbResult"></div>
+      </div>
+    </div>
+  </div>
+</div>

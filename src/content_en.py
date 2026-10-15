@@ -1319,6 +1319,173 @@ TOOLS_EN = {
             ('Date difference', 'date-difference/'),
         ],
     },
+    'uuid': {
+        'nav': 'UUID',
+        'title': 'UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools',
+        'description': (
+            'Parse any UUID online: detect version (v1/v3/v4/v5) and variant (RFC4122, etc.), recover '
+            'the timestamp and node for v1, and generate RFC4122 v4 UUIDs. All processing is local in your browser.'
+        ),
+        'keywords': 'uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate',
+        'h1': 'UUID Parser and Generator',
+        'intro': [
+            'Paste a UUID to see its version (v1/v3/v4/v5) and variant (RFC4122 and others). For v1 UUIDs '
+            'you also get the creation timestamp and the 48-bit node.',
+            'Click "Generate v4" for a fresh RFC4122 random UUID. Everything runs locally, so nothing you '
+            'paste leaves your device.',
+        ],
+        'features': [
+            ('Version and variant', 'Automatically detects the UUID version (1/3/4/5) and variant (RFC4122, Microsoft, reserved).'),
+            ('v1 timestamp', 'Recovers the 100-nanosecond creation timestamp and 48-bit node of a v1 UUID.'),
+            ('Local v4 generation', 'Generates v4 UUIDs with the browser crypto RNG — no backend, instant results.'),
+        ],
+        'steps': [
+            'Paste the UUID to parse on the left (with or without hyphens).',
+            'The right side shows version, variant and, for v1, the timestamp and node.',
+            'Click "Generate v4" to get a new random UUID.',
+        ],
+        'faq': [
+            ('Are UUIDs case-insensitive?', 'The letter part is case-insensitive by spec, but the standard form is lowercase; this tool ignores case when parsing.'),
+            ('Are v4 UUIDs really unique?', 'v4 uses 122 random bits, making collisions negligible. This tool only parses and generates; it does not guarantee global uniqueness across devices.'),
+        ],
+        'seealso': [
+            ('Unix Timestamp and Date Converter', 'timestamp/'),
+            ('Snowflake ID parser', 'snowflake/'),
+            ('MongoDB ObjectId parser', 'objectid/'),
+        ],
+    },
+    'snowflake': {
+        'nav': 'Snowflake',
+        'title': 'Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools',
+        'description': (
+            'Decode Snowflake IDs from Twitter, Discord and more: recover the millisecond timestamp, machine and '
+            'sequence. Build a Snowflake from a time with a custom epoch. All computed locally.'
+        ),
+        'keywords': 'snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm',
+        'h1': 'Snowflake ID Decoder and Builder',
+        'intro': [
+            'A Snowflake is Twitter\'s 64-bit distributed ID: 41 bits of millisecond timestamp, 10 bits of machine '
+            'and 12 bits of sequence. Paste one to reveal its creation time and machine/sequence fields.',
+            'Pick Twitter, Discord or a custom epoch, and on the right you can also build a Snowflake from a given '
+            'time — handy for "ID at a moment" boundary checks.',
+        ],
+        'features': [
+            ('Multi-platform presets', 'Built-in Twitter (epoch 2010-11-04) and Discord (epoch 2015-01-01) presets, plus custom epoch and bit-width.'),
+            ('Timestamp recovery', 'Decodes the millisecond timestamp and shows both UTC and local time.'),
+            ('Reverse building', 'Given a time and machine/sequence, build a valid Snowflake for timestamp to ID range conversion.'),
+        ],
+        'steps': [
+            'Choose Twitter, Discord or Custom in the preset.',
+            'Paste the Snowflake ID on the left; the right side shows timestamp, machine and sequence.',
+            'Fill time, node and sequence on the right and click "Build ID" to generate one.',
+        ],
+        'faq': [
+            ('Why are the IDs so long?', 'A Snowflake is a 63-bit unsigned integer, typically 18-19 decimal digits; it is parsed as a string to avoid JavaScript number precision loss.'),
+            ('What epoch do I enter for custom?', 'Enter your system\'s epoch in milliseconds (Twitter is 1288834974657), keeping the common 41/10/12 bit layout.'),
+        ],
+        'seealso': [
+            ('Twitter and X ID decoder', 'tid/'),
+            ('UUID parser and generator', 'uuid/'),
+            ('Unix Timestamp and Date Converter', 'timestamp/'),
+        ],
+    },
+    'tid': {
+        'nav': 'Twitter ID',
+        'title': 'Twitter and X ID Decoder — tweet/user creation time | DevTools',
+        'description': (
+            'Decode any Twitter / X Snowflake ID: paste a tweet, user or DM id to recover its creation time, '
+            'machine and sequence. Fully local, no X login required.'
+        ),
+        'keywords': 'twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time',
+        'h1': 'Twitter and X ID Decoder',
+        'intro': [
+            'Every X (formerly Twitter) object ID is a Snowflake. Paste one to recover its creation time, machine and sequence fields.',
+            'IDs at or below 29700859247 are pre-Snowflake sequential numbers with no embedded time; the tool says so clearly.',
+        ],
+        'features': [
+            ('Creation time', 'Recovers the UTC and local creation time of the ID, to the millisecond.'),
+            ('Boundary detection', 'Recognizes pre-Snowflake sequential IDs and clearly reports "no embedded time".'),
+            ('Time to ID', 'Given a time, build that moment\'s Twitter Snowflake ID for time-range lookups.'),
+        ],
+        'steps': [
+            'Paste any tweet, user or DM numeric ID.',
+            'The right side shows creation time, machine and sequence; very early IDs report no time.',
+            'Enter a time on the right and click "Time to ID" to build one.',
+        ],
+        'faq': [
+            ('Why do some IDs have no time?', 'IDs before Snowflake launched in Nov 2010 are plain sequential numbers (about <= 29700859247) and contain no time to recover.'),
+            ('Does decoding need an X login?', 'No. The Snowflake timestamp is encoded in the ID itself; this tool computes locally with no X API involved.'),
+        ],
+        'seealso': [
+            ('Snowflake ID decoder', 'snowflake/'),
+            ('Unix Timestamp and Date Converter', 'timestamp/'),
+        ],
+    },
+    'objectid': {
+        'nav': 'ObjectId',
+        'title': 'MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools',
+        'description': (
+            'Parse a 24-hex MongoDB ObjectId online: recover creation time, machine, process and counter, and '
+            'generate a new ObjectId. All done locally in your browser.'
+        ),
+        'keywords': 'objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate',
+        'h1': 'MongoDB ObjectId Parser and Generator',
+        'intro': [
+            'A MongoDB ObjectId is 12 bytes: the first 4 bytes are the Unix seconds of creation. Paste one to see its timestamp and fields.',
+            'Click "Generate ObjectId" for a well-formed random ObjectId to build local test data.',
+        ],
+        'features': [
+            ('Timestamp recovery', 'From the first 4 bytes, recover the second-level creation time and show UTC and local time.'),
+            ('Field breakdown', 'Shows machine, process and incrementing counter so you can trace an ID\'s origin.'),
+            ('Local generation', 'One click generates a well-formed ObjectId without a MongoDB instance.'),
+        ],
+        'steps': [
+            'Paste a 24-hex ObjectId on the left.',
+            'The right side instantly shows the timestamp and fields; a format error is flagged.',
+            'Click "Generate ObjectId" to get a new random ID.',
+        ],
+        'faq': [
+            ('Is the ObjectId time accurate?', 'The first 4 bytes are the second-level Unix time of creation, precise to the second; it is client-generated and usually reflects the creation moment.'),
+            ('Does the generated one match the database?', 'The structure is identical (time plus random machine/process plus counter), but machine and counter are random fill for local testing, not a real instance.'),
+        ],
+        'seealso': [
+            ('UUID parser and generator', 'uuid/'),
+            ('Unix Timestamp and Date Converter', 'timestamp/'),
+        ],
+    },
+    'firebase': {
+        'nav': 'Firebase ID',
+        'title': 'Firebase Push ID Parser and Generator — timestamp lookup | DevTools',
+        'description': (
+            'Decode a 20-char Firebase Push ID\'s creation timestamp, or generate a valid ID from the current or a '
+            'chosen time. Fully local, no data uploaded.'
+        ),
+        'keywords': 'firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online',
+        'h1': 'Firebase Push ID Parser and Generator',
+        'intro': [
+            'A Firebase Realtime Database Push ID is 20 chars: the first 8 encode the creation millisecond timestamp '
+            'in base-64, the last 12 are random. Paste one to recover its creation time.',
+            'Click "Generate (now)" or generate from a chosen time to get a valid Push ID for test data.',
+        ],
+        'features': [
+            ('Timestamp recovery', 'From the first 8 chars recover the millisecond creation timestamp and show UTC and local time.'),
+            ('Time-based generation', 'Generate valid Push IDs from the current time or any chosen time for range comparison.'),
+            ('Local compute', 'No Firebase API is called; parsing and generation are fully local.'),
+        ],
+        'steps': [
+            'Paste a 20-char Firebase Push ID on the left.',
+            'The right side instantly shows the creation time and random suffix; a format error is flagged.',
+            'Click "Generate (now)" or enter a time and "Generate at time" to get a new ID.',
+        ],
+        'faq': [
+            ('Why are the first 8 chars the time?', 'Firebase encodes the timestamp in base-64 with the most significant digit first, so the IDs also sort chronologically by dictionary order.'),
+            ('Can the generated ID be written to the database?', 'The structure is valid, but the suffix is random and meant for local testing, not a real write order.'),
+        ],
+        'seealso': [
+            ('UUID parser and generator', 'uuid/'),
+            ('Unix Timestamp and Date Converter', 'timestamp/'),
+        ],
+    },
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.

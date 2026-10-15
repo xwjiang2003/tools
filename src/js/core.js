@@ -118,6 +118,11 @@ function initPage(name) {
     case 'date-difference': initDateDifferencePage(); break;
     case 'date-calculator': initDateCalculatorPage(); break;
     case 'duration': initDurationPage(); break;
+    case 'uuid': initUuidPage(); break;
+    case 'snowflake': initSnowflakePage(); break;
+    case 'tid': initTidPage(); break;
+    case 'objectid': initObjectIdPage(); break;
+    case 'firebase': initFirebasePage(); break;
     case 'hash': initHashPage(); break;
     case 'formatter': initFormatterPage(); break;
     case 'string': initStringPage(); break;
