@@ -27,9 +27,9 @@ WD_FULL_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
               'Saturday', 'Sunday']
 
 NAV_LABELS_EV = {
-    'zh': {'calendar': '年度日历', 'weeks': '年度周数', 'days': '年内天数', 'year': '年度概况'},
-    'en': {'calendar': 'Year Calendar', 'weeks': 'Week Numbers',
-           'days': 'Day of Year', 'year': 'Year Facts'},
+    'zh': {'calendar': '日历', 'weeks': '周数', 'days': '年内第几天', 'year': '年份概况'},
+    'en': {'calendar': 'Calendar', 'weeks': 'Week Numbers',
+           'days': 'Day of Year', 'year': 'Year Overview'},
 }
 
 
@@ -511,7 +511,7 @@ def _seealso(type_, year, lang, base):
     for t in TYPES:
         if t == type_:
             continue
-        items.append((e(NAV_LABELS_EV[lang][t]) + f' {year}', f'{t}/{year}/'))
+        items.append((f'{year} ' + e(NAV_LABELS_EV[lang][t]), f'{t}/{year}/'))
     idx = list(YEAR_RANGE).index(year)
     if idx > 0:
         py = YEAR_RANGE[idx - 1]
@@ -547,4 +547,4 @@ def nav_year():
 
 def evergreen_nav_items(lang):
     y = nav_year()
-    return [(NAV_LABELS_EV[lang][t], f'{t}/{y}/') for t in TYPES]
+    return [(f'{y} {NAV_LABELS_EV[lang][t]}', f'{t}/{y}/') for t in TYPES]

@@ -410,7 +410,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .dt-big{font-size:38px}
 }
 
-/* ============================================================ 年度常青页 */
+/* ============================================================ 日历与日期（年度参考页） */
 .ev-page{max-width:100%}
 .ev-summary{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text);line-height:1.7}
