@@ -409,3 +409,33 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .dt-table td{white-space:nowrap}
   .dt-big{font-size:38px}
 }
+
+/* ============================================================ 年度常青页 */
+.ev-page{max-width:100%}
+.ev-summary{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text);line-height:1.7}
+.ev-years{font-size:13px;color:var(--text-secondary);margin:6px 0 16px;line-height:2}
+.ev-years b{padding:2px 6px;border-radius:var(--radius-sm);background:var(--primary);color:#fff}
+.ev-years a{padding:2px 6px;margin:0 2px;border-radius:var(--radius-sm);color:var(--primary);
+  text-decoration:none}
+.ev-years a:hover{background:var(--tab-hover)}
+.ev-sib{font-size:13px;color:var(--text-secondary);margin:4px 0 14px}
+.ev-sib a{color:var(--primary);text-decoration:none;margin:0 2px}
+.ev-sib a:hover{text-decoration:underline}
+.ev-cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;margin-top:8px}
+.ev-month{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.ev-month-title{font-size:13px;font-weight:600;color:var(--text);padding:8px 10px;
+  background:var(--toolbar-bg);border-bottom:1px solid var(--border);text-align:center}
+.ev-cal{width:100%;border-collapse:collapse;font-size:12px}
+.ev-cal th{text-align:center;padding:4px 0;color:var(--text-secondary);font-weight:600;
+  border-bottom:1px solid var(--border)}
+.ev-cal td{text-align:center;padding:4px 0;color:var(--text);border:1px solid var(--border)}
+.ev-cal .ev-wk{background:var(--tab-hover);color:var(--text-secondary);font-weight:600;width:30px;
+  font-family:"JetBrains Mono","Consolas",monospace}
+.ev-cal .ev-empty{background:transparent;border-color:transparent}
+.ev-cal .ev-today{background:var(--primary);color:#fff;font-weight:700;border-radius:var(--radius-sm)}
+.ev-cal .ev-day{cursor:default}
+@media(max-width:900px){
+  .ev-cal-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .ev-summary{padding:12px 14px}
+}

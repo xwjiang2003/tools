@@ -543,4 +543,452 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/gofmt-vs-goimports/"/>
     <changefreq>monthly</changefreq><priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://devtools.help/calendar/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2023/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2023/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2023/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2023/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2024/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2024/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2024/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2024/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2025/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2025/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2025/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2025/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2026/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2026/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2026/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2026/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2027/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2027/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2027/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2027/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2028/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2028/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2028/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2028/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2029/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2029/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2029/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2029/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/calendar/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/calendar/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/calendar/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/calendar/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/calendar/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/weeks/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/weeks/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/days/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/days/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/days/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/days/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/days/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/year/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/year/2030/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/year/2030/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/year/2030/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/year/2030/"/>
+    <changefreq>yearly</changefreq><priority>0.6</priority>
+  </url>
 </urlset>

@@ -440,6 +440,36 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .dt-big{font-size:38px}
 }
 
+/* ============================================================ 年度常青页 */
+.ev-page{max-width:100%}
+.ev-summary{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text);line-height:1.7}
+.ev-years{font-size:13px;color:var(--text-secondary);margin:6px 0 16px;line-height:2}
+.ev-years b{padding:2px 6px;border-radius:var(--radius-sm);background:var(--primary);color:#fff}
+.ev-years a{padding:2px 6px;margin:0 2px;border-radius:var(--radius-sm);color:var(--primary);
+  text-decoration:none}
+.ev-years a:hover{background:var(--tab-hover)}
+.ev-sib{font-size:13px;color:var(--text-secondary);margin:4px 0 14px}
+.ev-sib a{color:var(--primary);text-decoration:none;margin:0 2px}
+.ev-sib a:hover{text-decoration:underline}
+.ev-cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;margin-top:8px}
+.ev-month{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.ev-month-title{font-size:13px;font-weight:600;color:var(--text);padding:8px 10px;
+  background:var(--toolbar-bg);border-bottom:1px solid var(--border);text-align:center}
+.ev-cal{width:100%;border-collapse:collapse;font-size:12px}
+.ev-cal th{text-align:center;padding:4px 0;color:var(--text-secondary);font-weight:600;
+  border-bottom:1px solid var(--border)}
+.ev-cal td{text-align:center;padding:4px 0;color:var(--text);border:1px solid var(--border)}
+.ev-cal .ev-wk{background:var(--tab-hover);color:var(--text-secondary);font-weight:600;width:30px;
+  font-family:"JetBrains Mono","Consolas",monospace}
+.ev-cal .ev-empty{background:transparent;border-color:transparent}
+.ev-cal .ev-today{background:var(--primary);color:#fff;font-weight:700;border-radius:var(--radius-sm)}
+.ev-cal .ev-day{cursor:default}
+@media(max-width:900px){
+  .ev-cal-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .ev-summary{padding:12px 14px}
+}
+
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
      2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
@@ -586,6 +616,16 @@ var _hmt = _hmt || [];
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>
     <a class="top-nav-link" href="../blog/">博客</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">年度常青页<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">年度常青页</div>
+        <a class="nav-panel-item" href="../calendar/2026/">年度日历</a>
+        <a class="nav-panel-item" href="../weeks/2026/">年度周数</a>
+        <a class="nav-panel-item" href="../days/2026/">年内天数</a>
+        <a class="nav-panel-item" href="../year/2026/">年度概况</a>
+      </div>
+    </div>
   </nav>
   <div class="header-actions"><button class="feedback-btn" type="button" data-feedback-open title="问题反馈" aria-label="问题反馈">💬</button><div class="lang-switch"><a class="lang-link active" href="./" data-lang-set="zh">中文</a><a class="lang-link" href="../en/timestamp/" data-lang-set="en">English</a></div>
 <script>

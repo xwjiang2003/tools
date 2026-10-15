@@ -45,6 +45,7 @@ from blog import (ARTICLES, BLOG_INDEX, TEXT as BLOG_TEXT,  # noqa: E402
                   index_jsonld as blog_index_jsonld,
                   render_article, render_index as render_blog_index)
 from blog_en import ARTICLES_EN                           # noqa: E402
+import evergreen as EV                                     # noqa: E402
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
 SRC = ROOT / 'src'
@@ -406,7 +407,20 @@ def nav_html(active_slug, base, labels, lang='zh'):
         href = base + t['path'] if t['path'] else (base or './')
         cls = 'top-nav-link active' if t['slug'] == active_slug else 'top-nav-link'
         out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
+    # 年度常青页（当前年份代表入口）：静态参考页不进 TOOLS，单独成组。
+    trig_cls = 'nav-trigger active' if active_slug == 'evergreen' else 'nav-trigger'
+    out.append('    <div class="nav-dropdown">')
+    out.append(f'      <button class="{trig_cls}" type="button" aria-haspopup="true" aria-expanded="false">{esc(EVERGREEN_NAV_LABELS[lang])}<span class="caret" aria-hidden="true"></span></button>')
+    out.append('      <div class="nav-panel" role="menu">')
+    out.append(f'        <div class="nav-panel-title">{esc(EVERGREEN_NAV_LABELS[lang])}</div>')
+    for label, href in EV.evergreen_nav_items(lang):
+        out.append(f'        <a class="nav-panel-item" href="{base}{href}">{esc(label)}</a>')
+    out.append('      </div>')
+    out.append('    </div>')
     return '\n'.join(out)
+
+
+EVERGREEN_NAV_LABELS = {'zh': '年度常青页', 'en': 'Yearly'}
 
 
 def footer_links_html(base, labels):
@@ -608,6 +622,8 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
     active = None if path == PRIVACY_FILE else _slug_of(path)
+    if active is None and path.startswith(('calendar/', 'weeks/', 'days/', 'year/')):
+        active = 'evergreen'
     if slug and str(slug).startswith('blog'):
         active = 'blog'
     page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang], lang))
@@ -683,6 +699,28 @@ def build(clean=True, outdirs=None):
             if lang == 'en':
                 page = localize(page)
             pages[out_path(lang, t['path'])] = page
+
+        # ---------------- 年度常青页（calendar / weeks / days / year 按年静态参考页） ----------------
+        # 与上面的交互式工具（weeknumbers / daynumbers / years）互补：这里是预先渲染好的
+        # 整年参考数据（日历网格、周数表、年内天数表、年份概况），吃长期长尾搜索流量。
+        # 英文页直接产出英文正文，localize 只负责翻译通用 chrome（导航/页脚/反馈弹窗）。
+        for (ety, eyear, eslug, epath) in EV.evergreen_entries():
+            m = EV.meta(ety, eyear, lang)
+            base = lang_prefix(lang, rel_root(lang, epath))
+            home = base or './'
+            c = {'slug': eslug, 'h1': m['h1'], 'description': m['description'],
+                 'faq': [], '_lang': lang, '_base': base}
+            c.update(HEADINGS[lang])
+            seo_data = EV.render_seo(ety, eyear, lang, base)
+            c.update({k: seo_data[k] for k in ('intro', 'features', 'steps', 'faq', 'seealso')})
+            page = apply_common(
+                news_tpl, lang, eslug, epath, m['title'], m['description'], m['keywords'],
+                EV.render_body(ety, eyear, lang, base), seo_section(c),
+                jsonld(c, canonical_url(lang, epath), lang, None, eslug, epath),
+                base, home)
+            if lang == 'en':
+                page = localize(page)
+            pages[out_path(lang, epath)] = page
 
         # ---------------- 博客：索引页 + 文章页 ----------------
         # 文章不是工具：不进 TOOLS，但顶部导航里已单独辟出「博客」入口
@@ -828,6 +866,9 @@ def sitemap_xml(news=None):
     entries.append((BLOG_INDEX, '0.6', 'weekly', blog_updated))
     for a in ARTICLES:
         entries.append((article_path(a['slug']), '0.7', 'monthly', a['updated']))
+    # 年度常青页：按年静态参考页，变化极少
+    for p in EV.evergreen_paths():
+        entries.append((p, '0.6', 'yearly', ''))
 
     rows = []
     for p, pri, freq, lastmod_day in entries:
@@ -966,6 +1007,29 @@ def llms_txt():
         '每条给出标题、来源、发布时间与原文直达链接。',
         f'  - English: [Today\'s Tech News]({SITE["base_url"]}{EN_DIR}{NEWS_PATH}) — '
         'rebuilt daily from Hacker News, TechCrunch, The Verge and Ars Technica.',
+        '',
+        '## Yearly / 年度常青页',
+        '',
+    ]
+    ev_y = EV.nav_year()
+    ev_desc = {
+        'calendar': '全年 12 个月日历，标注 ISO 周数、星期与闰年。',
+        'weeks': 'ISO 8601 全年周数表，逐周起止日期。',
+        'days': '年内第几天表，每天映射日期、星期与 ISO 周。',
+        'year': '年份概况：闰年、天数、起止星期与 ISO 周数。',
+    }
+    ev_desc_en = {
+        'calendar': 'Full-year 12-month calendar with ISO week numbers, weekdays and leap year.',
+        'weeks': 'ISO 8601 week table with the start/end date of every week.',
+        'days': 'Day-of-year table mapping each date to its day number, weekday and ISO week.',
+        'year': 'Year facts: leap year, total days, start/end weekday and ISO week count.',
+    }
+    for t in EV.TYPES:
+        zh_url = SITE['base_url'] + f'{t}/{ev_y}/'
+        en_url = SITE['base_url'] + EN_DIR + f'{t}/{ev_y}/'
+        out.append(f'- [{EV.NAV_LABELS_EV["zh"][t]} {ev_y}]({zh_url}): {ev_desc[t]}')
+        out.append(f'  - English: [{EV.NAV_LABELS_EV["en"][t]} {ev_y}]({en_url}) — {ev_desc_en[t]}')
+    out += [
         '',
         '## Optional',
         '',
