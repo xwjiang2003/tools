@@ -111,7 +111,7 @@ def test_exports():
     ok(E.nav_year() in E.YEAR_RANGE, 'nav_year 落在范围内')
     items = E.evergreen_nav_items('en')
     eq(len(items), len(E.TYPES), 'en 导航条目数')
-    eq(items[0][0], 'Year Calendar', 'en 导航首标签')
+    eq(items[0][0], f'{E.nav_year()} Calendar', 'en 导航首标签(带年份)')
 
 
 if __name__ == '__main__':

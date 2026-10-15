@@ -407,7 +407,7 @@ def nav_html(active_slug, base, labels, lang='zh'):
         href = base + t['path'] if t['path'] else (base or './')
         cls = 'top-nav-link active' if t['slug'] == active_slug else 'top-nav-link'
         out.append(f'    <a class="{cls}" href="{href}">{esc(labels[t["slug"]])}</a>')
-    # 年度常青页（当前年份代表入口）：静态参考页不进 TOOLS，单独成组。
+    # 日历与日期（当前年份代表入口）：按年静态参考页不进 TOOLS，单独成组。内部代号 evergreen。
     trig_cls = 'nav-trigger active' if active_slug == 'evergreen' else 'nav-trigger'
     out.append('    <div class="nav-dropdown">')
     out.append(f'      <button class="{trig_cls}" type="button" aria-haspopup="true" aria-expanded="false">{esc(EVERGREEN_NAV_LABELS[lang])}<span class="caret" aria-hidden="true"></span></button>')
@@ -420,7 +420,7 @@ def nav_html(active_slug, base, labels, lang='zh'):
     return '\n'.join(out)
 
 
-EVERGREEN_NAV_LABELS = {'zh': '年度常青页', 'en': 'Yearly'}
+EVERGREEN_NAV_LABELS = {'zh': '日历与日期', 'en': 'Calendar & Dates'}
 
 
 def footer_links_html(base, labels):
@@ -1008,7 +1008,7 @@ def llms_txt():
         f'  - English: [Today\'s Tech News]({SITE["base_url"]}{EN_DIR}{NEWS_PATH}) — '
         'rebuilt daily from Hacker News, TechCrunch, The Verge and Ars Technica.',
         '',
-        '## Yearly / 年度常青页',
+        '## Calendar & Dates / 日历与日期',
         '',
     ]
     ev_y = EV.nav_year()

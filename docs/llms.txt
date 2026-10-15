@@ -95,16 +95,16 @@ Key facts:
 - [今日科技热榜 / Today's Tech News](https://devtools.help/hotnews/): 每天 08:00 自动聚合 IT之家、少数派、InfoQ、开源中国、Solidot、爱范儿、钛媒体、雷峰网与 Hacker News、TechCrunch、The Verge、Ars Technica 的最新条目，每条给出标题、来源、发布时间与原文直达链接。
   - English: [Today's Tech News](https://devtools.help/en/hotnews/) — rebuilt daily from Hacker News, TechCrunch, The Verge and Ars Technica.
 
-## Yearly / 年度常青页
+## Calendar & Dates / 日历与日期
 
-- [年度日历 2026](https://devtools.help/calendar/2026/): 全年 12 个月日历，标注 ISO 周数、星期与闰年。
-  - English: [Year Calendar 2026](https://devtools.help/en/calendar/2026/) — Full-year 12-month calendar with ISO week numbers, weekdays and leap year.
-- [年度周数 2026](https://devtools.help/weeks/2026/): ISO 8601 全年周数表，逐周起止日期。
+- [日历 2026](https://devtools.help/calendar/2026/): 全年 12 个月日历，标注 ISO 周数、星期与闰年。
+  - English: [Calendar 2026](https://devtools.help/en/calendar/2026/) — Full-year 12-month calendar with ISO week numbers, weekdays and leap year.
+- [周数 2026](https://devtools.help/weeks/2026/): ISO 8601 全年周数表，逐周起止日期。
   - English: [Week Numbers 2026](https://devtools.help/en/weeks/2026/) — ISO 8601 week table with the start/end date of every week.
-- [年内天数 2026](https://devtools.help/days/2026/): 年内第几天表，每天映射日期、星期与 ISO 周。
+- [年内第几天 2026](https://devtools.help/days/2026/): 年内第几天表，每天映射日期、星期与 ISO 周。
   - English: [Day of Year 2026](https://devtools.help/en/days/2026/) — Day-of-year table mapping each date to its day number, weekday and ISO week.
-- [年度概况 2026](https://devtools.help/year/2026/): 年份概况：闰年、天数、起止星期与 ISO 周数。
-  - English: [Year Facts 2026](https://devtools.help/en/year/2026/) — Year facts: leap year, total days, start/end weekday and ISO week count.
+- [年份概况 2026](https://devtools.help/year/2026/): 年份概况：闰年、天数、起止星期与 ISO 周数。
+  - English: [Year Overview 2026](https://devtools.help/en/year/2026/) — Year facts: leap year, total days, start/end weekday and ISO week count.
 
 ## Optional
 
