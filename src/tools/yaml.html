@@ -38,8 +38,10 @@
   }
   window.yamlClear=function(){ setVal('yamlInput',''); yamlConvert(); };
   window.yamlSample=function(){ setVal('yamlInput','{\n  "name": "DevTools",\n  "stars": 42,\n  "tags": ["json", "yaml"]\n}'); yamlConvert(); };
+  window.yamlConvert=yamlConvert;
   var el=document.getElementById('yamlInput'); if(el){ el.addEventListener('input', yamlConvert); }
   var sel=document.getElementById('yamlDir'); if(sel){ sel.addEventListener('change', yamlConvert); }
-  yamlConvert();
+  // tool body script runs before core.js: defer initial render until DOM ready
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', yamlConvert); } else { yamlConvert(); }
 })();
 </script>
