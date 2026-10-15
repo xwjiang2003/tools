@@ -87,6 +87,11 @@ Key facts:
 - [Go 工具链命令速查表](https://devtools.help/go-cheatsheet/): Go 工具链速查表：go build、go test、go mod tidy、go get、gofmt 与 goimports 区别、GOPROXY 国内配置、GOPRIVATE、go.mod 指令（require/replace/retract）、GOOS/GOARCH 交叉编译与 GOTOOLCHAIN 版本管理。每条命令附可照抄的示例与真实踩坑点，支持关键词搜索，中英双语。
   - English: [Go Toolchain Command Cheat Sheet](https://devtools.help/en/go-cheatsheet/) — A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives (require / replace / retract), GOOS/GOARCH cross-compilation and GOTOOLCHAIN. Every entry includes a copy-paste example and a real-world pitfall. Bilingual.
 
+## Code Snippets / 代码片段
+
+- [常用代码片段](https://devtools.help/snippets/): 常用代码片段库：Go、Python、JavaScript、Shell、SQL、Git 六种语言 46 条高频片段，覆盖环境变量、HTTP 超时、并发错误收集、防抖、重试、深分页、窗口函数、upsert、递归查询、git 救援等真实场景。每条一键复制，代码注释统一英文，中英双语。
+  - English: [Common Code Snippets](https://devtools.help/en/snippets/) — A library of common code snippets in six languages - Go, Python, JavaScript, Shell, SQL and Git - 46 copy-ready snippets covering env vars, HTTP timeouts, concurrent error collection, debounce and retry, deep pagination, window functions, upsert, recursive queries and git rescue. Bilingual, fully local.
+
 ## Blog / 文章
 
 - [Coraza 规则详解：从 SecRule 语法到写出第一条防护规则](https://devtools.help/blog/coraza-waf-rules/): Coraza 是 Go 写的开源 WAF、ModSecurity 的接任者，SecRule 语法基本兼容。讲清一条规则的三要素、五个处理阶段、OWASP CRS 规则集，并手把手写一个 防 SQL 注入的自定义规则，以及 DetectionOnly 与 On 的取舍。

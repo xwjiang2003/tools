@@ -40,6 +40,7 @@ from news import (CST, jsonld_items, load_news,           # noqa: E402
                   render_body as render_news_body,
                   sources_for, visible_items)
 from cheatsheet import render_body as render_cheat_body   # noqa: E402
+from snippets import render_body as render_snippets_body  # noqa: E402
 from blog import (ARTICLES, BLOG_INDEX, TEXT as BLOG_TEXT,  # noqa: E402
                   article_jsonld, article_path, articles_for,
                   index_jsonld as blog_index_jsonld,
@@ -60,6 +61,10 @@ NEWS_PATH = next(t['path'] for t in TOOLS if t['slug'] == NEWS_SLUG)
 # Go 速查表页。与热榜同型：正文构建期从 cheatsheet.py 的数据渲染，
 # 页面只需要 core.js（不需要编辑器与 CodeMirror），见 build() 的 CHEAT_SLUG 分支。
 CHEAT_SLUG = 'go-cheatsheet'
+
+# 常用代码片段库页。与速查表同型：构建期从 snippets.py 的数据渲染，
+# 复制按钮复用 core.js 的 copyTextById，同样只需要 core.js。
+SNIP_SLUG = 'snippets'
 
 # 需要原样发布到站点根目录的第三方文件（搜索引擎的域名验证文件等）。
 #
@@ -359,6 +364,7 @@ NAV_GROUPS = [
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
     {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
+    {'zh': '代码片段', 'en': 'Code Snippets', 'slugs': ['snippets']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
 
@@ -687,6 +693,9 @@ def build(clean=True, outdirs=None):
             elif t['slug'] == CHEAT_SLUG:
                 # 速查表与热榜同型：只需要 core.js 的轻量模板 + 构建期渲染的正文
                 page_tpl, body = news_tpl, render_cheat_body(lang)
+            elif t['slug'] == SNIP_SLUG:
+                # 片段库同理：core.js + 构建期渲染的正文（复制按钮走 copyTextById）
+                page_tpl, body = news_tpl, render_snippets_body(lang)
             else:
                 page_tpl = tpl
                 body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
@@ -970,18 +979,20 @@ def llms_txt():
         '',
     ]
     for t in TOOLS:
-        # 热榜与速查表都不是「有输入框的工具」，各自单列一节
-        if t['slug'] in (NEWS_SLUG, CHEAT_SLUG):
+        # 热榜、速查表与片段库都不是「有输入框的工具」，各自单列一节
+        if t['slug'] in (NEWS_SLUG, CHEAT_SLUG, SNIP_SLUG):
             continue
         en = TOOLS_EN[t['slug']]
         zh_url = SITE['base_url'] + t['path']
         en_url = SITE['base_url'] + EN_DIR + t['path']
         out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]}')
         out.append(f'  - English: [{en["h1"]}]({en_url}) — {en["description"]}')
-    # 速查表不是工具（没有输入框），单独一节；博客同理，且每篇都要列出，
+    # 速查表与片段库不是工具（没有输入框），单独一节；博客同理，且每篇都要列出，
     # 否则新文章写完不进这份摘要，等于白写。
     cheat = next(t for t in TOOLS if t['slug'] == CHEAT_SLUG)
     cheat_en = TOOLS_EN[CHEAT_SLUG]
+    snip = next(t for t in TOOLS if t['slug'] == SNIP_SLUG)
+    snip_en = TOOLS_EN[SNIP_SLUG]
     out += [
         '',
         '## Cheatsheet / 速查表',
@@ -989,6 +1000,12 @@ def llms_txt():
         f'- [{cheat["h1"]}]({SITE["base_url"]}{cheat["path"]}): {cheat["description"]}',
         f'  - English: [{cheat_en["h1"]}]({SITE["base_url"]}{EN_DIR}{cheat["path"]})'
         f' — {cheat_en["description"]}',
+        '',
+        '## Code Snippets / 代码片段',
+        '',
+        f'- [{snip["h1"]}]({SITE["base_url"]}{snip["path"]}): {snip["description"]}',
+        f'  - English: [{snip_en["h1"]}]({SITE["base_url"]}{EN_DIR}{snip["path"]})'
+        f' — {snip_en["description"]}',
         '',
         '## Blog / 文章',
         '',
