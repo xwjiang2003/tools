@@ -466,6 +466,48 @@
     <changefreq>monthly</changefreq><priority>0.8</priority>
   </url>
   <url>
+    <loc>https://devtools.help/base/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/base/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/base/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/base/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/base/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/base/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/base/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/base/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/binary/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/binary/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/binary/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/binary/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/binary/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/binary/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/binary/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/binary/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/hex/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hex/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/hex/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/hex/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://devtools.help/en/hex/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/hex/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/hex/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://devtools.help/hex/"/>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://devtools.help/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://devtools.help/privacy.html"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://devtools.help/en/privacy.html"/>

@@ -92,7 +92,8 @@ CDN_LOCAL_URL = '/' + CDN_OUT.as_posix() + '/'
 
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
-    'timestamp.js', 'datetime-tools.js', 'id-tools.js', 'hash.js', 'formatter.js',
+    'timestamp.js', 'datetime-tools.js', 'id-tools.js', 'base-tools.js',
+    'hash.js', 'formatter.js',
     'string-tools.js', 'generator.js',
 ]
 
@@ -349,6 +350,7 @@ def autodetect_html(lang, other_url):
 NAV_GROUPS = [
     {'zh': 'JSON', 'en': 'JSON', 'slugs': ['json']},
     {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'yaml', 'toml', 'csv', 'color']},
+    {'zh': '进制转换', 'en': 'Base Convert', 'slugs': ['base', 'binary', 'hex']},
     {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
     {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['timestamp', 'generator']},
