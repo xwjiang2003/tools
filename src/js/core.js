@@ -123,6 +123,9 @@ function initPage(name) {
     case 'tid': initTidPage(); break;
     case 'objectid': initObjectIdPage(); break;
     case 'firebase': initFirebasePage(); break;
+    case 'base': initBasePage(); break;
+    case 'binary': initBinaryPage(); break;
+    case 'hex': initHexPage(); break;
     case 'hash': initHashPage(); break;
     case 'formatter': initFormatterPage(); break;
     case 'string': initStringPage(); break;

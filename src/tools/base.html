@@ -1,0 +1,24 @@
+<div class="tool-layout" id="baseTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 任意进制转换</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <input type="text" class="expr-input" id="baseInput" placeholder="输入数值，如 255、0xFF、0b1010、1f、z" />
+      <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="base-sel-label" for="baseFrom">源进制</label>
+        <select id="baseFrom" class="base-sel"></select>
+        <label class="base-sel-label" for="baseTo">目标进制</label>
+        <select id="baseTo" class="base-sel"></select>
+      </div>
+      <div class="result-panel" style="flex:1">
+        <div class="result-panel-header"><span class="result-panel-title">转换结果</span></div>
+        <div class="result-content" id="baseResult" style="overflow:auto"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">各进制表示（2~36）</span></div>
+      <div class="result-content" id="baseAll" style="overflow:auto"></div>
+    </div>
+  </div>
+</div>

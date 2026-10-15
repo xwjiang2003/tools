@@ -75,6 +75,12 @@ Key facts:
   - English: [MongoDB ObjectId Parser and Generator](https://devtools.help/en/objectid/) — Parse a 24-hex MongoDB ObjectId online: recover creation time, machine, process and counter, and generate a new ObjectId. All done locally in your browser.
 - [Firebase Push ID 解析与生成](https://devtools.help/firebase/): 在线 Firebase Push ID 工具：解析 20 位 Push ID 的创建时间戳，也能按当前或指定时间生成合法 ID。纯本地计算，不上传数据。
   - English: [Firebase Push ID Parser and Generator](https://devtools.help/en/firebase/) — Decode a 20-char Firebase Push ID's creation timestamp, or generate a valid ID from the current or a chosen time. Fully local, no data uploaded.
+- [任意进制转换器](https://devtools.help/base/): 免费在线进制转换器：二进制、八进制、十进制、十六进制与 2~36 任意进制互转，大数任意精度不丢位，支持 0x/0b/0o 前缀与自动识别，一次看清所有进制。纯本地计算。
+  - English: [Any-Base Converter](https://devtools.help/en/base/) — Free online base converter: convert between binary, octal, decimal, hex and any base 2-36. Arbitrary precision for big numbers, 0x/0b/0o prefixes and auto-detect, all bases at a glance. Fully local.
+- [二进制转换器](https://devtools.help/binary/): 在线二进制转换工具：二进制与十进制、十六进制、八进制互转，按 4 位/8 位分组显示，大数任意精度。可粘 0b 前缀或带空格的二进制串。纯本地处理。
+  - English: [Binary Converter](https://devtools.help/en/binary/) — Online binary converter: convert binary to decimal, hex and octal and back, grouped by 4 or 8 bits, arbitrary precision. Accepts 0b prefixes and spaced binary strings. Fully local.
+- [十六进制转换器](https://devtools.help/hex/): 在线十六进制转换工具：十六进制与十进制、二进制、八进制互转，显示字节数与各进制表示，大数任意精度，支持 0x 前缀与大小写。纯本地计算。
+  - English: [Hexadecimal Converter](https://devtools.help/en/hex/) — Online hex converter: convert hex to decimal, binary and octal and back, with byte count and every base 2-36, arbitrary precision. Accepts 0x prefixes and upper/lower case. Fully local.
 
 ## Cheatsheet / 速查表
 

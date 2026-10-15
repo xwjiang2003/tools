@@ -190,6 +190,10 @@ TOOLS_EN = {
              'encoded twice. Try decoding once more and see whether the result still looks encoded; this '
              'page always treats text as UTF-8.'),
         ],
+        'seealso': [
+            ('Hex to Decimal / Binary', 'hex/'),
+            ('Any-Base Converter', 'base/'),
+        ],
     },
     'regex': {
         'nav': 'Regex',
@@ -735,6 +739,10 @@ TOOLS_EN = {
             ('Why do some colors show no name?',
              'CSS only defines 148 named colors such as red, blue and rebeccapurple. Most colors '
              'have no English name, so this field shows "-" — use Hex/RGB/HSL instead.'),
+        ],
+        'seealso': [
+            ('Hex to Binary / Decimal', 'hex/'),
+            ('Any-Base Converter', 'base/'),
         ],
     },
     'case': {
@@ -1484,6 +1492,109 @@ TOOLS_EN = {
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
+        ],
+    },
+    'base': {
+        'nav': 'Base Converter',
+        'title': 'Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools',
+        'description': (
+            'Free online base converter: convert between binary, octal, decimal, hex and any base 2-36. '
+            'Arbitrary precision for big numbers, 0x/0b/0o prefixes and auto-detect, all bases at a glance. Fully local.'
+        ),
+        'keywords': 'base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter',
+        'h1': 'Any-Base Converter',
+        'intro': [
+            'Convert a number between binary, octal, decimal, hex and any base from 2 to 36, with every base shown at once on the right.',
+            'It uses big-integer math, so even very long numbers keep full precision; input may carry 0x / 0b / 0o prefixes, and "Auto-detect" infers the source base from the prefix and characters.',
+        ],
+        'features': [
+            ('Any base 2-36', 'Pick any source and target base from 2 to 36, covering binary, octal, decimal, hex and base32/base36.'),
+            ('All bases at once', 'The table on the right lists the value in every base from 2 to 36, no repeated switching.'),
+            ('Big-number safe', 'Big-integer arithmetic throughout: numbers beyond 2^53 convert exactly, no float error.'),
+            ('Prefixes and auto-detect', 'Accepts 0x / 0b / 0o prefixes, case-insensitive; Auto-detect infers the base from the prefix and characters.'),
+        ],
+        'steps': [
+            'Enter a value on the left (e.g. 255, 0xFF, 0b1010, 1f).',
+            'Choose the source base (leave Auto-detect if unsure) and the target base.',
+            'The converted value shows on the left; every base 2-36 is listed on the right.',
+        ],
+        'faq': [
+            ('Why is big-number conversion exact?', 'Plain math uses floats and loses precision past 2^53; here every digit is processed with big-integer arithmetic, so the result is exact.'),
+            ('How does Auto-detect decide the base?', '0x means hex, 0b binary, 0o octal; all-digit input is decimal; input with a-f but no prefix is treated as hex.'),
+            ('Are fractions supported?', 'Only integers for now; fractional base conversion is error-prone and rarely needed.'),
+        ],
+        'seealso': [
+            ('Binary Converter', 'binary/'),
+            ('Hexadecimal Converter', 'hex/'),
+            ('Text and Hex encoder', 'encode/'),
+            ('Hex to RGB color', 'color/'),
+        ],
+    },
+    'binary': {
+        'nav': 'Binary Converter',
+        'title': 'Binary Converter - binary to decimal/hex/octal | DevTools',
+        'description': (
+            'Online binary converter: convert binary to decimal, hex and octal and back, grouped by 4 or 8 bits, '
+            'arbitrary precision. Accepts 0b prefixes and spaced binary strings. Fully local.'
+        ),
+        'keywords': 'binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes',
+        'h1': 'Binary Converter',
+        'intro': [
+            'Convert a binary number to decimal, hex and octal and back, with grouping by 4 bits (nibble) and 8 bits (byte) for easy checking.',
+            'Accepts 0b prefixes and space/underscore grouping, with big-integer math so long binary strings stay exact.',
+        ],
+        'features': [
+            ('Binary, decimal, hex and octal', 'Shows decimal, hex and octal results plus the bit length in one pass.'),
+            ('Grouped view', 'Groups by 4 and 8 bits so long strings are readable and easy to verify byte by byte.'),
+            ('Big-number safe', 'Big-integer arithmetic; binary strings beyond 2^53 convert exactly.'),
+        ],
+        'steps': [
+            'Enter a binary number on the left (e.g. 1010, 0b11111111, 1111 0000).',
+            'The right side instantly shows decimal, hex, octal and bit length.',
+            'The "Grouped view" panel gives 4-bit and 8-bit groupings.',
+        ],
+        'faq': [
+            ('Why is my binary flagged invalid?', 'Binary uses only 0 and 1; any 2-9 or letter is invalid. For other bases use the Any-Base Converter.'),
+            ('How do I convert text to binary?', 'That is text encoding - use the Hex view in the Encode tool; this tool focuses on numeric base conversion.'),
+        ],
+        'seealso': [
+            ('Any-Base Converter', 'base/'),
+            ('Hexadecimal Converter', 'hex/'),
+            ('Text and Hex encoder', 'encode/'),
+        ],
+    },
+    'hex': {
+        'nav': 'Hex Converter',
+        'title': 'Hexadecimal Converter - hex to decimal/binary/octal | DevTools',
+        'description': (
+            'Online hex converter: convert hex to decimal, binary and octal and back, with byte count and every base 2-36, '
+            'arbitrary precision. Accepts 0x prefixes and upper/lower case. Fully local.'
+        ),
+        'keywords': 'hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes',
+        'h1': 'Hexadecimal Converter',
+        'intro': [
+            'Convert a hex number to decimal, binary and octal and back; when the length is even it shows the byte count, and the right lists every base 2-36.',
+            'Accepts 0x prefixes and upper/lower case, with big-integer math for exact conversion of long hex strings. For text-to-hex byte encoding use the Encode tool.',
+        ],
+        'features': [
+            ('Hex, decimal, binary and octal', 'Shows decimal, binary (grouped by 4) and octal in one pass.'),
+            ('Byte count', 'Shows the byte count when the length is even, so you can tell whole bytes.'),
+            ('Every base at a glance', 'The right panel lists the value in every base 2-36.'),
+        ],
+        'steps': [
+            'Enter a hex number on the left (e.g. FF, 0xFF, 1A2B, deadbeef).',
+            'The right side instantly shows decimal, binary, octal and byte count.',
+            'The "every base" panel lists bases 2-36.',
+        ],
+        'faq': [
+            ('How is this different from Hex in the Encode tool?', 'Here hex is treated as a number for base conversion; the Encode tool turns text into hex byte strings - different purposes.'),
+            ('Why are upper and lower case both fine?', 'Hex digits a-f are case-insensitive, so the tool accepts either.'),
+        ],
+        'seealso': [
+            ('Any-Base Converter', 'base/'),
+            ('Binary Converter', 'binary/'),
+            ('Text and Hex encoder', 'encode/'),
+            ('Hex to RGB color', 'color/'),
         ],
     },
 }
