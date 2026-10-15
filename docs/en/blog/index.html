@@ -144,6 +144,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
 .validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
 .hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.hash-output.err{background:#f8d7da;color:#721c24;border-color:#f5c6cb}
+.hash-output.warn{background:#fff3cd;color:#856404;border-color:#ffeaa7}
 .gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
 input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
 label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
@@ -563,6 +565,17 @@ var _hmt = _hmt || [];
       </div>
     </div>
     <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">ID / Identifiers<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">ID / Identifiers</div>
+        <a class="nav-panel-item" href="../../en/uuid/">UUID</a>
+        <a class="nav-panel-item" href="../../en/snowflake/">Snowflake</a>
+        <a class="nav-panel-item" href="../../en/tid/">Twitter ID</a>
+        <a class="nav-panel-item" href="../../en/objectid/">ObjectId</a>
+        <a class="nav-panel-item" href="../../en/firebase/">Firebase ID</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Cheat Sheets<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Cheat Sheets</div>
@@ -622,7 +635,7 @@ document.addEventListener("click", function (e) {
 </main>
 
 <footer class="footer">
-  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/color/">Color</a><a href="../../en/case/">Case style</a><a href="../../en/jwt/">JWT decoder</a><a href="../../en/yaml/">JSON ↔ YAML</a><a href="../../en/toml/">JSON ↔ TOML</a><a href="../../en/csv/">JSON ↔ CSV</a><a href="../../en/batch/">Batch TS</a><a href="../../en/timestamp-list/">TS Reference</a><a href="../../en/timezones/">Time Zones</a><a href="../../en/weeknumbers/">ISO Week</a><a href="../../en/daynumbers/">Day of Year</a><a href="../../en/years/">Leap Year</a><a href="../../en/world-clock/">World Clock</a><a href="../../en/countdown/">Countdown</a><a href="../../en/date-difference/">Date Diff</a><a href="../../en/date-calculator/">Date Calc</a><a href="../../en/duration/">Duration</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
+  <nav class="footer-links"><a href="../../en/">Home</a><a href="../../en/hotnews/">Tech News</a><a href="../../en/go-cheatsheet/">Go Cheat Sheet</a><a href="../../en/diff/">Text Diff</a><a href="../../en/encode/">Encode</a><a href="../../en/regex/">Regex</a><a href="../../en/timestamp/">Timestamp</a><a href="../../en/hash/">Hash</a><a href="../../en/formatter/">Formatter</a><a href="../../en/string/">Strings</a><a href="../../en/generator/">Generators</a><a href="../../en/color/">Color</a><a href="../../en/case/">Case style</a><a href="../../en/jwt/">JWT decoder</a><a href="../../en/yaml/">JSON ↔ YAML</a><a href="../../en/toml/">JSON ↔ TOML</a><a href="../../en/csv/">JSON ↔ CSV</a><a href="../../en/batch/">Batch TS</a><a href="../../en/timestamp-list/">TS Reference</a><a href="../../en/timezones/">Time Zones</a><a href="../../en/weeknumbers/">ISO Week</a><a href="../../en/daynumbers/">Day of Year</a><a href="../../en/years/">Leap Year</a><a href="../../en/world-clock/">World Clock</a><a href="../../en/countdown/">Countdown</a><a href="../../en/date-difference/">Date Diff</a><a href="../../en/date-calculator/">Date Calc</a><a href="../../en/duration/">Duration</a><a href="../../en/uuid/">UUID</a><a href="../../en/snowflake/">Snowflake</a><a href="../../en/tid/">Twitter ID</a><a href="../../en/objectid/">ObjectId</a><a href="../../en/firebase/">Firebase ID</a><a href="../../en/blog/">Blog</a><a href="../../en/privacy.html">Privacy Policy</a><a href="#" data-feedback-open>Feedback</a></nav>
   <div class="footer-note">Data you enter is processed locally in your browser and is never uploaded</div>
   <div class="footer-stats" id="footerStats">
     <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
@@ -754,6 +767,11 @@ function initPage(name) {
     case 'date-difference': initDateDifferencePage(); break;
     case 'date-calculator': initDateCalculatorPage(); break;
     case 'duration': initDurationPage(); break;
+    case 'uuid': initUuidPage(); break;
+    case 'snowflake': initSnowflakePage(); break;
+    case 'tid': initTidPage(); break;
+    case 'objectid': initObjectIdPage(); break;
+    case 'firebase': initFirebasePage(); break;
     case 'hash': initHashPage(); break;
     case 'formatter': initFormatterPage(); break;
     case 'string': initStringPage(); break;

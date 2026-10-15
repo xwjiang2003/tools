@@ -65,6 +65,16 @@ Key facts:
   - English: [Date Add / Subtract](https://devtools.help/en/date-calculator/) — Online date add/subtract: add or subtract years, months and days from a base date, with automatic month-end and year-end handling (e.g. Feb 28 + 1 day = Mar 1). Computed locally.
 - [ISO 8601 时长字符串与秒数互转](https://devtools.help/duration/): 在线 ISO 8601 时长换算：在 PnYnMnDTnHnMnS 时长字符串与秒数之间互转。支持 P1W、PT1H30M 等格式。纯浏览器本地计算。
   - English: [ISO 8601 Duration String ↔ Seconds](https://devtools.help/en/duration/) — Online ISO 8601 duration converter: convert between a PnYnMnDTnHnMnS duration string and seconds. Supports P1W, PT1H30M and more. Computed locally.
+- [UUID 解析与生成](https://devtools.help/uuid/): 在线 UUID 工具：解析任意 UUID 的版本、变体、时间戳与节点信息，一键生成 RFC4122 v4 随机 UUID。纯浏览器本地处理，不上传数据。
+  - English: [UUID Parser and Generator](https://devtools.help/en/uuid/) — Parse any UUID online: detect version (v1/v3/v4/v5) and variant (RFC4122, etc.), recover the timestamp and node for v1, and generate RFC4122 v4 UUIDs. All processing is local in your browser.
+- [Snowflake ID 解析与构造](https://devtools.help/snowflake/): 在线 Snowflake ID 工具：解码 Twitter、Discord 等 Snowflake 的毫秒时间戳、机器与序列号，也可按时间反向构造 ID。支持自定义纪元，纯本地计算。
+  - English: [Snowflake ID Decoder and Builder](https://devtools.help/en/snowflake/) — Decode Snowflake IDs from Twitter, Discord and more: recover the millisecond timestamp, machine and sequence. Build a Snowflake from a time with a custom epoch. All computed locally.
+- [Twitter / X ID 解析](https://devtools.help/tid/): 在线解析 Twitter / X 的 Snowflake ID：输入任意推文、用户或私信 ID，即可反查其创建时间、机器与序列号。纯本地计算，无需登录 X。
+  - English: [Twitter and X ID Decoder](https://devtools.help/en/tid/) — Decode any Twitter / X Snowflake ID: paste a tweet, user or DM id to recover its creation time, machine and sequence. Fully local, no X login required.
+- [MongoDB ObjectId 解析与生成](https://devtools.help/objectid/): 在线 MongoDB ObjectId 工具：解析 24 位十六进制 ObjectId 的创建时间、机器、进程与计数器，一键生成新 ObjectId。纯浏览器本地处理。
+  - English: [MongoDB ObjectId Parser and Generator](https://devtools.help/en/objectid/) — Parse a 24-hex MongoDB ObjectId online: recover creation time, machine, process and counter, and generate a new ObjectId. All done locally in your browser.
+- [Firebase Push ID 解析与生成](https://devtools.help/firebase/): 在线 Firebase Push ID 工具：解析 20 位 Push ID 的创建时间戳，也能按当前或指定时间生成合法 ID。纯本地计算，不上传数据。
+  - English: [Firebase Push ID Parser and Generator](https://devtools.help/en/firebase/) — Decode a 20-char Firebase Push ID's creation timestamp, or generate a valid ID from the current or a chosen time. Fully local, no data uploaded.
 
 ## Cheatsheet / 速查表
 

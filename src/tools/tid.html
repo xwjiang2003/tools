@@ -1,0 +1,28 @@
+<div class="tool-layout" id="tidTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> Twitter / X ID 解析</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <input type="text" class="expr-input" id="tidId" placeholder="粘贴 Twitter / X ID，如 1888944671579078978" />
+      <div class="result-panel" style="min-height:auto">
+        <div class="result-panel-header"><span class="result-panel-title">解析结果</span></div>
+        <div class="result-content" id="tidResult" style="overflow:auto"></div>
+      </div>
+      <p class="hash-output" style="min-height:auto;font-size:12px;line-height:1.7">
+        X / Twitter 的所有对象（推文、用户、私信）ID 均为 Snowflake：高 41 位为毫秒时间戳，低 22 位为机器与序列。低于 29700859247 的早期 ID 为纯自增数字，不含时间。
+      </p>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">构造结果</span></div>
+      <div class="result-content" style="overflow:auto;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">时间（本地）</label>
+          <input type="datetime-local" class="expr-input" id="tidDate" style="flex:1;min-width:200px" />
+        </div>
+        <button class="btn" id="tidEncodeBtn">时间 → ID</button>
+        <div id="tidEncodeResult"></div>
+      </div>
+    </div>
+  </div>
+</div>

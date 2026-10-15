@@ -1177,6 +1177,178 @@ TOOLS = [
             ('日期差值计算', 'date-difference/'),
         ],
     },
+    {
+        'slug': 'uuid',
+        'path': 'uuid/',
+        'nav': 'UUID',
+        'title': 'UUID 在线解析与生成 - v1/v4 版本、变体、时间戳反查 | DevTools',
+        'description': (
+            '在线 UUID 工具：解析任意 UUID 的版本、变体、时间戳与节点信息，一键生成 RFC4122 v4 随机 UUID。'
+            '纯浏览器本地处理，不上传数据。'
+        ),
+        'keywords': 'UUID 解析,UUID 生成,UUID v4,UUID 在线,UUID 时间戳,UUID 版本,UUID 校验',
+        'h1': 'UUID 解析与生成',
+        'intro': [
+            '把一段 UUID 粘贴进来即可看到它的版本（v1/v3/v4/v5）和变体（RFC4122 等），若是 v1 还能反查出生成时的时间戳与网卡节点。',
+            '需要新 ID 时点"生成 v4"即可得到符合 RFC4122 的随机 UUID。所有计算都在浏览器本地完成，你粘贴的内容不会离开设备。',
+        ],
+        'features': [
+            ('版本与变体识别', '自动识别 UUID 版本（1/3/4/5）与变体位（RFC4122 / Microsoft / 保留），一眼看清这是哪种 UUID。'),
+            ('v1 时间反查', '对 v1 UUID 还原出 100 纳秒精度的创建时间戳与 48 位节点标识，可据此判断大致生成时间。'),
+            ('本地生成 v4', '使用浏览器 crypto 安全随机数生成 v4 UUID，无需后端，结果即时可得。'),
+        ],
+        'steps': [
+            '在左侧粘贴待解析的 UUID（带连字符或不带均可）。',
+            '右侧即时显示版本、变体等信息；若是 v1 还会给出时间戳与节点。',
+            '点"生成 v4"可得到一个新的随机 UUID。',
+        ],
+        'faq': [
+            ('UUID 不区分大小写吗？', 'UUID 规范中字母部分大小写不敏感，但标准书写统一用小写；本工具解析时会自动忽略大小写差异。'),
+            ('v4 UUID 真的不重复吗？', 'v4 用 122 位随机数，碰撞概率低到可以忽略；本工具只负责生成与解析，不保证跨设备的全局唯一性。'),
+        ],
+        'seealso': [
+            ('时间戳与日期互转', 'timestamp/'),
+            ('Snowflake ID 解析', 'snowflake/'),
+            ('MongoDB ObjectId 解析', 'objectid/'),
+        ],
+    },
+    {
+        'slug': 'snowflake',
+        'path': 'snowflake/',
+        'nav': 'Snowflake',
+        'title': 'Snowflake ID 解析与构造 - Twitter/Discord 时间戳解码 | DevTools',
+        'description': (
+            '在线 Snowflake ID 工具：解码 Twitter、Discord 等 Snowflake 的毫秒时间戳、机器与序列号，'
+            '也可按时间反向构造 ID。支持自定义纪元，纯本地计算。'
+        ),
+        'keywords': 'Snowflake 解析,Snowflake 解码,Snowflake ID,Twitter ID 解码,Discord ID 解码,Snowflake 时间戳,雪花算法',
+        'h1': 'Snowflake ID 解析与构造',
+        'intro': [
+            'Snowflake 是 Twitter 发明的 64 位分布式 ID：高 41 位毫秒时间戳、中 10 位机器、低 12 位序列。把 ID 粘进来即可还原出创建时间与机器/序列信息。',
+            '选择 Twitter、Discord 或自定义纪元，右侧还能按指定时间反推一个 Snowflake ID，方便做"某时刻的 ID"边界验证。',
+        ],
+        'features': [
+            ('多平台预设', '内置 Twitter（纪元 2010-11-04）与 Discord（纪元 2015-01-01）预设，也支持自定义纪元与位宽。'),
+            ('时间戳还原', '解码出毫秒时间戳并同时给出 UTC 与本地时间，可直接判断对象创建时刻。'),
+            ('反向构造', '给定时间与机器/序列号即可构造一个合法的 Snowflake ID，用于时间戳↔ID 的区间换算。'),
+        ],
+        'steps': [
+            '在预设里选 Twitter / Discord 或自定义。',
+            '左侧粘贴 Snowflake ID，右侧即时显示时间戳、机器与序列。',
+            '右侧填入时间、节点、序列后点"构造 ID"可反向生成。',
+        ],
+        'faq': [
+            ('为什么 ID 位数这么长？', 'Snowflake 是 63 位无符号整数，十进制下常见 18~19 位；解析时按字符串处理以避免 JS 数字精度丢失。'),
+            ('自定义纪元怎么填？', '填写你系统采用的纪元毫秒数（如 Twitter 为 1288834974657），位宽沿用 41/10/12 的通用布局。'),
+        ],
+        'seealso': [
+            ('Twitter / X ID 解析', 'tid/'),
+            ('UUID 解析与生成', 'uuid/'),
+            ('时间戳与日期互转', 'timestamp/'),
+        ],
+    },
+    {
+        'slug': 'tid',
+        'path': 'tid/',
+        'nav': 'Twitter ID',
+        'title': 'Twitter / X ID 解析 - 推文/用户创建时间反查 | DevTools',
+        'description': (
+            '在线解析 Twitter / X 的 Snowflake ID：输入任意推文、用户或私信 ID，即可反查其创建时间、机器与序列号。'
+            '纯本地计算，无需登录 X。'
+        ),
+        'keywords': 'Twitter ID 解析,X ID 解析,推文 ID 时间,Twitter 时间戳,Twitter Snowflake,X Snowflake,推文创建时间',
+        'h1': 'Twitter / X ID 解析',
+        'intro': [
+            'X（原 Twitter）的所有对象 ID 都是 Snowflake：把 ID 粘进来即可还原出创建时间、机器与序列字段。',
+            '低于 29700859247 的早期 ID 是纯自增数字，不含时间信息；工具会明确提示，避免误读。',
+        ],
+        'features': [
+            ('创建时间反查', '还原出 ID 对应的 UTC 与本地创建时间，精确到毫秒。'),
+            ('边界识别', '自动识别早于 Snowflake 纪元的纯自增 ID，给出"无嵌入时间"的明确提示。'),
+            ('时间 → ID', '给定时间即可构造该时刻的 Twitter Snowflake ID，便于做时间区间检索。'),
+        ],
+        'steps': [
+            '粘贴任意推文、用户或私信的数字 ID。',
+            '右侧即时显示创建时间、机器与序列；若 ID 过早则提示无时间。',
+            '右侧填时间后点"时间 → ID"可反向构造。',
+        ],
+        'faq': [
+            ('为什么有些 ID 解析不出时间？', '2010 年 11 月 Snowflake 上线前的 ID 是普通自增数字（约 ≤ 29700859247），本身不包含时间，无法反推。'),
+            ('解析需要登录 X 吗？', '不需要。Snowflake 的时间戳就编码在 ID 本身，本工具纯本地计算，不涉及任何 X 接口。'),
+        ],
+        'seealso': [
+            ('Snowflake ID 解析', 'snowflake/'),
+            ('时间戳与日期互转', 'timestamp/'),
+        ],
+    },
+    {
+        'slug': 'objectid',
+        'path': 'objectid/',
+        'nav': 'ObjectId',
+        'title': 'MongoDB ObjectId 解析与生成 - 时间/机器/计数器反查 | DevTools',
+        'description': (
+            '在线 MongoDB ObjectId 工具：解析 24 位十六进制 ObjectId 的创建时间、机器、进程与计数器，'
+            '一键生成新 ObjectId。纯浏览器本地处理。'
+        ),
+        'keywords': 'ObjectId 解析,ObjectId 生成,MongoDB ID,MongoDB ObjectId 时间,ObjectId 在线,ObjectId 校验',
+        'h1': 'MongoDB ObjectId 解析与生成',
+        'intro': [
+            'MongoDB 的 ObjectId 由 12 字节组成：前 4 字节是创建时间的 Unix 秒。粘进来即可看到其生成时间戳与各字段。',
+            '点"生成 ObjectId"可得到一个格式合法的随机 ObjectId，方便本地构造测试数据。',
+        ],
+        'features': [
+            ('时间戳反查', '从 ObjectId 前 4 字节还原出创建时间（秒级）并给出 UTC 与本地时间。'),
+            ('字段拆解', '展示机器标识、进程标识与自增计数器，便于排查 ID 来源。'),
+            ('本地生成', '一键生成格式合法的 ObjectId，不依赖 MongoDB 实例。'),
+        ],
+        'steps': [
+            '在左侧粘贴 24 位十六进制 ObjectId。',
+            '右侧即时显示时间戳与各字段；格式错误会有提示。',
+            '点"生成 ObjectId"得到一个新的随机 ID。',
+        ],
+        'faq': [
+            ('ObjectId 里的时间准吗？', '前 4 字节是生成时的秒级 Unix 时间，精度到秒；它是客户端生成，通常能反映创建时刻。'),
+            ('生成的和数据库里的真的一致吗？', '结构完全一致（时间+随机机器/进程+计数器），但机器与计数器是随机填充，仅用于本地测试，不代表真实实例。'),
+        ],
+        'seealso': [
+            ('UUID 解析与生成', 'uuid/'),
+            ('时间戳与日期互转', 'timestamp/'),
+        ],
+    },
+    {
+        'slug': 'firebase',
+        'path': 'firebase/',
+        'nav': 'Firebase ID',
+        'title': 'Firebase Push ID 解析与生成 - 时间戳反查 | DevTools',
+        'description': (
+            '在线 Firebase Push ID 工具：解析 20 位 Push ID 的创建时间戳，也能按当前或指定时间生成合法 ID。'
+            '纯本地计算，不上传数据。'
+        ),
+        'keywords': 'Firebase ID 解析,Firebase Push ID,Firebase 时间戳,Push ID 解码,Firebase ID 生成,Firebase ID 在线',
+        'h1': 'Firebase Push ID 解析与生成',
+        'intro': [
+            'Firebase Realtime Database 的 Push ID 共 20 位：前 8 位编码生成时刻的毫秒时间戳，后 12 位为随机后缀。粘进来即可反查创建时间。',
+            '点"生成（当前时间）"或按指定时间生成，可得到格式合法的 Push ID，便于构造测试数据。',
+        ],
+        'features': [
+            ('时间戳反查', '从 Push ID 前 8 位还原出生成毫秒时间戳，并给出 UTC 与本地时间。'),
+            ('按时间生成', '支持用当前时间或任意指定时间生成合法 Push ID，方便做时间区间对照。'),
+            ('本地计算', '不调用任何 Firebase 接口，纯浏览器本地解析与生成。'),
+        ],
+        'steps': [
+            '在左侧粘贴 20 位 Firebase Push ID。',
+            '右侧即时显示创建时间与随机后缀；格式错误会提示。',
+            '点"生成（当前时间）"或填时间后"按指定时间生成"得到新 ID。',
+        ],
+        'faq': [
+            ('Push ID 的前 8 位为什么是时间？', 'Firebase 用 64 进制字符编码时间戳，前 8 位为最高位在前的毫秒时间，因此按字典序也能粗略排序。'),
+            ('生成的 ID 能直接写入数据库吗？', '结构合法，但本工具用随机后缀生成，仅用于本地测试与对照，不代表真实写入顺序。'),
+        ],
+        'seealso': [
+            ('UUID 解析与生成', 'uuid/'),
+            ('时间戳与日期互转', 'timestamp/'),
+        ],
+    },
 ]
 
 BY_SLUG = {t['slug']: t for t in TOOLS}

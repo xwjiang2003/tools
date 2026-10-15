@@ -91,7 +91,7 @@ CDN_LOCAL_URL = '/' + CDN_OUT.as_posix() + '/'
 
 JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
-    'timestamp.js', 'datetime-tools.js', 'hash.js', 'formatter.js',
+    'timestamp.js', 'datetime-tools.js', 'id-tools.js', 'hash.js', 'formatter.js',
     'string-tools.js', 'generator.js',
 ]
 
@@ -354,6 +354,7 @@ NAV_GROUPS = [
     {'zh': '时间 / 日期', 'en': 'Time / Date', 'slugs': [
         'batch', 'timestamp-list', 'timezones', 'weeknumbers', 'daynumbers',
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
+    {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}

@@ -1,0 +1,17 @@
+<div class="tool-layout" id="oidTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> MongoDB ObjectId 解析与生成</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <input type="text" class="expr-input" id="oidInput" placeholder="粘贴 ObjectId，如 507f1f77bcf86cd799439011" />
+      <div class="row" style="gap:10px">
+        <button class="btn" id="oidGenBtn">生成 ObjectId</button>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">解析结果</span></div>
+      <div class="result-content" id="oidResult" style="overflow:auto"></div>
+    </div>
+  </div>
+</div>
