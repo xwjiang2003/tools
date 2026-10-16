@@ -12,7 +12,7 @@
     </div>
     <div class="op-buttons"><button class="op-btn active" onclick="tomlConvert()">转换</button></div>
     <div class="result-panel" style="flex:1">
-      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('tomlResult')">复制</button></div></div>
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="tomlDlBtn" onclick="tomlDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('tomlResult')">复制</button></div></div>
       <div class="result-content" id="tomlResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
     </div>
   </div>
@@ -30,26 +30,32 @@
     });
     return Promise.race([p, to]).then(function(m){ _toml=m; return m; });
   }
+  var lastToml = { text:'', name:'data.toml', mime:'text/plain' };
+  function setDl(id, on){ var b=document.getElementById(id); if(b) b.disabled=!on; }
   async function tomlConvert(){
     var text = getVal('tomlInput'); var dir = document.getElementById('tomlDir').value;
     var out = document.getElementById('tomlResult');
-    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; lastToml.text=''; setDl('tomlDlBtn', false); return; }
     try{
       var TOML = await loadToml();
       if(dir==='toToml'){
         var obj = JSON.parse(text);
-        out.textContent = TOML.stringify(obj);
+        var t = TOML.stringify(obj);
+        out.textContent = t; lastToml={text:t, name:'data.toml', mime:'text/plain'};
       } else {
         var data = TOML.parse(text);
-        out.textContent = JSON.stringify(data, null, 2);
+        var j = JSON.stringify(data, null, 2);
+        out.textContent = j; lastToml={text:j, name:'data.json', mime:'application/json'};
       }
+      setDl('tomlDlBtn', true);
     }catch(e){
-      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>'; lastToml.text=''; setDl('tomlDlBtn', false);
     }
   }
   window.tomlClear=function(){ setVal('tomlInput',''); tomlConvert(); };
   window.tomlSample=function(){ setVal('tomlInput','{\n  "name": "DevTools",\n  "stars": 42,\n  "tags": ["json", "toml"]\n}'); tomlConvert(); };
   window.tomlConvert=tomlConvert;
+  window.tomlDownload=function(){ if(!lastToml.text){ toast('没有可下载的结果'); return; } downloadText(lastToml.name, lastToml.text, lastToml.mime); };
   var el=document.getElementById('tomlInput'); if(el){ el.addEventListener('input', tomlConvert); }
   var sel=document.getElementById('tomlDir'); if(sel){ sel.addEventListener('change', tomlConvert); }
   // tool body script runs before core.js: defer initial render until DOM ready

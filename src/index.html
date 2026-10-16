@@ -2,6 +2,11 @@
 <html lang="{{LANG}}" data-page="{{PAGE}}">
 <head>
 <meta charset="UTF-8">
+<!-- Chrome 117+ 默认禁用 unload 事件：第三方统计脚本（百度 hm.js）注册 unload 处理函数时
+     控制台会刷 "[Violation] Permissions policy violation: unload is not allowed"。
+     这里显式放开 unload 策略消除该告警（本站无 iframe，unload 非敏感特性，* 无额外风险）；
+     百度统计官方片段保持一字未动，安装检查不受影响。 -->
+<meta http-equiv="Permissions-Policy" content="unload=*">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITLE}}</title>
 <meta name="description" content="{{DESCRIPTION}}">
