@@ -424,7 +424,54 @@ def nav_html(active_slug, base, labels, lang='zh'):
         out.append(f'        <a class="nav-panel-item" href="{base}{href}">{esc(label)}</a>')
     out.append('      </div>')
     out.append('    </div>')
+    # 最近使用（动态，由 JS 从 localStorage 填充；无 JS 时面板为空）。
+    # 放在导航末尾，与上方分类下拉保持同一套样式与交互（桌面悬停展开、窄屏抽屉内原地展开）。
+    recent_label = {'zh': '最近使用', 'en': 'Recent'}[lang]
+    out.append('    <div class="nav-dropdown nav-recent">')
+    out.append(f'      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">{esc(recent_label)}<span class="caret" aria-hidden="true"></span></button>')
+    out.append('      <div class="nav-panel" id="recentPanel" role="menu"></div>')
+    out.append('    </div>')
     return '\n'.join(out)
+
+
+def tool_index_json(base, lang):
+    """生成全站工具搜索索引（每页注入 window.__TOOL_INDEX__）。
+
+    字段：slug / href / g(分类名) + zh{label,title,kw} + en{label,title,kw}。
+    - 中文页：zh 用真实中文（展示 + 可被英文关键词搜到），en 用英文（跨语言搜索）。
+    - 英文页：zh 字段也填英文，保证英文页 JSON 零中文（否则 check.py 会报“英文页含中文”）。
+    href 与导航一致用 base+path，从任意页相对跳转都正确；展示与匹配按当前语言选取。
+    """
+    def group_of(slug):
+        g = next((x for x in NAV_GROUPS if slug in x['slugs']), None)
+        if g:
+            return g[lang]
+        if slug in CONTENT_GROUP['slugs']:
+            return CONTENT_GROUP[lang]
+        return ''
+    def href_of(path):
+        return (base + path) if path else (base or './')
+    entries = []
+    for t in TOOLS:
+        slug = t['slug']
+        te = TOOLS_EN.get(slug, t)
+        zh_l, zh_t, zh_k = t.get('nav', ''), t.get('title', ''), t.get('keywords', '')
+        en_l, en_t, en_k = te.get('nav', ''), te.get('title', ''), te.get('keywords', '')
+        if lang == 'en':                 # 英文页：zh 字段也用英文，避免残留中文
+            zh_l, zh_t, zh_k = en_l, en_t, en_k
+        entries.append({
+            'slug': slug, 'href': href_of(t['path']), 'g': group_of(slug),
+            'zh': {'l': zh_l, 't': zh_t, 'k': zh_k},
+            'en': {'l': en_l, 't': en_t, 'k': en_k},
+        })
+    # 博客索引（不是 TOOLS，单独补一条，让搜索也能定位博客）
+    bt = BLOG_TEXT[lang]
+    entries.append({
+        'slug': 'blog', 'href': href_of(BLOG_INDEX), 'g': CONTENT_GROUP[lang],
+        'zh': {'l': '博客' if lang == 'zh' else 'Blog', 't': bt['index_title'], 'k': bt['index_kw']},
+        'en': {'l': 'Blog', 't': bt['index_title'], 'k': bt['index_kw']},
+    })
+    return json.dumps(entries, ensure_ascii=False)
 
 
 EVERGREEN_NAV_LABELS = {'zh': '日历与日期', 'en': 'Calendar & Dates'}
@@ -638,6 +685,7 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{JSONLD}}', ld)
     page = page.replace('{{TOOL}}', body)
     page = page.replace('{{SEO}}', seo)
+    page = page.replace('{{TOOL_INDEX}}', tool_index_json(base, lang))
     page = page.replace('{{PRIVACY_BODY}}', seo)
     page = page.replace('{{HOME}}', home)
     page = page.replace('{{BASE}}', base)

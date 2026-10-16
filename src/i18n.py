@@ -647,4 +647,15 @@ EN = {
     '字节数': 'Bytes',
     '整字节': 'whole bytes',
     '非整字节': 'not a whole number of bytes',
+
+    # ---- 全站工具搜索 + 最近使用 ----
+    '工具搜索': 'Tool search',
+    '搜索工具': 'Search',
+    '输入关键词搜索工具': 'Search tools by keyword',
+    '最近使用': 'Recent',
+    '暂无使用记录': 'No recent tools',
+    '使用过的工具会显示在这里': 'Tools you have used will appear here',
+    '没有找到相关工具': 'No matching tools',
+    '清除记录': 'Clear history',
+    '搜索结果': 'Results',
 }

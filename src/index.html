@@ -64,7 +64,7 @@
   <nav class="top-nav" id="topNav">
 {{NAV}}
   </nav>
-  <div class="header-actions">{{FEEDBACK_BTN}}{{LANGSWITCH}}<button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
+  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="搜索工具" aria-label="搜索工具">🔍</button>{{FEEDBACK_BTN}}{{LANGSWITCH}}<button class="theme-toggle" id="themeToggle" title="切换暗色模式">🌓</button></div>
 </header>
 
 <!-- Ad slot: top banner 970x90 / 728x90.
@@ -95,6 +95,19 @@
 </footer>
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- 全站工具搜索 + 最近使用 -->
+<div class="search-overlay" id="searchOverlay" hidden>
+  <div class="search-backdrop" data-search-close></div>
+  <div class="search-panel" role="dialog" aria-modal="true" aria-label="工具搜索">
+    <div class="search-box">
+      <span class="search-ico" aria-hidden="true">🔍</span>
+      <input type="text" id="searchInput" class="search-input" placeholder="输入关键词搜索工具…" autocomplete="off" spellcheck="false" aria-label="搜索工具">
+      <button class="search-close" type="button" data-search-close aria-label="关闭">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
@@ -107,6 +120,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>window.__TOOL_INDEX__ = {{TOOL_INDEX}};</script>
 <script src="js/core.js"></script>
 <script src="js/json-tools.js"></script>
 <script src="js/text-diff.js"></script>
