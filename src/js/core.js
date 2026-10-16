@@ -161,6 +161,199 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 // ============================================================
+// 全站工具搜索 + 最近使用
+// ============================================================
+(function () {
+  var STORE_KEY = 'devtools-recent';
+  var MAX_RECENT = 8;     // 持久化保留的最近使用工具上限
+  var SHOW_RECENT = 6;    // 搜索空态 / 导航下拉里展示的条数
+
+  // ---- localStorage 读写（隐私模式等不可用时静默降级）----
+  function loadRecent() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveRecent(obj) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+
+  // 记录一次工具使用：频率 + 最近时间戳
+  function recordToolUse(slug) {
+    if (!slug) return;
+    var rec = loadRecent();
+    var e = rec[slug] || { count: 0, last: 0 };
+    e.count += 1; e.last = Date.now();
+    rec[slug] = e;
+    saveRecent(rec);
+  }
+
+  // 按使用频率降序、频率相同按最近使用降序
+  function getRecentSorted() {
+    var rec = loadRecent();
+    var arr = Object.keys(rec).map(function (k) {
+      return { slug: k, count: rec[k].count, last: rec[k].last };
+    });
+    arr.sort(function (a, b) { return b.count - a.count || b.last - a.last; });
+    return arr;
+  }
+
+  function metaOf(slug) {
+    var idx = window.__TOOL_INDEX__ || [];
+    for (var i = 0; i < idx.length; i++) if (idx[i].slug === slug) return idx[i];
+    return null;
+  }
+
+  function pageLang() {
+    var l = (document.documentElement.getAttribute('lang') || 'zh-CN').toLowerCase();
+    return l.indexOf('en') === 0 ? 'en' : 'zh';
+  }
+
+  function itemLabel(m) { var f = m[pageLang()]; return (f && f.l) || (m.en && m.en.l) || m.slug; }
+  function itemTitle(m) { var f = m[pageLang()]; return (f && f.t) || (m.en && m.en.t) || ''; }
+  function itemGroup(m) { return m.g || ''; }
+
+  // ---- 渲染：导航下拉「最近使用」面板 ----
+  function renderRecentPanel() {
+    var panel = document.getElementById('recentPanel');
+    if (!panel) return;
+    var sorted = getRecentSorted().slice(0, MAX_RECENT);
+    if (!sorted.length) {
+      panel.innerHTML = '<div class="nav-panel-empty">暂无使用记录</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var m = metaOf(sorted[i].slug);
+      if (!m) continue;
+      html += '<a class="nav-panel-item" href="' + escHtml(m.href) + '">' + escHtml(itemLabel(m)) + '</a>';
+    }
+    html += '<button class="recent-clear" type="button" id="recentClear">清除记录</button>';
+    panel.innerHTML = html;
+    var clr = document.getElementById('recentClear');
+    if (clr) clr.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      clearHistory();
+    });
+  }
+
+  // 清空使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
+  function clearHistory() {
+    saveRecent({});
+    renderRecentPanel();
+    renderSearch(input ? input.value : '');
+  }
+
+  // ---- 渲染：搜索结果 / 空态（最近使用）----
+  var overlay = null, input = null, results = null;
+  function buildResultItem(m) {
+    return '<a class="search-item" href="' + escHtml(m.href) + '">' +
+             '<span class="search-item-label">' + escHtml(itemLabel(m)) + '</span>' +
+             (itemGroup(m) ? '<span class="search-item-group">' + escHtml(itemGroup(m)) + '</span>' : '') +
+             (itemTitle(m) ? '<span class="search-item-title">' + escHtml(itemTitle(m)) + '</span>' : '') +
+           '</a>';
+  }
+
+  function renderSearch(q) {
+    if (!results) return;
+    var idx = window.__TOOL_INDEX__ || [];
+    q = (q || '').trim().toLowerCase();
+    if (!q) {
+      var sorted = getRecentSorted().slice(0, SHOW_RECENT);
+      var h = '<div class="search-section-title">最近使用</div>';
+      if (!sorted.length) {
+        h += '<div class="search-empty">暂无使用记录<br>使用过的工具会显示在这里</div>';
+      } else {
+        for (var i = 0; i < sorted.length; i++) {
+          var m = metaOf(sorted[i].slug); if (!m) continue;
+          h += buildResultItem(m);
+        }
+        h += '<button class="recent-clear search-clear" type="button" id="searchClear">清除记录</button>';
+      }
+      results.innerHTML = h;
+      var sc = document.getElementById('searchClear');
+      if (sc) sc.addEventListener('click', clearHistory);
+      return;
+    }
+    var hits = [];
+    for (var j = 0; j < idx.length; j++) {
+      var d = idx[j];
+      var hay = ((d.zh.l || '') + (d.zh.t || '') + (d.zh.k || '') +
+                 (d.en.l || '') + (d.en.t || '') + (d.en.k || '')).toLowerCase();
+      if (hay.indexOf(q) !== -1) hits.push(d);
+    }
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">没有找到相关工具</div>';
+      return;
+    }
+    var out = '<div class="search-section-title">搜索结果（' + hits.length + '）</div>';
+    for (var k = 0; k < hits.length; k++) out += buildResultItem(hits[k]);
+    results.innerHTML = out;
+  }
+
+  function openSearch() {
+    if (!overlay) return;
+    overlay.hidden = false;
+    document.body.classList.add('search-open');
+    if (input) { input.value = ''; renderSearch(''); setTimeout(function () { input.focus(); }, 30); }
+  }
+  function closeSearch() {
+    if (!overlay) return;
+    overlay.hidden = true;
+    document.body.classList.remove('search-open');
+    if (input) input.blur();
+  }
+
+  function initSearch() {
+    overlay = document.getElementById('searchOverlay');
+    input = document.getElementById('searchInput');
+    results = document.getElementById('searchResults');
+    var btn = document.getElementById('searchBtn');
+    if (btn) btn.addEventListener('click', openSearch);
+    if (overlay) {
+      Array.prototype.forEach.call(overlay.querySelectorAll('[data-search-close]'), function (el) {
+        el.addEventListener('click', closeSearch);
+      });
+    }
+    if (input) {
+      input.addEventListener('input', function () { renderSearch(input.value); });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          var first = results && results.querySelector('.search-item');
+          if (first) window.location.href = first.getAttribute('href');
+        } else if (e.key === 'Escape') {
+          closeSearch();
+        }
+      });
+    }
+    // "/" 快捷键打开搜索（输入框 / 编辑器内不触发）
+    document.addEventListener('keydown', function (e) {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        var t = e.target;
+        var tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+        var editing = tag === 'input' || tag === 'textarea' || (t && t.isContentEditable) ||
+                      (t && t.closest && t.closest('.CodeMirror'));
+        if (!editing && overlay && overlay.hidden) { e.preventDefault(); openSearch(); }
+      }
+    });
+  }
+
+  // 页面初始化：记录当前工具的使用 + 渲染最近使用面板 + 初始化搜索
+  function initSearchAndRecent() {
+    var p = currentPage();
+    var slug = (p && p.indexOf('blog') === 0) ? 'blog' : p;
+    if (metaOf(slug)) recordToolUse(slug);
+    renderRecentPanel();
+    initSearch();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearchAndRecent);
+  } else {
+    initSearchAndRecent();
+  }
+})();
+
+// ============================================================
 // MOBILE NAV（窄屏抽屉）
 // ============================================================
 // 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
