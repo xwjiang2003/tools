@@ -2,6 +2,11 @@
 <html lang="zh-CN" data-page="csv">
 <head>
 <meta charset="UTF-8">
+<!-- Chrome 117+ 默认禁用 unload 事件：第三方统计脚本（百度 hm.js）注册 unload 处理函数时
+     控制台会刷 "[Violation] Permissions policy violation: unload is not allowed"。
+     这里显式放开 unload 策略消除该告警（本站无 iframe，unload 非敏感特性，* 无额外风险）；
+     百度统计官方片段保持一字未动，安装检查不受影响。 -->
+<meta http-equiv="Permissions-Policy" content="unload=*">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JSON 与 CSV 在线互转工具 - JSON 数组转 CSV / CSV 转 JSON | DevTools</title>
 <meta name="description" content="免费在线 JSON 与 CSV 互转：JSON 数组（对象数组 / 二维数组）转 CSV，CSV 按首行表头转回 JSON。正确处理引号与逗号转义，纯浏览器本地处理。">
@@ -724,7 +729,7 @@ document.addEventListener("click", function (e) {
     </div>
     <div class="op-buttons"><button class="op-btn active" onclick="csvConvert()">转换</button></div>
     <div class="result-panel" style="flex:1">
-      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('csvResult')">复制</button></div></div>
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="csvDlBtn" onclick="csvDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('csvResult')">复制</button></div></div>
       <div class="result-content" id="csvResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
     </div>
   </div>
@@ -784,19 +789,24 @@ document.addEventListener("click", function (e) {
     }
     return out;
   }
+  var lastCsv = { text:'', name:'data.csv', mime:'text/csv' };
+  function setDl(id, on){ var b=document.getElementById(id); if(b) b.disabled=!on; }
   function csvConvert(){
     var text = getVal('csvInput'); var dir = document.getElementById('csvDir').value;
     var out = document.getElementById('csvResult');
-    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; lastCsv.text=''; setDl('csvDlBtn', false); return; }
     try{
-      out.textContent = dir==='toCsv' ? jsonToCsv(JSON.parse(text)) : JSON.stringify(csvToJson(text), null, 2);
+      if(dir==='toCsv'){ var t=jsonToCsv(JSON.parse(text)); out.textContent=t; lastCsv={text:t, name:'data.csv', mime:'text/csv'}; }
+      else { var j=JSON.stringify(csvToJson(text), null, 2); out.textContent=j; lastCsv={text:j, name:'data.json', mime:'application/json'}; }
+      setDl('csvDlBtn', true);
     }catch(e){
-      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>'; lastCsv.text=''; setDl('csvDlBtn', false);
     }
   }
   window.csvClear=function(){ setVal('csvInput',''); csvConvert(); };
   window.csvSample=function(){ setVal('csvInput','[\n  {"name":"Alice","age":30,"city":"Beijing"},\n  {"name":"Bob","age":25,"city":"Shanghai"}\n]'); csvConvert(); };
   window.csvConvert=csvConvert;
+  window.csvDownload=function(){ if(!lastCsv.text){ toast('没有可下载的结果'); return; } downloadText(lastCsv.name, lastCsv.text, lastCsv.mime); };
   var el=document.getElementById('csvInput'); if(el){ el.addEventListener('input', csvConvert); }
   var sel=document.getElementById('csvDir'); if(sel){ sel.addEventListener('change', csvConvert); }
   // tool body script runs before core.js: defer initial render until DOM ready
@@ -940,6 +950,23 @@ function copyTextById(id) {
   const el = document.getElementById(id);
   if (!el) return;
   navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
+}
+// 把文本结果导出成文件下载（Blob + 临时 a[download]，纯前端，不经过服务器）。
+function downloadText(filename, text, mime) {
+  if (!text) { toast('没有可下载的结果'); return; }
+  try {
+    const blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob 下载。
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    toast('已下载 ' + filename);
+  } catch (e) {
+    toast('下载失败');
+  }
 }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }

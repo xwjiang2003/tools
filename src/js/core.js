@@ -85,6 +85,23 @@ function copyTextById(id) {
   if (!el) return;
   navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('已复制'), ()=>toast('复制失败','error'));
 }
+// 把文本结果导出成文件下载（Blob + 临时 a[download]，纯前端，不经过服务器）。
+function downloadText(filename, text, mime) {
+  if (!text) { toast('没有可下载的结果'); return; }
+  try {
+    const blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob 下载。
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    toast('已下载 ' + filename);
+  } catch (e) {
+    toast('下载失败');
+  }
+}
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
 function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }

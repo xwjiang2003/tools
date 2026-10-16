@@ -12,7 +12,7 @@
     </div>
     <div class="op-buttons"><button class="op-btn active" onclick="csvConvert()">转换</button></div>
     <div class="result-panel" style="flex:1">
-      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('csvResult')">复制</button></div></div>
+      <div class="result-panel-header"><span class="result-panel-title">结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="csvDlBtn" onclick="csvDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('csvResult')">复制</button></div></div>
       <div class="result-content" id="csvResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
     </div>
   </div>
@@ -72,19 +72,24 @@
     }
     return out;
   }
+  var lastCsv = { text:'', name:'data.csv', mime:'text/csv' };
+  function setDl(id, on){ var b=document.getElementById(id); if(b) b.disabled=!on; }
   function csvConvert(){
     var text = getVal('csvInput'); var dir = document.getElementById('csvDir').value;
     var out = document.getElementById('csvResult');
-    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; return; }
+    if(!text.trim()){ out.innerHTML='<span style="color:var(--text-muted)">选择操作开始</span>'; lastCsv.text=''; setDl('csvDlBtn', false); return; }
     try{
-      out.textContent = dir==='toCsv' ? jsonToCsv(JSON.parse(text)) : JSON.stringify(csvToJson(text), null, 2);
+      if(dir==='toCsv'){ var t=jsonToCsv(JSON.parse(text)); out.textContent=t; lastCsv={text:t, name:'data.csv', mime:'text/csv'}; }
+      else { var j=JSON.stringify(csvToJson(text), null, 2); out.textContent=j; lastCsv={text:j, name:'data.json', mime:'application/json'}; }
+      setDl('csvDlBtn', true);
     }catch(e){
-      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>';
+      out.innerHTML='<span style="color:#dc2626">Parse error: '+escHtml(e.message)+'</span>'; lastCsv.text=''; setDl('csvDlBtn', false);
     }
   }
   window.csvClear=function(){ setVal('csvInput',''); csvConvert(); };
   window.csvSample=function(){ setVal('csvInput','[\n  {"name":"Alice","age":30,"city":"Beijing"},\n  {"name":"Bob","age":25,"city":"Shanghai"}\n]'); csvConvert(); };
   window.csvConvert=csvConvert;
+  window.csvDownload=function(){ if(!lastCsv.text){ toast('没有可下载的结果'); return; } downloadText(lastCsv.name, lastCsv.text, lastCsv.mime); };
   var el=document.getElementById('csvInput'); if(el){ el.addEventListener('input', csvConvert); }
   var sel=document.getElementById('csvDir'); if(sel){ sel.addEventListener('change', csvConvert); }
   // tool body script runs before core.js: defer initial render until DOM ready
