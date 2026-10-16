@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/snippets/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/snippets/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/snippets/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Common Code Snippets", "url": "https://devtools.help/en/snippets/", "description": "A library of common code snippets in six languages - Go, Python, JavaScript, Shell, SQL and Git - 46 copy-ready snippets covering env vars, HTTP timeouts, concurrent error collection, debounce and retry, deep pagination, window functions, upsert, recursive queries and git rescue. Bilingual, fully local.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use these snippets in production?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They apply standard-library or idiomatic techniques, depend on no particular framework and carry no license restrictions - copy them and adjust the naming to taste. Still run them against your own edge cases first: a snippet solves a common problem, it does not replace your tests."}}, {"@type": "Question", "name": "Why are the code comments in English?", "acceptedAnswer": {"@type": "Answer", "text": "This page ships in Chinese and English. Chinese comments would mean maintaining two copies of every snippet, and any missed edit shows readers a half-translated mess; English comments avoid that at the source and work in projects of either language."}}, {"@type": "Question", "name": "Will more languages be added?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Rust, Java, C# and Kotlin are on the list, prioritised by what readers of this site actually use. You can nominate a language or a specific snippet via the feedback button."}}, {"@type": "Question", "name": "How often are snippets updated?", "acceptedAnswer": {"@type": "Answer", "text": "The page header shows the last update. Entries affected by a new language release (Go, Python, ...) are revised afterwards, and better approaches are folded in as they are found."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "Code Snippets", "item": "https://devtools.help/en/snippets/"}, {"@type": "ListItem", "position": 3, "name": "Common Code Snippets", "item": "https://devtools.help/en/snippets/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Common Code Snippets", "url": "https://devtools.help/en/snippets/", "description": "A library of common code snippets in six languages - Go, Python, JavaScript, Shell, SQL and Git - 46 copy-ready snippets covering env vars, HTTP timeouts, concurrent error collection, debounce and retry, deep pagination, window functions, upsert, recursive queries and git rescue. Bilingual, fully local.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use these snippets in production?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They apply standard-library or idiomatic techniques, depend on no particular framework and carry no license restrictions - copy them and adjust the naming to taste. Still run them against your own edge cases first: a snippet solves a common problem, it does not replace your tests."}}, {"@type": "Question", "name": "Why are the code comments in English?", "acceptedAnswer": {"@type": "Answer", "text": "This page ships in Chinese and English. Chinese comments would mean maintaining two copies of every snippet, and any missed edit shows readers a half-translated mess; English comments avoid that at the source and work in projects of either language."}}, {"@type": "Question", "name": "Will more languages be added?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Rust, Java, C# and Kotlin are on the list, prioritised by what readers of this site actually use. You can nominate a language or a specific snippet via the feedback button."}}, {"@type": "Question", "name": "How often are snippets updated?", "acceptedAnswer": {"@type": "Answer", "text": "The page header shows the last update. Entries affected by a new language release (Go, Python, ...) are revised afterwards, and better approaches are folded in as they are found."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "Code / Gen", "item": "https://devtools.help/en/generator/"}, {"@type": "ListItem", "position": 3, "name": "Common Code Snippets", "item": "https://devtools.help/en/snippets/"}]}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -629,17 +629,18 @@ var _hmt = _hmt || [];
       </div>
     </div>
     <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Code / Gen<span class="caret" aria-hidden="true"></span></button>
+      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">Code / Gen<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Code / Gen</div>
-        <a class="nav-panel-item" href="../../en/timestamp/">Timestamp</a>
         <a class="nav-panel-item" href="../../en/generator/">Generators</a>
+        <a class="nav-panel-item active" href="../../en/snippets/">Code Snippets</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Time / Date<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Time / Date</div>
+        <a class="nav-panel-item" href="../../en/timestamp/">Timestamp</a>
         <a class="nav-panel-item" href="../../en/batch/">Batch TS</a>
         <a class="nav-panel-item" href="../../en/timestamp-list/">TS Reference</a>
         <a class="nav-panel-item" href="../../en/timezones/">Time Zones</a>
@@ -669,13 +670,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Cheat Sheets</div>
         <a class="nav-panel-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">Code Snippets<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">Code Snippets</div>
-        <a class="nav-panel-item active" href="../../en/snippets/">Code Snippets</a>
       </div>
     </div>
     <a class="top-nav-link" href="../../en/hotnews/">Tech News</a>

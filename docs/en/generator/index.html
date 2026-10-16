@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/generator/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/generator/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/generator/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / Password / QR Code Generator", "url": "https://devtools.help/en/generator/", "description": "Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can UUID v4 values collide?", "acceptedAnswer": {"@type": "Answer", "text": "A UUID v4 carries 122 random bits, so collisions are theoretically possible but astronomically unlikely: generating a billion of them every second for about 100 years still leaves a collision probability far below the chance of a hardware failure. In practice you can treat them as unique."}}, {"@type": "Question", "name": "Are the generated passwords really random?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They come from the browser crypto.getRandomValues() cryptographic random number generator rather than Math.random(), so there is no predictable pseudo-random sequence. Store the result somewhere trustworthy — this page keeps no record of it."}}, {"@type": "Question", "name": "Can the generated test data be used in production?", "acceptedAnswer": {"@type": "Answer", "text": "No. Fields such as phone and ID numbers are fabricated to match a format and suit only testing and demos. They are not real, and may coincidentally match a real person."}}, {"@type": "Question", "name": "Are there restrictions on using the QR codes?", "acceptedAnswer": {"@type": "Answer", "text": "The QR code format is an open standard and free to use. Do make sure the URL or content you encode is lawful — the code is only a carrier and does not change who is responsible for what it contains."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "Code / Gen", "item": "https://devtools.help/en/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "UUID / Password / QR Code Generator", "item": "https://devtools.help/en/generator/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "UUID / Password / QR Code Generator", "url": "https://devtools.help/en/generator/", "description": "Generate UUID v4 in bulk, strong random passwords, QR codes you can download as PNG, Lorem Ipsum placeholder text, number sequences and test data — all locally.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can UUID v4 values collide?", "acceptedAnswer": {"@type": "Answer", "text": "A UUID v4 carries 122 random bits, so collisions are theoretically possible but astronomically unlikely: generating a billion of them every second for about 100 years still leaves a collision probability far below the chance of a hardware failure. In practice you can treat them as unique."}}, {"@type": "Question", "name": "Are the generated passwords really random?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They come from the browser crypto.getRandomValues() cryptographic random number generator rather than Math.random(), so there is no predictable pseudo-random sequence. Store the result somewhere trustworthy — this page keeps no record of it."}}, {"@type": "Question", "name": "Can the generated test data be used in production?", "acceptedAnswer": {"@type": "Answer", "text": "No. Fields such as phone and ID numbers are fabricated to match a format and suit only testing and demos. They are not real, and may coincidentally match a real person."}}, {"@type": "Question", "name": "Are there restrictions on using the QR codes?", "acceptedAnswer": {"@type": "Answer", "text": "The QR code format is an open standard and free to use. Do make sure the URL or content you encode is lawful — the code is only a carrier and does not change who is responsible for what it contains."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "Code / Gen", "item": "https://devtools.help/en/generator/"}, {"@type": "ListItem", "position": 3, "name": "UUID / Password / QR Code Generator", "item": "https://devtools.help/en/generator/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -634,14 +634,15 @@ var _hmt = _hmt || [];
       <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">Code / Gen<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Code / Gen</div>
-        <a class="nav-panel-item" href="../../en/timestamp/">Timestamp</a>
         <a class="nav-panel-item active" href="../../en/generator/">Generators</a>
+        <a class="nav-panel-item" href="../../en/snippets/">Code Snippets</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Time / Date<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Time / Date</div>
+        <a class="nav-panel-item" href="../../en/timestamp/">Timestamp</a>
         <a class="nav-panel-item" href="../../en/batch/">Batch TS</a>
         <a class="nav-panel-item" href="../../en/timestamp-list/">TS Reference</a>
         <a class="nav-panel-item" href="../../en/timezones/">Time Zones</a>
@@ -671,13 +672,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">Cheat Sheets</div>
         <a class="nav-panel-item" href="../../en/go-cheatsheet/">Go Cheat Sheet</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Code Snippets<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">Code Snippets</div>
-        <a class="nav-panel-item" href="../../en/snippets/">Code Snippets</a>
       </div>
     </div>
     <a class="top-nav-link" href="../../en/hotnews/">Tech News</a>
