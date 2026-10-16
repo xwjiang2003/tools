@@ -106,10 +106,33 @@ def test_no_bare_init_anywhere():
         check(not bare, '%s: 仍有未守卫的初始调用 %s' % (f.name, bare))
 
 
+def test_no_external_runtime_deps():
+    """不变量 C：工具页/js 模块不得有外部运行时依赖。
+
+    toml 页曾 `await import('https://cdn.jsdelivr.net/npm/@iarna/toml...')`：
+    国内网络下该请求挂起，await 永不 settle，页面死寂（2026-10-16 实测）。
+    第三方资源一律走 src/cdn/ 自托管；cdnjs 的 <script src> 合法——build.py
+    会把它改写成同源 /assets/cdn/ 路径。
+    """
+    dyn_import = re.compile(r'''import\s*\(\s*['"]https?://''')
+    ext_src = re.compile(r'''<script[^>]+src\s*=\s*['"]https?://(?!cdnjs\.cloudflare\.com/)''')
+    files = list(TOOLS.glob('*.html')) + list(JS.glob('*.js'))
+    for f in files:
+        t = f.read_text('utf-8')
+        for i, line in enumerate(t.splitlines(), 1):
+            if dyn_import.search(line):
+                check(False, '%s:%d: 动态 import 外部 URL（国内网络挂起风险）: %s'
+                      % (f.name, i, line.strip()[:100]))
+            if ext_src.search(line):
+                check(False, '%s:%d: 外部 script src（仅 cdnjs 合法，build 会改写）: %s'
+                      % (f.name, i, line.strip()[:100]))
+
+
 if __name__ == '__main__':
     test_onclick_resolvable()
     test_init_call_guarded()
     test_fixed_pages_exposed()
     test_no_bare_init_anywhere()
+    test_no_external_runtime_deps()
     print('\n%d passed, %d failed' % (PASS, FAIL))
     raise SystemExit(1 if FAIL else 0)

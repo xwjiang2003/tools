@@ -24,7 +24,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/yaml/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/yaml/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/yaml/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线 JSON 与 YAML 互转工具", "url": "https://devtools.help/yaml/", "description": "免费在线 JSON 与 YAML 互转：JSON 转 YAML、YAML 转 JSON，保持结构一致。基于 js-yaml 解析，支持注释与多文档之外的常见语法，纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "YAML 和 JSON 能互相无损转换吗？", "acceptedAnswer": {"@type": "Answer", "text": "大多数情况下可以。YAML 是 JSON 的超集，JSON 能表达的结构在 YAML 里都能表示；但 YAML 的锚点、多文档、复杂类型标签等 JSON 没有对应物，这类写法转成 JSON 后可能丢失信息。"}}, {"@type": "Question", "name": "转换需要联网吗？", "acceptedAnswer": {"@type": "Answer", "text": "解析库（js-yaml）从公共 CDN 加载，首次打开页面需要联网；一旦加载完成，纯文本转换在本地即可进行。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "格式转换", "item": "https://devtools.help/formatter/"}, {"@type": "ListItem", "position": 3, "name": "在线 JSON 与 YAML 互转工具", "item": "https://devtools.help/yaml/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "在线 JSON 与 YAML 互转工具", "url": "https://devtools.help/yaml/", "description": "免费在线 JSON 与 YAML 互转：JSON 转 YAML、YAML 转 JSON，保持结构一致。基于 js-yaml 解析，支持注释与多文档之外的常见语法，纯浏览器本地处理。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "YAML 和 JSON 能互相无损转换吗？", "acceptedAnswer": {"@type": "Answer", "text": "大多数情况下可以。YAML 是 JSON 的超集，JSON 能表达的结构在 YAML 里都能表示；但 YAML 的锚点、多文档、复杂类型标签等 JSON 没有对应物，这类写法转成 JSON 后可能丢失信息。"}}, {"@type": "Question", "name": "转换需要联网吗？", "acceptedAnswer": {"@type": "Answer", "text": "不需要。解析库（js-yaml）由本站同域提供，随页面一起加载，不经过第三方 CDN；整个转换过程都在浏览器本地完成。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "格式转换", "item": "https://devtools.help/formatter/"}, {"@type": "ListItem", "position": 3, "name": "在线 JSON 与 YAML 互转工具", "item": "https://devtools.help/yaml/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -778,7 +778,7 @@ document.addEventListener("click", function (e) {
   <h2>常见问题</h2>
   <div class="faq">
     <details><summary>YAML 和 JSON 能互相无损转换吗？</summary><p>大多数情况下可以。YAML 是 JSON 的超集，JSON 能表达的结构在 YAML 里都能表示；但 YAML 的锚点、多文档、复杂类型标签等 JSON 没有对应物，这类写法转成 JSON 后可能丢失信息。</p></details>
-    <details><summary>转换需要联网吗？</summary><p>解析库（js-yaml）从公共 CDN 加载，首次打开页面需要联网；一旦加载完成，纯文本转换在本地即可进行。</p></details>
+    <details><summary>转换需要联网吗？</summary><p>不需要。解析库（js-yaml）由本站同域提供，随页面一起加载，不经过第三方 CDN；整个转换过程都在浏览器本地完成。</p></details>
   </div>
 </section>
 </main>
