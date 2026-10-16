@@ -853,8 +853,8 @@ TOOLS_EN = {
              'anchors, multi-document streams and complex type tags have no JSON equivalent and may be '
              'lost when converted.'),
             ('Does conversion need a network?',
-             'The js-yaml parser loads from a public CDN, so the first page open needs network; once '
-             'loaded, plain-text conversion runs locally.'),
+             'No. The js-yaml parser is served from this site\u2019s own domain alongside the page, with no '
+             'third-party CDN involved; the whole conversion runs locally in your browser.'),
         ],
     },
     'toml': {
@@ -888,8 +888,8 @@ TOOLS_EN = {
              'mean fewer braces and quotes than JSON, and none of YAML\u2019s indentation traps — which '
              'is why many language templates adopt it by default.'),
             ('Does conversion need a network?',
-             'The @iarna/toml parser loads from a public CDN, so the first page open needs network; '
-             'once loaded, plain-text conversion runs locally.'),
+             'No. The @iarna/toml parser is served from this site\u2019s own domain alongside the page, '
+             'with no third-party CDN involved; the whole conversion runs locally in your browser.'),
         ],
     },
     'csv': {
