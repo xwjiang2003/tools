@@ -432,28 +432,153 @@ function initYearsPage() {
   body.innerHTML = html;
 }
 
+// ---------- 表盘指针角度（世界时钟模拟视图） ----------
+// 由某时区的墙钟分解（dtZonedParts 结果）算出时针/分针/秒针角度（度）。
+// 时针连续走动（含分/秒的小数贡献），秒针按秒跳动。
+function wcHandAngles(p) {
+  var h = (+p.hour) % 12, m = +p.minute, s = +p.second;
+  return {
+    hour: (h + m / 60 + s / 3600) * 30,
+    minute: (m + s / 60) * 6,
+    second: s * 6
+  };
+}
+
+// ---------- 是否处于夏令时（启发式：当前偏移 != 冬夏两个探点中较小的标准偏移） ----------
+// 无夏令时的时区全年偏移恒定（jan === jul）返回 false；南半球（7 月为冬）同样适用。
+function wcIsDst(tz, now) {
+  var y = (now || new Date()).getUTCFullYear();
+  var jan = dtTimezoneOffsetSeconds(tz, new Date(y, 0, 1));
+  var jul = dtTimezoneOffsetSeconds(tz, new Date(y, 6, 1));
+  if (jan === jul) return false;
+  return dtTimezoneOffsetSeconds(tz, now || new Date()) !== Math.min(jan, jul);
+}
+
 function initWorldClockPage() {
   var root = document.getElementById('worldTool');
   if (!root) return;
   var body = document.getElementById('worldBody');
+  var grid = document.getElementById('worldDials');
   var zones = DT_ZONES;
+  // 列表视图：沿用原表格
   body.innerHTML = zones.map(function (z) {
     return '<tr><td>' + escapeHtml(dtZoneLabel(z)) + '</td>' +
       '<td><span class="dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</span></td>' +
       '<td><span class="dt-off" data-off="' + escapeHtml(z) + '"></span></td></tr>';
   }).join('');
+  // 表盘视图：每个时区一张圆形模拟表盘卡片
+  var refs = [];
+  var dateFmt = {};
+  if (grid) {
+    grid.innerHTML = zones.map(function (z) {
+      var label = escapeHtml(dtZoneLabel(z));
+      return '<div class="wc-card">' +
+        '<div class="wc-city">' + label + '</div>' +
+        '<div class="wc-tz">' + escapeHtml(z) + '</div>' +
+        '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
+          '<circle class="wc-face" cx="50" cy="50" r="47"/>' + wcTicks() +
+          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(z) + '" x1="50" y1="55" x2="50" y2="27"/>' +
+          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(z) + '" x1="50" y1="57" x2="50" y2="17"/>' +
+          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(z) + '" x1="50" y1="60" x2="50" y2="13"/>' +
+          '<circle class="wc-pin" cx="50" cy="50" r="3.4"/>' +
+        '</svg>' +
+        '<div class="wc-date" data-wd="' + escapeHtml(z) + '"></div>' +
+        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</div>' +
+        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(z) + '"></span>' +
+          '<span class="wc-dst" data-dst="' + escapeHtml(z) + '" hidden>' + dtMsg('夏令时') + '</span></div>' +
+        '</div>';
+    }).join('');
+    refs = zones.map(function (z) {
+      return {
+        tz: z,
+        hh: grid.querySelector('[data-hh="' + z + '"]'),
+        hm: grid.querySelector('[data-hm="' + z + '"]'),
+        hs: grid.querySelector('[data-hs="' + z + '"]'),
+        wd: grid.querySelector('[data-wd="' + z + '"]'),
+        dst: grid.querySelector('[data-dst="' + z + '"]'),
+        dstOn: null
+      };
+    }).filter(function (r) { return r.hh && r.hm && r.hs; });
+    // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
+    // 英文页用短格式（Sat, Oct 17, 2026），避免窄卡片里被截断。
+    var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
+    var loc = isEn ? 'en-US' : 'zh-CN';
+    zones.forEach(function (z) {
+      try {
+        dateFmt[z] = new Intl.DateTimeFormat(loc, {
+          timeZone: z, year: 'numeric',
+          month: isEn ? 'short' : 'long', day: 'numeric',
+          weekday: isEn ? 'short' : 'long'
+        });
+      } catch (e) { dateFmt[z] = null; }
+    });
+  }
+  var dstClock = null; // 夏令时状态缓存（每分钟校对一次足够）
+  function refreshDst(now) {
+    dstClock = { at: now.getTime(), state: {} };
+    refs.forEach(function (r) {
+      var on = false;
+      try { on = wcIsDst(r.tz, now); } catch (e) {}
+      r.dstOn = on;
+      if (r.dst) r.dst.hidden = !on;
+    });
+  }
   function tick() {
     var now = new Date();
+    var ts = Math.floor(now.getTime() / 1000);
     document.querySelectorAll('.dt-clock').forEach(function (el) {
-      var p = dtZonedParts(Math.floor(now.getTime() / 1000), el.getAttribute('data-tz'));
+      var p = dtZonedParts(ts, el.getAttribute('data-tz'));
       el.textContent = p ? (p.hour + ':' + p.minute + ':' + p.second) : '--';
     });
     document.querySelectorAll('.dt-off').forEach(function (el) {
       el.textContent = dtTzOffsetLabel(el.getAttribute('data-off'), now);
     });
+    if (!refs.length) return;
+    if (!dstClock || now.getTime() - dstClock.at > 60000) refreshDst(now);
+    refs.forEach(function (r) {
+      var p = dtZonedParts(ts, r.tz);
+      if (!p) return;
+      var a = wcHandAngles(p);
+      r.hh.setAttribute('transform', 'rotate(' + a.hour + ' 50 50)');
+      r.hm.setAttribute('transform', 'rotate(' + a.minute + ' 50 50)');
+      r.hs.setAttribute('transform', 'rotate(' + a.second + ' 50 50)');
+      if (r.wd && dateFmt[r.tz]) r.wd.textContent = dateFmt[r.tz].format(now);
+    });
+  }
+  // 视图切换：默认表盘，选择写入 localStorage（跨刷新记忆）
+  var btnDial = document.getElementById('wcViewDial');
+  var btnList = document.getElementById('wcViewList');
+  var listWrap = document.getElementById('worldListWrap');
+  function setView(v) {
+    var dial = v !== 'list';
+    if (grid) grid.style.display = dial ? '' : 'none';
+    if (listWrap) listWrap.style.display = dial ? 'none' : '';
+    if (btnDial && btnList) {
+      btnDial.classList.toggle('active', dial);
+      btnList.classList.toggle('active', !dial);
+      btnDial.setAttribute('aria-pressed', String(dial));
+      btnList.setAttribute('aria-pressed', String(!dial));
+    }
+    try { localStorage.setItem('devtools-wcview', dial ? 'dial' : 'list'); } catch (e) {}
+  }
+  if (btnDial && btnList) {
+    btnDial.onclick = function () { setView('dial'); };
+    btnList.onclick = function () { setView('list'); };
+    var saved = '';
+    try { saved = localStorage.getItem('devtools-wcview') || ''; } catch (e) {}
+    setView(saved === 'list' ? 'list' : 'dial');
   }
   tick();
   setInterval(tick, 1000);
+}
+
+// 表盘刻度：12 个整点粗刻度
+function wcTicks() {
+  var s = '';
+  for (var i = 0; i < 12; i++) {
+    s += '<line class="wc-tick" x1="50" y1="7" x2="50" y2="13" transform="rotate(' + (i * 30) + ' 50 50)"/>';
+  }
+  return s;
 }
 
 function initCountdownPage() {
@@ -613,6 +738,7 @@ if (typeof module !== 'undefined' && module.exports) {
     dtTzOffsetLabel: dtTzOffsetLabel, dtIsoWeek: dtIsoWeek, dtDayOfYear: dtDayOfYear,
     dtIsLeapYear: dtIsLeapYear, dtParseIsoDuration: dtParseIsoDuration,
     dtSecondsToIsoDuration: dtSecondsToIsoDuration, dtCountdown: dtCountdown,
-    dtDiffSeconds: dtDiffSeconds, dtAddDate: dtAddDate, dtBatchConvert: dtBatchConvert
+    dtDiffSeconds: dtDiffSeconds, dtAddDate: dtAddDate, dtBatchConvert: dtBatchConvert,
+    wcHandAngles: wcHandAngles, wcIsDst: wcIsDst
   };
 }
