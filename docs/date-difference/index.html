@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-difference/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/date-difference/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/date-difference/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "两个日期之间相差多久", "url": "https://devtools.help/date-difference/", "description": "在线日期差值计算：选择或输入两个日期时间，计算它们之间的间隔（天、时、分、秒）。按本地时区解释。纯浏览器本地计算。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "跨时区输入的日期怎么算？", "acceptedAnswer": {"@type": "Answer", "text": "页面按你浏览器所在时区（本地时区）解释输入的日期时间；若需要按其他时区计算，请先把时间换算成你本地对应的墙钟时间再填入。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/batch/"}, {"@type": "ListItem", "position": 3, "name": "两个日期之间相差多久", "item": "https://devtools.help/date-difference/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "两个日期之间相差多久", "url": "https://devtools.help/date-difference/", "description": "在线日期差值计算：选择或输入两个日期时间，计算它们之间的间隔（天、时、分、秒）。按本地时区解释。纯浏览器本地计算。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "跨时区输入的日期怎么算？", "acceptedAnswer": {"@type": "Answer", "text": "页面按你浏览器所在时区（本地时区）解释输入的日期时间；若需要按其他时区计算，请先把时间换算成你本地对应的墙钟时间再填入。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "两个日期之间相差多久", "item": "https://devtools.help/date-difference/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -634,14 +634,15 @@ var _hmt = _hmt || [];
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">代码 / 生成</div>
-        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../generator/">生成器</a>
+        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">时间 / 日期</div>
+        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../batch/">批量时间戳</a>
         <a class="nav-panel-item" href="../timestamp-list/">时间戳速查</a>
         <a class="nav-panel-item" href="../timezones/">时区转换</a>
@@ -671,13 +672,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">代码片段</div>
-        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>

@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/snippets/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/snippets/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/snippets/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "常用代码片段", "url": "https://devtools.help/snippets/", "description": "常用代码片段库：Go、Python、JavaScript、Shell、SQL、Git 六种语言 46 条高频片段，覆盖环境变量、HTTP 超时、并发错误收集、防抖、重试、深分页、窗口函数、upsert、递归查询、git 救援等真实场景。每条一键复制，代码注释统一英文，中英双语。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这些片段可以直接用在生产项目里吗？", "acceptedAnswer": {"@type": "Answer", "text": "可以。它们都是各语言标准库或通用写法的直接应用，不依赖特定框架，也没有授权限制，复制后按项目风格调整命名即可。生产使用前请按自己的边界条件测试一遍——片段解决的是常见问题，不是替代你的测试。"}}, {"@type": "Question", "name": "代码注释为什么是英文的？", "acceptedAnswer": {"@type": "Answer", "text": "这个页面有中英两个版本。注释写中文就得维护两份代码，任一份漏改都会让另一种语言的读者看到半翻译产物；统一用英文注释可以从源头避免这个问题，中英文项目都能直接用。"}}, {"@type": "Question", "name": "会支持更多语言吗？", "acceptedAnswer": {"@type": "Answer", "text": "会。 Rust、Java、C#、Kotlin 等语言的片段在计划中，优先级按本站读者的实际使用情况排。你也可以通过页面右下角的反馈按钮提名想要的语言或具体片段。"}}, {"@type": "Question", "name": "片段多久更新一次？", "acceptedAnswer": {"@type": "Answer", "text": "页首标注了更新时间。语言大版本发布（如 Go、Python 的新稳定版）后会校订受影响的条目，平时发现更好的写法也会即时更新。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "代码片段", "item": "https://devtools.help/snippets/"}, {"@type": "ListItem", "position": 3, "name": "常用代码片段", "item": "https://devtools.help/snippets/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "常用代码片段", "url": "https://devtools.help/snippets/", "description": "常用代码片段库：Go、Python、JavaScript、Shell、SQL、Git 六种语言 46 条高频片段，覆盖环境变量、HTTP 超时、并发错误收集、防抖、重试、深分页、窗口函数、upsert、递归查询、git 救援等真实场景。每条一键复制，代码注释统一英文，中英双语。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这些片段可以直接用在生产项目里吗？", "acceptedAnswer": {"@type": "Answer", "text": "可以。它们都是各语言标准库或通用写法的直接应用，不依赖特定框架，也没有授权限制，复制后按项目风格调整命名即可。生产使用前请按自己的边界条件测试一遍——片段解决的是常见问题，不是替代你的测试。"}}, {"@type": "Question", "name": "代码注释为什么是英文的？", "acceptedAnswer": {"@type": "Answer", "text": "这个页面有中英两个版本。注释写中文就得维护两份代码，任一份漏改都会让另一种语言的读者看到半翻译产物；统一用英文注释可以从源头避免这个问题，中英文项目都能直接用。"}}, {"@type": "Question", "name": "会支持更多语言吗？", "acceptedAnswer": {"@type": "Answer", "text": "会。 Rust、Java、C#、Kotlin 等语言的片段在计划中，优先级按本站读者的实际使用情况排。你也可以通过页面右下角的反馈按钮提名想要的语言或具体片段。"}}, {"@type": "Question", "name": "片段多久更新一次？", "acceptedAnswer": {"@type": "Answer", "text": "页首标注了更新时间。语言大版本发布（如 Go、Python 的新稳定版）后会校订受影响的条目，平时发现更好的写法也会即时更新。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "代码 / 生成", "item": "https://devtools.help/generator/"}, {"@type": "ListItem", "position": 3, "name": "常用代码片段", "item": "https://devtools.help/snippets/"}]}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -629,17 +629,18 @@ var _hmt = _hmt || [];
       </div>
     </div>
     <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
+      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">代码 / 生成</div>
-        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../generator/">生成器</a>
+        <a class="nav-panel-item active" href="../snippets/">代码片段</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">时间 / 日期</div>
+        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../batch/">批量时间戳</a>
         <a class="nav-panel-item" href="../timestamp-list/">时间戳速查</a>
         <a class="nav-panel-item" href="../timezones/">时区转换</a>
@@ -669,13 +670,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">代码片段</div>
-        <a class="nav-panel-item active" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>

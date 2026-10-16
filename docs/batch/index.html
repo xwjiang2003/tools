@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/batch/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/batch/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/batch/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "批量时间戳与日期互转", "url": "https://devtools.help/batch/", "description": "在线批量时间戳转换：一次粘贴多行时间戳或日期，批量完成秒/毫秒时间戳与日期的互转，支持选择时区与 CSV 风格的表格输出。纯浏览器本地处理，数据不上传服务器。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "批量转换支持多大的数据量？", "acceptedAnswer": {"@type": "Answer", "text": "取决于浏览器内存，几千行通常即时完成；行数极大时建议分块粘贴，避免一次性构造过大的表格。"}}, {"@type": "Question", "name": "日期格式写错了会被怎么处理？", "acceptedAnswer": {"@type": "Answer", "text": "无法解析的行会在结果中单独标红并标注\"无效\"，其余有效行正常转换，不会整体失败。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/batch/"}, {"@type": "ListItem", "position": 3, "name": "批量时间戳与日期互转", "item": "https://devtools.help/batch/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "批量时间戳与日期互转", "url": "https://devtools.help/batch/", "description": "在线批量时间戳转换：一次粘贴多行时间戳或日期，批量完成秒/毫秒时间戳与日期的互转，支持选择时区与 CSV 风格的表格输出。纯浏览器本地处理，数据不上传服务器。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "批量转换支持多大的数据量？", "acceptedAnswer": {"@type": "Answer", "text": "取决于浏览器内存，几千行通常即时完成；行数极大时建议分块粘贴，避免一次性构造过大的表格。"}}, {"@type": "Question", "name": "日期格式写错了会被怎么处理？", "acceptedAnswer": {"@type": "Answer", "text": "无法解析的行会在结果中单独标红并标注\"无效\"，其余有效行正常转换，不会整体失败。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "批量时间戳与日期互转", "item": "https://devtools.help/batch/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -634,14 +634,15 @@ var _hmt = _hmt || [];
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">代码 / 生成</div>
-        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../generator/">生成器</a>
+        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">时间 / 日期</div>
+        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item active" href="../batch/">批量时间戳</a>
         <a class="nav-panel-item" href="../timestamp-list/">时间戳速查</a>
         <a class="nav-panel-item" href="../timezones/">时区转换</a>
@@ -671,13 +672,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">代码片段</div>
-        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>

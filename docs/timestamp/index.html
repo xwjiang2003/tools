@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/timestamp/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/timestamp/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/timestamp/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://devtools.help/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "代码 / 生成", "item": "https://devtools.help/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "Unix 时间戳与日期互转", "item": "https://devtools.help/timestamp/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Unix 时间戳与日期互转", "url": "https://devtools.help/timestamp/", "description": "在线 Unix 时间戳转换：10 位秒级与 13 位毫秒级时间戳自动识别，日期与时间戳双向转换，支持 ISO 8601、RFC 2822 及 UTC / 北京时间 / 纽约等多时区对照。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "10 位和 13 位时间戳有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "10 位是秒级（Unix 秒），13 位是毫秒级。JavaScript 的 Date.now() 返回毫秒，而后端与数据库里常见的是秒，两者相差 1000 倍，混用会导致时间对不上——这也是接口时间字段最常见的坑之一。"}}, {"@type": "Question", "name": "什么是 2038 年问题？", "acceptedAnswer": {"@type": "Answer", "text": "32 位有符号整数能表示的秒级时间戳最大到 2147483647，对应 2038-01-19 03:14:07 UTC。超过这个时刻，仍在使用 32 位 int 存储时间戳的系统会发生溢出。现在的 64 位系统与 JavaScript 不受此限制。"}}, {"@type": "Question", "name": "Unix 时间戳包含闰秒吗？", "acceptedAnswer": {"@type": "Answer", "text": "不包含。Unix 时间戳按 UTC 计算，每天固定 86400 秒，闰秒由系统在别处抹平，所以时间戳本身不会出现 60 秒。"}}, {"@type": "Question", "name": "为什么转换出来的日期和服务器日志差了几个小时？", "acceptedAnswer": {"@type": "Answer", "text": "多半是时区设置不同。Unix 时间戳本身是 UTC 基准的绝对值，显示成本地时间还是 UTC 只影响呈现。用页面上的时区切换对照一下即可确认。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "Unix 时间戳与日期互转", "item": "https://devtools.help/timestamp/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -631,17 +631,18 @@ var _hmt = _hmt || [];
       </div>
     </div>
     <div class="nav-dropdown">
-      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">代码 / 生成</div>
-        <a class="nav-panel-item active" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../generator/">生成器</a>
+        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
+      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">时间 / 日期</div>
+        <a class="nav-panel-item active" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../batch/">批量时间戳</a>
         <a class="nav-panel-item" href="../timestamp-list/">时间戳速查</a>
         <a class="nav-panel-item" href="../timezones/">时区转换</a>
@@ -671,13 +672,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">代码片段</div>
-        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>

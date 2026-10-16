@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/date-calculator/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/date-calculator/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/date-calculator/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "日期加 / 减计算", "url": "https://devtools.help/date-calculator/", "description": "在线日期加减：在基准日期上增加或减少若干年、月、日，自动处理月末与跨年（如 2 月 28 日加 1 天得 3 月 1 日）。纯浏览器本地计算。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "\"1 月 31 日加 1 个月\"为什么是 2 月 28 日而不是 3 月 3 日？", "acceptedAnswer": {"@type": "Answer", "text": "2 月没有 31 天，直接加月会导致\"溢出\"到 3 月初，多数场景下不符合直觉。本工具把超出目标月的天数钳制为该月最后一天，得到 2 月 28（或闰年 29）日。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/batch/"}, {"@type": "ListItem", "position": 3, "name": "日期加 / 减计算", "item": "https://devtools.help/date-calculator/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "日期加 / 减计算", "url": "https://devtools.help/date-calculator/", "description": "在线日期加减：在基准日期上增加或减少若干年、月、日，自动处理月末与跨年（如 2 月 28 日加 1 天得 3 月 1 日）。纯浏览器本地计算。", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "需要启用 JavaScript 的现代浏览器", "inLanguage": "zh-CN", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "\"1 月 31 日加 1 个月\"为什么是 2 月 28 日而不是 3 月 3 日？", "acceptedAnswer": {"@type": "Answer", "text": "2 月没有 31 天，直接加月会导致\"溢出\"到 3 月初，多数场景下不符合直觉。本工具把超出目标月的天数钳制为该月最后一天，得到 2 月 28（或闰年 29）日。"}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/"}, {"@type": "ListItem", "position": 2, "name": "时间 / 日期", "item": "https://devtools.help/timestamp/"}, {"@type": "ListItem", "position": 3, "name": "日期加 / 减计算", "item": "https://devtools.help/date-calculator/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/theme/monokai.min.css">
 <style>
@@ -634,14 +634,15 @@ var _hmt = _hmt || [];
       <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码 / 生成<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">代码 / 生成</div>
-        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../generator/">生成器</a>
+        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <div class="nav-dropdown">
       <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">时间 / 日期<span class="caret" aria-hidden="true"></span></button>
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">时间 / 日期</div>
+        <a class="nav-panel-item" href="../timestamp/">时间戳</a>
         <a class="nav-panel-item" href="../batch/">批量时间戳</a>
         <a class="nav-panel-item" href="../timestamp-list/">时间戳速查</a>
         <a class="nav-panel-item" href="../timezones/">时区转换</a>
@@ -671,13 +672,6 @@ var _hmt = _hmt || [];
       <div class="nav-panel" role="menu">
         <div class="nav-panel-title">速查表</div>
         <a class="nav-panel-item" href="../go-cheatsheet/">Go 速查表</a>
-      </div>
-    </div>
-    <div class="nav-dropdown">
-      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">代码片段<span class="caret" aria-hidden="true"></span></button>
-      <div class="nav-panel" role="menu">
-        <div class="nav-panel-title">代码片段</div>
-        <a class="nav-panel-item" href="../snippets/">代码片段</a>
       </div>
     </div>
     <a class="top-nav-link" href="../hotnews/">今日热榜</a>

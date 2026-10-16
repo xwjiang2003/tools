@@ -358,13 +358,12 @@ NAV_GROUPS = [
     {'zh': '进制转换', 'en': 'Base Convert', 'slugs': ['base', 'binary', 'hex']},
     {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
-    {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['timestamp', 'generator']},
+    {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['generator', 'snippets']},
     {'zh': '时间 / 日期', 'en': 'Time / Date', 'slugs': [
-        'batch', 'timestamp-list', 'timezones', 'weeknumbers', 'daynumbers',
+        'timestamp', 'batch', 'timestamp-list', 'timezones', 'weeknumbers', 'daynumbers',
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
     {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
-    {'zh': '代码片段', 'en': 'Code Snippets', 'slugs': ['snippets']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
 
