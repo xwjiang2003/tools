@@ -1149,28 +1149,29 @@ TOOLS_EN = {
     },
     'world-clock': {
         'nav': 'World Clock',
-        'title': 'World Clock — Current Time in Major Cities | DevTools',
+        'title': 'World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools',
         'description': (
             'Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New '
-            'York, Paris, Sydney and other major cities at once, refreshed every second with daylight '
-            'saving. Computed locally.'
+            'York, Paris, Sydney and other major cities as analog clock faces or a list, refreshed every '
+            'second with daylight saving. Computed locally.'
         ),
-        'keywords': 'world clock,multi-city time,city time comparison,world time,online clock,time zone comparison',
+        'keywords': 'world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison',
         'h1': 'World Clock',
         'intro': [
-            'Put the current time of multiple cities in one table, so you can see at a glance "what time '
-            'is it for them" before a cross-border meeting or remote collaboration. Times are computed '
-            'locally and refreshed every second, with offsets auto-adjusted for daylight saving by the '
-            'current date.',
+            'Put the current time of multiple cities on one screen, so you can see at a glance "what time '
+            'is it for them" before a cross-border meeting or remote collaboration. Each city gets a round '
+            'analog dial with live hour, minute and second hands, labeled with the city name and time zone; '
+            'offsets auto-adjust for daylight saving by the current date.',
             'All computation happens on your device.',
         ],
         'features': [
-            ('Many cities at once', 'UTC and 14 major cities side by side.'),
+            ('Analog clock faces', 'A round dial per city with live hour, minute and second hands, labeled with city and time zone.'),
+            ('Many cities at once', 'UTC and 14 major cities side by side; switch between clock and list views.'),
             ('Offset & DST', 'Each city shows its current UTC offset, with daylight saving handled automatically.'),
             ('Live refresh', 'Updates every second.'),
         ],
         'steps': [
-            'The table lists each city\'s current time and offset.',
+            'Clock faces are shown by default; click "List" to switch to the comparison table.',
         ],
         'faq': [
             ('Why is a city\'s offset different from last time I looked?',

@@ -94,5 +94,28 @@ const rows2 = D.dtBatchConvert('2023-11-14 22:13:20\n2023-11-15', 'date2ts', 'UT
 eq(rows2[0].text, '1700000000', '批量 date2ts 首行');
 eq(rows2[1].text, String(D.dtPartsToSeconds(2023, 11, 15, 0, 0, 0, 'UTC')), '批量 date2ts 仅日期');
 
+// wcHandAngles：表盘指针角度（时针连续、秒针跳秒）
+const w1 = D.wcHandAngles({ hour: '10', minute: '08', second: '20' });
+ok(Math.abs(w1.hour - (10 * 30 + 4 + 1 / 6)) < 1e-9, '表盘时针角 10:08:20');
+ok(Math.abs(w1.minute - 50) < 1e-9, '表盘分针角 10:08:20');
+eq(w1.second, 120, '表盘秒针角 10:08:20');
+const w2 = D.wcHandAngles({ hour: '00', minute: '00', second: '00' });
+eq([w2.hour, w2.minute, w2.second], [0, 0, 0], '表盘 0 点归零');
+const w3 = D.wcHandAngles({ hour: '12', minute: '00', second: '00' });
+eq(w3.hour, 0, '表盘 12 点时针归零');
+const w4 = D.wcHandAngles({ hour: '23', minute: '59', second: '59' });
+ok(w4.hour > 359 && w4.hour < 360, '表盘 23:59:59 时针近满圈');
+ok(w4.minute > 359 && w4.minute < 360, '表盘 23:59:59 分针近满圈');
+eq(w4.second, 354, '表盘 23:59:59 秒针角');
+
+// wcIsDst：夏令时启发式
+ok(D.wcIsDst('Asia/Shanghai', new Date('2026-07-15T04:00:00Z')) === false, '上海全年无夏令时');
+ok(D.wcIsDst('UTC', new Date()) === false, 'UTC 无夏令时');
+ok(D.wcIsDst('America/New_York', new Date('2026-07-15T04:00:00Z')) === true, '纽约 7 月在夏令时');
+ok(D.wcIsDst('America/New_York', new Date('2026-01-15T04:00:00Z')) === false, '纽约 1 月不在夏令时');
+ok(D.wcIsDst('Australia/Sydney', new Date('2026-01-15T04:00:00Z')) === true, '悉尼 1 月在南半球夏令时');
+ok(D.wcIsDst('Australia/Sydney', new Date('2026-07-15T04:00:00Z')) === false, '悉尼 7 月不在夏令时');
+ok(D.wcIsDst('Europe/London', new Date('2026-07-15T04:00:00Z')) === true, '伦敦 7 月在夏令时');
+
 console.log('\n通过 ' + pass + ' 项，失败 ' + fail + ' 项');
 process.exit(fail ? 1 : 0);

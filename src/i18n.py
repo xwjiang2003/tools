@@ -491,6 +491,10 @@ EN = {
     '秒 → 时长': 'Seconds → duration',
 
     # ---------- datetime-tools.js 的 DT_MSG 中文字面量（构建期必须替换，否则英文页残留中文）----------
+    # 世界时钟表盘视图（world-clock.html + datetime-tools.js）
+    '表盘': 'Clocks',
+    '列表': 'List',
+    '夏令时': 'DST',
     '请输入日期': 'Please enter a date',
     '请输入时长': 'Please enter a duration',
     '时长格式无效': 'Invalid duration format',

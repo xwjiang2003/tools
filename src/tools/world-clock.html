@@ -1,8 +1,15 @@
 <div class="tool-card" id="worldTool">
   <div class="tool-card-title">世界时钟</div>
   <div class="tool-card-desc">多个主要城市 / 地区的当前时间，每秒刷新，便于跨国协作与时间对照。</div>
-  <table class="dt-table">
-    <thead><tr><th>城市 / 地区</th><th>当前时间</th><th>偏移</th></tr></thead>
-    <tbody id="worldBody"></tbody>
-  </table>
+  <div class="wc-views">
+    <button class="op-btn active" id="wcViewDial" type="button" aria-pressed="true">表盘</button>
+    <button class="op-btn" id="wcViewList" type="button" aria-pressed="false">列表</button>
+  </div>
+  <div id="worldDials" class="wc-grid"></div>
+  <div id="worldListWrap">
+    <table class="dt-table">
+      <thead><tr><th>城市 / 地区</th><th>当前时间</th><th>偏移</th></tr></thead>
+      <tbody id="worldBody"></tbody>
+    </table>
+  </div>
 </div>

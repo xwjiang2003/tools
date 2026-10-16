@@ -55,8 +55,8 @@ Key facts:
   - English: [Current Day of the Year](https://devtools.help/en/daynumbers/) — Compute which day of the year the current date is (1–366). Leap years are detected automatically and the result refreshes live. Computed locally.
 - [闰年与年内天数（1800–2100）](https://devtools.help/years/): 在线闰年查询：列出 1800 至 2100 每年是否为闰年、全年天数与 ISO 起始周，并标注当前年份。纯浏览器本地计算。
   - English: [Leap Years & Days per Year (1800–2100)](https://devtools.help/en/years/) — Leap year lookup: lists whether each year from 1800 to 2100 is a leap year, its day count and ISO starting week, and highlights the current year. Computed locally.
-- [世界时钟](https://devtools.help/world-clock/): 在线世界时钟：同时显示 UTC、北京、东京、伦敦、纽约、巴黎、悉尼等主要城市的当前时间与 UTC 偏移，每秒刷新，含夏令时。纯浏览器本地计算。
-  - English: [World Clock](https://devtools.help/en/world-clock/) — Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New York, Paris, Sydney and other major cities at once, refreshed every second with daylight saving. Computed locally.
+- [世界时钟](https://devtools.help/world-clock/): 在线世界时钟：以模拟表盘与列表两种视图同时显示 UTC、北京、东京、伦敦、纽约、巴黎、悉尼等主要城市的当前时间与 UTC 偏移，每秒刷新，含夏令时。纯浏览器本地计算。
+  - English: [World Clock](https://devtools.help/en/world-clock/) — Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New York, Paris, Sydney and other major cities as analog clock faces or a list, refreshed every second with daylight saving. Computed locally.
 - [到指定时间戳的倒计时](https://devtools.help/countdown/): 在线倒计时：输入一个 Unix 时间戳（秒或毫秒，自动识别），实时显示距离该时刻还有多久，或已过去多久。支持生成可分享链接。纯浏览器本地计算。
   - English: [Countdown to a Target Timestamp](https://devtools.help/en/countdown/) — Online countdown: enter a Unix timestamp (seconds or milliseconds, auto-detected) to see in real time how long until that moment, or how long since. Supports a shareable link. Computed locally.
 - [两个日期之间相差多久](https://devtools.help/date-difference/): 在线日期差值计算：选择或输入两个日期时间，计算它们之间的间隔（天、时、分、秒）。按本地时区解释。纯浏览器本地计算。
