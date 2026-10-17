@@ -476,8 +476,11 @@ function initWorldClockPage() {
           '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dstLabel + '</span></div>' +
         '</div>';
     }).join('');
-    // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
-    var loc = isEn ? 'en-US' : 'zh-CN';
+    // 日期文案按页面语言由 Intl 生成（无源码字面量，各语言页各自正确）。
+    // locale 取自 <html lang>（构建期写入的 BCP47 标签：zh-CN/en/ja/ko/es/pt-BR/fr/de/ru/id），
+    // 裸 'en' 映射为 'en-US' 以保持英文页格式稳定。
+    var loc = document.documentElement.lang || 'zh-CN';
+    if (loc.slice(0, 2) === 'en') loc = 'en-US';
     Z.forEach(function (x) {
       try {
         dateFmt[x.tz] = new Intl.DateTimeFormat(loc, {
