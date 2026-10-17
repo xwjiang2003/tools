@@ -43,6 +43,22 @@ function updateTsClock() {
   updateTsDisplay();
 }
 
+// 不要用 Date.prototype.toString()：括号内时区名取自浏览器/系统语言
+// （中文系统会输出「中国标准时间」），与页面语言不一致，任何语言页都可能见到中文。
+// 统一按页面语言（<html lang>）格式化本地时间。
+function tsFmtLocale() {
+  var loc = (document.documentElement && document.documentElement.lang) || 'zh-CN';
+  if (loc.slice(0, 2) === 'en') loc = 'en-US';
+  return loc;
+}
+function tsLocalString(d) {
+  try {
+    return new Intl.DateTimeFormat(tsFmtLocale(), { dateStyle: 'full', timeStyle: 'long' }).format(d);
+  } catch (e) {
+    return String(d).replace(/\s*\([^)]*\)\s*$/, '');   // 兜底：去掉语言相关的时区名
+  }
+}
+
 function updateTsDisplay() {
   const now = new Date();
   const tz = document.getElementById('tsTimezone').value;
@@ -58,7 +74,7 @@ function updateTsDisplay() {
   switch (tsCurrentFmt) {
     case 'iso': result = d.toISOString(); break;
     case 'rfc': result = d.toUTCString().replace('GMT', '+0000'); break;
-    case 'local': result = d.toString(); break;
+    case 'local': result = tsLocalString(d); break;
     case 'utc': result = d.toUTCString(); break;
   }
   document.getElementById('tsCurrentTime').textContent = result;
@@ -76,7 +92,7 @@ function tsToDate() {
   const d = new Date(ts * 1000);
   if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = '无效的时间戳'; return; }
   document.getElementById('tsToDateResult').innerHTML =
-    '<b>本地:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
+    '<b>本地:</b> ' + tsLocalString(d) + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
     '<b>年:</b> ' + d.getFullYear() + ' <b>月:</b> ' + (d.getMonth()+1) + ' <b>日:</b> ' + d.getDate() + ' ' +
     '<b>时:</b> ' + d.getHours() + ' <b>分:</b> ' + d.getMinutes() + ' <b>秒:</b> ' + d.getSeconds() + ' ' +
     '<b>星期:</b> ' + ['日','一','二','三','四','五','六'][d.getDay()];

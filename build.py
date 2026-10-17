@@ -620,8 +620,14 @@ def tool_index_json(base, lang):
         te = TOOLS_EN.get(slug, t)
         zh_l, zh_t, zh_k = t.get('nav', ''), t.get('title', ''), t.get('keywords', '')
         en_l, en_t, en_k = te.get('nav', ''), te.get('title', ''), te.get('keywords', '')
-        if lang != DEFAULT_LANG:          # 非根语言页：zh 字段也用本语言文本，避免残留中文
-            zh_l, zh_t, zh_k = en_l, en_t, en_k
+        if lang != DEFAULT_LANG:
+            # 非根语言页：zh 字段填「本语言」文本（content_xx 已翻短字段则用它，
+            # 否则回退英文），保证搜索结果/最近使用不显示英语也绝不残留中文；
+            # en 字段保留英文，兼顾跨语言检索（core.js 搜索同时匹配 zh 与 en）。
+            _c = content_for(t, lang)
+            zh_l = _c.get('nav') or en_l
+            zh_t = _c.get('title') or en_t
+            zh_k = _c.get('keywords') or en_k
         entries.append({
             'slug': slug, 'href': href_of(t['path']), 'g': group_of(slug),
             'zh': {'l': zh_l, 't': zh_t, 'k': zh_k},

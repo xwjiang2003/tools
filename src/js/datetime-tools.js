@@ -443,7 +443,9 @@ function initWorldClockPage() {
   var searchResults = document.getElementById('worldSearchResults');
   var Z = window.__WC_ZONES__ || [];
   var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
-  var citySep = isEn ? ', ' : '、';
+  // 并列城市分隔符按语言选：中日韩用顿号，其余语言（含英语）用半角逗号。
+  var _lc = (document.documentElement.lang || 'zh-CN').slice(0, 2);
+  var citySep = (_lc === 'zh' || _lc === 'ja' || _lc === 'ko') ? '、' : ', ';
   var dstLabel = dtMsg('夏令时');
   // 列表视图：沿用原表格
   body.innerHTML = Z.map(function (x) {
