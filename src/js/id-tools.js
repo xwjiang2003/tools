@@ -228,7 +228,16 @@ function fbEncode(tsMs) {
 function idFmtDate(ms) {
     var d = new Date(ms);
     var utc = d.toISOString();
-    var local = d.toLocaleString();
+    // 不要用 toLocaleString()（无 locale 时取浏览器/系统语言）也不要 Date.toString()
+    // （括号内时区名同理），否则非中文页会显示中文。统一按页面语言格式化。
+    var loc = (document.documentElement && document.documentElement.lang) || 'zh-CN';
+    if (loc.slice(0, 2) === 'en') loc = 'en-US';
+    var local;
+    try {
+        local = new Intl.DateTimeFormat(loc, { dateStyle: 'full', timeStyle: 'long' }).format(d);
+    } catch (e) {
+        local = String(d).replace(/\s*\([^)]*\)\s*$/, '');
+    }
     return utc + '  (UTC)<br><span style="opacity:.7">' + escapeHtml(local) + ' (本地)</span>';
 }
 
