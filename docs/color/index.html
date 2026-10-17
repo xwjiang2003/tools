@@ -570,6 +570,15 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
 .wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}
+.wc-search{margin:6px 0 12px}
+.wc-search-input{width:100%;box-sizing:border-box;padding:9px 12px;font-size:14px;color:var(--text);background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);outline:none}
+.wc-search-input:focus{border-color:var(--accent,#4a90d9);box-shadow:0 0 0 2px rgba(74,144,217,.18)}
+.wc-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 16px}
+.wc-search-results[hidden]{display:none}
+.wc-search-results .wc-dial{width:92px;height:92px}
+.wc-card-mini{padding:12px 8px}
+.wc-zone-cities{color:var(--text-muted);font-size:11px;line-height:1.4;margin-top:4px;word-break:break-word}
+.wc-search-empty{color:var(--text-muted);font-size:13px;padding:10px 4px}
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
@@ -2763,51 +2772,44 @@ function initWorldClockPage() {
   var grid = document.getElementById('worldDials');
   var refBody = document.getElementById('worldRefBody');
   var refWrap = document.getElementById('worldRefWrap');
+  var searchInput = document.getElementById('worldSearch');
+  var searchResults = document.getElementById('worldSearchResults');
   var Z = window.__WC_ZONES__ || [];
-  var zones = Z.map(function (x) { return x.tz; });
   var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
   var citySep = isEn ? ', ' : '、';
+  var dstLabel = dtMsg('夏令时');
   // 列表视图：沿用原表格
   body.innerHTML = Z.map(function (x) {
     return '<tr><td>' + escapeHtml(x.label) + '</td>' +
       '<td><span class="dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</span></td>' +
       '<td><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span></td></tr>';
   }).join('');
-  // 表盘视图：每个时区一张圆形模拟表盘卡片
-  var refs = [];
+  // 一张圆形模拟表盘（表盘视图 + 搜索结果共用）
+  function dialSvg(tz) {
+    var label = escapeHtml(tz);
+    return '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
+      '<circle class="wc-face" cx="50" cy="50" r="47"/>' + wcTicks() +
+      '<line class="wc-hand wc-hour" data-hh="' + label + '" x1="50" y1="55" x2="50" y2="27"/>' +
+      '<line class="wc-hand wc-min" data-hm="' + label + '" x1="50" y1="57" x2="50" y2="17"/>' +
+      '<line class="wc-hand wc-sec" data-hs="' + label + '" x1="50" y1="60" x2="50" y2="13"/>' +
+      '<circle class="wc-pin" cx="50" cy="50" r="3.4"/></svg>';
+  }
+  // 表盘视图：每个时区一张卡，卡上标注时区 + 全部同区城市 + 统一时间（合并同城多城市）
   var dateFmt = {};
   if (grid) {
     grid.innerHTML = Z.map(function (x) {
-      var label = escapeHtml(x.label);
-      return '<div class="wc-card">' +
-        '<div class="wc-city">' + label + '</div>' +
+      return '<div class="wc-card" data-tz="' + escapeHtml(x.tz) + '">' +
+        '<div class="wc-city">' + escapeHtml(x.label) + '</div>' +
         '<div class="wc-tz">' + escapeHtml(x.tz) + '</div>' +
-        '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
-          '<circle class="wc-face" cx="50" cy="50" r="47"/>' + wcTicks() +
-          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(x.tz) + '" x1="50" y1="55" x2="50" y2="27"/>' +
-          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(x.tz) + '" x1="50" y1="57" x2="50" y2="17"/>' +
-          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(x.tz) + '" x1="50" y1="60" x2="50" y2="13"/>' +
-          '<circle class="wc-pin" cx="50" cy="50" r="3.4"/>' +
-        '</svg>' +
+        '<div class="wc-cities">' + escapeHtml(x.cities.join(citySep)) + '</div>' +
+        dialSvg(x.tz) +
         '<div class="wc-date" data-wd="' + escapeHtml(x.tz) + '"></div>' +
         '<div class="wc-time dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</div>' +
         '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span>' +
-          '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dtMsg('夏令时') + '</span></div>' +
+          '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dstLabel + '</span></div>' +
         '</div>';
     }).join('');
-    refs = Z.map(function (x) {
-      return {
-        tz: x.tz,
-        hh: grid.querySelector('[data-hh="' + x.tz + '"]'),
-        hm: grid.querySelector('[data-hm="' + x.tz + '"]'),
-        hs: grid.querySelector('[data-hs="' + x.tz + '"]'),
-        wd: grid.querySelector('[data-wd="' + x.tz + '"]'),
-        dst: grid.querySelector('[data-dst="' + x.tz + '"]'),
-        dstOn: null
-      };
-    }).filter(function (r) { return r.hh && r.hm && r.hs; });
     // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
-    // 英文页用短格式（Sat, Oct 17, 2026），避免窄卡片里被截断。
     var loc = isEn ? 'en-US' : 'zh-CN';
     Z.forEach(function (x) {
       try {
@@ -2832,6 +2834,71 @@ function initWorldClockPage() {
     var refNote = document.getElementById('worldRefNote');
     if (refNote) refNote.textContent = dtMsg('按标准 UTC 偏移从早到晚排列（UTC−12 → UTC+14）；实行夏令时的地区当前偏移会在标准值基础上增减 1 小时。');
   }
+  // 城市搜索索引：每条 = 一个城市 -> 所在时区；同时索引时区名与偏移
+  var searchIndex = [];
+  Z.forEach(function (x) {
+    x.cities.forEach(function (c) {
+      searchIndex.push({ city: c, tz: x.tz, off: x.off, label: x.label, all: x.cities });
+    });
+  });
+  // 收集需要指针 / 日期 / DST 刷新的表盘卡片（表盘视图 + 搜索结果共用）
+  var refs = [];
+  function rebuildRefs() {
+    var cards = document.querySelectorAll('#worldDials .wc-card, #worldSearchResults .wc-card');
+    var arr = [];
+    cards.forEach(function (card) {
+      var tz = card.getAttribute('data-tz');
+      var hh = card.querySelector('[data-hh]');
+      if (!tz || !hh) return;
+      arr.push({
+        tz: tz,
+        hh: hh,
+        hm: card.querySelector('[data-hm]'),
+        hs: card.querySelector('[data-hs]'),
+        wd: card.querySelector('[data-wd]'),
+        dst: card.querySelector('[data-dst]'),
+        dstOn: null
+      });
+    });
+    refs = arr;
+  }
+  rebuildRefs();
+  function renderSearch(q) {
+    if (!searchResults) return;
+    var t = q.trim().toLowerCase();
+    if (!t) { searchResults.hidden = true; searchResults.innerHTML = ''; return; }
+    var seen = {}, matches = [];
+    searchIndex.forEach(function (e) {
+      var hay = (e.city + ' ' + e.tz + ' ' + e.off + ' ' + e.label).toLowerCase();
+      if (hay.indexOf(t) === -1) return;
+      var key = e.city + '|' + e.tz;
+      if (seen[key]) return; seen[key] = 1;
+      matches.push(e);
+    });
+    if (!matches.length) {
+      searchResults.hidden = false;
+      searchResults.innerHTML = '<p class="wc-search-empty">' +
+        escapeHtml(dtMsg('无匹配城市，换个关键词试试')) + '</p>';
+      rebuildRefs();
+      return;
+    }
+    searchResults.hidden = false;
+    searchResults.innerHTML = matches.map(function (e) {
+      var others = e.all.filter(function (c) { return c !== e.city; });
+      var otherLine = others.length
+        ? '<div class="wc-zone-cities">' + escapeHtml(others.join(citySep)) + '</div>' : '';
+      return '<div class="wc-card wc-card-mini" data-tz="' + escapeHtml(e.tz) + '">' +
+        '<div class="wc-city">' + escapeHtml(e.city) + '</div>' +
+        '<div class="wc-tz">' + escapeHtml(e.tz) + '</div>' +
+        dialSvg(e.tz) +
+        '<div class="wc-date" data-wd="' + escapeHtml(e.tz) + '"></div>' +
+        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(e.tz) + '">--:--:--</div>' +
+        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(e.tz) + '"></span>' +
+          '<span class="wc-dst" data-dst="' + escapeHtml(e.tz) + '" hidden>' + dstLabel + '</span></div>' +
+        otherLine + '</div>';
+    }).join('');
+    rebuildRefs();
+  }
   var dstClock = null; // 夏令时状态缓存（每分钟校对一次足够）
   function refreshDst(now) {
     dstClock = { at: now.getTime(), state: {} };
@@ -2839,7 +2906,6 @@ function initWorldClockPage() {
       var on = false;
       try { on = wcIsDst(r.tz, now); } catch (e) {}
       r.dstOn = on;
-      if (r.dst) r.dst.hidden = !on;
     });
   }
   function tick() {
@@ -2862,6 +2928,7 @@ function initWorldClockPage() {
       r.hm.setAttribute('transform', 'rotate(' + a.minute + ' 50 50)');
       r.hs.setAttribute('transform', 'rotate(' + a.second + ' 50 50)');
       if (r.wd && dateFmt[r.tz]) r.wd.textContent = dateFmt[r.tz].format(now);
+      if (r.dst) r.dst.hidden = !r.dstOn;
     });
   }
   // 视图切换：表盘 / 列表 / 时区一览，选择写入 localStorage（跨刷新记忆）
@@ -2869,11 +2936,19 @@ function initWorldClockPage() {
   var btnList = document.getElementById('wcViewList');
   var btnRef = document.getElementById('wcViewRef');
   var listWrap = document.getElementById('worldListWrap');
+  var searching = false;
+  function showViews(on) {
+    if (grid) grid.style.display = on ? '' : 'none';
+    if (listWrap) listWrap.style.display = on ? '' : 'none';
+    if (refWrap) refWrap.style.display = on ? '' : 'none';
+  }
   function setView(v) {
     var dial = v === 'dial', list = v === 'list', ref = v === 'ref';
+    // 只显示当前视图，其余隐藏（避免三视图互相叠加）
     if (grid) grid.style.display = dial ? '' : 'none';
     if (listWrap) listWrap.style.display = list ? '' : 'none';
     if (refWrap) refWrap.style.display = ref ? '' : 'none';
+    if (searchResults) searchResults.hidden = true;
     [['wcViewDial', dial], ['wcViewList', list], ['wcViewRef', ref]].forEach(function (p) {
       var b = document.getElementById(p[0]);
       if (!b) return;
@@ -2883,12 +2958,29 @@ function initWorldClockPage() {
     try { localStorage.setItem('devtools-wcview', v); } catch (e) {}
   }
   if (btnDial && btnList && btnRef) {
-    btnDial.onclick = function () { setView('dial'); };
-    btnList.onclick = function () { setView('list'); };
-    btnRef.onclick = function () { setView('ref'); };
+    btnDial.onclick = function () { if (!searching) setView('dial'); };
+    btnList.onclick = function () { if (!searching) setView('list'); };
+    btnRef.onclick = function () { if (!searching) setView('ref'); };
     var saved = '';
     try { saved = localStorage.getItem('devtools-wcview') || ''; } catch (e) {}
     setView(saved === 'list' ? 'list' : (saved === 'ref' ? 'ref' : 'dial'));
+  }
+  // 搜索框：输入即筛选城市，展示匹配城市的时区与实时表盘时间
+  if (searchInput) {
+    searchInput.placeholder = dtMsg('搜索城市、时区或偏移');
+    searchInput.oninput = function () {
+      var q = searchInput.value;
+      searching = q.trim().length > 0;
+      if (searching) {
+        showViews(false);
+        renderSearch(q);
+      } else {
+        var sv = '';
+        try { sv = localStorage.getItem('devtools-wcview') || 'dial'; } catch (e) {}
+        setView(sv === 'list' ? 'list' : (sv === 'ref' ? 'ref' : 'dial'));
+        rebuildRefs();
+      }
+    };
   }
   tick();
   setInterval(tick, 1000);

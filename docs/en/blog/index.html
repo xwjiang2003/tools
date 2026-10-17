@@ -29,7 +29,7 @@
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/blog/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/blog/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/blog/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 3, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule", "url": "https://devtools.help/en/blog/coraza-waf-rules/"}, {"@type": "ListItem", "position": 2, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 3, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "DevTools Blog", "url": "https://devtools.help/en/blog/", "description": "Hands-on Go toolchain articles: troubleshooting, version migrations and CI practice, all verified against real setups. More series (Rust and beyond) are on the way.", "inLanguage": "en", "isAccessibleForFree": true}, {"@type": "ItemList", "numberOfItems": 4, "itemListOrder": "https://schema.org/ItemListUnordered", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "World Clock and Global Time Zones: All 39 Standard Offsets at a Glance", "url": "https://devtools.help/en/blog/world-clock-timezones/"}, {"@type": "ListItem", "position": 2, "name": "Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule", "url": "https://devtools.help/en/blog/coraza-waf-rules/"}, {"@type": "ListItem", "position": 3, "name": "warden: A Single-Binary Go Reverse-Proxy WAF", "url": "https://devtools.help/en/blog/warden-go-waf/"}, {"@type": "ListItem", "position": 4, "name": "gofmt vs goimports: Why Your CI Formatting Check Fails", "url": "https://devtools.help/en/blog/gofmt-vs-goimports/"}]}]}</script>
 <style>
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
@@ -568,6 +568,15 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
 .wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}
+.wc-search{margin:6px 0 12px}
+.wc-search-input{width:100%;box-sizing:border-box;padding:9px 12px;font-size:14px;color:var(--text);background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);outline:none}
+.wc-search-input:focus{border-color:var(--accent,#4a90d9);box-shadow:0 0 0 2px rgba(74,144,217,.18)}
+.wc-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 16px}
+.wc-search-results[hidden]{display:none}
+.wc-search-results .wc-dial{width:92px;height:92px}
+.wc-card-mini{padding:12px 8px}
+.wc-zone-cities{color:var(--text-muted);font-size:11px;line-height:1.4;margin-top:4px;word-break:break-word}
+.wc-search-empty{color:var(--text-muted);font-size:13px;padding:10px 4px}
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
@@ -767,6 +776,11 @@ document.addEventListener("click", function (e) {
     <p class="blog-head-lead">Hands-on articles about developer tools and toolchains: troubleshooting, version migrations and CI practice, all verified against real setups. The Go series is running now; Rust and more are on the way.</p>
   </div>
   <div class="blog-list">
+    <a class="blog-card" href="../../en/blog/world-clock-timezones/">
+      <p class="blog-card-title">World Clock and Global Time Zones: All 39 Standard Offsets at a Glance</p>
+      <p class="blog-card-desc">The World Clock tool puts the current time, UTC offset and DST status of every major time zone on one page, with analog clock faces, a city list, an offset-ordered reference table, and city search. This post covers how to use it, why there are 39 zones, why DST makes clocks jump, and how to align a cross-border meeting.</p>
+      <p class="blog-card-meta"><time datetime="2026-10-17">2026-10-17</time><span class="blog-tag">World Clock</span><span class="blog-tag">Time Zones</span><span class="blog-tag">UTC</span><span class="blog-tag">DST</span><span class="blog-tag">Time Conversion</span></p>
+    </a>
     <a class="blog-card" href="../../en/blog/coraza-waf-rules/">
       <p class="blog-card-title">Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule</p>
       <p class="blog-card-desc">Coraza is a Go-based open-source WAF and the successor to ModSecurity, with largely compatible SecRule syntax. This post covers the three parts of a rule, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.</p>

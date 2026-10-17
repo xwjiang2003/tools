@@ -500,6 +500,8 @@ EN = {
     '主要城市': 'Major cities',
     '夏令时': 'DST',
     '按标准 UTC 偏移从早到晚排列（UTC−12 → UTC+14）；实行夏令时的地区当前偏移会在标准值基础上增减 1 小时。': 'Ordered by standard UTC offset, earliest to latest (UTC−12 → UTC+14); regions with DST shift ±1 hour from the standard value.',
+    '搜索城市、时区或偏移': 'Search a city, time zone or offset',
+    '无匹配城市，换个关键词试试': 'No matching cities — try another keyword',
     '请输入日期': 'Please enter a date',
     '请输入时长': 'Please enter a duration',
     '时长格式无效': 'Invalid duration format',
