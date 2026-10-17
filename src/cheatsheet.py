@@ -688,6 +688,10 @@ TEXT = {
         'pit': 'Watch out',
     },
 }
+# 阶段2：新语言未单独翻速查表 chrome 时，统一回退英文。
+for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+    if _L not in TEXT:
+        TEXT[_L] = dict(TEXT['en'])
 
 
 def _esc(s):
@@ -701,10 +705,29 @@ def _lv(v, lang):
     示例代码里的行尾注释大多是中文，如果只写一份共用，英文页会残留中文，
     而且会被 localize() 半翻译成「兼容到指定旧 Version」这种怪句子。
     所以凡示例带注释的，一律写成 {'zh': ..., 'en': ...}。
+    阶段2：缺失语言回退英文（再回退中文），避免新语言 KeyError。
     """
     if isinstance(v, dict):
-        return v[lang]
+        return v.get(lang, v.get('en', v.get('zh', '')))
     return v or ''
+
+
+# 阶段2：数据里 name/desc/cmd/example/pitfall 都是 {zh, en} 字典，新语言统一回退英文。
+def _fill_langs(d):
+    for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+        if _L not in d:
+            d[_L] = d.get('en', d.get('zh', ''))
+    return d
+
+
+for _s in SECTIONS:
+    _fill_langs(_s['name'])
+    _fill_langs(_s['desc'])
+    for _it in _s['items']:
+        for _f in ('cmd', 'example', 'desc', 'pitfall'):
+            _v = _it.get(_f)
+            if isinstance(_v, dict):
+                _fill_langs(_v)
 
 
 def total_items():

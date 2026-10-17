@@ -44,6 +44,10 @@ TEXT = {
         'copy': 'Copy',
     },
 }
+# 阶段2：新语言未单独翻片段库 chrome 时，统一回退英文。
+for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+    if _L not in TEXT:
+        TEXT[_L] = dict(TEXT['en'])
 
 SECTIONS = [
     # ================================================== Go
@@ -711,10 +715,28 @@ def _esc(s):
 
 
 def _lv(v, lang):
-    """str 表示中英共用，dict 表示分语言。"""
+    """str 表示中英共用，dict 表示分语言。阶段2：缺失语言回退英文（再回退中文）。"""
     if isinstance(v, dict):
-        return v[lang]
+        return v.get(lang, v.get('en', v.get('zh', '')))
     return v or ''
+
+
+# 阶段2：数据里 name/desc/title/code 等都是 {zh, en} 字典，新语言统一回退英文。
+def _fill_langs(d):
+    for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+        if _L not in d:
+            d[_L] = d.get('en', d.get('zh', ''))
+    return d
+
+
+for _s in SECTIONS:
+    _fill_langs(_s['name'])
+    _fill_langs(_s['desc'])
+    for _it in _s['items']:
+        for _f in ('title', 'desc', 'code'):
+            _v = _it.get(_f)
+            if isinstance(_v, dict):
+                _fill_langs(_v)
 
 
 def total_snippets():
