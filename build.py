@@ -35,7 +35,16 @@ sys.path.insert(0, str(ROOT / 'src'))
 
 from content import SITE, TOOLS, PRIVACY_BODY_ZH          # noqa: E402
 from content_en import TOOLS_EN, PRIVACY_BODY_EN          # noqa: E402
-from i18n import EN, JS_PATCHES, HTML_PATCHES             # noqa: E402
+from content_es import TOOLS_ES                            # noqa: E402
+from content_fr import TOOLS_FR                            # noqa: E402
+from content_de import TOOLS_DE                            # noqa: E402
+from content_ptbr import TOOLS_PTBR                        # noqa: E402
+from content_ru import TOOLS_RU                            # noqa: E402
+from content_id import TOOLS_ID                            # noqa: E402
+from content_ja import TOOLS_JA                            # noqa: E402
+from content_ko import TOOLS_KO                            # noqa: E402
+from i18n import (EN, JS_PATCHES, HTML_PATCHES,          # noqa: E402
+                  JA, KO, ES, PTBR, FR, DE, RU, ID)
 from news import (CST, jsonld_items, load_news,           # noqa: E402
                   render_body as render_news_body,
                   sources_for, visible_items)
@@ -109,38 +118,161 @@ BAIDU_ANALYTICS_ID = 'e9b85aa19d65fd425765334c56874861'
 ISSUES_URL = REPO_URL + '/issues'
 DISCUSSIONS_URL = REPO_URL + '/discussions'
 FEEDBACK_EMAIL = '278975598@qq.com'
-LANGS = ('zh', 'en')
-HTML_LANG = {'zh': 'zh-CN', 'en': 'en'}
+LANGS = ('zh', 'en', 'ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id')  # 阶段2 新增 8 语
+HTML_LANG = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
+             'pt-BR': 'pt-BR', 'fr': 'fr', 'de': 'de', 'ru': 'ru', 'id': 'id'}
+
+# ---- 多语言通用配置（消除所有 `if lang=='en'` 硬编码）----
+DEFAULT_LANG = 'zh'                  # 根语言：URL 无前缀
+XDEFAULT_LANG = 'zh'                 # hreflang x-default 指向
+LANG_DIRS = {L: ('' if L == DEFAULT_LANG else L + '/') for L in LANGS}  # 每语言目录前缀
+HREFLANG_CODE = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
+                 'pt-BR': 'pt-BR', 'fr': 'fr', 'de': 'de', 'ru': 'ru', 'id': 'id'}
+LANG_NAMES = {'zh': '中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어',
+              'es': 'Español', 'pt-BR': 'Português', 'fr': 'Français',
+              'de': 'Deutsch', 'ru': 'Русский', 'id': 'Indonesia'}   # 切换器显示名
+LANG_SWITCH_ARIA_BY_LANG = {'zh': '语言', 'en': 'Language', 'ja': '言語', 'ko': '언어',
+                            'es': 'Idioma', 'pt-BR': 'Idioma', 'fr': 'Langue',
+                            'de': 'Sprache', 'ru': 'Язык', 'id': 'Bahasa'}
+SEP_BY_LANG = {L: ('：' if L == 'zh' else ' — ') for L in LANGS}     # 功能名/描述间分隔符
+BROWSER_REQ_BY_LANG = {
+    'zh': '需要启用 JavaScript 的现代浏览器',
+    'en': 'Requires a modern browser with JavaScript enabled',
+    'ja': 'JavaScript を有効にしたモダンブラウザが必要です',
+    'ko': 'JavaScript를 사용할 수 있는 최신 브라우저가 필요합니다',
+    'es': 'Requiere un navegador moderno con JavaScript habilitado',
+    'pt-BR': 'Requer um navegador moderno com JavaScript ativado',
+    'fr': 'Nécessite un navigateur moderne avec JavaScript activé',
+    'de': 'Benötigt einen modernen Browser mit aktiviertem JavaScript',
+    'ru': 'Требуется современный браузер с включённым JavaScript',
+    'id': 'Membutuhkan peramban modern dengan JavaScript aktif',
+}
+RECENT_LABEL_BY_LANG = {'zh': '最近使用', 'en': 'Recent', 'ja': '最近使用',
+                        'ko': '최근 사용', 'es': 'Recientes', 'pt-BR': 'Recentes',
+                        'fr': 'Récents', 'de': 'Zuletzt', 'ru': 'Недавние', 'id': 'Terakhir'}
+BLOG_LABEL_BY_LANG = {'zh': '博客', 'en': 'Blog', 'ja': 'ブログ', 'ko': '블로그',
+                      'es': 'Blog', 'pt-BR': 'Blog', 'fr': 'Blog', 'de': 'Blog',
+                      'ru': 'Блог', 'id': 'Blog'}
+CONTENT_BY_LANG = {
+    'zh': {t['slug']: t for t in TOOLS},
+    'en': TOOLS_EN,
+    'es': TOOLS_ES,
+    'fr': TOOLS_FR,
+    'de': TOOLS_DE,
+    'pt-BR': TOOLS_PTBR,
+    'ru': TOOLS_RU,
+    'id': TOOLS_ID,
+    'ja': TOOLS_JA,
+    'ko': TOOLS_KO,
+}
+NAV_LABELS_BY_LANG = {
+    'zh': {t['slug']: t['nav'] for t in TOOLS},
+    'en': {t['slug']: TOOLS_EN[t['slug']]['nav'] for t in TOOLS},
+    'es': {t['slug']: TOOLS_ES[t['slug']]['nav'] for t in TOOLS},
+    'fr': {t['slug']: TOOLS_FR[t['slug']]['nav'] for t in TOOLS},
+    'de': {t['slug']: TOOLS_DE[t['slug']]['nav'] for t in TOOLS},
+    'pt-BR': {t['slug']: TOOLS_PTBR[t['slug']]['nav'] for t in TOOLS},
+    'ru': {t['slug']: TOOLS_RU[t['slug']]['nav'] for t in TOOLS},
+    'id': {t['slug']: TOOLS_ID[t['slug']]['nav'] for t in TOOLS},
+    'ja': {t['slug']: TOOLS_JA[t['slug']]['nav'] for t in TOOLS},
+    'ko': {t['slug']: TOOLS_KO[t['slug']]['nav'] for t in TOOLS},
+}
+
+
+def lang_dir(lang):
+    """语言目录前缀：根语言为空串，其余为 `lang/` 。"""
+    return LANG_DIRS.get(lang, lang + '/')
 
 
 # ---------------------------------------------------------------- 本地化
 
-# 按长度降序拼成一条正则：正则的备选分支从左到右尝试，因此长词优先命中，
-# 不会出现「格式化完成」先被「格式化」切开的情况。
-_PATTERN = re.compile('|'.join(re.escape(k) for k in sorted(EN, key=len, reverse=True)))
-_LOOKUP = EN
-
 # 注释整段跳过：源码注释保持中文原样，比被逐词替换成半中半英更好读。
 # `(?<!:)//` 用来避开 https:// 里的双斜杠。
 _COMMENT = re.compile(r'/\*.*?\*/|<!--.*?-->|(?<!:)//[^\n]*', re.S)
+# 整段跳过的「非 HTML 文本」：注释 + <script>/<style> 块 + 语言切换下拉。
+# 脚本 / 样式里的中文 UI 串需要本地化，但译文若含引号 / 反斜杠会破坏 JS / CSS 字符串，
+# 故块内替换时转义。语言下拉里的选项标签是各语言母语名（日本語 / 한국어 / 中文），
+# 绝不能被 localize 当成中文源短语做子串替换（否则 日本語→Day本語），故整段跳过。
+_SKIP = re.compile(
+    r'/\*.*?\*/|<!--.*?-->|(?<!:)//[^\n]*'
+    r'|<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>'
+    r'|<select class="lang-select"[^>]*>.*?</select>',
+    re.S | re.I)
+
+# MSGS[lang] = {中文短语: 目标语短语}；英文沿用既有 EN 字典，其余 8 语在 i18n.py 填充。
+# localize() 对非根语言整页（HTML + 内联 JS）做按长度降序的整词替换；某短语在目标语缺失时
+# 回退到 EN（英文），再缺失才保留中文——保证非中文页绝不泄漏中文、且未翻完也有可读兜底。
+MSGS = {'en': EN, 'ja': JA, 'ko': KO, 'es': ES, 'pt-BR': PTBR,
+        'fr': FR, 'de': DE, 'ru': RU, 'id': ID}
+JS_PATCHES_BY_LANG = {'en': JS_PATCHES}
+HTML_PATCHES_BY_LANG = {'en': HTML_PATCHES}
+
+# 按 (id(table), id(fallback)) 缓存「目标语 ∪ EN」合并正则，避免每次重建。
+_PATTERN_CACHE = {}
 
 
-def _sub_terms(text):
-    for old, new in JS_PATCHES:      # 语序/数组等需要整行改写的地方
+def _combined_pattern(table, fallback):
+    key = (id(table), id(fallback) if fallback is not None else None)
+    pat = _PATTERN_CACHE.get(key)
+    if pat is None:
+        combined = dict(table)
+        if fallback:
+            for k, v in fallback.items():
+                combined.setdefault(k, v)
+        pat = re.compile(
+            '|'.join(re.escape(k) for k in sorted(combined, key=len, reverse=True)))
+        _PATTERN_CACHE[key] = pat
+    return pat
+
+
+def _sub_terms_for(text, patches_js, patches_html, table, fallback=None, escape=False):
+    for old, new in patches_js:
         text = text.replace(old, new)
-    for old, new in HTML_PATCHES:
+    for old, new in patches_html:
         text = text.replace(old, new)
-    return _PATTERN.sub(lambda m: _LOOKUP[m.group(0)], text)
+    if not table and not fallback:
+        return text
+    pat = _combined_pattern(table, fallback)
+
+    def repl(m):
+        k = m.group(0)
+        if fallback is None:
+            v = table.get(k, k)
+        else:
+            v = table.get(k, fallback.get(k, k))
+        # 在 <script>/<style> 内替换：译文里的引号 / 反斜杠会破坏 JS / CSS 字符串，
+        # 必须转义（HTML 段不转义，保证展示正确）。
+        if escape:
+            v = (v.replace('\\', '\\\\').replace("'", "\\'")
+                  .replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r'))
+        return v
+    return pat.sub(repl, text)
 
 
-def localize(text):
-    """把整页（HTML + 内联 JS）里的中文界面文案替换成英文，注释保持原样。"""
+def localize(text, lang=DEFAULT_LANG):
+    """把整页里的中文界面文案替换成目标语言（根语言 zh 原样返回）。
+
+    注释整段跳过；<script>/<style> 块内替换时对译文值做引号转义，避免破坏
+    JS / CSS 字符串（如法语 l'historique 的撇号）。
+    """
+    if lang == DEFAULT_LANG:
+        return text
+    patches_js = JS_PATCHES_BY_LANG.get(lang, JS_PATCHES)   # 非 en 暂复用英文 JS 改写
+    patches_html = HTML_PATCHES_BY_LANG.get(lang, HTML_PATCHES)
+    table = MSGS.get(lang, {})
+    fallback = None if lang == 'en' else EN                  # 非英文缺失时回退英文
     out, last = [], 0
-    for m in _COMMENT.finditer(text):
-        out.append(_sub_terms(text[last:m.start()]))
-        out.append(m.group(0))
+    for m in _SKIP.finditer(text):
+        seg = text[last:m.start()]
+        out.append(_sub_terms_for(seg, patches_js, patches_html, table, fallback))
+        body = m.group(0)
+        if body[:7].lower() == '<script' or body[:6].lower() == '<style':
+            # 块内：本地化 + 转义译文值
+            out.append(_sub_terms_for(body, patches_js, patches_html, table, fallback, escape=True))
+        else:
+            out.append(body)                                 # 注释：保持原样
         last = m.end()
-    out.append(_sub_terms(text[last:]))
+    out.append(_sub_terms_for(text[last:], patches_js, patches_html, table, fallback))
     return ''.join(out)
 
 
@@ -152,7 +284,7 @@ def esc(s):
 
 def out_path(lang, path):
     """path 为工具相对路径（'' 或 'diff/'）或带扩展名的页面（privacy.html）。"""
-    prefix = EN_DIR if lang == 'en' else ''
+    prefix = lang_dir(lang)
     if path.endswith('.html'):          # 独立文件，不再套目录
         return Path(prefix + path)
     return Path(prefix + path + 'index.html')
@@ -164,13 +296,13 @@ def rel_root(lang, path):
     depth 按 path 里的 '/' 数计算：'' → 0，'diff/' → 1，'blog/foo/' → 2，
     'privacy.html' 这类根级文件 → 0。英文页再多一级 /en/。
     """
-    depth = path.count('/') + (1 if lang == 'en' else 0)
+    depth = path.count('/') + (0 if lang == DEFAULT_LANG else 1)
     return '../' * depth
 
 
 def lang_prefix(lang, root):
     """当前语言内部的链接前缀。"""
-    return root + (EN_DIR if lang == 'en' else '')
+    return root + lang_dir(lang)
 
 
 def other_lang_url(lang, root, path):
@@ -181,36 +313,53 @@ def other_lang_url(lang, root, path):
 
 
 def canonical_url(lang, path):
-    return SITE['base_url'] + (EN_DIR if lang == 'en' else '') + path
+    return SITE['base_url'] + lang_dir(lang) + path
 
 
 # ---------------------------------------------------------------- 页面片段
 
 def hreflang_html(path):
-    zh = SITE['base_url'] + path
-    en = SITE['base_url'] + EN_DIR + path
-    return ('<link rel="alternate" hreflang="zh-CN" href="' + zh + '">\n'
-            '<link rel="alternate" hreflang="en" href="' + en + '">\n'
-            '<link rel="alternate" hreflang="x-default" href="' + zh + '">')
+    links = []
+    for L in LANGS:
+        links.append('<link rel="alternate" hreflang="%s" href="%s">'
+                     % (HREFLANG_CODE[L], SITE['base_url'] + lang_dir(L) + path))
+    links.append('<link rel="alternate" hreflang="x-default" href="%s">'
+                 % (SITE['base_url'] + lang_dir(XDEFAULT_LANG) + path))
+    return '\n'.join(links)
 
 
-def lang_switch_html(lang, other_url):
-    zh_href = './' if lang == 'zh' else other_url
-    en_href = './' if lang == 'en' else other_url
-    zh_cls = 'lang-link active' if lang == 'zh' else 'lang-link'
-    en_cls = 'lang-link active' if lang == 'en' else 'lang-link'
+def lang_switch_html(lang, path):
+    """N 语言切换器：`<select>` 下拉，避免 10 种语言横排挤爆 header 宽度预算。
+    每个选项的 value 是「当前页在目标语言下的相对 URL」，change 时记到 localStorage 并跳转。
+    aria-label 用当前语言表述，避免英文页出现英文标签这种小瑕疵。"""
+    rel = rel_root(lang, path)
+    opts = []
+    for L in LANGS:
+        if L == lang:
+            href = './'                      # 当前页：预选中，不跳转
+        else:
+            href = rel + lang_dir(L) + path
+            if not href:
+                href = './'
+        opts.append('<option value="%s" data-lang="%s"%s>%s</option>'
+                   % (href, L, ' selected' if L == lang else '', LANG_NAMES[L]))
+    aria = LANG_SWITCH_ARIA_BY_LANG.get(lang, 'Language')
     return (
-        '<div class="lang-switch">'
-        f'<a class="{zh_cls}" href="{zh_href}" data-lang-set="zh">中文</a>'
-        f'<a class="{en_cls}" href="{en_href}" data-lang-set="en">English</a>'
+        '<div class="lang-switch">\n'
+        '  <select class="lang-select" aria-label="%s">\n' % aria
+        + '\n'.join('    ' + o for o in opts) + '\n'
+        '  </select>\n'
         '</div>\n'
         '<script>\n'
-        '// 记住手动选择：下次访问不再自动跳转\n'
-        'document.addEventListener("click", function (e) {\n'
-        '  var a = e.target.closest && e.target.closest("[data-lang-set]");\n'
-        '  if (!a) return;\n'
-        '  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}\n'
-        '}, true);\n'
+        '// 语言切换：记住手动选择，下次访问不再自动跳转\n'
+        'var __ls = document.querySelector(".lang-select");\n'
+        'if (__ls) {\n'
+        '  __ls.addEventListener("change", function () {\n'
+        '    var o = __ls.options[__ls.selectedIndex];\n'
+        '    try { localStorage.setItem("devtools-lang", o.getAttribute("data-lang")); } catch (e) {}\n'
+        '    location.href = __ls.value;\n'
+        '  });\n'
+        '}\n'
         '</script>'
     )
 
@@ -322,28 +471,36 @@ def feedback_modal_html():
        .replace('__EMAIL__', FEEDBACK_EMAIL)
 
 
-def autodetect_html(lang, other_url):
+def autodetect_html(lang, path):
     """首次访问按浏览器语言跳到对应语言版本；已手动选择过或疑似爬虫则不跳。"""
-    targets = json.dumps({'zh': './' if lang == 'zh' else other_url,
-                          'en': './' if lang == 'en' else other_url})
+    rel = rel_root(lang, path)
+    targets = json.dumps({L: ((rel + lang_dir(L) + path) or './') for L in LANGS})
+    lang_list = json.dumps(list(LANGS))
     return f'''<script>
 // 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
-// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+// 爬虫跳过是为了不影响各语言版本的收录（配合 hreflang 使用）。
 (function () {{
   try {{
     var KEY = 'devtools-lang';
-    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    var q = location.search.match(/[?&]lang=([A-Za-z-]+)(?:&|$)/);
     if (q) {{ try {{ localStorage.setItem(KEY, q[1]); }} catch (e) {{}} return; }}
     if (localStorage.getItem(KEY)) return;
     if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
     var langs = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || ''];
-    var preferZh = false;
+    var SUPPORTED = {lang_list};
+    var want = null;
     for (var i = 0; i < langs.length; i++) {{
-      if (/^zh\\b/i.test(langs[i])) {{ preferZh = true; break; }}
+      var p = (langs[i] || '').slice(0, 2).toLowerCase();
+      if (p === 'zh') {{ want = 'zh'; break; }}
+      for (var j = 0; j < SUPPORTED.length; j++) {{
+        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
+      }}
+      if (want) break;
     }}
-    var want = preferZh ? 'zh' : 'en';
-    var target = {targets}[want];
+    if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
+    var targets = {targets};
+    var target = targets[want];
     if (target && want !== '{lang}') location.replace(target);
   }} catch (e) {{}}
 }})();
@@ -366,6 +523,12 @@ NAV_GROUPS = [
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
+
+# 阶段2：新语言未单独翻分类名时，统一回退英文（与正文英文回退策略一致）。
+for _grp in NAV_GROUPS + [CONTENT_GROUP]:
+    for _L in LANGS:
+        if _L not in _grp:
+            _grp[_L] = _grp.get('en', _grp['zh'])
 
 _TOOL_BY_SLUG = {t['slug']: t for t in TOOLS}
 
@@ -426,7 +589,7 @@ def nav_html(active_slug, base, labels, lang='zh'):
     out.append('    </div>')
     # 最近使用（动态，由 JS 从 localStorage 填充；无 JS 时面板为空）。
     # 放在导航末尾，与上方分类下拉保持同一套样式与交互（桌面悬停展开、窄屏抽屉内原地展开）。
-    recent_label = {'zh': '最近使用', 'en': 'Recent'}[lang]
+    recent_label = RECENT_LABEL_BY_LANG.get(lang, 'Recent')
     out.append('    <div class="nav-dropdown nav-recent">')
     out.append(f'      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">{esc(recent_label)}<span class="caret" aria-hidden="true"></span></button>')
     out.append('      <div class="nav-panel" id="recentPanel" role="menu"></div>')
@@ -457,7 +620,7 @@ def tool_index_json(base, lang):
         te = TOOLS_EN.get(slug, t)
         zh_l, zh_t, zh_k = t.get('nav', ''), t.get('title', ''), t.get('keywords', '')
         en_l, en_t, en_k = te.get('nav', ''), te.get('title', ''), te.get('keywords', '')
-        if lang == 'en':                 # 英文页：zh 字段也用英文，避免残留中文
+        if lang != DEFAULT_LANG:          # 非根语言页：zh 字段也用本语言文本，避免残留中文
             zh_l, zh_t, zh_k = en_l, en_t, en_k
         entries.append({
             'slug': slug, 'href': href_of(t['path']), 'g': group_of(slug),
@@ -468,7 +631,7 @@ def tool_index_json(base, lang):
     bt = BLOG_TEXT[lang]
     entries.append({
         'slug': 'blog', 'href': href_of(BLOG_INDEX), 'g': CONTENT_GROUP[lang],
-        'zh': {'l': '博客' if lang == 'zh' else 'Blog', 't': bt['index_title'], 'k': bt['index_kw']},
+        'zh': {'l': BLOG_LABEL_BY_LANG.get(lang, 'Blog'), 't': bt['index_title'], 'k': bt['index_kw']},
         'en': {'l': 'Blog', 't': bt['index_title'], 'k': bt['index_kw']},
     })
     return json.dumps(entries, ensure_ascii=False)
@@ -568,14 +731,19 @@ def wc_zones_json(lang):
     """
     items = []
     for tz, off, zh_label, zh_cities, en_label, en_cities in WC_ZONES:
-        if lang == 'en':
+        if lang != DEFAULT_LANG:
             items.append({'tz': tz, 'off': off, 'label': en_label, 'cities': en_cities})
         else:
             items.append({'tz': tz, 'off': off, 'label': zh_label, 'cities': zh_cities})
     return json.dumps(items, ensure_ascii=False)
 
 
-EVERGREEN_NAV_LABELS = {'zh': '日历与日期', 'en': 'Calendar & Dates'}
+EVERGREEN_NAV_LABELS = {
+    'zh': '日历与日期', 'en': 'Calendar & Dates',
+    'ja': 'カレンダーと日付', 'ko': '달력 및 날짜', 'es': 'Calendario y fechas',
+    'pt-BR': 'Calendário e datas', 'fr': 'Calendrier et dates',
+    'de': 'Kalender & Daten', 'ru': 'Календарь и даты', 'id': 'Kalender & Tanggal',
+}
 
 
 def footer_links_html(base, labels):
@@ -592,7 +760,7 @@ def footer_links_html(base, labels):
 
 def seo_section(c):
     """工具页正文：h1 + 简介 + 功能 + 步骤 + FAQ，构建期写死，不依赖 JS。"""
-    sep = '：' if c.get('_lang') == 'zh' else ' — '
+    sep = SEP_BY_LANG.get(c.get('_lang'), ' — ')
     p = ['<section class="seo-content">']
     p.append(f'  <h1>{esc(c["h1"])}</h1>')
     for para in c['intro']:
@@ -658,8 +826,7 @@ def jsonld(c, url, lang, news=None, slug=None, path=None):
             'description': c['description'],
             'applicationCategory': 'DeveloperApplication',
             'operatingSystem': 'Any',
-            'browserRequirements': '需要启用 JavaScript 的现代浏览器' if lang == 'zh'
-                                   else 'Requires a modern browser with JavaScript enabled',
+            'browserRequirements': BROWSER_REQ_BY_LANG.get(lang, 'Requires a modern browser with JavaScript enabled'),
             'inLanguage': HTML_LANG[lang],
             'isAccessibleForFree': True,
             'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'CNY'},
@@ -745,25 +912,45 @@ HEADINGS = {
            '_faq_heading': 'FAQ', '_home': 'Home', '_blog': 'Blog',
            '_related_heading': 'Related tools & reading'},
 }
-
-# 英文界面文案直接复用 i18n 字典，保证与内联 JS 的翻译一致
-NAV_LABELS = {
-    'zh': {t['slug']: t['nav'] for t in TOOLS},
-    'en': {t['slug']: TOOLS_EN[t['slug']]['nav'] for t in TOOLS},
-}
+# 其余语言暂回退英文（未翻完的标题也用可读英文兜底）
 for _lang in LANGS:
-    NAV_LABELS[_lang].update(HEADINGS[_lang])
+    if _lang not in HEADINGS:
+        HEADINGS[_lang] = HEADINGS['en']
+
+# 顶部导航标签：zh 用源；其余语言用英文 nav（含未翻完的英文兜底）
+NAV_LABELS = {}
+for _lang in LANGS:
+    if _lang == DEFAULT_LANG:
+        nv = {t['slug']: t['nav'] for t in TOOLS}
+    else:
+        # 优先用该语言已翻的 nav，缺失回退英文（绝不回退中文）
+        nv = {t['slug']: CONTENT_BY_LANG.get(_lang, {}).get(t['slug'], {})
+              .get('nav', TOOLS_EN[t['slug']]['nav']) for t in TOOLS}
+    nv = dict(nv)
+    nv.update(HEADINGS[_lang])
+    NAV_LABELS[_lang] = nv
 
 
 def content_for(tool, lang):
-    c = dict(tool) if lang == 'zh' else dict(TOOLS_EN[tool['slug']])
-    c['_lang'] = lang
-    c.update(HEADINGS[lang])
+    """取某语言的工具内容；非中文语言若未单独翻译则回退英文，绝不回退中文。
+
+    阶段2：具体语言（ja/ko/es…）的内容字典若只翻了短 SEO 字段（nav/h1/title/
+    description/keywords），则以英文全文为底，把已翻的短字段叠加覆盖——长正文
+    （intro/features/steps）继续用英文回退，避免大面积半翻译。
+    """
+    if lang == DEFAULT_LANG:
+        c = dict(CONTENT_BY_LANG[DEFAULT_LANG].get(tool['slug'], tool))
+    else:
+        c = dict(TOOLS_EN.get(tool['slug'], tool))          # 英文长正文（回退）
+        lang_c = CONTENT_BY_LANG.get(lang, {}).get(tool['slug'])   # 已翻短 SEO 字段
+        if lang_c:
+            c.update(lang_c)                                # 叠加覆盖
+        c['_lang'] = lang
+    c.update(HEADINGS.get(lang, HEADINGS['en']))
     return c
 
 
 def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home):
-    other = other_lang_url(lang, rel_root(lang, path), path)
     page = page.replace('{{PAGE}}', slug)
     page = page.replace('{{LANG}}', HTML_LANG[lang])
     page = page.replace('{{TITLE}}', esc(title))
@@ -771,8 +958,8 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{KEYWORDS}}', esc(keywords))
     page = page.replace('{{CANONICAL}}', canonical_url(lang, path))
     page = page.replace('{{HREFLANG}}', hreflang_html(path))
-    page = page.replace('{{AUTODETECT}}', autodetect_html(lang, other))
-    page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, other))
+    page = page.replace('{{AUTODETECT}}', autodetect_html(lang, path))
+    page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, path))
     page = page.replace('{{ANALYTICS}}', analytics_html())
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
@@ -856,8 +1043,8 @@ def build(clean=True, outdirs=None):
                                 jsonld(c, canonical_url(lang, t['path']), lang, news,
                                       t['slug'], t['path']),
                                 base, home)
-            if lang == 'en':
-                page = localize(page)
+            if lang != DEFAULT_LANG:
+                page = localize(page, lang)
             pages[out_path(lang, t['path'])] = page
 
         # ---------------- 年度常青页（calendar / weeks / days / year 按年静态参考页） ----------------
@@ -878,8 +1065,8 @@ def build(clean=True, outdirs=None):
                 EV.render_body(ety, eyear, lang, base), seo_section(c),
                 jsonld(c, canonical_url(lang, epath), lang, None, eslug, epath),
                 base, home)
-            if lang == 'en':
-                page = localize(page)
+            if lang != DEFAULT_LANG:
+                page = localize(page, lang)
             pages[out_path(lang, epath)] = page
 
         # ---------------- 博客：索引页 + 文章页 ----------------
@@ -897,8 +1084,8 @@ def build(clean=True, outdirs=None):
                             _jsonld_raw(blog_index_jsonld(
                                 lang_articles, canonical_url(lang, BLOG_INDEX), lang)),
                             base, base or './')
-        if lang == 'en':
-            page = localize(page)
+        if lang != DEFAULT_LANG:
+            page = localize(page, lang)
         pages[out_path(lang, BLOG_INDEX)] = page
 
         for a in lang_articles:
@@ -910,8 +1097,8 @@ def build(clean=True, outdirs=None):
                                 _jsonld_raw([article_jsonld(
                                     a, canonical_url(lang, apath), lang)]),
                                 base, base or './')
-            if lang == 'en':
-                page = localize(page)
+            if lang != DEFAULT_LANG:
+                page = localize(page, lang)
             pages[out_path(lang, apath)] = page
 
         # 隐私政策
@@ -929,8 +1116,8 @@ def build(clean=True, outdirs=None):
               else 'DevTools privacy policy,online tools privacy,local processing')
         page = apply_common(privacy_tpl, lang, 'privacy', PRIVACY_FILE, title, desc, kw,
                             '', body, '', base, home)
-        if lang == 'en':
-            page = localize(page)
+        if lang != DEFAULT_LANG:
+            page = localize(page, lang)
         pages[out_path(lang, PRIVACY_FILE)] = page
 
     pages[Path('sitemap.xml')] = sitemap_xml(news)
@@ -1032,19 +1219,17 @@ def sitemap_xml(news=None):
 
     rows = []
     for p, pri, freq, lastmod_day in entries:
-        zh = SITE['base_url'] + p
-        en = SITE['base_url'] + EN_DIR + p
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
-        alternates = (
-            f'    <xhtml:link rel="alternate" hreflang="zh-CN" href="{zh}"/>\n'
-            f'    <xhtml:link rel="alternate" hreflang="en" href="{en}"/>\n'
-            f'    <xhtml:link rel="alternate" hreflang="x-default" href="{zh}"/>\n'
-        )
+        alternates = ''.join(
+            f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
+            f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
+            for L in LANGS)
+        alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
+                       f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
         meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
-        # 中英各自独立成条：英文页有自己的 canonical、是独立的可索引 URL。
-        # 早期只把它们挂在 zh 条目下当 xhtml:link alternate、不给独立 <loc>，
-        # 结果 ahrefs 报「22 个可索引页不在 sitemap」——那 22 个正好等于英文页数。
-        for loc in (zh, en):
+        # 各语言各自独立成条：每语言页有自己的 canonical、是独立的可索引 URL。
+        for L in LANGS:
+            loc = SITE['base_url'] + lang_dir(L) + p
             rows.append(
                 '  <url>\n'
                 f'    <loc>{loc}</loc>{lastmod}\n'

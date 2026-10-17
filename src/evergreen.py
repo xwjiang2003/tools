@@ -31,6 +31,10 @@ NAV_LABELS_EV = {
     'en': {'calendar': 'Calendar', 'weeks': 'Week Numbers',
            'days': 'Day of Year', 'year': 'Year Overview'},
 }
+# 阶段2：新语言未单独翻常青页分类名时，统一回退英文。
+for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+    if _L not in NAV_LABELS_EV:
+        NAV_LABELS_EV[_L] = dict(NAV_LABELS_EV['en'])
 
 
 def e(s):

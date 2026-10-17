@@ -27,6 +27,19 @@ import xml.dom.minidom
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+
+# 复用 build.py 的配置（语言集、中文源字典），避免两处各写一份导致漂移。
+# build() 在 `if __name__ == '__main__'` 内，导入不会触发构建。
+try:
+    from build import LANGS, EN, MSGS, DEFAULT_LANG, LANG_DIRS  # noqa: F401
+    _HAS_BUILD = True
+except Exception:                                   # noqa: BLE001
+    _HAS_BUILD = False
+    DEFAULT_LANG = 'zh'
+    LANGS = ('zh', 'en')
+    LANG_DIRS = {'zh': '', 'en': 'en/'}
+    EN, MSGS = {}, {'en': {}}
+
 CJK = re.compile(r'[\u4e00-\u9fff]')
 # 连续的汉字段作为一个整体比对白名单，逐字符比会把「中文」拆成「中」「文」
 CJK_RUN = re.compile(r'[\u4e00-\u9fff]+')
@@ -34,6 +47,10 @@ CJK_RUN = re.compile(r'[\u4e00-\u9fff]+')
 COMMENT = re.compile(r'/\*.*?\*/|<!--.*?-->|(?<!:)//[^\n]*', re.S)
 # 英文页里刻意保留的中文：语言切换按钮 + 字符串工具的 CJK 示例
 CJK_WHITELIST = {'中文', '你好', '世界'}
+# ja / ko 页天然含 CJK（汉字 / 谚文），不能做零 CJK 断言；改为查「中文源短语泄漏」。
+CJK_SCRIPT_LANGS = {'ja', 'ko'}
+# 中文源短语（2 字及以上）；单字易与日文/韩文同字误伤，排除。
+ZH_SOURCE_KEYS = {k for k in EN if len(k) >= 2}
 # 站点根目录下的第三方验证文件（root_files/ 里的那些）。它们是 .html 但不是本站页面，
 # 没有反馈弹窗、也不进 sitemap，页面级检查必须跳过，否则每次都会被误报。
 VERIFY_PREFIXES = ('baidu_verify_', 'google', 'yandex_', 'msvalidate', 'sogou_verify_',
@@ -76,31 +93,50 @@ def main():
     errors = []
 
     # 1) 内联脚本语法
-    # Windows 没有 `which`，而且 subprocess 找不到不存在的程序会直接抛
-    # FileNotFoundError（不会返回非 0 码），所以要自己兜住。
-    try:
-        has_node = subprocess.run(
-            ['node', '--version'], capture_output=True).returncode == 0
-    except OSError:
-        has_node = False
-    if not has_node:
-        print('⚠️  找不到 node，跳过 JS 语法校验（强烈建议装上，这是本脚本的主要价值）')
-    checked = 0
-    with tempfile.TemporaryDirectory() as td:
-        tmp = Path(td) / 'chunk.js'
-        for f in pages:
-            for i, js in enumerate(inline_scripts(f.read_text('utf-8'))):
-                checked += 1
-                if not has_node:
-                    continue
-                tmp.write_text(js, 'utf-8')
-                r = subprocess.run(['node', '--check', str(tmp)], capture_output=True, text=True)
-                if r.returncode != 0:
-                    detail = [l for l in r.stderr.split('\n') if l.strip()]
-                    errors.append(f'{f.relative_to(target)} 第 {i + 1} 段内联脚本语法错误: '
-                                  f'{detail[1] if len(detail) > 1 else r.stderr[:80]}')
-    print(f'  {"✅" if not errors else "❌"} 内联脚本语法: 检查 {checked} 段'
-          + ('' if has_node else '（已跳过）'))
+    # 单进程复用：当页面数很大（N 语言全量 ~755 页、上万段内联脚本）时，逐段 spawn
+    # `node --check` 子进程会被沙箱 / 内存限额 SIGTERM。改用 check_js_inline.mjs
+    # （单进程 vm.Script 校验）一次性跑完；找不到 mjs 时回退到逐段子进程（小站够用）。
+    mjs = ROOT / 'check_js_inline.mjs'
+    js_ok = True
+    if mjs.exists():
+        try:
+            r = subprocess.run(['node', str(mjs), str(target)], capture_output=True, text=True)
+            print(r.stdout.strip())
+            if r.returncode != 0:
+                for line in r.stderr.strip().split('\n'):
+                    if line.strip():
+                        errors.append(line.strip())
+                js_ok = False
+        except OSError:
+            js_ok = False
+            errors.append('node 不可用，无法校验内联脚本')
+    else:
+        try:
+            has_node = subprocess.run(
+                ['node', '--version'], capture_output=True).returncode == 0
+        except OSError:
+            has_node = False
+        if not has_node:
+            print('⚠️  找不到 node，跳过 JS 语法校验（强烈建议装上，这是本脚本的主要价值）')
+            js_ok = None
+        checked = 0
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td) / 'chunk.js'
+            for f in pages:
+                for i, js in enumerate(inline_scripts(f.read_text('utf-8'))):
+                    checked += 1
+                    if not has_node:
+                        continue
+                    tmp.write_text(js, 'utf-8')
+                    r = subprocess.run(['node', '--check', str(tmp)], capture_output=True, text=True)
+                    if r.returncode != 0:
+                        detail = [l for l in r.stderr.split('\n') if l.strip()]
+                        errors.append(f'{f.relative_to(target)} 第 {i + 1} 段内联脚本语法错误: '
+                                      f'{detail[1] if len(detail) > 1 else r.stderr[:80]}')
+        print(f'  {"✅" if not errors else "❌"} 内联脚本语法: 检查 {checked} 段'
+              + ('' if has_node else '（已跳过）'))
+    if js_ok is False:
+        print('  ❌ 内联脚本语法校验失败（见上）')
 
     # 2) 占位符残留
     leftovers = [str(f.relative_to(target)) for f in pages
@@ -149,9 +185,11 @@ def main():
                 more = f' …等 {len(missing)} 个' if len(missing) > 5 else ''
                 errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data
-                      for u in urls if len(u.getElementsByTagName('xhtml:link')) != 3]
+                      for u in urls
+                      if len(u.getElementsByTagName('xhtml:link')) != len(LANGS) + 1]
             if no_alt:
-                errors.append(f'{len(no_alt)} 条 url 缺少 hreflang 备用链接')
+                errors.append(f'{len(no_alt)} 条 url 的 hreflang 备用链接数 '
+                              f'!= {len(LANGS) + 1}（应为 {len(LANGS)} 语言 + x-default）')
         except Exception as e:                                   # noqa: BLE001
             print(f'  ❌ sitemap.xml 解析失败: {e}')
             errors.append('sitemap.xml 非法')
@@ -159,15 +197,59 @@ def main():
         print('  ❌ 缺少 sitemap.xml')
         errors.append('缺少 sitemap.xml')
 
-    # 5) 英文页中文残留
+    # 5) 非中文页中文残留（泄漏）
+    #   - en / 拉丁·西里尔语（es pt-BR fr de ru id）：零 CJK（仅白名单例外）。
+    #     语言切换下拉框会列出各语言母语名（日本語 / 한국어 / 中文），属正常展示，
+    #     扫描前先剔除该 <select>，避免把「日本語」误判为泄漏。
+    #   - ja / ko：天然含 CJK，不能做零断言；改用「整段 CJK 串 == 中文源键」判定——
+    #     仅当某连续 CJK 串恰好等于某个「译文与原文不同」的中文键时才算泄漏，
+    #     既抓未翻译的中文，又避免日语同形汉字（如 北京時間 含 北京）误伤。
     leftovers_cjk = set()
-    for f in sorted((target / 'en').rglob('*.html')):
-        s = COMMENT.sub('', f.read_text('utf-8'))
-        leftovers_cjk |= {run for run in CJK_RUN.findall(s) if run not in CJK_WHITELIST}
-    print(f'  {"✅" if not leftovers_cjk else "❌"} 英文页无未翻译中文'
-          + (f' — {sorted(leftovers_cjk)}' if leftovers_cjk else ''))
+    leaked_keys = {}
+    strict_langs = [L for L in LANGS if L != DEFAULT_LANG and L not in CJK_SCRIPT_LANGS]
+    cjk_langs = [L for L in LANGS if L in CJK_SCRIPT_LANGS]
+    _SELECT = re.compile(r'<select class="lang-select"[^>]*>.*?</select>', re.S)
+
+    for L in strict_langs:
+        d = target / (LANG_DIRS.get(L, L + '/') or '.')
+        if not d.exists():
+            continue
+        for f in sorted(d.rglob('*.html')):
+            s = _SELECT.sub('', COMMENT.sub('', f.read_text('utf-8')))
+            leftovers_cjk |= {run for run in CJK_RUN.findall(s) if run not in CJK_WHITELIST}
+    for L in cjk_langs:
+        table = MSGS.get(L, {})
+        # 仅查「译文与原文不同」的键；译文==原文（同形汉字）跳过以免误伤。
+        keys_to_check = {k for k in ZH_SOURCE_KEYS
+                         if table.get(k, EN.get(k, k)) != k}
+        if not keys_to_check:
+            continue
+        d = target / (LANG_DIRS.get(L, L + '/') or '.')
+        if not d.exists():
+            continue
+        for f in sorted(d.rglob('*.html')):
+            s = COMMENT.sub('', f.read_text('utf-8'))
+            # 整段连续 CJK 串，逐个比对是否为未翻译的中文源键（整串匹配，非子串）
+            for run in CJK_RUN.findall(s):
+                if run in keys_to_check:
+                    leaked_keys.setdefault(L, set()).add(run)
+
+    cjk_msg = (f' — {sorted(leftovers_cjk)}' if leftovers_cjk else '')
+    print(f'  {"✅" if not leftovers_cjk else "❌"} 非 CJK 语种页（{",".join(strict_langs)}）零中文'
+          + cjk_msg)
     if leftovers_cjk:
-        errors.append(f'英文页残留中文: {sorted(leftovers_cjk)}')
+        errors.append(f'非 CJK 语种页残留中文: {sorted(leftovers_cjk)}')
+
+    if leaked_keys:
+        parts = []
+        for L in cjk_langs:
+            if L in leaked_keys:
+                parts.append(f'{L}: {sorted(leaked_keys[L])[:10]}')
+        print(f'  ❌ CJK 语种页（{",".join(cjk_langs)}）查到中文源短语泄漏 — '
+              + '；'.join(parts))
+        errors.append('CJK 语种页中文源短语泄漏: ' + '；'.join(parts))
+    else:
+        print(f'  ✅ CJK 语种页（{",".join(cjk_langs)}）无中文源短语泄漏')
 
     print()
     if errors:

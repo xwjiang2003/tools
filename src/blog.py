@@ -767,6 +767,15 @@ TEXT = {
     },
 }
 
+# 阶段2：新语言未单独翻博客 chrome 时，统一回退英文（与正文英文回退策略一致）。
+for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+    if _L not in TEXT:
+        TEXT[_L] = dict(TEXT['en'])
+
+# 阶段2：HTML / JSON-LD 语言属性按目标语言取真实代码（避免新语言页被误标成英文）。
+_HTML_LANG = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
+             'pt-BR': 'pt-BR', 'fr': 'fr', 'de': 'de', 'ru': 'ru', 'id': 'id'}
+
 
 def _esc(s):
     import html as html_mod
@@ -774,15 +783,15 @@ def _esc(s):
 
 
 def articles_for(lang, articles_en):
-    """按语言返回文章列表（英文版从 ARTICLES_EN 取文案，元数据回落到中文版）。"""
+    """按语言返回文章列表（中文用源文案；其余语言统一回退英文文案，再由 localize() 翻界面 chrome）。"""
     out = []
     for a in ARTICLES:
-        if lang == 'en':
+        if lang == 'zh':
+            out.append(a)
+        else:
             en = dict(a)
             en.update(articles_en[a['slug']])
             out.append(en)
-        else:
-            out.append(a)
     return out
 
 
@@ -816,7 +825,7 @@ def render_article(lang, a, base):
     if a['updated'] != a['date']:
         meta.append(f'<time datetime="{a["updated"]}">{_esc(t["updated"])} {a["updated"]}</time>')
     meta.append(tags)
-    lang_attr = 'zh-CN' if lang == 'zh' else 'en'
+    lang_attr = _HTML_LANG.get(lang, 'en')
     out = [f'<article class="post" lang="{lang_attr}">']
     out.append(f'  <h1>{_esc(a["h1"])}</h1>')
     out.append(f'  <div class="post-meta">{"".join(meta)}</div>')
@@ -842,7 +851,7 @@ def article_jsonld(a, url, lang):
         'url': url,
         'datePublished': a['date'],
         'dateModified': a['updated'],
-        'inLanguage': 'zh-CN' if lang == 'zh' else 'en',
+        'inLanguage': _HTML_LANG.get(lang, 'en'),
         'isAccessibleForFree': True,
         'author': {'@type': 'Organization', 'name': 'DevTools'},
         'keywords': a['keywords'],
@@ -858,7 +867,7 @@ def index_jsonld(articles, url, lang):
             'name': t['index_h1'],
             'url': url,
             'description': t['index_desc'],
-            'inLanguage': 'zh-CN' if lang == 'zh' else 'en',
+            'inLanguage': _HTML_LANG.get(lang, 'en'),
             'isAccessibleForFree': True,
         },
         {

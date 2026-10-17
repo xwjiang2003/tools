@@ -415,7 +415,11 @@ def save_news(data, path=None):
 
 
 def sources_for(lang):
-    return [s for s in SOURCES if s['lang'] == lang]
+    srcs = [s for s in SOURCES if s['lang'] == lang]
+    # 阶段2：新语言没有专属源时，回退到英文源（标题/摘要为英文），与正文英文回退策略一致。
+    if not srcs and lang not in ('zh', 'en'):
+        srcs = [s for s in SOURCES if s['lang'] == 'en']
+    return srcs
 
 
 def visible_items(data, src):
@@ -465,6 +469,15 @@ TEXT = {
 }
 
 _LANG_ATTR = {'zh': 'zh-CN', 'en': 'en'}
+# 阶段2：新语言未单独翻热榜 chrome 时，统一回退英文（与正文英文回退策略一致）。
+for _L in ('ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id'):
+    if _L not in TEXT:
+        TEXT[_L] = dict(TEXT['en'])
+    _LANG_ATTR.setdefault(_L, 'en')
+    if _L not in DISPLAY_TZ:
+        DISPLAY_TZ[_L] = timezone.utc
+    if _L not in SUMMARY_LIMIT:
+        SUMMARY_LIMIT[_L] = 100
 
 
 def _trunc(s, limit):
