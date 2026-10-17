@@ -6,6 +6,133 @@
 """
 
 ARTICLES_EN = {
+    'world-clock-timezones': {
+        'tags': ['World Clock', 'Time Zones', 'UTC', 'DST', 'Time Conversion'],
+        'title': ('World Clock and Global Time Zones: All 39 Standard Offsets at a Glance '
+                  '| DevTools Blog'),
+        'description': (
+            'The World Clock tool puts the current time, UTC offset and DST status of every major '
+            'time zone on one page, with analog clock faces, a city list, an offset-ordered '
+            'reference table, and city search. This post explains how to use it, why there are '
+            '39 zones, why DST makes clocks jump, and how to line up a cross-border meeting.'
+        ),
+        'keywords': (
+            'world clock,global time zones,utc offset,time zone converter,daylight saving,'
+            'current time,cross-border meeting'
+        ),
+        'h1': 'World Clock and Global Time Zones: All 39 Standard Offsets at a Glance',
+        'summary': (
+            'The World Clock tool puts the current time, UTC offset and DST status of every major '
+            'time zone on one page, with analog clock faces, a city list, an offset-ordered '
+            'reference table, and city search. This post covers how to use it, why there are 39 '
+            'zones, why DST makes clocks jump, and how to align a cross-border meeting.'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: There are only <b>38 standard UTC offsets</b> actually in use worldwide
+  (UTC−12:00 through UTC+14:00, plus a few half-hour and 45-minute steps). Add the UTC reference
+  itself and you get the <b>39 cards</b> on the World Clock page. Cities that share a time zone are
+  merged onto one card, so one card equals one zone equals a batch of cities.</p>
+</blockquote>
+
+<h2>1. What the tool does</h2>
+<p>The World Clock page gathers the current time of the world time zones on a single screen,
+refreshes every second, and handles daylight saving automatically. It offers three views you can
+switch between:</p>
+<table>
+  <tr><th>View</th><th>Best for</th></tr>
+  <tr><td>Clocks (default)</td><td>One analog clock face per zone — see who is ahead or behind at a glance</td></tr>
+  <tr><td>List</td><td>A compact table of city/region, current time and offset — quick comparison</td></tr>
+  <tr><td>All zones</td><td>A static, offset-ordered table (UTC−12 → UTC+14) with every representative city</td></tr>
+</table>
+<p>There is also a <b>city search</b> at the top: type a city name, a zone name (e.g.
+<code>Asia/Shanghai</code>) or an offset (e.g. <code>UTC+8</code>) and the matching cities show up with
+their zone and a live clock face.</p>
+
+<h2>2. Why 39 time zones</h2>
+<p>Intuitively there seem to be hundreds of time zones (every country can pick its own), but counted by
+<b>standard UTC offset</b> there are only 38 steps in use: from <code>UTC−12:00</code> (Baker Island,
+almost uninhabited) up to <code>UTC+14:00</code> (Kiribati / Line Islands). Between them sit a few
+half-hour offsets (e.g. <code>UTC+05:30</code> India, <code>UTC+09:30</code> central Australia) and
+45-minute offsets (e.g. <code>UTC+05:45</code> Nepal, <code>UTC+08:45</code> Eucla, Australia).</p>
+<p>Add the <code>UTC±00:00</code> reference itself (covering both Coordinated Universal Time and places
+like London or Lisbon) and you get the <b>39 cards</b> on the page. In other words, those 39 cards
+already lay out every clock on Earth by offset — adding more would not add information, only split
+the same offset into more administrative zones.</p>
+<p>Each card shows the zone IANA name, its standard offset, and a list of <b>representative cities that
+share the zone</b> (for example the <code>UTC+08:00</code> card covers Beijing/Shanghai, Singapore,
+Perth and Hong Kong). This is the cities-in-the-same-zone-merged-onto-one-card design: one card shows
+one zone unified time, and lists all its representative cities.</p>
+
+<h2>3. How to use the three views</h2>
+<h3>1. Clock view</h3>
+<p>One analog clock face per zone, the second hand moving every tick, with a digital time and local date
+below, plus a badge when daylight saving is in effect. The most intuitive view for seeing who is ahead.</p>
+<h3>2. List view</h3>
+<p>A table of city/region, current time and offset you can scroll through — good when you need an exact
+reading or to copy a time.</p>
+<h3>3. All-zones view</h3>
+<p>A static table ordered by standard offset, earliest to latest. Each row is a zone label, IANA name,
+standard offset and all representative cities. It does not tick every second, so it works as a world
+time-zone cheat sheet you can re-read any time.</p>
+
+<h2>4. City search: any city time on demand</h2>
+<p>Type a city name in the search box (Chinese or English, depending on the page language), or an IANA
+zone name, or an offset string, and the results list the matching cities — each with its own analog
+clock and digital time. Under each result we also list the other cities in the same zone, so you can
+confirm these cities are actually the same time.</p>
+<p>For example, searching <code>Tokyo</code> gives you the current time of <code>Asia/Tokyo</code> and notes
+that Seoul and Pyongyang share the moment; searching <code>UTC+8</code> lists every UTC+8 representative
+city at once: Beijing, Shanghai, Singapore, Hong Kong, Perth.</p>
+
+<h2>5. Why DST makes clocks jump</h2>
+<p>Many zones observe daylight saving (DST): once a year the clock jumps forward 1 hour (spring) and back
+1 hour (autumn). So their current offset floats plus or minus 1 hour around the standard value. The
+offset badge and the card DST marker reflect this honestly — which is why Paris, nominally
+<code>UTC+01:00</code>, is actually <code>UTC+02:00</code> in summer.</p>
+<p>A common trap: in northern-hemisphere summer, New York (UTC−4) and London (UTC+1) are 5 hours apart;
+in winter New York (UTC−5) and London (UTC+0) are 6 hours apart. For cross-border meetings, always pin
+the date and the cities — never trust a time difference you memorized.</p>
+
+<h2>6. In practice: lining up a cross-border meeting</h2>
+<p>Say you are in Beijing (UTC+8) and need a three-way call with London (UTC+0/+1) and New York
+(UTC−5/−4):</p>
+<ol>
+  <li>Open the World Clock, switch to Clocks or List, and read the three cities faces directly;</li>
+  <li>Use city search to locate all three and confirm each one current offset (DST or not);</li>
+  <li>Pick a local time that works for all three (e.g. 8 PM Beijing), then use All-zones to read back
+      London and New York local moments;</li>
+  <li>For an exact interval, use the <a href="/en/diff/">Date Difference</a> tool to compute the days /
+      hours / minutes / seconds between two moments in your local zone.</li>
+</ol>
+
+<h2>7. FAQ</h2>
+<table>
+  <tr><th>Question</th><th>Short answer</th></tr>
+  <tr><td>Why is my city not in the list?</td><td>The list shows representative cities per standard offset; your city most likely belongs to one of those IANA zones — use city search to locate it.</td></tr>
+  <tr><td>Is the time accurate?</td><td>It is driven by your browser local clock and refreshed every second; the zone math uses the standard Intl API, matching your system.</td></tr>
+  <tr><td>Why 39 cards and not more?</td><td>39 is already the full set of standard offsets; splitting further only separates administrative zones under the same offset and adds no new information.</td></tr>
+  <tr><td>Does the DST marker update on its own?</td><td>Yes — it re-checks every minute and appears or disappears on the day of the switch.</td></tr>
+</table>
+
+<h2>8. Summary</h2>
+<table>
+  <tr><th>Concept</th><th>In one line</th></tr>
+  <tr><td>Standard offsets</td><td>38 steps worldwide (UTC−12 → UTC+14) + UTC = 39 cards</td></tr>
+  <tr><td>Cities per zone</td><td>Merged onto one card: one card, one zone, many cities</td></tr>
+  <tr><td>Three views</td><td>Clocks for the gap, List for readings, All-zones as a cheat sheet</td></tr>
+  <tr><td>City search</td><td>Filter by city / zone / offset, with a live clock face</td></tr>
+  <tr><td>DST</td><td>Current offset floats ±1 hour; pin the date for meetings</td></tr>
+</table>
+<p>Open the <a href="/en/world-clock/">World Clock tool</a> and compare for yourself — it beats
+memorizing time differences.</p>
+''',
+        'related': [
+            ('World Clock tool', 'world-clock/'),
+            ('Date Difference', 'diff/'),
+            ('Blog home', 'blog/'),
+        ],
+    },
     'coraza-waf-rules': {
         'tags': ['WAF', 'Coraza', 'Security', 'ModSecurity', 'OWASP'],
         'title': ('Coraza Rules Explained: From SecRule Syntax to Your First '

@@ -94,6 +94,8 @@ Key facts:
 
 ## Blog / 文章
 
+- [世界时钟与全球时区对照：39 个标准偏移一次看懂](https://devtools.help/blog/world-clock-timezones/): 世界时钟工具把全球 39 个标准时区的当前时间、偏移与夏令时集中在一页，支持表盘 / 列表 / 时区一览三种视图与城市搜索。讲清它怎么用、为什么是 39 个时区、夏令时为什么会“跳”，以及跨国会议怎么对时间。
+  - English: [World Clock and Global Time Zones: All 39 Standard Offsets at a Glance](https://devtools.help/en/blog/world-clock-timezones/) — The World Clock tool puts the current time, UTC offset and DST status of every major time zone on one page, with analog clock faces, a city list, an offset-ordered reference table, and city search. This post covers how to use it, why there are 39 zones, why DST makes clocks jump, and how to align a cross-border meeting.
 - [Coraza 规则详解：从 SecRule 语法到写出第一条防护规则](https://devtools.help/blog/coraza-waf-rules/): Coraza 是 Go 写的开源 WAF、ModSecurity 的接任者，SecRule 语法基本兼容。讲清一条规则的三要素、五个处理阶段、OWASP CRS 规则集，并手把手写一个 防 SQL 注入的自定义规则，以及 DetectionOnly 与 On 的取舍。
   - English: [Coraza Rules Explained: From SecRule Syntax to Your First Custom Rule](https://devtools.help/en/blog/coraza-waf-rules/) — Coraza is a Go-based open-source WAF and the successor to ModSecurity, with largely compatible SecRule syntax. This post covers the three parts of a rule, the five processing phases, the OWASP CRS set, a hands-on custom anti-SQLi rule, and the DetectionOnly-vs-On trade-off.
 - [沃盾 warden：一个单文件部署的 Go 反向代理 WAF](https://devtools.help/blog/warden-go-waf/): 把 L4 连接限流、频率限制、CC 挑战、IP 归属拦截和 OWASP Coraza 规则检测做进一个 Go 可执行文件，管理后台用 go:embed 内嵌。讲清它解决什么问题、为什么这么选型，以及上线前必须知道的五件事。
