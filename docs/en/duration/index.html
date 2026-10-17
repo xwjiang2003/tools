@@ -564,6 +564,12 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .wc-time{font-size:15px;margin-top:2px}
 .wc-meta{display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;min-height:18px}
 .wc-dst{font-size:11px;font-weight:600;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:0 4px}
+/* ---- 世界时钟：时区一览静态表 ---- */
+.wc-note{font-size:12px;color:var(--text-muted);margin:4px 0 10px}
+.wc-rep{display:block;font-weight:600;color:var(--text)}
+.wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
+.wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}
 
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
@@ -835,6 +841,7 @@ document.addEventListener("click", function (e) {
 <script src="/assets/cdn/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
 <script src="/assets/cdn/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>window.__TOOL_INDEX__ = [{"slug": "json", "href": "../../en/", "g": "JSON", "zh": {"l": "JSON", "t": "JSON Formatter & Validator Online — Free, In-Browser | DevTools", "k": "JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester"}, "en": {"l": "JSON", "t": "JSON Formatter & Validator Online — Free, In-Browser | DevTools", "k": "JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester"}}, {"slug": "hotnews", "href": "../../en/hotnews/", "g": "Content", "zh": {"l": "Tech News", "t": "Today's Tech News — Live Headlines for Developers | DevTools", "k": "tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech"}, "en": {"l": "Tech News", "t": "Today's Tech News — Live Headlines for Developers | DevTools", "k": "tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech"}}, {"slug": "go-cheatsheet", "href": "../../en/go-cheatsheet/", "g": "Cheat Sheets", "zh": {"l": "Go Cheat Sheet", "t": "Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools", "k": "go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables"}, "en": {"l": "Go Cheat Sheet", "t": "Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools", "k": "go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables"}}, {"slug": "diff", "href": "../../en/diff/", "g": "Text / String", "zh": {"l": "Text Diff", "t": "Text Diff Checker — Compare Code & Text Online | DevTools", "k": "text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff"}, "en": {"l": "Text Diff", "t": "Text Diff Checker — Compare Code & Text Online | DevTools", "k": "text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff"}}, {"slug": "encode", "href": "../../en/encode/", "g": "Encode / Crypto", "zh": {"l": "Encode", "t": "Base64 / URL / Unicode Encoder & Decoder Online | DevTools", "k": "base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text"}, "en": {"l": "Encode", "t": "Base64 / URL / Unicode Encoder & Decoder Online | DevTools", "k": "base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text"}}, {"slug": "regex", "href": "../../en/regex/", "g": "Text / String", "zh": {"l": "Regex", "t": "Regex Tester Online — Live Highlight & Replace | DevTools", "k": "regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns"}, "en": {"l": "Regex", "t": "Regex Tester Online — Live Highlight & Replace | DevTools", "k": "regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns"}}, {"slug": "timestamp", "href": "../../en/timestamp/", "g": "Time / Date", "zh": {"l": "Timestamp", "t": "Unix Timestamp to Date Converter — Seconds & ms | DevTools", "k": "unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,milliseconds timestamp,iso 8601,rfc 2822,utc time"}, "en": {"l": "Timestamp", "t": "Unix Timestamp to Date Converter — Seconds & ms | DevTools", "k": "unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,milliseconds timestamp,iso 8601,rfc 2822,utc time"}}, {"slug": "hash", "href": "../../en/hash/", "g": "Encode / Crypto", "zh": {"l": "Hash", "t": "MD5 / SHA-256 Hash Generator — HMAC & Files | DevTools", "k": "md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash"}, "en": {"l": "Hash", "t": "MD5 / SHA-256 Hash Generator — HMAC & Files | DevTools", "k": "md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash"}}, {"slug": "formatter", "href": "../../en/formatter/", "g": "Convert", "zh": {"l": "Formatter", "t": "HTML / CSS / JS / SQL Formatter & Minifier | DevTools", "k": "html formatter,css formatter,js beautifier,javascript formatter,sql formatter,xml formatter,code minifier,code beautifier"}, "en": {"l": "Formatter", "t": "HTML / CSS / JS / SQL Formatter & Minifier | DevTools", "k": "html formatter,css formatter,js beautifier,javascript formatter,sql formatter,xml formatter,code minifier,code beautifier"}}, {"slug": "string", "href": "../../en/string/", "g": "Text / String", "zh": {"l": "Strings", "t": "String & Text Tools — Case, Sort, Dedupe & Count | DevTools", "k": "string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines"}, "en": {"l": "Strings", "t": "String & Text Tools — Case, Sort, Dedupe & Count | DevTools", "k": "string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines"}}, {"slug": "generator", "href": "../../en/generator/", "g": "Code / Gen", "zh": {"l": "Generators", "t": "UUID, Password & QR Code Generator Online | DevTools", "k": "uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data"}, "en": {"l": "Generators", "t": "UUID, Password & QR Code Generator Online | DevTools", "k": "uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data"}}, {"slug": "color", "href": "../../en/color/", "g": "Convert", "zh": {"l": "Color", "t": "Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools", "k": "color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color"}, "en": {"l": "Color", "t": "Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools", "k": "color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color"}}, {"slug": "case", "href": "../../en/case/", "g": "Text / String", "zh": {"l": "Case style", "t": "Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming"}, "en": {"l": "Case style", "t": "Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming"}}, {"slug": "jwt", "href": "../../en/jwt/", "g": "Encode / Crypto", "zh": {"l": "JWT decoder", "t": "JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools", "k": "jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify"}, "en": {"l": "JWT decoder", "t": "JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools", "k": "jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify"}}, {"slug": "yaml", "href": "../../en/yaml/", "g": "Convert", "zh": {"l": "JSON ↔ YAML", "t": "JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools", "k": "json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter"}, "en": {"l": "JSON ↔ YAML", "t": "JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools", "k": "json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter"}}, {"slug": "toml", "href": "../../en/toml/", "g": "Convert", "zh": {"l": "JSON ↔ TOML", "t": "JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools", "k": "json to toml,toml to json,json toml converter,online toml,toml formatter,go config"}, "en": {"l": "JSON ↔ TOML", "t": "JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools", "k": "json to toml,toml to json,json toml converter,online toml,toml formatter,go config"}}, {"slug": "csv", "href": "../../en/csv/", "g": "Convert", "zh": {"l": "JSON ↔ CSV", "t": "JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools", "k": "json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter"}, "en": {"l": "JSON ↔ CSV", "t": "JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools", "k": "json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter"}}, {"slug": "batch", "href": "../../en/batch/", "g": "Time / Date", "zh": {"l": "Batch TS", "t": "Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools", "k": "batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch"}, "en": {"l": "Batch TS", "t": "Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools", "k": "batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch"}}, {"slug": "timestamp-list", "href": "../../en/timestamp-list/", "g": "Time / Date", "zh": {"l": "TS Reference", "t": "Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools", "k": "timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp"}, "en": {"l": "TS Reference", "t": "Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools", "k": "timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp"}}, {"slug": "timezones", "href": "../../en/timezones/", "g": "Time / Date", "zh": {"l": "Time Zones", "t": "World Time Zones — UTC Offset & Current Time | DevTools", "k": "time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone"}, "en": {"l": "Time Zones", "t": "World Time Zones — UTC Offset & Current Time | DevTools", "k": "time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone"}}, {"slug": "weeknumbers", "href": "../../en/weeknumbers/", "g": "Time / Date", "zh": {"l": "ISO Week", "t": "ISO 8601 Week Number — Current Week & Year | DevTools", "k": "iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number"}, "en": {"l": "ISO Week", "t": "ISO 8601 Week Number — Current Week & Year | DevTools", "k": "iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number"}}, {"slug": "daynumbers", "href": "../../en/daynumbers/", "g": "Time / Date", "zh": {"l": "Day of Year", "t": "Day of the Year — Current Day Number | DevTools", "k": "day of year,current day number,julian day,days into the year,leap year days,day number"}, "en": {"l": "Day of Year", "t": "Day of the Year — Current Day Number | DevTools", "k": "day of year,current day number,julian day,days into the year,leap year days,day number"}}, {"slug": "years", "href": "../../en/years/", "g": "Time / Date", "zh": {"l": "Leap Year", "t": "Leap Year Lookup — Leap Years 1800–2100 | DevTools", "k": "leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator"}, "en": {"l": "Leap Year", "t": "Leap Year Lookup — Leap Years 1800–2100 | DevTools", "k": "leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator"}}, {"slug": "world-clock", "href": "../../en/world-clock/", "g": "Time / Date", "zh": {"l": "World Clock", "t": "World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools", "k": "world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison"}, "en": {"l": "World Clock", "t": "World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools", "k": "world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison"}}, {"slug": "countdown", "href": "../../en/countdown/", "g": "Time / Date", "zh": {"l": "Countdown", "t": "Countdown to a Unix Timestamp | DevTools", "k": "countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown"}, "en": {"l": "Countdown", "t": "Countdown to a Unix Timestamp | DevTools", "k": "countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown"}}, {"slug": "date-difference", "href": "../../en/date-difference/", "g": "Time / Date", "zh": {"l": "Date Diff", "t": "Date Difference Calculator — Days/Hours/Min/Sec | DevTools", "k": "date difference,days between dates,date calculator,time difference,days calculator,date interval"}, "en": {"l": "Date Diff", "t": "Date Difference Calculator — Days/Hours/Min/Sec | DevTools", "k": "date difference,days between dates,date calculator,time difference,days calculator,date interval"}}, {"slug": "date-calculator", "href": "../../en/date-calculator/", "g": "Time / Date", "zh": {"l": "Date Calc", "t": "Date Add / Subtract — Add/Sub Years/Months/Days | DevTools", "k": "date add subtract,date calculator,add days to date,subtract days,date offset,add months"}, "en": {"l": "Date Calc", "t": "Date Add / Subtract — Add/Sub Years/Months/Days | DevTools", "k": "date add subtract,date calculator,add days to date,subtract days,date offset,add months"}}, {"slug": "duration", "href": "../../en/duration/", "g": "Time / Date", "zh": {"l": "Duration", "t": "ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools", "k": "iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration"}, "en": {"l": "Duration", "t": "ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools", "k": "iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration"}}, {"slug": "uuid", "href": "../../en/uuid/", "g": "ID / Identifiers", "zh": {"l": "UUID", "t": "UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools", "k": "uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate"}, "en": {"l": "UUID", "t": "UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools", "k": "uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate"}}, {"slug": "snowflake", "href": "../../en/snowflake/", "g": "ID / Identifiers", "zh": {"l": "Snowflake", "t": "Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools", "k": "snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm"}, "en": {"l": "Snowflake", "t": "Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools", "k": "snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm"}}, {"slug": "tid", "href": "../../en/tid/", "g": "ID / Identifiers", "zh": {"l": "Twitter ID", "t": "Twitter and X ID Decoder — tweet/user creation time | DevTools", "k": "twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time"}, "en": {"l": "Twitter ID", "t": "Twitter and X ID Decoder — tweet/user creation time | DevTools", "k": "twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time"}}, {"slug": "objectid", "href": "../../en/objectid/", "g": "ID / Identifiers", "zh": {"l": "ObjectId", "t": "MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools", "k": "objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate"}, "en": {"l": "ObjectId", "t": "MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools", "k": "objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate"}}, {"slug": "firebase", "href": "../../en/firebase/", "g": "ID / Identifiers", "zh": {"l": "Firebase ID", "t": "Firebase Push ID Parser and Generator — timestamp lookup | DevTools", "k": "firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online"}, "en": {"l": "Firebase ID", "t": "Firebase Push ID Parser and Generator — timestamp lookup | DevTools", "k": "firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online"}}, {"slug": "base", "href": "../../en/base/", "g": "Base Convert", "zh": {"l": "Base Converter", "t": "Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools", "k": "base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter"}, "en": {"l": "Base Converter", "t": "Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools", "k": "base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter"}}, {"slug": "binary", "href": "../../en/binary/", "g": "Base Convert", "zh": {"l": "Binary Converter", "t": "Binary Converter - binary to decimal/hex/octal | DevTools", "k": "binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes"}, "en": {"l": "Binary Converter", "t": "Binary Converter - binary to decimal/hex/octal | DevTools", "k": "binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes"}}, {"slug": "hex", "href": "../../en/hex/", "g": "Base Convert", "zh": {"l": "Hex Converter", "t": "Hexadecimal Converter - hex to decimal/binary/octal | DevTools", "k": "hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes"}, "en": {"l": "Hex Converter", "t": "Hexadecimal Converter - hex to decimal/binary/octal | DevTools", "k": "hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes"}}, {"slug": "snippets", "href": "../../en/snippets/", "g": "Code / Gen", "zh": {"l": "Code Snippets", "t": "Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools", "k": "code snippets,common code snippets,code snippet library,go snippets,python snippets,javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code"}, "en": {"l": "Code Snippets", "t": "Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools", "k": "code snippets,common code snippets,code snippet library,go snippets,python snippets,javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code"}}, {"slug": "blog", "href": "../../en/blog/", "g": "Content", "zh": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}, "en": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}}];</script>
+<script>window.__WC_ZONES__ = [{"tz": "Etc/GMT+12", "off": "UTC−12:00", "label": "Baker I. (US)", "cities": ["Baker I.", "Howland I."]}, {"tz": "Pacific/Pago_Pago", "off": "UTC−11:00", "label": "Pago Pago", "cities": ["Pago Pago (American Samoa)", "Alofi (Niue)"]}, {"tz": "Pacific/Honolulu", "off": "UTC−10:00", "label": "Honolulu", "cities": ["Honolulu (Hawaii)", "Papeete (Fr. Polynesia)"]}, {"tz": "Pacific/Marquesas", "off": "UTC−09:30", "label": "Nuku Hiva", "cities": ["Nuku Hiva (Marquesas)"]}, {"tz": "America/Anchorage", "off": "UTC−09:00", "label": "Anchorage", "cities": ["Anchorage (Alaska)"]}, {"tz": "America/Los_Angeles", "off": "UTC−08:00", "label": "Los Angeles", "cities": ["Los Angeles", "Vancouver", "Tijuana"]}, {"tz": "America/Denver", "off": "UTC−07:00", "label": "Denver", "cities": ["Denver", "Phoenix", "Edmonton"]}, {"tz": "America/Chicago", "off": "UTC−06:00", "label": "Chicago", "cities": ["Chicago", "Mexico City", "Winnipeg"]}, {"tz": "America/New_York", "off": "UTC−05:00", "label": "New York", "cities": ["New York", "Toronto", "Bogotá", "Lima"]}, {"tz": "America/Halifax", "off": "UTC−04:00", "label": "Halifax", "cities": ["Halifax", "Caracas", "Santiago", "La Paz"]}, {"tz": "America/St_Johns", "off": "UTC−03:30", "label": "St. John's", "cities": ["St. John's (Newfoundland)"]}, {"tz": "America/Sao_Paulo", "off": "UTC−03:00", "label": "São Paulo", "cities": ["São Paulo", "Buenos Aires", "Montevideo"]}, {"tz": "America/Noronha", "off": "UTC−02:00", "label": "Fernando de Noronha", "cities": ["Fernando de Noronha", "South Georgia"]}, {"tz": "Atlantic/Azores", "off": "UTC−01:00", "label": "Ponta Delgada", "cities": ["Ponta Delgada (Azores)", "Praia (Cape Verde)"]}, {"tz": "UTC", "off": "UTC±00:00", "label": "UTC", "cities": ["UTC reference"]}, {"tz": "Europe/London", "off": "UTC±00:00", "label": "London", "cities": ["London", "Lisbon", "Reykjavík", "Accra"]}, {"tz": "Europe/Paris", "off": "UTC+01:00", "label": "Paris", "cities": ["Paris", "Berlin", "Rome", "Madrid", "Lagos"]}, {"tz": "Europe/Athens", "off": "UTC+02:00", "label": "Athens", "cities": ["Athens", "Cairo", "Helsinki", "Johannesburg", "Bucharest"]}, {"tz": "Europe/Moscow", "off": "UTC+03:00", "label": "Moscow", "cities": ["Moscow", "Istanbul", "Nairobi", "Riyadh"]}, {"tz": "Asia/Tehran", "off": "UTC+03:30", "label": "Tehran", "cities": ["Tehran (Iran)"]}, {"tz": "Asia/Dubai", "off": "UTC+04:00", "label": "Dubai", "cities": ["Dubai", "Baku", "Tbilisi"]}, {"tz": "Asia/Kabul", "off": "UTC+04:30", "label": "Kabul", "cities": ["Kabul (Afghanistan)"]}, {"tz": "Asia/Karachi", "off": "UTC+05:00", "label": "Karachi", "cities": ["Karachi (Pakistan)", "Tashkent", "Malé"]}, {"tz": "Asia/Kolkata", "off": "UTC+05:30", "label": "Kolkata", "cities": ["Kolkata / New Delhi", "Colombo"]}, {"tz": "Asia/Kathmandu", "off": "UTC+05:45", "label": "Kathmandu", "cities": ["Kathmandu (Nepal)"]}, {"tz": "Asia/Dhaka", "off": "UTC+06:00", "label": "Dhaka", "cities": ["Dhaka (Bangladesh)", "Almaty", "Omsk"]}, {"tz": "Asia/Yangon", "off": "UTC+06:30", "label": "Yangon", "cities": ["Yangon (Myanmar)", "Cocos Is."]}, {"tz": "Asia/Bangkok", "off": "UTC+07:00", "label": "Bangkok", "cities": ["Bangkok", "Jakarta", "Hanoi"]}, {"tz": "Asia/Shanghai", "off": "UTC+08:00", "label": "Beijing / Shanghai", "cities": ["Beijing / Shanghai", "Singapore", "Perth", "Hong Kong"]}, {"tz": "Australia/Eucla", "off": "UTC+08:45", "label": "Eucla", "cities": ["Eucla (W. Australia, ~50)"]}, {"tz": "Asia/Tokyo", "off": "UTC+09:00", "label": "Tokyo", "cities": ["Tokyo", "Seoul", "Pyongyang"]}, {"tz": "Australia/Adelaide", "off": "UTC+09:30", "label": "Adelaide", "cities": ["Adelaide", "Darwin"]}, {"tz": "Australia/Sydney", "off": "UTC+10:00", "label": "Sydney", "cities": ["Sydney", "Melbourne", "Brisbane"]}, {"tz": "Australia/Lord_Howe", "off": "UTC+10:30", "label": "Lord Howe I.", "cities": ["Lord Howe I. (~350)"]}, {"tz": "Pacific/Guadalcanal", "off": "UTC+11:00", "label": "Honiara", "cities": ["Honiara (Solomon Is.)", "Nouméa (New Caledonia)"]}, {"tz": "Pacific/Auckland", "off": "UTC+12:00", "label": "Auckland", "cities": ["Auckland", "Suva (Fiji)", "Petropavlovsk-Kamchatsky"]}, {"tz": "Pacific/Chatham", "off": "UTC+12:45", "label": "Chatham Is.", "cities": ["Chatham Is. (~600)"]}, {"tz": "Pacific/Tongatapu", "off": "UTC+13:00", "label": "Nukuʻalofa", "cities": ["Nukuʻalofa (Tonga)", "Apia (Samoa)", "Kiribati (Phoenix Is.)"]}, {"tz": "Pacific/Kiritimati", "off": "UTC+14:00", "label": "Kiritimati", "cities": ["Kiritimati (Line Is.)"]}];</script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation
@@ -2472,31 +2479,9 @@ function dtBatchConvert(text, mode, tz) {
   return out;
 }
 
-// 常用 IANA 时区（顺序）。标签由 DT_ZONE_LABELS 提供（中英双语），不依赖 HTML 属性。
-var DT_ZONES = [
-  'UTC', 'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Kolkata', 'Asia/Dubai',
-  'Europe/Moscow', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
-  'America/New_York', 'America/Chicago', 'America/Los_Angeles',
-  'America/Sao_Paulo', 'Australia/Sydney', 'Pacific/Auckland'
-];
-// 时区显示名（中英双语）。英文页由 document.documentElement.lang 决定取哪套。
-var DT_ZONE_LABELS = {
-  zh: { 'UTC': 'UTC', 'Asia/Shanghai': 'Beijing', 'Asia/Tokyo': 'Tokyo', 'Asia/Kolkata': 'Kolkata',
-    'Asia/Dubai': 'Dubai', 'Europe/Moscow': 'Moscow', 'Europe/London': 'London', 'Europe/Paris': 'Paris',
-    'Europe/Berlin': 'Berlin', 'America/New_York': 'New York', 'America/Chicago': 'Chicago',
-    'America/Los_Angeles': 'Los Angeles', 'America/Sao_Paulo': 'São Paulo', 'Australia/Sydney': 'Sydney',
-    'Pacific/Auckland': 'Auckland' },
-  en: { 'UTC': 'UTC', 'Asia/Shanghai': 'Beijing', 'Asia/Tokyo': 'Tokyo', 'Asia/Kolkata': 'Kolkata',
-    'Asia/Dubai': 'Dubai', 'Europe/Moscow': 'Moscow', 'Europe/London': 'London', 'Europe/Paris': 'Paris',
-    'Europe/Berlin': 'Berlin', 'America/New_York': 'New York', 'America/Chicago': 'Chicago',
-    'America/Los_Angeles': 'Los Angeles', 'America/Sao_Paulo': 'São Paulo', 'Australia/Sydney': 'Sydney',
-    'Pacific/Auckland': 'Auckland' }
-};
-function dtZoneLabel(zone) {
-  var langCode = (document.documentElement.lang || 'zh-CN').slice(0, 2);
-  var map = DT_ZONE_LABELS[langCode] || DT_ZONE_LABELS.zh;
-  return map[zone] || zone;
-}
+// 世界时钟 / 时区页的时区数据集由构建期注入到 window.__WC_ZONES__（按当前语言本地化，中英文各自正确），
+// 不再在此硬编码，避免中文数据泄漏到英文页。下方各 init 函数统一读取该全局变量。
+// 数据结构：[{ tz, off, label, cities }]，顺序即标准 UTC 偏移从早到晚（UTC−12 → UTC+14）。
 
 // 通用消息字典：进 i18n.EN 用于英文页；中文为默认。
 var DT_MSG = {
@@ -2726,59 +2711,76 @@ function initWorldClockPage() {
   if (!root) return;
   var body = document.getElementById('worldBody');
   var grid = document.getElementById('worldDials');
-  var zones = DT_ZONES;
+  var refBody = document.getElementById('worldRefBody');
+  var refWrap = document.getElementById('worldRefWrap');
+  var Z = window.__WC_ZONES__ || [];
+  var zones = Z.map(function (x) { return x.tz; });
+  var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
+  var citySep = isEn ? ', ' : '、';
   // 列表视图：沿用原表格
-  body.innerHTML = zones.map(function (z) {
-    return '<tr><td>' + escapeHtml(dtZoneLabel(z)) + '</td>' +
-      '<td><span class="dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</span></td>' +
-      '<td><span class="dt-off" data-off="' + escapeHtml(z) + '"></span></td></tr>';
+  body.innerHTML = Z.map(function (x) {
+    return '<tr><td>' + escapeHtml(x.label) + '</td>' +
+      '<td><span class="dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</span></td>' +
+      '<td><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span></td></tr>';
   }).join('');
   // 表盘视图：每个时区一张圆形模拟表盘卡片
   var refs = [];
   var dateFmt = {};
   if (grid) {
-    grid.innerHTML = zones.map(function (z) {
-      var label = escapeHtml(dtZoneLabel(z));
+    grid.innerHTML = Z.map(function (x) {
+      var label = escapeHtml(x.label);
       return '<div class="wc-card">' +
         '<div class="wc-city">' + label + '</div>' +
-        '<div class="wc-tz">' + escapeHtml(z) + '</div>' +
+        '<div class="wc-tz">' + escapeHtml(x.tz) + '</div>' +
         '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
           '<circle class="wc-face" cx="50" cy="50" r="47"/>' + wcTicks() +
-          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(z) + '" x1="50" y1="55" x2="50" y2="27"/>' +
-          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(z) + '" x1="50" y1="57" x2="50" y2="17"/>' +
-          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(z) + '" x1="50" y1="60" x2="50" y2="13"/>' +
+          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(x.tz) + '" x1="50" y1="55" x2="50" y2="27"/>' +
+          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(x.tz) + '" x1="50" y1="57" x2="50" y2="17"/>' +
+          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(x.tz) + '" x1="50" y1="60" x2="50" y2="13"/>' +
           '<circle class="wc-pin" cx="50" cy="50" r="3.4"/>' +
         '</svg>' +
-        '<div class="wc-date" data-wd="' + escapeHtml(z) + '"></div>' +
-        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</div>' +
-        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(z) + '"></span>' +
-          '<span class="wc-dst" data-dst="' + escapeHtml(z) + '" hidden>' + dtMsg('DST') + '</span></div>' +
+        '<div class="wc-date" data-wd="' + escapeHtml(x.tz) + '"></div>' +
+        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</div>' +
+        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span>' +
+          '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dtMsg('DST') + '</span></div>' +
         '</div>';
     }).join('');
-    refs = zones.map(function (z) {
+    refs = Z.map(function (x) {
       return {
-        tz: z,
-        hh: grid.querySelector('[data-hh="' + z + '"]'),
-        hm: grid.querySelector('[data-hm="' + z + '"]'),
-        hs: grid.querySelector('[data-hs="' + z + '"]'),
-        wd: grid.querySelector('[data-wd="' + z + '"]'),
-        dst: grid.querySelector('[data-dst="' + z + '"]'),
+        tz: x.tz,
+        hh: grid.querySelector('[data-hh="' + x.tz + '"]'),
+        hm: grid.querySelector('[data-hm="' + x.tz + '"]'),
+        hs: grid.querySelector('[data-hs="' + x.tz + '"]'),
+        wd: grid.querySelector('[data-wd="' + x.tz + '"]'),
+        dst: grid.querySelector('[data-dst="' + x.tz + '"]'),
         dstOn: null
       };
     }).filter(function (r) { return r.hh && r.hm && r.hs; });
     // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
     // 英文页用短格式（Sat, Oct 17, 2026），避免窄卡片里被截断。
-    var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
     var loc = isEn ? 'en-US' : 'zh-CN';
-    zones.forEach(function (z) {
+    Z.forEach(function (x) {
       try {
-        dateFmt[z] = new Intl.DateTimeFormat(loc, {
-          timeZone: z, year: 'numeric',
+        dateFmt[x.tz] = new Intl.DateTimeFormat(loc, {
+          timeZone: x.tz, year: 'numeric',
           month: isEn ? 'short' : 'long', day: 'numeric',
           weekday: isEn ? 'short' : 'long'
         });
-      } catch (e) { dateFmt[z] = null; }
+      } catch (e) { dateFmt[x.tz] = null; }
     });
+  }
+  // 时区一览：静态表（按 UTC 顺序，标准偏移 + 主要城市），不随秒刷新。
+  if (refBody) {
+    refBody.innerHTML = Z.map(function (x) {
+      return '<tr>' +
+        '<td><span class="wc-rep">' + escapeHtml(x.label) + '</span>' +
+        '<span class="wc-iana">' + escapeHtml(x.tz) + '</span></td>' +
+        '<td class="wc-off-std">' + escapeHtml(x.off || '') + '</td>' +
+        '<td class="wc-cities">' + escapeHtml(x.cities.join(citySep)) + '</td>' +
+        '</tr>';
+    }).join('');
+    var refNote = document.getElementById('worldRefNote');
+    if (refNote) refNote.textContent = dtMsg('Ordered by standard UTC offset, earliest to latest (UTC−12 → UTC+14); regions with DST shift ±1 hour from the standard value.');
   }
   var dstClock = null; // 夏令时状态缓存（每分钟校对一次足够）
   function refreshDst(now) {
@@ -2812,28 +2814,31 @@ function initWorldClockPage() {
       if (r.wd && dateFmt[r.tz]) r.wd.textContent = dateFmt[r.tz].format(now);
     });
   }
-  // 视图切换：默认表盘，选择写入 localStorage（跨刷新记忆）
+  // 视图切换：表盘 / 列表 / 时区一览，选择写入 localStorage（跨刷新记忆）
   var btnDial = document.getElementById('wcViewDial');
   var btnList = document.getElementById('wcViewList');
+  var btnRef = document.getElementById('wcViewRef');
   var listWrap = document.getElementById('worldListWrap');
   function setView(v) {
-    var dial = v !== 'list';
+    var dial = v === 'dial', list = v === 'list', ref = v === 'ref';
     if (grid) grid.style.display = dial ? '' : 'none';
-    if (listWrap) listWrap.style.display = dial ? 'none' : '';
-    if (btnDial && btnList) {
-      btnDial.classList.toggle('active', dial);
-      btnList.classList.toggle('active', !dial);
-      btnDial.setAttribute('aria-pressed', String(dial));
-      btnList.setAttribute('aria-pressed', String(!dial));
-    }
-    try { localStorage.setItem('devtools-wcview', dial ? 'dial' : 'list'); } catch (e) {}
+    if (listWrap) listWrap.style.display = list ? '' : 'none';
+    if (refWrap) refWrap.style.display = ref ? '' : 'none';
+    [['wcViewDial', dial], ['wcViewList', list], ['wcViewRef', ref]].forEach(function (p) {
+      var b = document.getElementById(p[0]);
+      if (!b) return;
+      b.classList.toggle('active', p[1]);
+      b.setAttribute('aria-pressed', String(p[1]));
+    });
+    try { localStorage.setItem('devtools-wcview', v); } catch (e) {}
   }
-  if (btnDial && btnList) {
+  if (btnDial && btnList && btnRef) {
     btnDial.onclick = function () { setView('dial'); };
     btnList.onclick = function () { setView('list'); };
+    btnRef.onclick = function () { setView('ref'); };
     var saved = '';
     try { saved = localStorage.getItem('devtools-wcview') || ''; } catch (e) {}
-    setView(saved === 'list' ? 'list' : 'dial');
+    setView(saved === 'list' ? 'list' : (saved === 'ref' ? 'ref' : 'dial'));
   }
   tick();
   setInterval(tick, 1000);
@@ -2954,14 +2959,15 @@ function initTimezonesPage() {
   var root = document.getElementById('tzTool');
   if (!root) return;
   var body = document.getElementById('tzBody');
-  var zones = DT_ZONES;
+  var Z = window.__WC_ZONES__ || [];
+  var zones = Z.map(function (x) { return x.tz; });
   var now = new Date();
   var html = '';
-  zones.forEach(function (z) {
-    var p = dtZonedParts(Math.floor(now.getTime() / 1000), z);
-    html += '<tr><td>' + escapeHtml(dtZoneLabel(z)) + '</td>' +
-      '<td>' + escapeHtml(z) + '</td>' +
-      '<td>' + escapeHtml(dtTzOffsetLabel(z, now)) + '</td>' +
+  Z.forEach(function (x) {
+    var p = dtZonedParts(Math.floor(now.getTime() / 1000), x.tz);
+    html += '<tr><td>' + escapeHtml(x.label) + '</td>' +
+      '<td>' + escapeHtml(x.tz) + '</td>' +
+      '<td>' + escapeHtml(dtTzOffsetLabel(x.tz, now)) + '</td>' +
       '<td>' + (p ? p.hour + ':' + p.minute + ':' + p.second : '--') + '</td></tr>';
   });
   body.innerHTML = html;

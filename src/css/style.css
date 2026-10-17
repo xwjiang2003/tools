@@ -529,3 +529,9 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .wc-time{font-size:15px;margin-top:2px}
 .wc-meta{display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;min-height:18px}
 .wc-dst{font-size:11px;font-weight:600;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:0 4px}
+/* ---- 世界时钟：时区一览静态表 ---- */
+.wc-note{font-size:12px;color:var(--text-muted);margin:4px 0 10px}
+.wc-rep{display:block;font-weight:600;color:var(--text)}
+.wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
+.wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}

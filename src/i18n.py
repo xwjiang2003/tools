@@ -494,7 +494,12 @@ EN = {
     # 世界时钟表盘视图（world-clock.html + datetime-tools.js）
     '表盘': 'Clocks',
     '列表': 'List',
+    '时区一览': 'All zones',
+    '时区名称': 'Zone name',
+    '标准偏移（UTC）': 'Standard offset (UTC)',
+    '主要城市': 'Major cities',
     '夏令时': 'DST',
+    '按标准 UTC 偏移从早到晚排列（UTC−12 → UTC+14）；实行夏令时的地区当前偏移会在标准值基础上增减 1 小时。': 'Ordered by standard UTC offset, earliest to latest (UTC−12 → UTC+14); regions with DST shift ±1 hour from the standard value.',
     '请输入日期': 'Please enter a date',
     '请输入时长': 'Please enter a duration',
     '时长格式无效': 'Invalid duration format',
