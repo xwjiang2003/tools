@@ -4,12 +4,20 @@
   <div class="wc-views">
     <button class="op-btn active" id="wcViewDial" type="button" aria-pressed="true">表盘</button>
     <button class="op-btn" id="wcViewList" type="button" aria-pressed="false">列表</button>
+    <button class="op-btn" id="wcViewRef" type="button" aria-pressed="false">时区一览</button>
   </div>
   <div id="worldDials" class="wc-grid"></div>
   <div id="worldListWrap">
     <table class="dt-table">
       <thead><tr><th>城市 / 地区</th><th>当前时间</th><th>偏移</th></tr></thead>
       <tbody id="worldBody"></tbody>
+    </table>
+  </div>
+  <div id="worldRefWrap">
+    <p class="wc-note" id="worldRefNote"></p>
+    <table class="dt-table">
+      <thead><tr><th>时区名称</th><th>标准偏移（UTC）</th><th>主要城市</th></tr></thead>
+      <tbody id="worldRefBody"></tbody>
     </table>
   </div>
 </div>

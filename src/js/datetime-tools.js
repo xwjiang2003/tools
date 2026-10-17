@@ -205,31 +205,9 @@ function dtBatchConvert(text, mode, tz) {
   return out;
 }
 
-// 常用 IANA 时区（顺序）。标签由 DT_ZONE_LABELS 提供（中英双语），不依赖 HTML 属性。
-var DT_ZONES = [
-  'UTC', 'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Kolkata', 'Asia/Dubai',
-  'Europe/Moscow', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
-  'America/New_York', 'America/Chicago', 'America/Los_Angeles',
-  'America/Sao_Paulo', 'Australia/Sydney', 'Pacific/Auckland'
-];
-// 时区显示名（中英双语）。英文页由 document.documentElement.lang 决定取哪套。
-var DT_ZONE_LABELS = {
-  zh: { 'UTC': '协调世界时', 'Asia/Shanghai': '北京时间', 'Asia/Tokyo': '东京', 'Asia/Kolkata': '加尔各答',
-    'Asia/Dubai': '迪拜', 'Europe/Moscow': '莫斯科', 'Europe/London': '伦敦', 'Europe/Paris': '巴黎',
-    'Europe/Berlin': '柏林', 'America/New_York': '纽约', 'America/Chicago': '芝加哥',
-    'America/Los_Angeles': '洛杉矶', 'America/Sao_Paulo': '圣保罗', 'Australia/Sydney': '悉尼',
-    'Pacific/Auckland': '奥克兰' },
-  en: { 'UTC': 'UTC', 'Asia/Shanghai': 'Beijing', 'Asia/Tokyo': 'Tokyo', 'Asia/Kolkata': 'Kolkata',
-    'Asia/Dubai': 'Dubai', 'Europe/Moscow': 'Moscow', 'Europe/London': 'London', 'Europe/Paris': 'Paris',
-    'Europe/Berlin': 'Berlin', 'America/New_York': 'New York', 'America/Chicago': 'Chicago',
-    'America/Los_Angeles': 'Los Angeles', 'America/Sao_Paulo': 'São Paulo', 'Australia/Sydney': 'Sydney',
-    'Pacific/Auckland': 'Auckland' }
-};
-function dtZoneLabel(zone) {
-  var langCode = (document.documentElement.lang || 'zh-CN').slice(0, 2);
-  var map = DT_ZONE_LABELS[langCode] || DT_ZONE_LABELS.zh;
-  return map[zone] || zone;
-}
+// 世界时钟 / 时区页的时区数据集由构建期注入到 window.__WC_ZONES__（按当前语言本地化，中英文各自正确），
+// 不再在此硬编码，避免中文数据泄漏到英文页。下方各 init 函数统一读取该全局变量。
+// 数据结构：[{ tz, off, label, cities }]，顺序即标准 UTC 偏移从早到晚（UTC−12 → UTC+14）。
 
 // 通用消息字典：进 i18n.EN 用于英文页；中文为默认。
 var DT_MSG = {
@@ -459,59 +437,76 @@ function initWorldClockPage() {
   if (!root) return;
   var body = document.getElementById('worldBody');
   var grid = document.getElementById('worldDials');
-  var zones = DT_ZONES;
+  var refBody = document.getElementById('worldRefBody');
+  var refWrap = document.getElementById('worldRefWrap');
+  var Z = window.__WC_ZONES__ || [];
+  var zones = Z.map(function (x) { return x.tz; });
+  var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
+  var citySep = isEn ? ', ' : '、';
   // 列表视图：沿用原表格
-  body.innerHTML = zones.map(function (z) {
-    return '<tr><td>' + escapeHtml(dtZoneLabel(z)) + '</td>' +
-      '<td><span class="dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</span></td>' +
-      '<td><span class="dt-off" data-off="' + escapeHtml(z) + '"></span></td></tr>';
+  body.innerHTML = Z.map(function (x) {
+    return '<tr><td>' + escapeHtml(x.label) + '</td>' +
+      '<td><span class="dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</span></td>' +
+      '<td><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span></td></tr>';
   }).join('');
   // 表盘视图：每个时区一张圆形模拟表盘卡片
   var refs = [];
   var dateFmt = {};
   if (grid) {
-    grid.innerHTML = zones.map(function (z) {
-      var label = escapeHtml(dtZoneLabel(z));
+    grid.innerHTML = Z.map(function (x) {
+      var label = escapeHtml(x.label);
       return '<div class="wc-card">' +
         '<div class="wc-city">' + label + '</div>' +
-        '<div class="wc-tz">' + escapeHtml(z) + '</div>' +
+        '<div class="wc-tz">' + escapeHtml(x.tz) + '</div>' +
         '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
           '<circle class="wc-face" cx="50" cy="50" r="47"/>' + wcTicks() +
-          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(z) + '" x1="50" y1="55" x2="50" y2="27"/>' +
-          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(z) + '" x1="50" y1="57" x2="50" y2="17"/>' +
-          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(z) + '" x1="50" y1="60" x2="50" y2="13"/>' +
+          '<line class="wc-hand wc-hour" data-hh="' + escapeHtml(x.tz) + '" x1="50" y1="55" x2="50" y2="27"/>' +
+          '<line class="wc-hand wc-min" data-hm="' + escapeHtml(x.tz) + '" x1="50" y1="57" x2="50" y2="17"/>' +
+          '<line class="wc-hand wc-sec" data-hs="' + escapeHtml(x.tz) + '" x1="50" y1="60" x2="50" y2="13"/>' +
           '<circle class="wc-pin" cx="50" cy="50" r="3.4"/>' +
         '</svg>' +
-        '<div class="wc-date" data-wd="' + escapeHtml(z) + '"></div>' +
-        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(z) + '">--:--:--</div>' +
-        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(z) + '"></span>' +
-          '<span class="wc-dst" data-dst="' + escapeHtml(z) + '" hidden>' + dtMsg('夏令时') + '</span></div>' +
+        '<div class="wc-date" data-wd="' + escapeHtml(x.tz) + '"></div>' +
+        '<div class="wc-time dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</div>' +
+        '<div class="wc-meta"><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span>' +
+          '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dtMsg('夏令时') + '</span></div>' +
         '</div>';
     }).join('');
-    refs = zones.map(function (z) {
+    refs = Z.map(function (x) {
       return {
-        tz: z,
-        hh: grid.querySelector('[data-hh="' + z + '"]'),
-        hm: grid.querySelector('[data-hm="' + z + '"]'),
-        hs: grid.querySelector('[data-hs="' + z + '"]'),
-        wd: grid.querySelector('[data-wd="' + z + '"]'),
-        dst: grid.querySelector('[data-dst="' + z + '"]'),
+        tz: x.tz,
+        hh: grid.querySelector('[data-hh="' + x.tz + '"]'),
+        hm: grid.querySelector('[data-hm="' + x.tz + '"]'),
+        hs: grid.querySelector('[data-hs="' + x.tz + '"]'),
+        wd: grid.querySelector('[data-wd="' + x.tz + '"]'),
+        dst: grid.querySelector('[data-dst="' + x.tz + '"]'),
         dstOn: null
       };
     }).filter(function (r) { return r.hh && r.hm && r.hs; });
     // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
     // 英文页用短格式（Sat, Oct 17, 2026），避免窄卡片里被截断。
-    var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
     var loc = isEn ? 'en-US' : 'zh-CN';
-    zones.forEach(function (z) {
+    Z.forEach(function (x) {
       try {
-        dateFmt[z] = new Intl.DateTimeFormat(loc, {
-          timeZone: z, year: 'numeric',
+        dateFmt[x.tz] = new Intl.DateTimeFormat(loc, {
+          timeZone: x.tz, year: 'numeric',
           month: isEn ? 'short' : 'long', day: 'numeric',
           weekday: isEn ? 'short' : 'long'
         });
-      } catch (e) { dateFmt[z] = null; }
+      } catch (e) { dateFmt[x.tz] = null; }
     });
+  }
+  // 时区一览：静态表（按 UTC 顺序，标准偏移 + 主要城市），不随秒刷新。
+  if (refBody) {
+    refBody.innerHTML = Z.map(function (x) {
+      return '<tr>' +
+        '<td><span class="wc-rep">' + escapeHtml(x.label) + '</span>' +
+        '<span class="wc-iana">' + escapeHtml(x.tz) + '</span></td>' +
+        '<td class="wc-off-std">' + escapeHtml(x.off || '') + '</td>' +
+        '<td class="wc-cities">' + escapeHtml(x.cities.join(citySep)) + '</td>' +
+        '</tr>';
+    }).join('');
+    var refNote = document.getElementById('worldRefNote');
+    if (refNote) refNote.textContent = dtMsg('按标准 UTC 偏移从早到晚排列（UTC−12 → UTC+14）；实行夏令时的地区当前偏移会在标准值基础上增减 1 小时。');
   }
   var dstClock = null; // 夏令时状态缓存（每分钟校对一次足够）
   function refreshDst(now) {
@@ -545,28 +540,31 @@ function initWorldClockPage() {
       if (r.wd && dateFmt[r.tz]) r.wd.textContent = dateFmt[r.tz].format(now);
     });
   }
-  // 视图切换：默认表盘，选择写入 localStorage（跨刷新记忆）
+  // 视图切换：表盘 / 列表 / 时区一览，选择写入 localStorage（跨刷新记忆）
   var btnDial = document.getElementById('wcViewDial');
   var btnList = document.getElementById('wcViewList');
+  var btnRef = document.getElementById('wcViewRef');
   var listWrap = document.getElementById('worldListWrap');
   function setView(v) {
-    var dial = v !== 'list';
+    var dial = v === 'dial', list = v === 'list', ref = v === 'ref';
     if (grid) grid.style.display = dial ? '' : 'none';
-    if (listWrap) listWrap.style.display = dial ? 'none' : '';
-    if (btnDial && btnList) {
-      btnDial.classList.toggle('active', dial);
-      btnList.classList.toggle('active', !dial);
-      btnDial.setAttribute('aria-pressed', String(dial));
-      btnList.setAttribute('aria-pressed', String(!dial));
-    }
-    try { localStorage.setItem('devtools-wcview', dial ? 'dial' : 'list'); } catch (e) {}
+    if (listWrap) listWrap.style.display = list ? '' : 'none';
+    if (refWrap) refWrap.style.display = ref ? '' : 'none';
+    [['wcViewDial', dial], ['wcViewList', list], ['wcViewRef', ref]].forEach(function (p) {
+      var b = document.getElementById(p[0]);
+      if (!b) return;
+      b.classList.toggle('active', p[1]);
+      b.setAttribute('aria-pressed', String(p[1]));
+    });
+    try { localStorage.setItem('devtools-wcview', v); } catch (e) {}
   }
-  if (btnDial && btnList) {
+  if (btnDial && btnList && btnRef) {
     btnDial.onclick = function () { setView('dial'); };
     btnList.onclick = function () { setView('list'); };
+    btnRef.onclick = function () { setView('ref'); };
     var saved = '';
     try { saved = localStorage.getItem('devtools-wcview') || ''; } catch (e) {}
-    setView(saved === 'list' ? 'list' : 'dial');
+    setView(saved === 'list' ? 'list' : (saved === 'ref' ? 'ref' : 'dial'));
   }
   tick();
   setInterval(tick, 1000);
@@ -687,14 +685,15 @@ function initTimezonesPage() {
   var root = document.getElementById('tzTool');
   if (!root) return;
   var body = document.getElementById('tzBody');
-  var zones = DT_ZONES;
+  var Z = window.__WC_ZONES__ || [];
+  var zones = Z.map(function (x) { return x.tz; });
   var now = new Date();
   var html = '';
-  zones.forEach(function (z) {
-    var p = dtZonedParts(Math.floor(now.getTime() / 1000), z);
-    html += '<tr><td>' + escapeHtml(dtZoneLabel(z)) + '</td>' +
-      '<td>' + escapeHtml(z) + '</td>' +
-      '<td>' + escapeHtml(dtTzOffsetLabel(z, now)) + '</td>' +
+  Z.forEach(function (x) {
+    var p = dtZonedParts(Math.floor(now.getTime() / 1000), x.tz);
+    html += '<tr><td>' + escapeHtml(x.label) + '</td>' +
+      '<td>' + escapeHtml(x.tz) + '</td>' +
+      '<td>' + escapeHtml(dtTzOffsetLabel(x.tz, now)) + '</td>' +
       '<td>' + (p ? p.hour + ':' + p.minute + ':' + p.second : '--') + '</td></tr>';
   });
   body.innerHTML = html;

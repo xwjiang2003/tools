@@ -1162,16 +1162,21 @@ TOOLS_EN = {
             'is it for them" before a cross-border meeting or remote collaboration. Each city gets a round '
             'analog dial with live hour, minute and second hands, labeled with the city name and time zone; '
             'offsets auto-adjust for daylight saving by the current date.',
+            'There are 38 standard time zones in the world (counting distinct UTC offsets actually in use '
+            'in 2026, from UTC−12 to UTC+14, including non-hour offsets like UTC+05:30 and UTC+05:45); if '
+            'you also count daylight-saving shifts the number is about 50 per year, and the IANA database '
+            'lists about 345 geographic zones. Below, all 38 zones are listed in UTC order with at least '
+            'one major city each, and multiple important cities in a zone are listed together.',
             'All computation happens on your device.',
         ],
         'features': [
             ('Analog clock faces', 'A round dial per city with live hour, minute and second hands, labeled with city and time zone.'),
-            ('Many cities at once', 'UTC and 14 major cities side by side; switch between clock and list views.'),
+            ('Three views', 'Switch between clock, list and "All zones"; the All-zones view lists every one of the 38 world time zones in UTC order.'),
             ('Offset & DST', 'Each city shows its current UTC offset, with daylight saving handled automatically.'),
             ('Live refresh', 'Updates every second.'),
         ],
         'steps': [
-            'Clock faces are shown by default; click "List" to switch to the comparison table.',
+            'Clock faces are shown by default; click "List" to switch to the comparison table, or "All zones" to see every zone in UTC order.',
         ],
         'faq': [
             ('Why is a city\'s offset different from last time I looked?',

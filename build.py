@@ -474,6 +474,107 @@ def tool_index_json(base, lang):
     return json.dumps(entries, ensure_ascii=False)
 
 
+# ---------- 世界时钟 / 时区页 共享时区数据集（单一数据源，构建期按语言注入）----------
+# 每项：IANA 时区、标准 UTC 偏移文案、中文标签、中文代表城市、英文标签、英文代表城市。
+# 顺序即标准 UTC 偏移从早到晚（UTC−12 → UTC+14），含全球 38 个实际在用标准偏移。
+# 注入到 window.__WC_ZONES__（每页），由 datetime-tools.js 按当前语言读取，避免中文数据泄漏到英文页。
+WC_ZONES = [
+    ('Etc/GMT+12', 'UTC−12:00', '贝克岛（美属·无人）', ['贝克岛', '豪兰岛'],
+     'Baker I. (US)', ['Baker I.', 'Howland I.']),
+    ('Pacific/Pago_Pago', 'UTC−11:00', '帕果帕果', ['帕果帕果（美属萨摩亚）', '阿洛菲（纽埃）'],
+     'Pago Pago', ['Pago Pago (American Samoa)', 'Alofi (Niue)']),
+    ('Pacific/Honolulu', 'UTC−10:00', '檀香山', ['檀香山（夏威夷）', '帕皮提（法属波利尼西亚）'],
+     'Honolulu', ['Honolulu (Hawaii)', 'Papeete (Fr. Polynesia)']),
+    ('Pacific/Marquesas', 'UTC−09:30', '努库希瓦', ['努库希瓦（马克萨斯群岛）'],
+     'Nuku Hiva', ['Nuku Hiva (Marquesas)']),
+    ('America/Anchorage', 'UTC−09:00', '安克雷奇', ['安克雷奇（阿拉斯加）'],
+     'Anchorage', ['Anchorage (Alaska)']),
+    ('America/Los_Angeles', 'UTC−08:00', '洛杉矶', ['洛杉矶', '温哥华', '蒂华纳'],
+     'Los Angeles', ['Los Angeles', 'Vancouver', 'Tijuana']),
+    ('America/Denver', 'UTC−07:00', '丹佛', ['丹佛', '凤凰城', '埃德蒙顿'],
+     'Denver', ['Denver', 'Phoenix', 'Edmonton']),
+    ('America/Chicago', 'UTC−06:00', '芝加哥', ['芝加哥', '墨西哥城', '温尼伯'],
+     'Chicago', ['Chicago', 'Mexico City', 'Winnipeg']),
+    ('America/New_York', 'UTC−05:00', '纽约', ['纽约', '多伦多', '波哥大', '利马'],
+     'New York', ['New York', 'Toronto', 'Bogotá', 'Lima']),
+    ('America/Halifax', 'UTC−04:00', '哈利法克斯', ['哈利法克斯', '加拉加斯', '圣地亚哥', '拉巴斯'],
+     'Halifax', ['Halifax', 'Caracas', 'Santiago', 'La Paz']),
+    ('America/St_Johns', 'UTC−03:30', '圣约翰斯', ['圣约翰斯（纽芬兰）'],
+     "St. John's", ["St. John's (Newfoundland)"]),
+    ('America/Sao_Paulo', 'UTC−03:00', '圣保罗', ['圣保罗', '布宜诺斯艾利斯', '蒙得维的亚'],
+     'São Paulo', ['São Paulo', 'Buenos Aires', 'Montevideo']),
+    ('America/Noronha', 'UTC−02:00', '费尔南多-迪诺罗尼亚', ['费尔南多-迪诺罗尼亚', '南乔治亚'],
+     'Fernando de Noronha', ['Fernando de Noronha', 'South Georgia']),
+    ('Atlantic/Azores', 'UTC−01:00', '蓬塔德尔加达', ['蓬塔德尔加达（亚速尔）', '普拉亚（佛得角）'],
+     'Ponta Delgada', ['Ponta Delgada (Azores)', 'Praia (Cape Verde)']),
+    ('UTC', 'UTC±00:00', '协调世界时', ['UTC 基准（无时区）'],
+     'UTC', ['UTC reference']),
+    ('Europe/London', 'UTC±00:00', '伦敦', ['伦敦', '里斯本', '雷克雅未克', '阿克拉'],
+     'London', ['London', 'Lisbon', 'Reykjavík', 'Accra']),
+    ('Europe/Paris', 'UTC+01:00', '巴黎', ['巴黎', '柏林', '罗马', '马德里', '拉各斯'],
+     'Paris', ['Paris', 'Berlin', 'Rome', 'Madrid', 'Lagos']),
+    ('Europe/Athens', 'UTC+02:00', '雅典', ['雅典', '开罗', '赫尔辛基', '约翰内斯堡', '布加勒斯特'],
+     'Athens', ['Athens', 'Cairo', 'Helsinki', 'Johannesburg', 'Bucharest']),
+    ('Europe/Moscow', 'UTC+03:00', '莫斯科', ['莫斯科', '伊斯坦布尔', '内罗毕', '利雅得'],
+     'Moscow', ['Moscow', 'Istanbul', 'Nairobi', 'Riyadh']),
+    ('Asia/Tehran', 'UTC+03:30', '德黑兰', ['德黑兰（伊朗）'],
+     'Tehran', ['Tehran (Iran)']),
+    ('Asia/Dubai', 'UTC+04:00', '迪拜', ['迪拜', '巴库', '第比利斯'],
+     'Dubai', ['Dubai', 'Baku', 'Tbilisi']),
+    ('Asia/Kabul', 'UTC+04:30', '喀布尔', ['喀布尔（阿富汗）'],
+     'Kabul', ['Kabul (Afghanistan)']),
+    ('Asia/Karachi', 'UTC+05:00', '卡拉奇', ['卡拉奇（巴基斯坦）', '塔什干', '马累'],
+     'Karachi', ['Karachi (Pakistan)', 'Tashkent', 'Malé']),
+    ('Asia/Kolkata', 'UTC+05:30', '加尔各答', ['加尔各答 / 新德里', '科伦坡'],
+     'Kolkata', ['Kolkata / New Delhi', 'Colombo']),
+    ('Asia/Kathmandu', 'UTC+05:45', '加德满都', ['加德满都（尼泊尔）'],
+     'Kathmandu', ['Kathmandu (Nepal)']),
+    ('Asia/Dhaka', 'UTC+06:00', '达卡', ['达卡（孟加拉）', '阿拉木图', '鄂木斯克'],
+     'Dhaka', ['Dhaka (Bangladesh)', 'Almaty', 'Omsk']),
+    ('Asia/Yangon', 'UTC+06:30', '仰光', ['仰光（缅甸）', '科科斯群岛'],
+     'Yangon', ['Yangon (Myanmar)', 'Cocos Is.']),
+    ('Asia/Bangkok', 'UTC+07:00', '曼谷', ['曼谷', '雅加达', '河内'],
+     'Bangkok', ['Bangkok', 'Jakarta', 'Hanoi']),
+    ('Asia/Shanghai', 'UTC+08:00', '北京 / 上海', ['北京 / 上海', '新加坡', '珀斯', '香港'],
+     'Beijing / Shanghai', ['Beijing / Shanghai', 'Singapore', 'Perth', 'Hong Kong']),
+    ('Australia/Eucla', 'UTC+08:45', '尤克拉', ['尤克拉（澳大利亚中西部，约 50 人）'],
+     'Eucla', ['Eucla (W. Australia, ~50)']),
+    ('Asia/Tokyo', 'UTC+09:00', '东京', ['东京', '首尔', '平壤'],
+     'Tokyo', ['Tokyo', 'Seoul', 'Pyongyang']),
+    ('Australia/Adelaide', 'UTC+09:30', '阿德莱德', ['阿德莱德', '达尔文'],
+     'Adelaide', ['Adelaide', 'Darwin']),
+    ('Australia/Sydney', 'UTC+10:00', '悉尼', ['悉尼', '墨尔本', '布里斯班'],
+     'Sydney', ['Sydney', 'Melbourne', 'Brisbane']),
+    ('Australia/Lord_Howe', 'UTC+10:30', '豪勋爵岛', ['豪勋爵岛（澳大利亚，约 350 人）'],
+     'Lord Howe I.', ['Lord Howe I. (~350)']),
+    ('Pacific/Guadalcanal', 'UTC+11:00', '霍尼亚拉', ['霍尼亚拉（所罗门）', '努美阿（新喀里多尼亚）'],
+     'Honiara', ['Honiara (Solomon Is.)', 'Nouméa (New Caledonia)']),
+    ('Pacific/Auckland', 'UTC+12:00', '奥克兰', ['奥克兰', '苏瓦（斐济）', '彼得罗巴甫洛夫斯克'],
+     'Auckland', ['Auckland', 'Suva (Fiji)', 'Petropavlovsk-Kamchatsky']),
+    ('Pacific/Chatham', 'UTC+12:45', '查塔姆群岛', ['查塔姆群岛（新西兰，约 600 人）'],
+     'Chatham Is.', ['Chatham Is. (~600)']),
+    ('Pacific/Tongatapu', 'UTC+13:00', '努库阿洛法', ['努库阿洛法（汤加）', '阿皮亚（萨摩亚）', '基里巴斯（凤凰群岛）'],
+     'Nukuʻalofa', ['Nukuʻalofa (Tonga)', 'Apia (Samoa)', 'Kiribati (Phoenix Is.)']),
+    ('Pacific/Kiritimati', 'UTC+14:00', '圣诞岛', ['圣诞岛（基里巴斯·莱恩群岛）'],
+     'Kiritimati', ['Kiritimati (Line Is.)']),
+]
+
+
+def wc_zones_json(lang):
+    """生成世界时钟 / 时区页共享的时区数据集（注入 window.__WC_ZONES__）。
+
+    与 tool_index_json 同理：英文页只输出英文 label/cities，保证英文页零中文。
+    偏移文案（UTC−12:00 等）无中日韩字符，中英共用。
+    """
+    items = []
+    for tz, off, zh_label, zh_cities, en_label, en_cities in WC_ZONES:
+        if lang == 'en':
+            items.append({'tz': tz, 'off': off, 'label': en_label, 'cities': en_cities})
+        else:
+            items.append({'tz': tz, 'off': off, 'label': zh_label, 'cities': zh_cities})
+    return json.dumps(items, ensure_ascii=False)
+
+
 EVERGREEN_NAV_LABELS = {'zh': '日历与日期', 'en': 'Calendar & Dates'}
 
 
@@ -686,6 +787,7 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{TOOL}}', body)
     page = page.replace('{{SEO}}', seo)
     page = page.replace('{{TOOL_INDEX}}', tool_index_json(base, lang))
+    page = page.replace('{{WC_ZONES}}', wc_zones_json(lang))
     page = page.replace('{{PRIVACY_BODY}}', seo)
     page = page.replace('{{HOME}}', home)
     page = page.replace('{{BASE}}', base)
