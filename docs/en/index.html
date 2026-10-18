@@ -28,6 +28,14 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/">
+<link rel="alternate" hreflang="ja" href="https://devtools.help/ja/">
+<link rel="alternate" hreflang="ko" href="https://devtools.help/ko/">
+<link rel="alternate" hreflang="es" href="https://devtools.help/es/">
+<link rel="alternate" hreflang="pt-BR" href="https://devtools.help/pt-BR/">
+<link rel="alternate" hreflang="fr" href="https://devtools.help/fr/">
+<link rel="alternate" hreflang="de" href="https://devtools.help/de/">
+<link rel="alternate" hreflang="ru" href="https://devtools.help/ru/">
+<link rel="alternate" hreflang="id" href="https://devtools.help/id/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "JSON Formatter, Validator & Converter", "url": "https://devtools.help/en/", "description": "Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, diff two documents and query with JSONPath — all locally in your browser.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is my JSON uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Parsing, formatting, diffing and conversion are all done by JavaScript in your browser, and the page contains no code that sends JSON to a backend. You can keep using these features offline once the editor dependency has loaded."}}, {"@type": "Question", "name": "Validation fails, but the JSON looks fine. Why?", "acceptedAnswer": {"@type": "Answer", "text": "The four usual suspects are a trailing comma after the last item of an object or array, single quotes instead of double quotes, a literal newline inside a string that was never escaped, and an invisible BOM at the start of the file. The error message includes the position, so moving the cursor there usually reveals the problem."}}, {"@type": "Question", "name": "How is JSON different from a JavaScript object literal?", "acceptedAnswer": {"@type": "Answer", "text": "JSON requires double-quoted keys, forbids trailing commas and comments, and has no undefined, functions or single-quoted strings. Object literals allow all of those, which is why copying an object straight out of JavaScript source often fails validation."}}, {"@type": "Question", "name": "How large a JSON document can it handle?", "acceptedAnswer": {"@type": "Answer", "text": "That depends on the memory your browser has available; a few tens of megabytes is normally fine. For hundreds of megabytes, reach for a command-line tool such as jq — the browser editor gets noticeably sluggish at that size."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "JSON", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 3, "name": "JSON Formatter, Validator & Converter", "item": "https://devtools.help/en/"}]}]}</script>
 <link rel="stylesheet" href="/assets/cdn/codemirror/5.65.16/codemirror.min.css">
@@ -198,13 +206,12 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
 .footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
 .footer-links a:hover{color:var(--primary);text-decoration:underline}
-/* 语言切换（分段控件） */
-.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
-.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
-.lang-link+.lang-link{border-left:1px solid var(--border)}
-.lang-link:hover{background:var(--tab-hover);color:var(--text)}
-.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
-/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+/* 语言切换（下拉选择，N 语言不挤爆 header） */
+.lang-switch{display:flex;align-items:center;margin-right:6px}
+.lang-select{padding:4px 6px;font-size:12px;color:var(--text-secondary);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.4;cursor:pointer;max-width:128px;transition:all var(--transition)}
+.lang-select:hover{background:var(--tab-hover);color:var(--text)}
+.lang-select:focus{outline:2px solid var(--primary);outline-offset:1px}
+/* 工具页正文（构建h烘焙进 HTML 的Description/步骤/FAQ） */
 .seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
 .seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
 .seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
@@ -216,6 +223,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .seo-features{list-style:none;margin-left:0!important}
 .seo-features li{padding-left:16px;position:relative}
 .seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+/* 首页「全部在线开发工具」清单：两列排布，窄屏回退单列（38 条单列会拉出很长一屏） */
+.seo-content h3{font-size:15px;color:var(--text);margin:18px 0 6px}
+.seo-tools{list-style:none;margin-left:0!important;columns:2;column-gap:32px}
+.seo-tools li{margin-bottom:5px;break-inside:avoid}
+.seo-tools a{font-weight:600}
 .faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
 .faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
 .faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
@@ -224,7 +236,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .legal{max-width:900px;margin-left:auto;margin-right:auto}
 .legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
 .legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
-@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}.seo-tools{columns:1}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
 /* 反馈弹窗（原生 <dialog>，无第三方依赖）
    注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
@@ -244,9 +256,9 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
 .fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
 .fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
-/* ==================== 今日热榜（/hotnews/） ====================
-   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
-   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
+/* ==================== 今Day热榜（/hotnews/） ====================
+   这一页唯一的交互是来源标签过滤，而过滤只是把mGroup的 data-on 置 0/1；
+   服务端给每Group写的就是 data-on="1"，所以禁用 JS h全部条目照常可见。 */
 .news{display:flex;flex-direction:column;gap:16px}
 .news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
 .news-head-row{margin-bottom:12px}
@@ -287,7 +299,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 @media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
 /* ==================== Go 速查表（/go-cheatsheet/） ====================
    与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
-   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
+   服务端给每个条目写的就是 data-on="1"，禁用 JS h全部条目照常可见。 */
 .gocs{display:flex;flex-direction:column;gap:16px}
 .gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
 .gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
@@ -319,7 +331,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 @media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
 /* ==================== 代码片段库（/snippets/） ====================
    与 .gocs-* 同型（构建期烘焙 + 无 JS 全可见 + JS 只过滤），
-   差别在卡片：代码块 + 右上角复制按钮。 */
+   差别在卡片：代码块 + 右上角Copy按钮。 */
 .snp{display:flex;flex-direction:column;gap:16px}
 .snp-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
 .snp-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
@@ -388,24 +400,24 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 /* ============================================================
    窄屏导航（2026-10-10）
    ------------------------------------------------------------
-   问题：.header 是 sticky + flex-wrap:wrap，而 6 个分类下拉 + 2 个平级链接
-   + 右侧 3 个按钮在 390px 屏上会换行成 7 行，占掉屏幕顶部约三分之一，
-   且右侧按钮组被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
+   问题：.header 是 sticky + flex-wrap:wrap，而 6 个m类下拉 + 2 个平级链接
+   + 右侧 3 个按钮在 390px 屏上会换行成 7 rows，占掉屏幕顶部约三m之一，
+   且右侧按钮Group被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
 
-   方案：<=900px 时 header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
-   ☰ 抽屉；抽屉里的分类下拉由浮层改为原地展开（position:static + max-height
+   方案：<=900px h header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
+   ☰ 抽屉；抽屉里的m类下拉由浮层改为原地展开（position:static + max-height
    过渡），因为浮层在窄屏上会向右溢出视口。
 
    开关状态放在 body.nav-open 上而不是 :focus-within —— 移动浏览器点击
-   <button> 的聚焦行为不一致，靠焦点展开会时灵时不灵；点击外部关闭也只有 JS 能做。
+   <button> 的聚焦行为不一致，靠焦点展开会h灵h不灵；点击外部Close也只有 JS 能做。
    ============================================================ */
 
-/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体查询里塞一大坨 */
+/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体Query里塞一大坨 */
 .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;padding:0 8px;flex:none;cursor:pointer;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);transition:background var(--transition),border-color var(--transition)}
 .nav-toggle:hover{background:var(--tab-hover)}
 .nav-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
 .nav-toggle span{display:block;width:100%;height:2px;border-radius:1px;background:var(--text);transition:transform var(--transition),opacity var(--transition)}
-/* 展开时三条线变成 ✕ */
+/* 展开h三条线变成 ✕ */
 body.nav-open .nav-toggle span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 body.nav-open .nav-toggle span:nth-child(2){opacity:0}
 body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
@@ -425,15 +437,15 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .nav-trigger{width:100%;justify-content:space-between;text-align:left;padding:12px 10px;font-size:15px;border-radius:var(--radius-sm)}
   .nav-trigger.active{background:var(--tab-active-bg)}
 
-  /* 分类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
+  /* m类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
   .nav-panel{position:static;left:auto;right:auto;min-width:0;opacity:1;visibility:visible;transform:none;background:transparent;border:0;box-shadow:none;padding:0 0 0 12px;max-height:0;overflow:hidden;transition:max-height .22s ease}
   .nav-dropdown.open .nav-panel{max-height:420px;padding-bottom:6px}
   .nav-dropdown.open .caret{transform:rotate(180deg)}
-  /* 分类名已经在触发按钮上，面板里重复的表头去掉 */
+  /* m类名已经在触发按钮上，面板里重复的表头去掉 */
   .nav-panel-title{display:none}
   .nav-panel-item{padding:11px 10px;font-size:14.5px;white-space:normal}
 
-  /* 平级链接（今日热榜 / 博客）同样整行 */
+  /* 平级链接（今Day热榜 / 博客）同样整行 */
   .top-nav-link{width:100%;padding:12px 10px;font-size:15px;justify-content:flex-start}
 
 }
@@ -441,7 +453,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 /* 实测各元素宽度：logo 109 + header-actions 195（反馈 40 / 语言 101 / 主题 40）
    + ☰ 36 + 间距内边距 42 ≈ 382px。375px 机型减去滚动条约 360px 可用 → 会溢出，
    ☰ 被挤出视口，菜单就再也打不开了。所以手机档必须再让出 40 多像素。
-   反馈按钮优先让位：页脚有同样的「问题反馈」入口，而 ☰ 是唯一入口。 */
+   反馈按钮优先让位：页脚有同样的「Feedback」入口，而 ☰ 是唯一入口。 */
 @media(max-width:430px){
   .header-actions .feedback-btn{display:none}
   .header{padding:8px 10px;gap:5px}
@@ -453,7 +465,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .logo-text{display:none}
 }
 
-/* ==================== 全站工具搜索 + 最近使用 ==================== */
+/* ==================== 全站Tool search + Recent ==================== */
 .search-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 9px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text);line-height:1}
 .search-btn:hover{background:var(--tab-hover);border-color:var(--primary);color:var(--primary)}
 .search-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-start;justify-content:center;padding-top:9vh}
@@ -480,7 +492,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .nav-panel-empty{padding:12px 10px;font-size:13px;color:var(--text-muted)}
 @media(max-width:430px){.search-overlay{padding-top:5vh}.search-panel{width:calc(100% - 16px)}}
 
-/* ===== 时间 / 日期工具新增样式（2026-10-15） ===== */
+/* ===== h间 / Date工具新增样式（2026-10-15） ===== */
 .tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
 .tool-card-title{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--text)}
 .tool-card-desc{font-size:13px;color:var(--text-secondary);margin:8px 0 12px}
@@ -506,7 +518,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .dt-big{font-size:38px}
 }
 
-/* ============================================================ 日历与日期（年度参考页） */
+/* ============================================================ Day历与Date（Year度参考页） */
 .ev-page{max-width:100%}
 .ev-summary{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text);line-height:1.7}
@@ -532,7 +544,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .ev-cal .ev-today{background:var(--primary);color:#fff;font-weight:700;border-radius:var(--radius-sm)}
 .ev-cal .ev-day{cursor:default}
 
-/* ============================================================ 进制转换 */
+/* ============================================================ 进制Convert */
 .base-sel{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);
   background:var(--card-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;min-width:62px}
 .base-sel-label{font-size:13px;color:var(--text-secondary);font-weight:500;white-space:nowrap}
@@ -546,7 +558,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .ev-cal-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .ev-summary{padding:12px 14px}
 }
-/* ---- 世界时钟：模拟表盘卡片视图 ---- */
+/* ---- World Clock：模拟Clocks卡片视图 ---- */
 .wc-views{display:flex;gap:8px;margin:10px 0 14px}
 .wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px;margin:8px 0 16px}
 .wc-card{min-width:0;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
@@ -564,7 +576,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .wc-time{font-size:15px;margin-top:2px}
 .wc-meta{display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;min-height:18px}
 .wc-dst{font-size:11px;font-weight:600;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:0 4px}
-/* ---- 世界时钟：时区一览静态表 ---- */
+/* ---- World Clock：All zones静态表 ---- */
 .wc-note{font-size:12px;color:var(--text-muted);margin:4px 0 10px}
 .wc-rep{display:block;font-weight:600;color:var(--text)}
 .wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -596,23 +608,30 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
      放在 head 里是为了避免加载后再回退造成的闪烁。 -->
 <noscript><style>@media(max-width:900px){.nav-toggle{display:none}.top-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;border-bottom:0;box-shadow:none;padding:6px 0 0;max-height:none;overflow:visible}.nav-dropdown{width:auto}.nav-trigger{width:auto;font-size:14px}}</style></noscript>
 <script>
-// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
-// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫hRun。
+// 爬虫跳过是为了不影响各语言Version的收录（配合 hreflang 使用）。
 (function () {
   try {
     var KEY = 'devtools-lang';
-    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    var q = location.search.match(/[?&]lang=([A-Za-z-]+)(?:&|$)/);
     if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
     if (localStorage.getItem(KEY)) return;
     if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
     var langs = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || ''];
-    var preferZh = false;
+    var SUPPORTED = ["zh", "en", "ja", "ko", "es", "pt-BR", "fr", "de", "ru", "id"];
+    var want = null;
     for (var i = 0; i < langs.length; i++) {
-      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+      var p = (langs[i] || '').slice(0, 2).toLowerCase();
+      if (p === 'zh') { want = 'zh'; break; }
+      for (var j = 0; j < SUPPORTED.length; j++) {
+        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) { want = SUPPORTED[j]; break; }
+      }
+      if (want) break;
     }
-    var want = preferZh ? 'zh' : 'en';
-    var target = {"zh": "../", "en": "./"}[want];
+    if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
+    var targets = {"zh": "../", "en": "../en/", "ja": "../ja/", "ko": "../ko/", "es": "../es/", "pt-BR": "../pt-BR/", "fr": "../fr/", "de": "../de/", "ru": "../ru/", "id": "../id/"};
+    var target = targets[want];
     if (target && want !== 'en') location.replace(target);
   } catch (e) {}
 })();
@@ -751,14 +770,30 @@ var _hmt = _hmt || [];
       <div class="nav-panel" id="recentPanel" role="menu"></div>
     </div>
   </nav>
-  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="Search" aria-label="Search">🔍</button><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="Search" aria-label="Search">🔍</button><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch">
+  <select class="lang-select" aria-label="Language">
+    <option value="../" data-lang="zh">中文</option>
+    <option value="./" data-lang="en" selected>English</option>
+    <option value="../ja/" data-lang="ja">日本語</option>
+    <option value="../ko/" data-lang="ko">한국어</option>
+    <option value="../es/" data-lang="es">Español</option>
+    <option value="../pt-BR/" data-lang="pt-BR">Português</option>
+    <option value="../fr/" data-lang="fr">Français</option>
+    <option value="../de/" data-lang="de">Deutsch</option>
+    <option value="../ru/" data-lang="ru">Русский</option>
+    <option value="../id/" data-lang="id">Indonesia</option>
+  </select>
+</div>
 <script>
-// 记住手动选择：下次访问不再自动跳转
-document.addEventListener("click", function (e) {
-  var a = e.target.closest && e.target.closest("[data-lang-set]");
-  if (!a) return;
-  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
-}, true);
+// 语言切换：记住手动选择，下次访问不再自动跳转
+var __ls = document.querySelector(".lang-select");
+if (__ls) {
+  __ls.addEventListener("change", function () {
+    var o = __ls.options[__ls.selectedIndex];
+    try { localStorage.setItem("devtools-lang", o.getAttribute("data-lang")); } catch (e) {}
+    location.href = __ls.value;
+  });
+}
 </script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
 </header>
 
@@ -884,6 +919,72 @@ document.addEventListener("click", function (e) {
     <details><summary>How is JSON different from a JavaScript object literal?</summary><p>JSON requires double-quoted keys, forbids trailing commas and comments, and has no undefined, functions or single-quoted strings. Object literals allow all of those, which is why copying an object straight out of JavaScript source often fails validation.</p></details>
     <details><summary>How large a JSON document can it handle?</summary><p>That depends on the memory your browser has available; a few tens of megabytes is normally fine. For hundreds of megabytes, reach for a command-line tool such as jq — the browser editor gets noticeably sluggish at that size.</p></details>
   </div>
+  <h2>All developer tools on this site</h2>
+  <p>This site is more than a JSON formatter. Besides JSON formatting and conversion it covers encoding, hashing, regular expressions, timestamps and time zones, identifier decoding, format conversion and code formatting — all running locally in your browser, with nothing uploaded. Grouped by category:</p>
+  <h3>Convert</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/formatter/">Formatter</a> — HTML, CSS, JS and SQL code formatter</li>
+    <li><a href="../en/yaml/">JSON ↔ YAML</a> — JSON and YAML converter</li>
+    <li><a href="../en/toml/">JSON ↔ TOML</a> — JSON and TOML converter</li>
+    <li><a href="../en/csv/">JSON ↔ CSV</a> — JSON and CSV converter with optional header row</li>
+    <li><a href="../en/color/">Color</a> — HEX / RGB / HSL colour converter with preview</li>
+  </ul>
+  <h3>Base Convert</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/base/">Base Converter</a> — Convert between any bases from 2 to 36</li>
+    <li><a href="../en/binary/">Binary Converter</a> — Binary, decimal and hexadecimal conversion</li>
+    <li><a href="../en/hex/">Hex Converter</a> — Hex to text and decimal conversion</li>
+  </ul>
+  <h3>Encode / Crypto</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/encode/">Encode</a> — Base64, URL, Unicode and HTML entity encode / decode</li>
+    <li><a href="../en/hash/">Hash</a> — MD5 / SHA family, HMAC, AES and file checksums</li>
+    <li><a href="../en/jwt/">JWT decoder</a> — Decode JWTs and verify HS256 / 384 / 512 signatures</li>
+  </ul>
+  <h3>Text / String</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/diff/">Text Diff</a> — Character- and word-level text diff</li>
+    <li><a href="../en/string/">Strings</a> — Case conversion, dedupe, sorting and word count</li>
+    <li><a href="../en/regex/">Regex</a> — Test regular expressions with live highlight and replace preview</li>
+    <li><a href="../en/case/">Case style</a> — camelCase, snake_case and other naming styles</li>
+  </ul>
+  <h3>Code / Gen</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/generator/">Generators</a> — UUID, random password and QR code generator</li>
+    <li><a href="../en/snippets/">Code Snippets</a> — Copy-ready code snippets for common languages</li>
+  </ul>
+  <h3>Time / Date</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/timestamp/">Timestamp</a> — Unix timestamp and date converter, auto-detects seconds or ms</li>
+    <li><a href="../en/batch/">Batch TS</a> — Convert many timestamps at once</li>
+    <li><a href="../en/timestamp-list/">TS Reference</a> — Common timestamps: today, this week, this month</li>
+    <li><a href="../en/timezones/">Time Zones</a> — Convert time between two cities and compare clocks</li>
+    <li><a href="../en/weeknumbers/">ISO Week</a> — ISO week number and date lookup</li>
+    <li><a href="../en/daynumbers/">Day of Year</a> — Day of the year and date lookup</li>
+    <li><a href="../en/years/">Leap Year</a> — Leap year check and days in a given year</li>
+    <li><a href="../en/world-clock/">World Clock</a> — Multi-city world clock with several views</li>
+    <li><a href="../en/countdown/">Countdown</a> — Countdown to any target date</li>
+    <li><a href="../en/date-difference/">Date Diff</a> — Days, months and years between two dates</li>
+    <li><a href="../en/date-calculator/">Date Calc</a> — Add or subtract days and working days</li>
+    <li><a href="../en/duration/">Duration</a> — Seconds, minutes, hours and days converter</li>
+  </ul>
+  <h3>ID / Identifiers</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/uuid/">UUID</a> — Generate and inspect UUID v4 / v7 in bulk</li>
+    <li><a href="../en/snowflake/">Snowflake</a> — Decode Snowflake IDs into time and worker ID</li>
+    <li><a href="../en/tid/">Twitter ID</a> — Turn a Twitter snowflake ID into its timestamp</li>
+    <li><a href="../en/objectid/">ObjectId</a> — Decode the timestamp inside a MongoDB ObjectId</li>
+    <li><a href="../en/firebase/">Firebase ID</a> — Decode the timestamp inside a Firebase push ID</li>
+  </ul>
+  <h3>Cheat Sheets</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/go-cheatsheet/">Go Cheat Sheet</a> — Go commands, environment variables and pitfalls</li>
+  </ul>
+  <h3>Content</h3>
+  <ul class="seo-tools">
+    <li><a href="../en/hotnews/">Tech News</a> — Daily tech news from Hacker News, TechCrunch and more</li>
+    <li><a href="../en/blog/">Blog</a> — Long-form posts on Go, the web and building this site</li>
+  </ul>
 </section>
 </main>
 
@@ -1014,7 +1115,7 @@ function copyTextById(id) {
   if (!el) return;
   navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
 }
-// 把文本结果导出成文件下载（Blob + 临时 a[download]，纯前端，不经过服务器）。
+// 把文本Result导出成文件Download（Blob + 临h a[download]，纯前端，不经过服务器）。
 function downloadText(filename, text, mime) {
   if (!text) { toast('No result to download'); return; }
   try {
@@ -1024,7 +1125,7 @@ function downloadText(filename, text, mime) {
     a.href = url; a.download = filename; a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob 下载。
+    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob Download。
     setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
     toast('Downloaded ' + filename);
   } catch (e) {
@@ -1039,7 +1140,7 @@ function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; }
 // PAGE NAVIGATION
 // ============================================================
 // 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
-// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+// 因此不再需要客户端标签切换。Now页由构建h写入的 <html data-page="..."> 指明。
 const pageInited = {};
 function currentPage() {
   return document.documentElement.getAttribute('data-page') || 'json';
@@ -1090,14 +1191,14 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 // ============================================================
-// 全站工具搜索 + 最近使用
+// 全站Tool search + Recent
 // ============================================================
 (function () {
   var STORE_KEY = 'devtools-recent';
-  var MAX_RECENT = 8;     // 持久化保留的最近使用工具上限
+  var MAX_RECENT = 8;     // 持久化保留的Recent工具上限
   var SHOW_RECENT = 6;    // 搜索空态 / 导航下拉里展示的条数
 
-  // ---- localStorage 读写（隐私模式等不可用时静默降级）----
+  // ---- localStorage 读写（隐私模式等不可用h静默降级）----
   function loadRecent() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
     catch (e) { return {}; }
@@ -1106,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', init);
     try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
   }
 
-  // 记录一次工具使用：频率 + 最近时间戳
+  // 记录一次工具使用：频率 + 最近Timestamp
   function recordToolUse(slug) {
     if (!slug) return;
     var rec = loadRecent();
@@ -1116,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', init);
     saveRecent(rec);
   }
 
-  // 按使用频率降序、频率相同按最近使用降序
+  // 按使用频率Descending、频率相同按RecentDescending
   function getRecentSorted() {
     var rec = loadRecent();
     var arr = Object.keys(rec).map(function (k) {
@@ -1141,7 +1242,7 @@ document.addEventListener('DOMContentLoaded', init);
   function itemTitle(m) { var f = m[pageLang()]; return (f && f.t) || (m.en && m.en.t) || ''; }
   function itemGroup(m) { return m.g || ''; }
 
-  // ---- 渲染：导航下拉「最近使用」面板 ----
+  // ---- 渲染：导航下拉「Recent」面板 ----
   function renderRecentPanel() {
     var panel = document.getElementById('recentPanel');
     if (!panel) return;
@@ -1165,14 +1266,14 @@ document.addEventListener('DOMContentLoaded', init);
     });
   }
 
-  // 清空使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
+  // Clear使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
   function clearHistory() {
     saveRecent({});
     renderRecentPanel();
     renderSearch(input ? input.value : '');
   }
 
-  // ---- 渲染：搜索结果 / 空态（最近使用）----
+  // ---- 渲染：Results / 空态（Recent）----
   var overlay = null, input = null, results = null;
   function buildResultItem(m) {
     return '<a class="search-item" href="' + escHtml(m.href) + '">' +
@@ -1254,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', init);
         }
       });
     }
-    // "/" 快捷键打开搜索（输入框 / 编辑器内不触发）
+    // "/" 快捷键打开搜索（Input框 / 编辑器内不触发）
     document.addEventListener('keydown', function (e) {
       if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         var t = e.target;
@@ -1266,7 +1367,7 @@ document.addEventListener('DOMContentLoaded', init);
     });
   }
 
-  // 页面初始化：记录当前工具的使用 + 渲染最近使用面板 + 初始化搜索
+  // 页面初始化：记录Now工具的使用 + 渲染Recent面板 + 初始化搜索
   function initSearchAndRecent() {
     var p = currentPage();
     var slug = (p && p.indexOf('blog') === 0) ? 'blog' : p;
@@ -1286,10 +1387,10 @@ document.addEventListener('DOMContentLoaded', init);
 // MOBILE NAV（窄屏抽屉）
 // ============================================================
 // 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
-// 窄屏下把导航收进 ☰ 抽屉，分类下拉从浮层改成原地展开（配合 style.css 的媒体查询）。
+// 窄屏下把导航收进 ☰ 抽屉，m类下拉从浮层改成原地展开（配合 style.css 的媒体Query）。
 //
 // 为什么不用 :focus-within 纯 CSS：移动浏览器点击 <button> 是否获得焦点行为不一致，
-// 靠焦点展开会时灵时不灵；"点外面关闭"更是只有 JS 能做。
+// 靠焦点展开会h灵h不灵；"点外面Close"更是只有 JS 能做。
 (function () {
   var toggle = document.getElementById('navToggle');
   var nav = document.getElementById('topNav');
@@ -1301,7 +1402,7 @@ document.addEventListener('DOMContentLoaded', init);
     document.body.classList.toggle('nav-open', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (!open) {
-      // 收起抽屉时把展开的分类也一并复位，下次打开是干净的初始状态
+      // 收起抽屉h把展开的m类也一并复位，下次打开是干净的初始状态
       Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (dd) {
         dd.classList.remove('open');
       });
@@ -1310,7 +1411,7 @@ document.addEventListener('DOMContentLoaded', init);
 
   toggle.addEventListener('click', function () { setOpen(!isOpen()); });
 
-  // 抽屉里的分类：点分类名原地展开/收起，同时只留一个展开的
+  // 抽屉里的m类：点m类名原地展开/收起，同h只留一个展开的
   Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown'), function (dd) {
     var trig = dd.querySelector('.nav-trigger');
     if (!trig) return;
@@ -1323,23 +1424,23 @@ document.addEventListener('DOMContentLoaded', init);
     });
   });
 
-  // 点 drawer 以外的地方关闭。header 内的点击（含 ☰ 本身）都交给上面的处理器
+  // 点 drawer 以外的地方Close。header 内的点击(including ☰ 本身）都交给上面的处理器
   document.addEventListener('click', function (e) {
     if (isOpen() && !header.contains(e.target)) setOpen(false);
   });
 
-  // Esc 关闭并把焦点还给 ☰，键盘用户不会迷失位置
+  // Esc Close并把焦点还给 ☰，键盘用户不会迷失at index
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
   });
 
-  // 抽屉里点链接：跨页跳转会重载页面、自然关闭；同页锚点不会，所以手动关一次
+  // 抽屉里点链接：跨页跳转会重载页面、自然Close；同页锚点不会，所以手动关一次
   Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
     a.addEventListener('click', function () { setOpen(false); });
   });
 
-  // 转到桌面宽度时清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
-  // 桌面上打开着抽屉布局（虽然桌面媒体查询不生效，但 aria-expanded 会误导读屏软件）
+  // 转到桌面宽度h清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
+  // 桌面上打开着抽屉布局（虽然桌面媒体Query不生效，但 aria-expanded 会误导读屏软件）
   window.addEventListener('resize', function () {
     if (window.innerWidth > 900 && isOpen()) setOpen(false);
   });
@@ -1401,7 +1502,7 @@ function initJsonPage() {
   });
   updateJsonOptions();
 
-  // Load demo data（延迟载入：若用户在这 300ms 内已经开始输入，就不要再覆盖他）
+  // Load demo data（延迟载入：若用户在这 300ms 内已经开始Input，就不要再覆盖他）
   setTimeout(() => {
     if (getVal('mainJsonInput').trim()) return;
     setVal('mainJsonInput', demoJson); runJsonOp('format');
@@ -1910,7 +2011,7 @@ function evalJsonFilter(item, expr) {
 // text-diff.js — Generic text diff (like Beyond Compare)
 
 function initDiffPage() {
-  // Load demo data（用户已经开始输入就不要覆盖）
+  // Load demo data（用户已经开始Input就不要覆盖）
   const a = document.getElementById('textDiffInputA');
   const b = document.getElementById('textDiffInputB');
   if (a.value.trim() || b.value.trim()) { setTimeout(doTextDiff, 200); return; }
@@ -2155,9 +2256,9 @@ function runEncodeOp(mode) {
         else { const ta = document.createElement('textarea'); ta.innerHTML = input; result = ta.value; }
         break;
       case 'hex':
-        // 必须按 UTF-8 字节走：原实现用 charCodeAt 输出 UTF-16 码元，
-        // 「中」会编成 4e2d（4 个十六进制位），而解码端每次只读 2 位，
-        // 于是解出 'N-' 这种乱码——编码与解码不对称，中文无法往返。
+        // 必须按 UTF-8 字节走：原实现用 charCodeAt Output UTF-16 码元，
+        // 「中」会编成 4e2d（4 个Hex位），而Decode端每次只读 2 位，
+        // 于是解出 'N-' 这种乱码——Encode与Decode不对称，中文无法往返。
         if (mode === 'encode') {
           result = Array.from(new TextEncoder().encode(input))
             .map(b => b.toString(16).padStart(2, '0')).join(' ');
@@ -2191,7 +2292,7 @@ function setRegexPattern(pattern) {
 function initRegexPage() {
   const input = document.getElementById('regexInput');
   const pattern = document.getElementById('regexPattern');
-  // 用户已经开始输入就不要覆盖
+  // 用户已经开始Input就不要覆盖
   if (input.value.trim() || pattern.value.trim()) { setTimeout(liveRegex, 200); return; }
   input.value = 'test@example.com\nadmin@site.cn\n\nPhone: 13812345678\nWebsite: https://www.example.com/path';
   pattern.value = '[\\w.-]+@[\\w.-]+\\.[a-z]{2,}';
@@ -2276,16 +2377,16 @@ function initTimestampPage() {
     };
   });
   document.getElementById('dtInput').value = new Date().toISOString().slice(0, 16);
-  updateTsClock();                     // 立即刷一次，否则时钟要等 1 秒才从 "--" 变成数字
+  updateTsClock();                     // 立即刷一次，否则h钟要等 1 s才从 "--" 变成Digits
   setInterval(updateTsClock, 1000);
-  // 结果 deep-link：?ts= 回放并自动转换（对方无此能力，我们反超）
+  // Result deep-link：?ts= 回放并自动Convert（对方无此能力，我们反超）
   try {
     var tsParam = new URLSearchParams(location.search).get('ts');
     if (tsParam) { document.getElementById('tsInput').value = tsParam; tsToDate(); }
   } catch (e) {}
 }
 
-// timestamp 页「复制分享链接」：把当前输入的时间戳编码进 URL
+// timestamp 页「Copy share link」：把NowInput的TimestampEncode进 URL
 function shareTimestampLink() {
   var v = document.getElementById('tsInput').value.trim();
   if (!v) { toast('Enter a timestamp first', 'error'); return; }
@@ -2297,11 +2398,27 @@ function shareTimestampLink() {
 
 function updateTsClock() {
   const now = new Date();
-  // 不要用 toLocaleString()：它会按本地习惯加千位分隔符（1,700,000,000），
-  // 复制出来不是合法数字，粘进代码就报错。时间戳要的是可直接复制的纯数字。
+  // 不要用 toLocaleString()：它会按local习惯加千位m隔符（1,700,000,000），
+  // Copy出来不是合法Digits，粘进代码就报错。Timestamp要的是可直接Copy的纯Digits。
   document.getElementById('liveClock').textContent = String(Math.floor(now.getTime() / 1000));
   document.getElementById('liveClockMs').textContent = String(now.getTime());
   updateTsDisplay();
+}
+
+// 不要用 Date.prototype.toString()：括号内Time zone名取自浏览器/系统语言
+// （中文系统会Output「中国标准h间」），与页面语言不一致，任何语言页都可能见到中文。
+// 统一按页面语言（<html lang>）FormatLocal time。
+function tsFmtLocale() {
+  var loc = (document.documentElement && document.documentElement.lang) || 'zh-CN';
+  if (loc.slice(0, 2) === 'en') loc = 'en-US';
+  return loc;
+}
+function tsLocalString(d) {
+  try {
+    return new Intl.DateTimeFormat(tsFmtLocale(), { dateStyle: 'full', timeStyle: 'long' }).format(d);
+  } catch (e) {
+    return String(d).replace(/\s*\([^)]*\)\s*$/, '');   // 兜底：去掉语言相关的Time zone名
+  }
 }
 
 function updateTsDisplay() {
@@ -2319,7 +2436,7 @@ function updateTsDisplay() {
   switch (tsCurrentFmt) {
     case 'iso': result = d.toISOString(); break;
     case 'rfc': result = d.toUTCString().replace('GMT', '+0000'); break;
-    case 'local': result = d.toString(); break;
+    case 'local': result = tsLocalString(d); break;
     case 'utc': result = d.toUTCString(); break;
   }
   document.getElementById('tsCurrentTime').textContent = result;
@@ -2329,15 +2446,15 @@ function tsToDate() {
   const input = document.getElementById('tsInput').value.trim();
   if (!input) { document.getElementById('tsToDateResult').textContent = 'Please enter a timestamp'; return; }
   let ts = parseInt(input);
-  // 秒 / 毫秒自动识别。原阈值写成 1e15（16 位），13 位的毫秒时间戳根本触发不到，
-  // 于是被当成秒解析，1700000000000 会算出公元 55840 年。
-  // 改用 1e11 作为分界：1e11 秒是公元 5138 年（现实中不会有人这么输入），
-  // 1e11 毫秒是 1973 年，因此 >= 1e11 一律按毫秒处理。
+  // s / msAuto-detect。原阈值写成 1e15（16 位），13 位的msTimestamp根本触发不到，
+  // 于是被当成sParse，1700000000000 会算出公元 55840 Year。
+  // 改用 1e11 作为m界：1e11 s是公元 5138 Year（现实中不会有人这么Input），
+  // 1e11 ms是 1973 Year，因此 >= 1e11 一律按ms处理。
   if (Math.abs(ts) >= 1e11) ts = Math.floor(ts / 1000);
   const d = new Date(ts * 1000);
   if (isNaN(d.getTime())) { document.getElementById('tsToDateResult').textContent = 'Invalid timestamp'; return; }
   document.getElementById('tsToDateResult').innerHTML =
-    '<b>Local:</b> ' + d.toString() + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
+    '<b>Local:</b> ' + tsLocalString(d) + '<br><b>UTC:</b> ' + d.toUTCString() + '<br><b>ISO8601:</b> ' + d.toISOString() + '<br>' +
     '<b>year:</b> ' + d.getFullYear() + ' <b>month:</b> ' + (d.getMonth()+1) + ' <b>day:</b> ' + d.getDate() + ' ' +
     '<b>hour:</b> ' + d.getHours() + ' <b>min:</b> ' + d.getMinutes() + ' <b>sec:</b> ' + d.getSeconds() + ' ' +
     '<b>Weekday:</b> ' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
@@ -2355,20 +2472,20 @@ function dateToTs() {
 </script>
 <script>
 // datetime-tools.js
-// datetime-tools.js — 时间 / 日期工具共享库
+// datetime-tools.js — h间 / Date工具共享库
 // ============================================================
 // 本文件被内联进每个页面（与 timestamp.js 同机制）。
-// ① 全部「纯逻辑」函数（解析 / 计算 / 格式化）集中在此，便于 Node 单测；
-// ② 每个新工具页的 DOM 初始化函数 initXxxPage() 也在此定义，由 core.js 按 data-page 分派；
-// ③ 注释用 // 写法，构建的 localize() 会跳过（不进英文替换），因此注释可写中文；
+// ① 全部「纯逻辑」函数（Parse / 计算 / Format）集中在此，便于 Node 单测；
+// ② 每个新工具页的 DOM 初始化函数 initXxxPage() 也在此定义，由 core.js 按 data-page m派；
+// ③ 注释用 // 写法，构建的 localize() 会跳过（不进英文Replace），因此注释可写中文；
 //    但「用户可见的字符串字面量」必须进 i18n.EN 字典，否则英文页会残留中文。
 // ============================================================
 
-// ---------- 公共：当前秒级时间戳 ----------
+// ---------- 公共：Nows级Timestamp ----------
 function dtNowSeconds() { return Math.floor(Date.now() / 1000); }
 
-// ---------- 时间戳解析：秒/毫秒自动识别 ----------
-// 返回 { ok, value(秒), error }
+// ---------- TimestampParse：s/msAuto-detect ----------
+// 返回 { ok, value(s), error }
 function dtParseTimestamp(input) {
   if (input === null || input === undefined) return { ok: false, error: 'empty' };
   var s = String(input).trim();
@@ -2376,17 +2493,17 @@ function dtParseTimestamp(input) {
   if (!/^-?\d+$/.test(s)) return { ok: false, error: 'not_int' };
   var n = Number(s);
   if (!isFinite(n)) return { ok: false, error: 'not_int' };
-  // >= 1e11 一律按毫秒（1e11 秒已是公元 5138 年，现实中不会这么输入）
+  // >= 1e11 一律按ms（1e11 s已是公元 5138 Year，现实中不会这么Input）
   if (Math.abs(n) >= 1e11) n = Math.floor(n / 1000);
   return { ok: true, value: n };
 }
 
-// ---------- 时间戳 -> 指定时区的年月日时分秒（UTC 基准 + Intl 转时区） ----------
+// ---------- Timestamp -> 指定Time zone的YearMonthDayhms（UTC 基准 + Intl 转Time zone） ----------
 // tz 为 IANA 名称（'Asia/Shanghai'）或 'UTC' 或 'local'
 function dtZonedParts(tsSec, tz) {
   var d = new Date(tsSec * 1000);
   if (isNaN(d.getTime())) return null;
-  var resolved = (tz === 'local') ? undefined : tz; // undefined -> 运行时本地时区
+  var resolved = (tz === 'local') ? undefined : tz; // undefined -> 运行hlocalTime zone
   var fmt;
   try {
     fmt = new Intl.DateTimeFormat('en-US', {
@@ -2396,13 +2513,13 @@ function dtZonedParts(tsSec, tz) {
   } catch (e) { return null; }
   var parts = {};
   fmt.formatToParts(d).forEach(function (p) { parts[p.type] = p.value; });
-  // hour12:false 在部分实现里午夜返回 '24'，规整为 '00'
+  // hour12:false 在部m实现里午夜返回 '24'，规整为 '00'
   if (parts.hour === '24') parts.hour = '00';
   return parts; // {year,month,day,hour,minute,second,weekday}
 }
 
-// ---------- 日期各字段 -> 秒级时间戳（按指定时区解释） ----------
-// y/m/d/h/min/sec 为数字；tz 为 IANA 或 'UTC'
+// ---------- Date各字段 -> s级Timestamp（按指定Time zone解释） ----------
+// y/m/d/h/min/sec 为Digits；tz 为 IANA 或 'UTC'
 function dtPartsToSeconds(y, m, d, h, min, sec, tz) {
   var ms;
   if (tz === 'UTC') {
@@ -2410,7 +2527,7 @@ function dtPartsToSeconds(y, m, d, h, min, sec, tz) {
   } else if (!tz || tz === 'local') {
     ms = new Date(y, m - 1, d, h || 0, min || 0, sec || 0).getTime();
   } else {
-    // 先按 UTC 算出该墙钟时间，再扣掉该时区相对 UTC 的偏移
+    // 先按 UTC 算出该墙钟h间，再扣掉该Time zone相对 UTC 的Offset
     var asUtc = Date.UTC(y, m - 1, d, h || 0, min || 0, sec || 0);
     var off = dtTimezoneOffsetSeconds(tz, new Date(asUtc));
     ms = asUtc - off * 1000;
@@ -2419,7 +2536,7 @@ function dtPartsToSeconds(y, m, d, h, min, sec, tz) {
   return Math.floor(ms / 1000);
 }
 
-// ---------- 时区相对 UTC 的偏移（秒），按 date 时刻的夏令时计算 ----------
+// ---------- Time zone相对 UTC 的Offset（s），按 date h刻的DST计算 ----------
 function dtTimezoneOffsetSeconds(tz, date) {
   try {
     var dt = date || new Date();
@@ -2435,7 +2552,7 @@ function dtTimezoneOffsetSeconds(tz, date) {
   } catch (e) { return 0; }
 }
 
-// ---------- 时区偏移标签（如 "GMT+8"） ----------
+// ---------- Time zoneOffset标签（如 "GMT+8"） ----------
 function dtTzOffsetLabel(tz, date) {
   var dt = date || new Date();
   try {
@@ -2448,7 +2565,7 @@ function dtTzOffsetLabel(tz, date) {
   return '';
 }
 
-// ---------- ISO 8601 周数 + 周年（周四规则） ----------
+// ---------- ISO 8601 周数 + 周Year（周四规则） ----------
 function dtIsoWeek(date) {
   var d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   var dayNum = (d.getUTCDay() + 6) % 7;            // 周一=0
@@ -2459,17 +2576,17 @@ function dtIsoWeek(date) {
   return { week: week, year: d.getUTCFullYear() };
 }
 
-// ---------- 年内第几天（1-366） ----------
+// ---------- Year内第几days（1-366） ----------
 function dtDayOfYear(date) {
   var start = Date.UTC(date.getUTCFullYear(), 0, 0);
   return Math.floor((date.getTime() - start) / 86400000);
 }
 
-// ---------- 闰年判断 ----------
+// ---------- Leap year判断 ----------
 function dtIsLeapYear(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
 
-// ---------- ISO 8601 时长 <-> 秒 ----------
-// 解析 "PnYnMnDTnHnMnS" / "PnW"；年=365天、月=30天（近似，用于无参考日的时长换算）
+// ---------- ISO 8601 h长 <-> s ----------
+// Parse "PnYnMnDTnHnMnS" / "PnW"；Year=365days、Month=30days（近似，用于无参考Day的h长换算）
 function dtParseIsoDuration(str) {
   var s = String(str || '').trim();
   if (!s) return { ok: false, error: 'empty' };
@@ -2497,7 +2614,7 @@ function dtSecondsToIsoDuration(totalSec) {
   return (totalSec < 0 ? '-' : '') + str;
 }
 
-// ---------- 倒计时 ----------
+// ---------- Countdown ----------
 function dtCountdown(targetSec) {
   var now = dtNowSeconds();
   var diff = targetSec - now;
@@ -2510,7 +2627,7 @@ function dtCountdown(targetSec) {
   return { past: past, days: days, hours: hours, mins: mins, secs: secs };
 }
 
-// ---------- 日期差值（秒 -> 天/时/分/秒） ----------
+// ---------- Date差值（s -> days/h/m/s） ----------
 function dtDiffSeconds(aSec, bSec) {
   var diff = Math.abs(aSec - bSec);
   var days = Math.floor(diff / 86400);
@@ -2520,11 +2637,11 @@ function dtDiffSeconds(aSec, bSec) {
   return { days: days, hours: hours, mins: mins, secs: secs };
 }
 
-// ---------- 日期加减（基于本地日历） ----------
-// base = {y,m,d}；delta = {years,months,days}；月末钳制（如 1/31 + 1 月 = 2/28）
+// ---------- Date加减（基于localDay历） ----------
+// base = {y,m,d}；delta = {years,months,days}；Month末钳制（如 1/31 + 1 Month = 2/28）
 function dtAddDate(base, delta) {
   var y = base.y + (delta.years || 0);
-  var m = base.m - 1 + (delta.months || 0);        // 0-based 月
+  var m = base.m - 1 + (delta.months || 0);        // 0-based Month
   y += Math.floor(m / 12);
   m = ((m % 12) + 12) % 12;
   var lastDay = new Date(y, m + 1, 0).getDate();
@@ -2534,8 +2651,8 @@ function dtAddDate(base, delta) {
   return { y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate() };
 }
 
-// ---------- 批量时间戳互转：文本块 -> 结果数组 ----------
-// mode: 'ts2date' | 'date2ts'；每行一个输入
+// ---------- Batch Timestamp Conversion：文本块 -> Result数Group ----------
+// mode: 'ts2date' | 'date2ts'；每行一个Input
 function dtBatchConvert(text, mode, tz) {
   var lines = String(text || '').split(/\r?\n/);
   var out = [];
@@ -2562,9 +2679,9 @@ function dtBatchConvert(text, mode, tz) {
   return out;
 }
 
-// 世界时钟 / 时区页的时区数据集由构建期注入到 window.__WC_ZONES__（按当前语言本地化，中英文各自正确），
-// 不再在此硬编码，避免中文数据泄漏到英文页。下方各 init 函数统一读取该全局变量。
-// 数据结构：[{ tz, off, label, cities }]，顺序即标准 UTC 偏移从早到晚（UTC−12 → UTC+14）。
+// World Clock / Time zone页的Time zone数据集由构建期注入到 window.__WC_ZONES__（按Now语言local化，中英文各自正确），
+// 不再在此硬Encode，避免中文数据泄漏到英文页。下方各 init 函数统一读取该global变量。
+// 数据结构：[{ tz, off, label, cities }]，顺序即标准 UTC Offset从早到晚（UTC−12 → UTC+14）。
 
 // 通用消息字典：进 i18n.EN 用于英文页；中文为默认。
 var DT_MSG = {
@@ -2620,8 +2737,8 @@ function dtMsg(zh) {
 }
 
 // ============================================================
-// 各工具页初始化（由 core.js 按 data-page 分派）
-// 每个 initXxxPage 在元素缺失时直接返回，因此本文件被内联进所有页面也不会报错。
+// 各工具页初始化（由 core.js 按 data-page m派）
+// 每个 initXxxPage 在元素缺失h直接返回，因此本文件被内联进所有页面也不会报错。
 // ============================================================
 
 function initBatchPage() {
@@ -2701,7 +2818,7 @@ function initTimestampListPage() {
   render();
 }
 
-// 以下三个辅助：按指定时区取「某时刻」所在日/周/月/年的 00:00 秒值
+// 以下三个辅助：按指定Time zone取「某h刻」所在Day/周/Month/Year的 00:00 s值
 function startOfDay(sec, tz) {
   var p = dtZonedParts(sec, tz); if (!p) return sec;
   return dtPartsToSeconds(+p.year, +p.month, +p.day, 0, 0, 0, tz);
@@ -2731,7 +2848,7 @@ function initWeeknumbersPage() {
       '<div class="dt-sub">ISO ' + w.year + ' · ' + dtMsg('Current ISO week') + '</div>';
   }
   update();
-  setInterval(update, 1000 * 60); // 每分钟刷新（跨周边界）
+  setInterval(update, 1000 * 60); // 每m钟刷新（跨周边界）
 }
 
 function initDaynumbersPage() {
@@ -2767,9 +2884,9 @@ function initYearsPage() {
   body.innerHTML = html;
 }
 
-// ---------- 表盘指针角度（世界时钟模拟视图） ----------
-// 由某时区的墙钟分解（dtZonedParts 结果）算出时针/分针/秒针角度（度）。
-// 时针连续走动（含分/秒的小数贡献），秒针按秒跳动。
+// ---------- Clocks指针角度（World Clock模拟视图） ----------
+// 由某Time zone的墙钟m解（dtZonedParts Result）算出h针/m针/s针角度（度）。
+// h针连续走动（含m/s的小数贡献），s针按s跳动。
 function wcHandAngles(p) {
   var h = (+p.hour) % 12, m = +p.minute, s = +p.second;
   return {
@@ -2779,8 +2896,8 @@ function wcHandAngles(p) {
   };
 }
 
-// ---------- 是否处于夏令时（启发式：当前偏移 != 冬夏两个探点中较小的标准偏移） ----------
-// 无夏令时的时区全年偏移恒定（jan === jul）返回 false；南半球（7 月为冬）同样适用。
+// ---------- 是否处于DST（启发式：NowOffset != 冬夏两个探点中较小的标准Offset） ----------
+// 无DST的Time zone全YearOffset恒定（jan === jul）返回 false；南半球（7 Month为冬）同样适用。
 function wcIsDst(tz, now) {
   var y = (now || new Date()).getUTCFullYear();
   var jan = dtTimezoneOffsetSeconds(tz, new Date(y, 0, 1));
@@ -2800,15 +2917,17 @@ function initWorldClockPage() {
   var searchResults = document.getElementById('worldSearchResults');
   var Z = window.__WC_ZONES__ || [];
   var isEn = (document.documentElement.lang || 'zh-CN').slice(0, 2) === 'en';
-  var citySep = isEn ? ', ' : '、';
+  // 并列城市m隔符按语言选：中Day韩用顿号，其余语言（含英语）用半角逗号。
+  var _lc = (document.documentElement.lang || 'zh-CN').slice(0, 2);
+  var citySep = (_lc === 'zh' || _lc === 'ja' || _lc === 'ko') ? '、' : ', ';
   var dstLabel = dtMsg('DST');
-  // 列表视图：沿用原表格
+  // List视图：沿用原表格
   body.innerHTML = Z.map(function (x) {
     return '<tr><td>' + escapeHtml(x.label) + '</td>' +
       '<td><span class="dt-clock" data-tz="' + escapeHtml(x.tz) + '">--:--:--</span></td>' +
       '<td><span class="dt-off" data-off="' + escapeHtml(x.tz) + '"></span></td></tr>';
   }).join('');
-  // 一张圆形模拟表盘（表盘视图 + 搜索结果共用）
+  // 一张圆形模拟Clocks（Clocks视图 + Results共用）
   function dialSvg(tz) {
     var label = escapeHtml(tz);
     return '<svg class="wc-dial" viewBox="0 0 100 100" role="img" aria-label="' + label + '">' +
@@ -2818,7 +2937,7 @@ function initWorldClockPage() {
       '<line class="wc-hand wc-sec" data-hs="' + label + '" x1="50" y1="60" x2="50" y2="13"/>' +
       '<circle class="wc-pin" cx="50" cy="50" r="3.4"/></svg>';
   }
-  // 表盘视图：每个时区一张卡，卡上标注时区 + 全部同区城市 + 统一时间（合并同城多城市）
+  // Clocks视图：每个Time zone一张卡，卡上标注Time zone + 全部同区城市 + 统一h间（Join同城多城市）
   var dateFmt = {};
   if (grid) {
     grid.innerHTML = Z.map(function (x) {
@@ -2833,8 +2952,11 @@ function initWorldClockPage() {
           '<span class="wc-dst" data-dst="' + escapeHtml(x.tz) + '" hidden>' + dstLabel + '</span></div>' +
         '</div>';
     }).join('');
-    // 日期文案按页面语言由 Intl 生成（无源码字面量，中英页各自正确）。
-    var loc = isEn ? 'en-US' : 'zh-CN';
+    // Date文案按页面语言由 Intl Generate（无源码字面量，各语言页各自正确）。
+    // locale 取自 <html lang>（构建期写入的 BCP47 标签：zh-CN/en/ja/ko/es/pt-BR/fr/de/ru/id），
+    // 裸 'en' 映射为 'en-US' 以保持英文页格式稳定。
+    var loc = document.documentElement.lang || 'zh-CN';
+    if (loc.slice(0, 2) === 'en') loc = 'en-US';
     Z.forEach(function (x) {
       try {
         dateFmt[x.tz] = new Intl.DateTimeFormat(loc, {
@@ -2845,7 +2967,7 @@ function initWorldClockPage() {
       } catch (e) { dateFmt[x.tz] = null; }
     });
   }
-  // 时区一览：静态表（按 UTC 顺序，标准偏移 + 主要城市），不随秒刷新。
+  // All zones：静态表（按 UTC 顺序，标准Offset + Major cities），不随s刷新。
   if (refBody) {
     refBody.innerHTML = Z.map(function (x) {
       return '<tr>' +
@@ -2858,14 +2980,14 @@ function initWorldClockPage() {
     var refNote = document.getElementById('worldRefNote');
     if (refNote) refNote.textContent = dtMsg('Ordered by standard UTC offset, earliest to latest (UTC−12 → UTC+14); regions with DST shift ±1 hour from the standard value.');
   }
-  // 城市搜索索引：每条 = 一个城市 -> 所在时区；同时索引时区名与偏移
+  // 城市搜索索引：每条 = 一个城市 -> 所在Time zone；同h索引Time zone名与Offset
   var searchIndex = [];
   Z.forEach(function (x) {
     x.cities.forEach(function (c) {
       searchIndex.push({ city: c, tz: x.tz, off: x.off, label: x.label, all: x.cities });
     });
   });
-  // 收集需要指针 / 日期 / DST 刷新的表盘卡片（表盘视图 + 搜索结果共用）
+  // 收集需要指针 / Date / DST 刷新的Clocks卡片（Clocks视图 + Results共用）
   var refs = [];
   function rebuildRefs() {
     var cards = document.querySelectorAll('#worldDials .wc-card, #worldSearchResults .wc-card');
@@ -2923,7 +3045,7 @@ function initWorldClockPage() {
     }).join('');
     rebuildRefs();
   }
-  var dstClock = null; // 夏令时状态缓存（每分钟校对一次足够）
+  var dstClock = null; // DST状态缓存（每m钟校对一次足够）
   function refreshDst(now) {
     dstClock = { at: now.getTime(), state: {} };
     refs.forEach(function (r) {
@@ -2955,7 +3077,7 @@ function initWorldClockPage() {
       if (r.dst) r.dst.hidden = !r.dstOn;
     });
   }
-  // 视图切换：表盘 / 列表 / 时区一览，选择写入 localStorage（跨刷新记忆）
+  // 视图切换：Clocks / List / All zones，选择写入 localStorage（跨刷新记忆）
   var btnDial = document.getElementById('wcViewDial');
   var btnList = document.getElementById('wcViewList');
   var btnRef = document.getElementById('wcViewRef');
@@ -2968,7 +3090,7 @@ function initWorldClockPage() {
   }
   function setView(v) {
     var dial = v === 'dial', list = v === 'list', ref = v === 'ref';
-    // 只显示当前视图，其余隐藏（避免三视图互相叠加）
+    // 只显示Now视图，其余隐藏（避免三视图互相叠加）
     if (grid) grid.style.display = dial ? '' : 'none';
     if (listWrap) listWrap.style.display = list ? '' : 'none';
     if (refWrap) refWrap.style.display = ref ? '' : 'none';
@@ -2989,7 +3111,7 @@ function initWorldClockPage() {
     try { saved = localStorage.getItem('devtools-wcview') || ''; } catch (e) {}
     setView(saved === 'list' ? 'list' : (saved === 'ref' ? 'ref' : 'dial'));
   }
-  // 搜索框：输入即筛选城市，展示匹配城市的时区与实时表盘时间
+  // 搜索框：Input即筛选城市，展示Match城市的Time zone与实hClocksh间
   if (searchInput) {
     searchInput.placeholder = dtMsg('Search a city, time zone or offset');
     searchInput.oninput = function () {
@@ -3010,7 +3132,7 @@ function initWorldClockPage() {
   setInterval(tick, 1000);
 }
 
-// 表盘刻度：12 个整点粗刻度
+// Clocks刻度：12 个整点粗刻度
 function wcTicks() {
   var s = '';
   for (var i = 0; i < 12; i++) {
@@ -3040,7 +3162,7 @@ function initCountdownPage() {
       dtMsg(' m ') + c.secs + dtMsg(' s') + '</div>';
   }
   input.oninput = render;
-  // deep-link 回放：?target= 自动填入并倒计时
+  // deep-link 回放：?target= 自动填入并Countdown
   try {
     var p = new URLSearchParams(location.search).get('target');
     if (p) input.value = p;
@@ -3048,7 +3170,7 @@ function initCountdownPage() {
   if (input.value) render();
 }
 
-// 倒计时「复制分享链接」
+// Countdown「Copy share link」
 function shareCountdownLink() {
   var v = document.getElementById('cdInput').value.trim();
   if (!v) { toast('Enter a timestamp first', 'error'); return; }
@@ -3160,7 +3282,7 @@ function debounce(fn, ms) {
     clearTimeout(t); t = setTimeout(function () { fn.apply(ctx, args); }, ms);
   };
 }
-// 解析 datetime-local 输入为秒（本地时区）
+// Parse datetime-local Input为s（localTime zone）
 function dtParseDateInput(val, tz) {
   if (!val) return null;
   var d = new Date(val);
@@ -3187,11 +3309,11 @@ if (typeof module !== 'undefined' && module.exports) {
 // id-tools.js
 // id-tools.js — 衍生 ID 换算簇：UUID / Snowflake / TID / MongoDB ObjectId / Firebase Push ID
 // 纯函数 + 页面初始化；浏览器与 Node（单测）共用。
-// 全部解析函数返回 {valid:false, reason} 而非抛异常，便于 UI 友好提示。
+// 全部Parse函数返回 {valid:false, reason} 而非抛异常，便于 UI 友好提示。
 
 // ---------------------------------------------------------------- i18n
 // 语言感知：中文页直接显示原串；英文页优先用 ID_MSG 映射，且构建期 localize() 已把源码里的
-// 中文串整体替换为英文，双重保险保证英文页零中文残留。
+// 中文串整体Replace with英文，双重保险保证英文页零中文残留。
 var ID_MSG = {
     'Invalid UUID': 'Invalid UUID',
     'Enter a UUID': 'Enter a UUID',
@@ -3284,7 +3406,7 @@ function uuidParse(s) {
         var tm = parseInt(hex.substr(8, 4), 16);
         var th = parseInt(hex.substr(12, 4), 16);
         var ts = (th & 0x0FFF) * 0x1000000000000 + tm * 0x100000000 + tl; // 60-bit 100ns ticks: hi<<48 | mid<<32 | low
-        // 转为 Unix 毫秒：先扣除 1582→1970 的 100ns 间隔偏移，再 100ns→ms(÷10000)
+        // 转为 Unix ms：先扣除 1582→1970 的 100ns 间隔Offset，再 100ns→ms(÷10000)
         var ms = (ts - UUID_GREG) / 10000;
         res.timestampMs = ms;
         res.date = new Date(ms).toISOString();
@@ -3314,7 +3436,7 @@ var SF_PRESETS = {
     discord: { epoch: 1420070400000, tsBits: 41, nodeBits: 10, stepBits: 12 },
 };
 
-// 通用 Snowflake 解码：idStr 为十进制字符串（必须字符串传入，避免 2^53 精度丢失）
+// 通用 Snowflake Decode：idStr 为十进制字符串（必须字符串传入，避免 2^53 精度丢失）
 function sfDecode(idStr, cfg) {
     var s = String(idStr).trim();
     if (!/^\d+$/.test(s)) return { valid: false, reason: 'format' };
@@ -3346,7 +3468,7 @@ function sfEncode(tsMs, node, step, cfg) {
 
 // ================================================================ TID (Twitter / X)
 var TWITTER_EPOCH = 1288834974657;
-var TWITTER_PRE = 29700859247; // 该值及更小的 ID 早于 Snowflake，是纯自增数字
+var TWITTER_PRE = 29700859247; // 该值及更小的 ID 早于 Snowflake，是纯自增Digits
 
 function tidToTime(idStr) {
     var s = String(idStr).trim();
@@ -3378,12 +3500,12 @@ function oidDecode(s) {
 function oidGenerate() {
     var ts = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
     function r(n) { var x = ''; for (var i = 0; i < n; i++) x += Math.floor(Math.random() * 16).toString(16); return x; }
-    // 4 字节时间 + 3 字节机器 + 2 字节进程 + 3 字节计数器 = 24 hex
+    // 4 字节h间 + 3 字节机器 + 2 字节进程 + 3 字节Counter = 24 hex
     return ts + r(6) + r(4) + r(6);
 }
 
 // ================================================================ Firebase Push ID
-// 字母表（顺序关键），8 位时间戳以「最高位在前」写入，保证字典序 ≈ 时间顺序
+// 字母表（顺序关键），8 位Timestamp以「最高位在前」写入，保证字典序 ≈ h间顺序
 var FB_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
 
 function fbValidate(s) {
@@ -3415,7 +3537,16 @@ function fbEncode(tsMs) {
 function idFmtDate(ms) {
     var d = new Date(ms);
     var utc = d.toISOString();
-    var local = d.toLocaleString();
+    // 不要用 toLocaleString()（无 locale h取浏览器/系统语言）也不要 Date.toString()
+    // （括号内Time zone名同理），否则非中文页会显示中文。统一按页面语言Format。
+    var loc = (document.documentElement && document.documentElement.lang) || 'zh-CN';
+    if (loc.slice(0, 2) === 'en') loc = 'en-US';
+    var local;
+    try {
+        local = new Intl.DateTimeFormat(loc, { dateStyle: 'full', timeStyle: 'long' }).format(d);
+    } catch (e) {
+        local = String(d).replace(/\s*\([^)]*\)\s*$/, '');
+    }
     return utc + '  (UTC)<br><span style="opacity:.7">' + escapeHtml(local) + ' (local)</span>';
 }
 
@@ -3624,7 +3755,7 @@ if (typeof debounce === 'undefined') {
         return function () { clearTimeout(t); t = setTimeout(fn, ms); };
     }
 }
-// 安全解析 datetime-local 输入为毫秒（datetime-tools.dtParseDateInput 返回秒，这里统一成毫秒）
+// 安全Parse datetime-local Input为ms（datetime-tools.dtParseDateInput 返回s，这里统一成ms）
 function dtParseDateInputSafe(val) {
     if (typeof dtParseDateInput === 'function') {
         var sec = dtParseDateInput(val, 'UTC');
@@ -3651,14 +3782,14 @@ if (typeof module !== 'undefined' && module.exports) {
 </script>
 <script>
 // base-tools.js
-// base-tools.js — 进制/radix 换算簇：任意进制转换 / 二进制 / 十六进制
+// base-tools.js — 进制/radix 换算簇：Any-Base Converter / 二进制 / Hex
 // 纯函数 + 页面初始化；浏览器与 Node（单测）共用。
-// 全程 BigInt 任意精度，避免 2^53 精度丢失；解析失败统一返回 {valid:false, reason}，不抛异常。
+// 全程 BigInt 任意精度，避免 2^53 精度丢失；Parsefailed统一返回 {valid:false, reason}，不抛异常。
 // 命名遵循「面向用户」原则：中文用「进制」，不用 radix 黑话；英文以 Base Converter 为主。
 
 // ---------------------------------------------------------------- i18n
 // 语言感知：中文页直接显示原串；英文页优先 BASE_MSG 映射，且构建期 localize() 已把源码中文串
-// 整体替换为英文，双保险保证英文页零中文残留。
+// 整体Replace with英文，双保险保证英文页零中文残留。
 var BASE_MSG = {
     'Base must be between 2 and 36': 'Base must be between 2 and 36',
     'Contains invalid digits for the selected base': 'Contains invalid digits for the selected base',
@@ -3707,7 +3838,7 @@ if (typeof debounce === 'undefined') {
 // ================================================================ 纯函数
 var BASE_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz';
 
-// 单个字符对应的数值（0-9→0-9，a-z→10-35，大小写不敏感）；非法返回 -1
+// 单个字符对应的数值（0-9→0-9，a-z→10-35，Case不敏感）；非法返回 -1
 function baseDigitVal(ch) {
     return BASE_DIGITS.indexOf(String(ch).toLowerCase());
 }
@@ -3716,7 +3847,7 @@ function baseValid(base) {
     return typeof base === 'number' && isFinite(base) && Math.floor(base) === base && base >= 2 && base <= 36;
 }
 
-// 解析某进制字符串为 BigInt；失败返回 null。容忍前后空白、下划线/空格分组、正负号、0x/0b/0o 前缀。
+// Parse某进制字符串为 BigInt；failed返回 null。容忍前后空白、下划线/空格mGroup、正负号、0x/0b/0o 前缀。
 function radixParse(str, base) {
     if (!baseValid(base)) return null;
     var s = String(str).trim().replace(/[\s_]/g, '');
@@ -3736,7 +3867,7 @@ function radixParse(str, base) {
     return neg ? -val : val;
 }
 
-// 把 BigInt 格式化为某进制字符串（小写）；base 非法返回 null
+// 把 BigInt Format为某进制字符串（lower）；base 非法返回 null
 function radixFormat(value, base) {
     if (!baseValid(base)) return null;
     var v = (typeof value === 'bigint') ? value : BigInt(value);
@@ -3760,7 +3891,7 @@ function radixConvert(str, from, to) {
     return { valid: true, value: radixFormat(v, to), int: v };
 }
 
-// 自动识别源进制：0x→16 / 0b→2 / 0o→8；纯数字→十进制；含 a-f 但无前缀→十六进制；否则十进制。
+// Auto-detectFrom base：0x→16 / 0b→2 / 0o→8；纯Digits→十进制；含 a-f 但无前缀→Hex；否则十进制。
 function detectBase(str) {
     var s = String(str).trim().replace(/^[+-]/, '');
     if (/^0[xX]/.test(s)) return 16;
@@ -3771,7 +3902,7 @@ function detectBase(str) {
     return 10;
 }
 
-// 二进制串从右侧起按 n 位分组（保留符号）
+// 二进制串从右侧起按 n 位mGroup（保留符号）
 function groupBits(binStr, n) {
     var neg = binStr.charAt(0) === '-';
     var s = neg ? binStr.slice(1) : binStr;
@@ -3783,7 +3914,7 @@ function groupBits(binStr, n) {
     return (neg ? '-' : '') + out;
 }
 
-// 位宽（数值部分的二进制位数，0 记 1 位）
+// Bit length（数值部m的二进制位数，0 记 1 位）
 function bitLength(v) {
     var m = v < 0n ? -v : v;
     return m === 0n ? 1 : m.toString(2).length;
@@ -3793,7 +3924,7 @@ function baseRow(label, value) {
     return '<tr><td class="dt-k">' + escapeHtml(label) + '</td><td class="dt-v mono">' + escapeHtml(String(value)) + '</td></tr>';
 }
 
-// 源/目标进制下拉：填充 2~36（数字标签，语言中立）+ 可选「自动识别」
+// 源/To base下拉：填充 2~36（Digits标签，语言中立）+ 可选「Auto-detect」
 function fillBaseSelect(sel, withAuto) {
     if (!sel) return;
     var html = '';
@@ -3838,7 +3969,7 @@ function initBasePage() {
             return;
         }
         result.innerHTML = '<div class="base-main-out">' + escapeHtml(r.value) + '</div>';
-        // 全进制表：数值过大时降级跳过，避免 35 次大数除法卡顿
+        // 全进制表：数值过大h降级跳过，避免 35 次大数除法卡顿
         if (bitLength(r.int) > 8192) {
             allBox.innerHTML = '<div class="hash-output warn">' + baseMsg('Value too large; all-base table skipped') + '</div>';
             return;
@@ -4015,12 +4146,12 @@ async function doHash() {
 
 // MD5（RFC 1321）。
 //
-// 这里原本是一段被压缩坏掉的实现，有三处缺陷，导致「无论输入什么都返回同一个值」：
-//   1. 块数算成 `s.length+8>>6`，少了 +1 —— 56 字符以下的输入一次主循环都不跑，
-//      直接返回初始状态，输出恒为 0123456789abcdeffedcba9876543210；
+// 这里原本是一段被Compress坏掉的实现，有三处缺陷，导致「无论Input什么都返回同一个值」：
+//   1. 块数算成 `s.length+8>>6`，少了 +1 —— 56 字符以下的Input一次主循环都不跑，
+//      直接返回初始状态，Output恒为 0123456789abcdeffedcba9876543210；
 //   2. 循环左移写成 `<<(h=void 0)`，位移量恒为 0，轮函数完全失效；
-//   3. 长度字段写在 `p[a<<4]`（越过最后一个块），而不是末块的第 14 个字。
-// 另外它用 charCodeAt 取 UTF-16 码元，中文会算出与标准 MD5 不一致的结果。
+//   3. Length字段写在 `p[a<<4]`（越过最后一个块），而不是末块的Week 14 个字。
+// 另外它用 charCodeAt 取 UTF-16 码元，中文会算出与标准 MD5 不一致的Result。
 // 现改为干净可读、按 UTF-8 字节运算的标准实现。
 const MD5_S = [
   7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
@@ -4042,7 +4173,7 @@ const MD5_K = [
 function md5(input) {
   const bytes = new TextEncoder().encode(input);
   const bitLen = bytes.length * 8;
-  // 补齐到 64 字节整数倍；末 8 字节存比特长度（小端）
+  // 补齐到 64 字节整数倍；末 8 字节存比特Length（小端）
   const buf = new Uint8Array((((bytes.length + 8) >> 6) + 1) << 6);
   buf.set(bytes);
   buf[bytes.length] = 0x80;
@@ -4071,7 +4202,7 @@ function md5(input) {
     h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0;
     h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0;
   }
-  // MD5 输出按小端序拼接四个状态字
+  // MD5 Output按小端序拼接四个状态字
   const word = n => {
     let s = '';
     for (let i = 0; i < 4; i++) s += ((n >>> (i * 8)) & 0xff).toString(16).padStart(2, '0');
@@ -4131,7 +4262,7 @@ async function hashFile() {
 // formatter.js — HTML, CSS, JS, SQL, XML code formatter
 // 注意：这里必须先声明 codeDemos 对象。此前直接写 codeDemos.js = ... 会抛
 // ReferenceError，导致本文件后续所有函数（initFormatterPage / runCodeOp 等）
-// 都没有被定义，代码格式化页整页不可用。
+// 都没有被定义，代码Format页整页不可用。
 const codeDemos = {
   html: '<div class="card"><h2 class="title">Title</h2><p>Body text</p><ul><li>Item one</li><li>Item two</li></ul></div>',
   css: '.card{padding:16px;border:1px solid #e1e5eb;border-radius:8px}.card .title{font-size:18px;color:#4a90d9;margin-bottom:8px}',

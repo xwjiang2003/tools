@@ -524,6 +524,100 @@ NAV_GROUPS = [
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
 
+# 首页「全部工具」板块的一句话说明（每个工具 ≤ 30 字）。
+#
+# 为什么只放在首页：38 个工具的内页各自已有完整的 h1/简介/功能/FAQ，重复写没有意义；
+# 但首页在搜索眼里目前只是「一个 JSON 工具站」，其余工具在首页仅有一个导航词。
+# 给每个工具一句可读的描述 + 一个真实 <a href>，既让首页覆盖其余工具的关键词，
+# 也把首页的链接权重分发到所有内页（内页收录上不去的主因之一就是缺这条路径）。
+# 新增工具时必须同步补一条，否则该工具在首页只剩名称没有描述（不影响构建，但会丢关键词）。
+TOOL_BLURBS = {
+    'zh': {
+        'json': '格式化、压缩、校验、比对，与 CSV / XML / YAML 互转',
+        'hotnews': '每日聚合 Hacker News、TechCrunch 等技术资讯',
+        'go-cheatsheet': 'Go 常用命令、环境变量与踩坑速查',
+        'diff': '逐字符 / 逐词比对两段文本的差异',
+        'encode': 'Base64、URL、Unicode、HTML 实体编解码',
+        'regex': '在线测试正则，实时高亮匹配与替换预览',
+        'timestamp': 'Unix 时间戳与日期互转，秒 / 毫秒自动识别',
+        'hash': 'MD5 / SHA 系列、HMAC、AES 与文件校验值',
+        'formatter': 'HTML / CSS / JS / SQL 代码格式化',
+        'string': '大小写转换、去重、排序与字数统计',
+        'generator': 'UUID、随机密码与二维码生成',
+        'color': 'HEX / RGB / HSL 颜色互转与配色预览',
+        'case': 'camelCase、snake_case 等命名风格互转',
+        'jwt': 'JWT 解码与 HS256 / 384 / 512 签名校验',
+        'yaml': 'JSON 与 YAML 双向转换',
+        'toml': 'JSON 与 TOML 双向转换',
+        'csv': 'JSON 与 CSV 双向转换，可选是否带表头',
+        'batch': '批量时间戳与日期互转',
+        'timestamp-list': '今天 / 本周 / 本月等常用时间戳速查',
+        'timezones': '两个城市之间的时区换算与当前时间对照',
+        'weeknumbers': 'ISO 周数与日期互查',
+        'daynumbers': '年内第几天与日期互查',
+        'years': '闰年判断与某年的天数',
+        'world-clock': '多城市世界时钟，支持多个视图',
+        'countdown': '到指定日期的倒计时',
+        'date-difference': '两个日期相差多少天 / 月 / 年',
+        'date-calculator': '日期加减天数与工作日推算',
+        'duration': '秒、分、时、天之间的时长换算',
+        'uuid': 'UUID v4 / v7 批量生成与解析',
+        'snowflake': 'Snowflake ID 反解时间戳与机器号',
+        'tid': 'Twitter Snowflake ID 转发布时间',
+        'objectid': 'MongoDB ObjectId 内嵌时间戳解析',
+        'firebase': 'Firebase Push ID 的生成时间解析',
+        'base': '2–36 任意进制之间互转',
+        'binary': '二进制、十进制、十六进制换算',
+        'hex': '十六进制与文本、十进制互转',
+        'snippets': '常用语言的代码片段速查',
+        'blog': 'Go、前端与建站实践的技术长文',
+    },
+    'en': {
+        'json': 'Format, minify, validate, diff and convert to CSV / XML / YAML',
+        'hotnews': 'Daily tech news from Hacker News, TechCrunch and more',
+        'go-cheatsheet': 'Go commands, environment variables and pitfalls',
+        'diff': 'Character- and word-level text diff',
+        'encode': 'Base64, URL, Unicode and HTML entity encode / decode',
+        'regex': 'Test regular expressions with live highlight and replace preview',
+        'timestamp': 'Unix timestamp and date converter, auto-detects seconds or ms',
+        'hash': 'MD5 / SHA family, HMAC, AES and file checksums',
+        'formatter': 'HTML, CSS, JS and SQL code formatter',
+        'string': 'Case conversion, dedupe, sorting and word count',
+        'generator': 'UUID, random password and QR code generator',
+        'color': 'HEX / RGB / HSL colour converter with preview',
+        'case': 'camelCase, snake_case and other naming styles',
+        'jwt': 'Decode JWTs and verify HS256 / 384 / 512 signatures',
+        'yaml': 'JSON and YAML converter',
+        'toml': 'JSON and TOML converter',
+        'csv': 'JSON and CSV converter with optional header row',
+        'batch': 'Convert many timestamps at once',
+        'timestamp-list': 'Common timestamps: today, this week, this month',
+        'timezones': 'Convert time between two cities and compare clocks',
+        'weeknumbers': 'ISO week number and date lookup',
+        'daynumbers': 'Day of the year and date lookup',
+        'years': 'Leap year check and days in a given year',
+        'world-clock': 'Multi-city world clock with several views',
+        'countdown': 'Countdown to any target date',
+        'date-difference': 'Days, months and years between two dates',
+        'date-calculator': 'Add or subtract days and working days',
+        'duration': 'Seconds, minutes, hours and days converter',
+        'uuid': 'Generate and inspect UUID v4 / v7 in bulk',
+        'snowflake': 'Decode Snowflake IDs into time and worker ID',
+        'tid': 'Turn a Twitter snowflake ID into its timestamp',
+        'objectid': 'Decode the timestamp inside a MongoDB ObjectId',
+        'firebase': 'Decode the timestamp inside a Firebase push ID',
+        'base': 'Convert between any bases from 2 to 36',
+        'binary': 'Binary, decimal and hexadecimal conversion',
+        'hex': 'Hex to text and decimal conversion',
+        'snippets': 'Copy-ready code snippets for common languages',
+        'blog': 'Long-form posts on Go, the web and building this site',
+    },
+}
+# 未单独翻译的语言先回退英文（与正文策略一致，绝不留中文）。
+for _lang in LANGS:
+    if _lang not in TOOL_BLURBS:
+        TOOL_BLURBS[_lang] = TOOL_BLURBS['en']
+
 # 阶段2：新语言未单独翻分类名时，统一回退英文（与正文英文回退策略一致）。
 for _grp in NAV_GROUPS + [CONTENT_GROUP]:
     for _L in LANGS:
@@ -764,6 +858,46 @@ def footer_links_html(base, labels):
     return ''.join(parts)
 
 
+def all_tools_section(c):
+    """首页末尾的「全部在线开发工具」板块（仅首页渲染）。
+
+    首页同时是 JSON 工具页，h1/功能/FAQ 必须继续围绕 JSON（那是搜索量最大的落地页），
+    所以这里不做替换，只在正文末尾按分类追加一份工具清单：每个工具一行
+    「名称 + 一句话说明」，链接都是真实 <a href>，爬虫不执行 JS 也能读到。
+
+    作用有两个：让首页覆盖其余工具的关键词（否则在搜索引擎眼里本站只是个 JSON 工具站），
+    并把首页的链接权重分发到全部内页（内页收录长期偏少的主因之一）。
+    """
+    lang = c.get('_lang', DEFAULT_LANG)
+    base = c.get('_base', '')
+    blurbs = TOOL_BLURBS.get(lang, TOOL_BLURBS['en'])
+    labels = NAV_LABELS[lang]
+    p = [f'  <h2>{esc(c["_all_tools_heading"])}</h2>',
+         f'  <p>{esc(c["_all_tools_intro"])}</p>']
+    for g in NAV_GROUPS + [CONTENT_GROUP]:
+        # 当前工具（首页 = json）不再自链，其余按 TOOLS 里的顺序输出
+        items = []
+        for slug in g['slugs']:
+            if slug == 'blog':
+                href, label = base + BLOG_INDEX, labels['_blog']
+            else:
+                t = _TOOL_BY_SLUG.get(slug)
+                if not t or slug == 'json':
+                    continue
+                href = (base + t['path']) if t['path'] else (base or './')
+                label = labels[slug]
+            blurb = blurbs.get(slug, '')
+            tail = f' — {esc(blurb)}' if blurb else ''
+            items.append(f'    <li><a href="{esc(href)}">{esc(label)}</a>{tail}</li>')
+        if not items:
+            continue
+        p.append(f'  <h3>{esc(g[lang])}</h3>')
+        p.append('  <ul class="seo-tools">')
+        p.extend(items)
+        p.append('  </ul>')
+    return '\n'.join(p)
+
+
 def seo_section(c):
     """工具页正文：h1 + 简介 + 功能 + 步骤 + FAQ，构建期写死，不依赖 JS。"""
     sep = SEP_BY_LANG.get(c.get('_lang'), ' — ')
@@ -794,6 +928,9 @@ def seo_section(c):
         for text, href in c['seealso']:
             p.append(f'    <li><a href="{esc(c["_base"] + href)}">{esc(text)}</a></li>')
         p.append('  </ul>')
+    # 首页（slug=json）兼任站点门户：追加「全部工具」清单（其余工具页不需要，各自已有完整正文）
+    if c.get('slug') == 'json':
+        p.append(all_tools_section(c))
     p.append('</section>')
     return '\n'.join(p)
 
@@ -913,10 +1050,22 @@ def inline_assets(tpl, with_js=True, only_modules=None):
 HEADINGS = {
     'zh': {'_features_heading': '主要功能', '_steps_heading': '使用步骤',
            '_faq_heading': '常见问题', '_home': '首页', '_blog': '博客',
-           '_related_heading': '相关工具与阅读'},
+           '_related_heading': '相关工具与阅读',
+           # 首页专用：JSON 之外的全部工具清单（见 TOOL_BLURBS 与 all_tools_section）
+           '_all_tools_heading': '全部在线开发工具',
+           '_all_tools_intro': (
+               '本站不止一个 JSON 工具。除 JSON 格式化与转换外，还有编码解码、哈希加密、'
+               '正则测试、时间戳与时区换算、各类 ID 解析、格式转换与代码格式化等工具，'
+               '全部在浏览器本地运行，粘贴的内容不会上传服务器。按分类列出如下：')},
     'en': {'_features_heading': 'Features', '_steps_heading': 'How to use',
            '_faq_heading': 'FAQ', '_home': 'Home', '_blog': 'Blog',
-           '_related_heading': 'Related tools & reading'},
+           '_related_heading': 'Related tools & reading',
+           '_all_tools_heading': 'All developer tools on this site',
+           '_all_tools_intro': (
+               'This site is more than a JSON formatter. Besides JSON formatting and '
+               'conversion it covers encoding, hashing, regular expressions, timestamps and '
+               'time zones, identifier decoding, format conversion and code formatting — all '
+               'running locally in your browser, with nothing uploaded. Grouped by category:')},
 }
 # 其余语言暂回退英文（未翻完的标题也用可读英文兜底）
 for _lang in LANGS:
@@ -953,6 +1102,10 @@ def content_for(tool, lang):
             c.update(lang_c)                                # 叠加覆盖
         c['_lang'] = lang
     c.update(HEADINGS.get(lang, HEADINGS['en']))
+    # 英文（及其他语言）内容字典里没有 slug 字段（它们按 slug 建索引，条目本身不带），
+    # 而 seo_section 要靠 slug 判断「当前是不是首页」来决定是否输出全部工具清单，
+    # 这里统一补齐，避免首页在非中文页丢失该板块。
+    c['slug'] = tool['slug']
     return c
 
 
