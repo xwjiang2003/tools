@@ -180,6 +180,11 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .seo-features{list-style:none;margin-left:0!important}
 .seo-features li{padding-left:16px;position:relative}
 .seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+/* 首页「全部在线开发工具」清单：两列排布，窄屏回退单列（38 条单列会拉出很长一屏） */
+.seo-content h3{font-size:15px;color:var(--text);margin:18px 0 6px}
+.seo-tools{list-style:none;margin-left:0!important;columns:2;column-gap:32px}
+.seo-tools li{margin-bottom:5px;break-inside:avoid}
+.seo-tools a{font-weight:600}
 .faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
 .faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
 .faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
@@ -188,7 +193,7 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .legal{max-width:900px;margin-left:auto;margin-right:auto}
 .legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
 .legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
-@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}.seo-tools{columns:1}}
 @media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
 /* 反馈弹窗（原生 <dialog>，无第三方依赖）
    注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
