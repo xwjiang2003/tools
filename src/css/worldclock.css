@@ -1,0 +1,34 @@
+/* world clock dial view — auto-split from style.css (2026-10-19 per-page asset trimming). */
+/* ---- 世界时钟：模拟表盘卡片视图 ---- */
+.wc-views{display:flex;gap:8px;margin:10px 0 14px}
+.wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px;margin:8px 0 16px}
+.wc-card{min-width:0;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+.wc-city{font-weight:600;font-size:14px;color:var(--text)}
+.wc-tz{font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-dial{width:112px;height:112px;margin:10px auto 6px;display:block}
+.wc-face{fill:var(--card-bg);stroke:var(--text);stroke-width:4}
+.wc-tick{stroke:var(--text);stroke-width:3;stroke-linecap:round}
+.wc-hand{stroke-linecap:round}
+.wc-hour{stroke:var(--text);stroke-width:5}
+.wc-min{stroke:var(--text);stroke-width:3}
+.wc-sec{stroke:#e53935;stroke-width:1.6}
+.wc-pin{fill:var(--text)}
+.wc-date{font-size:12px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-time{font-size:15px;margin-top:2px}
+.wc-meta{display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;min-height:18px}
+.wc-dst{font-size:11px;font-weight:600;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:0 4px}
+/* ---- 世界时钟：时区一览静态表 ---- */
+.wc-note{font-size:12px;color:var(--text-muted);margin:4px 0 10px}
+.wc-rep{display:block;font-weight:600;color:var(--text)}
+.wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
+.wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}
+.wc-search{margin:6px 0 12px}
+.wc-search-input{width:100%;box-sizing:border-box;padding:9px 12px;font-size:14px;color:var(--text);background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);outline:none}
+.wc-search-input:focus{border-color:var(--accent,#4a90d9);box-shadow:0 0 0 2px rgba(74,144,217,.18)}
+.wc-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 16px}
+.wc-search-results[hidden]{display:none}
+.wc-search-results .wc-dial{width:92px;height:92px}
+.wc-card-mini{padding:12px 8px}
+.wc-zone-cities{color:var(--text-muted);font-size:11px;line-height:1.4;margin-top:4px;word-break:break-word}
+.wc-search-empty{color:var(--text-muted);font-size:13px;padding:10px 4px}

@@ -1,0 +1,4 @@
+/* regex tester tool — auto-split from style.css (2026-10-19 per-page asset trimming). */
+.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
+.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
+.match-group .group-val{word-break:break-all}

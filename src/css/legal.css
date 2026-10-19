@@ -1,0 +1,4 @@
+/* privacy page — auto-split from style.css (2026-10-19 per-page asset trimming). */
+.legal{max-width:900px;margin-left:auto;margin-right:auto}
+.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
