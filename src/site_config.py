@@ -39,6 +39,11 @@ ENDPOINTS = [
 # token 本身只用于「向你自己站点推送链接」，泄露的后果是别人能消耗你的每日配额，
 # 风险很小，所以直接写在这里方便日常使用。若不放心，可用环境变量 BAIDU_PUSH_TOKEN
 # 覆盖（push_baidu.py 会优先读环境变量），把这一行改成空字符串即可。
+#
+# ⚠️ 2026-10-19 起停用：用户要求停止主动向百度提交链接。
+# 这里置空是**第二道保险**——即使有人绕过 push_baidu.py 里的停用开关、
+# 或直接调用这个常量，也拿不到有效 token，脚本会直接拒绝运行而不会发出任何请求。
+# 恢复方法：把 token 填回，并把 push_baidu.py 顶部的 BAIDU_PUSH_ENABLED 改回 True。
 BAIDU_PUSH_ENDPOINT = 'http://data.zz.baidu.com/urls'
 BAIDU_PUSH_SITE = 'https://devtools.help'
-BAIDU_PUSH_TOKEN = 'bbfX9MJIqD7hqpmJ'
+BAIDU_PUSH_TOKEN = ''  # 已停用（原值 'bbfX9MJIqD7hqpmJ'，见上方说明）

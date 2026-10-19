@@ -22,6 +22,21 @@
 
 配额说明：每日配额与站点等级相关，返回的 remain 就是当天剩余次数。
 配额用尽返回 500 + "over quota"，不是故障，第二天自动恢复。
+
+🚫 2026-10-19 起已停用（用户要求）
+--------------------------------
+本脚本不再向百度发送任何 URL。做了两层保险：
+
+  第一层：本文件顶部 BAIDU_PUSH_ENABLED = False —— 脚本直接退出，不建连接。
+  第二层：src/site_config.py 的 BAIDU_PUSH_TOKEN 已置空 —— 即使有人越过本开关，
+          也拿不到有效 token，脚本同样拒绝运行。
+
+停用背景：对 nginx 日志的核对显示，近 30 天百度蜘蛛只抓了 39 个不重复 URL
+（Googlebot 613 / bingbot 61），且从未抓取 sitemap.xml；而推送接口本身配额
+极低（日均约 10 条）。投入产出比不成立，故停止主动推送。
+
+若将来要恢复：把 BAIDU_PUSH_ENABLED 改回 True，并填回 site_config.py 的 token。
+届时请注意：--dry-run 不受影响，仍可用于查看将要推送的清单。
 """
 
 import os
@@ -33,6 +48,14 @@ from pathlib import Path
 
 # Windows 控制台默认 GBK，print 中文会抛 UnicodeEncodeError 或输出乱码，
 # 重定向到文件时也一样。统一强制 UTF-8。
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
+# ───────────────────────────────────────────────────────────────────────
+# 推送总开关。False = 完全不联网，任何调用都一样安全退出。
+# 2026-10-19 按用户要求置为 False。
+# ───────────────────────────────────────────────────────────────────────
+BAIDU_PUSH_ENABLED = False
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
@@ -73,6 +96,15 @@ def zh_urls(with_en=False):
 
 
 def main():
+    # ── 停用拦截（2026-10-19）：任何调用路径都在此止步，不建网络连接 ──
+    if not BAIDU_PUSH_ENABLED:
+        print('🚫 百度主动推送已停用（2026-10-19）。本次未向百度发送任何请求。')
+        print('   原因：百度侧配额极低且抓取深度长期停滞（近 30 天仅 39 个不重复 URL，'
+              '从未抓 sitemap.xml），主动推送投入产出比不成立。')
+        print('   恢复方法：push_baidu.py → BAIDU_PUSH_ENABLED = True '
+              '且 src/site_config.py → BAIDU_PUSH_TOKEN 填回。')
+        return 0
+
     args = sys.argv[1:]
     token = os.environ.get('BAIDU_PUSH_TOKEN') or BAIDU_PUSH_TOKEN
     if not token:
