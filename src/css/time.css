@@ -1,0 +1,12 @@
+/* date/time family tools — auto-split from style.css (2026-10-19 per-page asset trimming). */
+/* ===== 时间 / 日期工具新增样式（2026-10-15） ===== */
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.tool-card-title{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.tool-card-desc{font-size:13px;color:var(--text-secondary);margin:8px 0 12px}
+.dt-center{text-align:center;padding:24px 12px}
+.dt-big{font-size:48px;font-weight:700;color:var(--text);line-height:1.1;font-family:"JetBrains Mono","Consolas",monospace}
+.dt-sub{font-size:13px;color:var(--text-secondary);margin-top:6px}
+.dt-clock{font-family:"JetBrains Mono","Consolas",monospace;font-weight:600}
+.dt-off{color:var(--text-muted);font-size:12px}
+.dt-big .dt-unit{font-size:22px;font-weight:600;color:var(--text-secondary);margin-left:4px}
+  .dt-big{font-size:38px}

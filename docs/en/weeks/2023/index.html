@@ -28,9 +28,19 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="alternate" hreflang="zh-CN" href="https://devtools.help/weeks/2023/">
 <link rel="alternate" hreflang="en" href="https://devtools.help/en/weeks/2023/">
+<link rel="alternate" hreflang="ja" href="https://devtools.help/ja/weeks/2023/">
+<link rel="alternate" hreflang="ko" href="https://devtools.help/ko/weeks/2023/">
+<link rel="alternate" hreflang="es" href="https://devtools.help/es/weeks/2023/">
+<link rel="alternate" hreflang="pt-BR" href="https://devtools.help/pt-BR/weeks/2023/">
+<link rel="alternate" hreflang="fr" href="https://devtools.help/fr/weeks/2023/">
+<link rel="alternate" hreflang="de" href="https://devtools.help/de/weeks/2023/">
+<link rel="alternate" hreflang="ru" href="https://devtools.help/ru/weeks/2023/">
+<link rel="alternate" hreflang="id" href="https://devtools.help/id/weeks/2023/">
 <link rel="alternate" hreflang="x-default" href="https://devtools.help/weeks/2023/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "2023 ISO Week Numbers", "url": "https://devtools.help/en/weeks/2023/", "description": "Online 2023 ISO 8601 week table: the start (Monday) and end (Sunday) date of every week, with cross-year markers.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Requires a modern browser with JavaScript enabled", "inLanguage": "en", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why does an ISO year sometimes have 53 weeks?", "acceptedAnswer": {"@type": "Answer", "text": "2023 has 52 ISO weeks; when most days of the week containing Jan 1 fall in the next year, that year gets 53 weeks."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/en/"}, {"@type": "ListItem", "position": 2, "name": "2023 ISO Week Numbers", "item": "https://devtools.help/en/weeks/2023/"}]}]}</script>
 <style>
+/* base.css */
+/* base layout / chrome (all pages) — auto-split from style.css (2026-10-19 per-page asset trimming). */
 :root {
   --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
   --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
@@ -89,8 +99,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
 .input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
 .input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
-.input-editor-wrap{flex:1;min-height:0;overflow:hidden;position:relative}
-.input-editor-wrap .CodeMirror{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas","Monaco",monospace;background:var(--editor-bg)}
 .ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
 .ta-input::placeholder{color:var(--text-muted)}
 .ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
@@ -105,33 +113,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
 .result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
 .info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
-/* JSON tool tabs */
-.json-tabs{display:flex;gap:2px;background:var(--editor-bg);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border);margin-bottom:2px}
-.json-tab{padding:6px 12px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);border-radius:4px;transition:all var(--transition);white-space:nowrap;flex:1;text-align:center}
-.json-tab:hover{color:var(--text);background:var(--tab-hover)}
-.json-tab.active{background:var(--primary);color:#fff}
-.json-tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
-.json-tab-content.active{display:flex}
 .section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.special-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-top:12px}
 .tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
-.tool-card-header{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);background:var(--toolbar-bg);display:flex;align-items:center;justify-content:space-between}
-.tool-card-body{padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
-.tool-card-body .CodeMirror{height:150px;font-size:13px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--editor-bg)}
-.card-editor-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
-.diff-line{padding:2px 12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
-.diff-add{background:var(--diff-add);color:#155724}
-.diff-remove{background:var(--diff-remove);color:#721c24}
-.diff-equal{color:var(--text-secondary)}
-.struct-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.struct-badge{padding:3px 10px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:12px;font-weight:500}
-.tree-view{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;line-height:1.6}
-.tree-node{margin-left:20px}.tree-root{margin-left:0}
-.tree-key{color:var(--primary)}
-.tree-toggle{display:inline-block;width:16px;cursor:pointer;user-select:none;color:var(--text-secondary);font-size:10px}
-.tree-value-string{color:#27ae60}.tree-value-number{color:#f39c12}
-.tree-value-boolean{color:#e74c3c}.tree-value-null{color:#9b59b6}.tree-bracket{color:var(--text-secondary)}
 .btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 .btn:hover{background:var(--tab-hover)}
 .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -145,46 +129,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
 @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 .toast-success{background:var(--success)}.toast-error{background:var(--danger)}
-.validate-card{padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-top:8px}
-.validate-card.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.validate-card.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
 .hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
 .hash-output.err{background:#f8d7da;color:#721c24;border-color:#f5c6cb}
 .hash-output.warn{background:#fff3cd;color:#856404;border-color:#ffeaa7}
-.gen-result-box{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:"JetBrains Mono",monospace;font-size:13px;word-break:break-all;min-height:60px;max-height:300px;overflow-y:auto}
 input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
 label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
 label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
 select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
 input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
-.regex-highlight{background:#ffeb3b;color:#000;border-radius:2px;padding:0 1px}
-.regex-highlight-focus{background:#ff9800;color:#fff;border-radius:2px;padding:0 1px;outline:2px solid var(--primary)}
-.match-group{margin:4px 0;padding:6px 10px;background:var(--card-bg);border:1px solid var(--border);border-radius:4px;font-size:12px}
-.match-group .group-label{color:var(--primary);font-weight:600;font-size:11px}
-.match-group .group-val{word-break:break-all}
-.live-clock{font-size:28px;font-weight:700;color:var(--primary);font-family:"JetBrains Mono",monospace;text-align:center;padding:16px}
-.live-clock-sub{font-size:13px;color:var(--text-secondary);text-align:center}
-.qr-container{display:flex;flex-direction:column;align-items:center;gap:12px}
-.qr-container img{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;background:#fff}
-.pwd-strength-bar{height:4px;border-radius:2px;margin-top:4px;transition:all .3s}
-/* Text diff */
-.diff-page-layout{display:flex;flex-direction:column;gap:12px;height:calc(100vh - 130px)}
-.diff-page-layout .diff-textarea{min-height:200px;flex:1}
-.diff-unified{padding:2px 0}
-.diff-unified-line{padding:1px 8px;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;white-space:pre-wrap;word-break:break-all;line-height:1.6;border-left:3px solid transparent}
-.diff-unified-add{background:var(--diff-add);border-left-color:var(--success)}
-.diff-unified-remove{background:var(--diff-remove);border-left-color:var(--danger)}
-.diff-unified-equal{color:var(--text-secondary)}
-.diff-unified-header{color:var(--primary);font-size:11px;font-weight:600;padding:2px 8px}
-.diff-side-table{width:100%;border-collapse:collapse;font-size:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;table-layout:fixed}
-.diff-side-table td{padding:2px 6px;vertical-align:top;white-space:pre-wrap;word-break:break-all;width:46%}
-.diff-side-table td.diff-side-num{width:4%;text-align:right;color:var(--text-muted);font-size:10px;user-select:none;padding-right:4px}
-.diff-side-table td.diff-side-num:nth-child(3){padding-left:12px;border-left:2px solid var(--border)}
-.diff-side-add{background:var(--diff-add)}
-.diff-side-remove{background:var(--diff-remove)}
-.diff-side-empty{background:var(--tab-hover)}
-.word-add{background:#a5d6a7;border-radius:2px;padding:0 1px}
-.word-remove{background:#ef9a9a;border-radius:2px;padding:0 1px;text-decoration:line-through}
 .footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
 .footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
 .footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
@@ -196,13 +148,12 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
 .footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
 .footer-links a:hover{color:var(--primary);text-decoration:underline}
-/* 语言切换（分段控件） */
-.lang-switch{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-right:6px}
-.lang-link{padding:4px 9px;font-size:12px;color:var(--text-secondary);text-decoration:none;line-height:1.4;transition:all var(--transition);white-space:nowrap}
-.lang-link+.lang-link{border-left:1px solid var(--border)}
-.lang-link:hover{background:var(--tab-hover);color:var(--text)}
-.lang-link.active{background:var(--primary-light);color:var(--tab-active-text);font-weight:600}
-/* 工具页正文（构建时烘焙进 HTML 的说明/步骤/FAQ） */
+/* 语言切换（下拉选择，N 语言不挤爆 header） */
+.lang-switch{display:flex;align-items:center;margin-right:6px}
+.lang-select{padding:4px 6px;font-size:12px;color:var(--text-secondary);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.4;cursor:pointer;max-width:128px;transition:all var(--transition)}
+.lang-select:hover{background:var(--tab-hover);color:var(--text)}
+.lang-select:focus{outline:2px solid var(--primary);outline-offset:1px}
+/* 工具页正文（构建h烘焙进 HTML 的Description/步骤/FAQ） */
 .seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
 .seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
 .seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
@@ -214,16 +165,15 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .seo-features{list-style:none;margin-left:0!important}
 .seo-features li{padding-left:16px;position:relative}
 .seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+/* 首页「全部在线开发工具」清单：两列排布，窄屏回退单列（38 条单列会拉出很长一屏） */
+.seo-content h3{font-size:15px;color:var(--text);margin:18px 0 6px}
 .faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
 .faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
 .faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
 .faq details[open] summary::before{content:'－'}
 .faq details p{margin:10px 0 0}
-.legal{max-width:900px;margin-left:auto;margin-right:auto}
-.legal code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
-.legal-updated{color:var(--text-muted);font-size:12px;margin-bottom:18px}
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
-@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}.input-editor-wrap{min-height:350px}.special-tools{grid-template-columns:1fr}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}}
 /* 反馈弹窗（原生 <dialog>，无第三方依赖）
    注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
    默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
@@ -242,168 +192,28 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
 .fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
 .fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
-/* ==================== 今日热榜（/hotnews/） ====================
-   这一页唯一的交互是来源标签过滤，而过滤只是把分组的 data-on 置 0/1；
-   服务端给每组写的就是 data-on="1"，所以禁用 JS 时全部条目照常可见。 */
-.news{display:flex;flex-direction:column;gap:16px}
-.news-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.news-head-row{margin-bottom:12px}
-.news-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
-.news-updated{margin:0;font-size:12px;color:var(--text-muted);line-height:1.6}
-.news-updated b{color:var(--text-secondary);font-weight:600}
-.news-dot{margin:0 6px;opacity:.5}
-.news-tabs{display:flex;gap:6px;flex-wrap:wrap}
-.news-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
-.news-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
-.news-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
-.news-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
-.news-tab.active .news-tab-n{opacity:.85}
-.news-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.news-group[data-on="0"]{display:none}
-.news-group+.news-group{margin-top:16px}
-.news-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.news-group-name{font-size:15px;font-weight:700;color:var(--text);text-decoration:none}
-.news-group-name:hover{color:var(--primary);text-decoration:underline}
-.news-group-desc{font-size:12px;color:var(--text-muted)}
-.news-group-note{margin:0 0 12px;padding-left:11px;border-left:2px solid var(--border);font-size:13px;line-height:1.7;color:var(--text-secondary)}
-.news-warn{margin:0 0 10px;padding:7px 11px;border-radius:var(--radius-sm);background:var(--primary-light);color:var(--text-secondary);font-size:12px;line-height:1.6}
-.news-list{list-style:none;margin:0;padding:0}
-.news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border)}
-.news-item:last-child{border-bottom:none;padding-bottom:0}
-.news-rank{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:5px;background:var(--bg);color:var(--text-muted);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px}
-.news-item:nth-child(-n+3) .news-rank{background:var(--primary-light);color:var(--primary)}
-.news-main{flex:1;min-width:0}
-.news-title{display:block;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.55;transition:color var(--transition)}
-.news-title:hover{color:var(--primary)}
-.news-ext{margin-left:5px;font-size:11px;color:var(--primary);opacity:.45;transition:opacity var(--transition)}
-.news-title:hover .news-ext{opacity:1}
-.news-summary{margin:3px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.news-meta{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:11px;color:var(--text-muted)}
-.news-meta time{font-variant-numeric:tabular-nums}
-.news-heat{color:var(--warning);font-weight:600}
-.news-empty{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px;text-align:center;color:var(--text-muted);font-size:13px}
-@media(max-width:900px){.news-head,.news-group{padding:14px 14px}.news-lead{font-size:13px}.news-title{font-size:13.5px}}
-/* ==================== Go 速查表（/go-cheatsheet/） ====================
-   与热榜页同一思路：唯一的交互是搜索过滤（切换 data-on），
-   服务端给每个条目写的就是 data-on="1"，禁用 JS 时全部条目照常可见。 */
-.gocs{display:flex;flex-direction:column;gap:16px}
-.gocs-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.gocs-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
-.gocs-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
-.gocs-meta b{color:var(--text-secondary);font-weight:600}
-.gocs-dot{margin:0 6px;opacity:.5}
-.gocs-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none;margin-bottom:12px}
-.gocs-search:focus{border-color:var(--primary)}
-.gocs-tabs{display:flex;gap:6px;flex-wrap:wrap}
-.gocs-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;text-decoration:none;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
-.gocs-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
-.gocs-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
-.gocs-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
-.gocs-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.gocs-group[data-on="0"]{display:none}
-.gocs-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
-.gocs-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
-.gocs-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px}
-.gocs-item{min-width:0;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
-.gocs-item[data-on="0"]{display:none}
-.gocs-cmd{display:inline-block;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 8px;margin-bottom:8px;word-break:break-all}
-.gocs-desc{margin:0 0 8px;font-size:13px;color:var(--text);line-height:1.65}
-.gocs-eg-label{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px}
-.gocs-eg{margin:0 0 8px;padding:8px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
-.gocs-eg code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre}
-.gocs-pit{margin:0;padding:7px 11px;border-left:2px solid var(--warning);background:var(--card-bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:12px;color:var(--text-secondary);line-height:1.65}
-.gocs-pit b{color:var(--warning);margin-right:6px}
-.gocs-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
-@media(max-width:900px){.gocs-head,.gocs-group{padding:14px 14px}.gocs-items{grid-template-columns:1fr}}
-/* ==================== 代码片段库（/snippets/） ====================
-   与 .gocs-* 同型（构建期烘焙 + 无 JS 全可见 + JS 只过滤），
-   差别在卡片：代码块 + 右上角复制按钮。 */
-.snp{display:flex;flex-direction:column;gap:16px}
-.snp-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.snp-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
-.snp-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
-.snp-meta b{color:var(--text-secondary);font-weight:600}
-.snp-dot{margin:0 6px;opacity:.5}
-.snp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.snp-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm);font-family:inherit}
-.snp-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
-.snp-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
-.snp-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
-.snp-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none}
-.snp-search:focus{border-color:var(--primary)}
-.snp-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
-.snp-group[data-on="0"]{display:none}
-.snp-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
-.snp-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
-.snp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:12px}
-.snp-item{min-width:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
-.snp-item[data-on="0"]{display:none}
-.snp-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
-.snp-title{margin:0;font-size:14px;font-weight:600;color:var(--text)}
-.snp-lang{flex:none;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:10px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.3px}
-.snp-desc{margin:0 0 10px;font-size:13px;color:var(--text-secondary);line-height:1.65}
-.snp-code-wrap{position:relative;margin-top:auto}
-.snp-code{margin:0;padding:10px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
-.snp-code code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre;tab-size:4}
-.snp-copy{position:absolute;top:6px;right:6px;opacity:.85}
-.snp-copy:hover{opacity:1}
-.snp-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
-@media(max-width:900px){.snp-head,.snp-group{padding:14px 14px}.snp-items{grid-template-columns:1fr}.snp-copy{opacity:1}}
-/* ==================== 博客（/blog/） ==================== */
-.blog-list{display:flex;flex-direction:column;gap:12px}
-.blog-card{display:block;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;text-decoration:none;transition:all var(--transition)}
-.blog-card:hover{box-shadow:var(--shadow-md)}
-.blog-card-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;margin:0 0 6px}
-.blog-card:hover .blog-card-title{color:var(--primary)}
-.blog-card-desc{margin:0 0 8px;font-size:13px;color:var(--text-secondary);line-height:1.7}
-.blog-card-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);flex-wrap:wrap}
-.blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
-.blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
-.blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
-/* 文章页 */
-.post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
-.post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}
-.post-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.post h2{font-size:17px;color:var(--text);margin:28px 0 10px}
-.post h3{font-size:15px;color:var(--text);margin:22px 0 8px}
-.post p{margin-bottom:12px}
-.post ul,.post ol{margin:0 0 12px 22px}
-.post li{margin-bottom:6px}
-.post b,.post strong{color:var(--text)}
-.post a{color:var(--primary)}
-.post code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12.5px;background:var(--primary-light);color:var(--primary);border-radius:4px;padding:1px 5px}
-.post pre{background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;overflow-x:auto;margin:0 0 12px}
-.post pre code{background:none;color:var(--text);padding:0;font-size:12.5px;line-height:1.7;white-space:pre}
-.post blockquote{margin:0 0 12px;padding:8px 14px;border-left:3px solid var(--primary);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;color:var(--text-secondary)}
-.post table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
-.post th,.post td{border:1px solid var(--border);padding:7px 12px;text-align:left}
-.post th{background:var(--toolbar-bg);color:var(--text);font-weight:600}
-.post .post-note{padding:10px 14px;border-left:3px solid var(--warning);background:var(--bg);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px}
-.post-related{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
-.post-related h2{margin-top:0}
-@media(max-width:900px){.post{padding:22px 18px}.post h1{font-size:19px}}
 
 /* ============================================================
    窄屏导航（2026-10-10）
    ------------------------------------------------------------
-   问题：.header 是 sticky + flex-wrap:wrap，而 6 个分类下拉 + 2 个平级链接
-   + 右侧 3 个按钮在 390px 屏上会换行成 7 行，占掉屏幕顶部约三分之一，
-   且右侧按钮组被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
+   问题：.header 是 sticky + flex-wrap:wrap，而 6 个m类下拉 + 2 个平级链接
+   + 右侧 3 个按钮在 390px 屏上会换行成 7 rows，占掉屏幕顶部约三m之一，
+   且右侧按钮Group被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
 
-   方案：<=900px 时 header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
-   ☰ 抽屉；抽屉里的分类下拉由浮层改为原地展开（position:static + max-height
+   方案：<=900px h header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
+   ☰ 抽屉；抽屉里的m类下拉由浮层改为原地展开（position:static + max-height
    过渡），因为浮层在窄屏上会向右溢出视口。
 
    开关状态放在 body.nav-open 上而不是 :focus-within —— 移动浏览器点击
-   <button> 的聚焦行为不一致，靠焦点展开会时灵时不灵；点击外部关闭也只有 JS 能做。
+   <button> 的聚焦行为不一致，靠焦点展开会h灵h不灵；点击外部Close也只有 JS 能做。
    ============================================================ */
 
-/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体查询里塞一大坨 */
+/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体Query里塞一大坨 */
 .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;padding:0 8px;flex:none;cursor:pointer;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);transition:background var(--transition),border-color var(--transition)}
 .nav-toggle:hover{background:var(--tab-hover)}
 .nav-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
 .nav-toggle span{display:block;width:100%;height:2px;border-radius:1px;background:var(--text);transition:transform var(--transition),opacity var(--transition)}
-/* 展开时三条线变成 ✕ */
+/* 展开h三条线变成 ✕ */
 body.nav-open .nav-toggle span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 body.nav-open .nav-toggle span:nth-child(2){opacity:0}
 body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
@@ -423,15 +233,15 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .nav-trigger{width:100%;justify-content:space-between;text-align:left;padding:12px 10px;font-size:15px;border-radius:var(--radius-sm)}
   .nav-trigger.active{background:var(--tab-active-bg)}
 
-  /* 分类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
+  /* m类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
   .nav-panel{position:static;left:auto;right:auto;min-width:0;opacity:1;visibility:visible;transform:none;background:transparent;border:0;box-shadow:none;padding:0 0 0 12px;max-height:0;overflow:hidden;transition:max-height .22s ease}
   .nav-dropdown.open .nav-panel{max-height:420px;padding-bottom:6px}
   .nav-dropdown.open .caret{transform:rotate(180deg)}
-  /* 分类名已经在触发按钮上，面板里重复的表头去掉 */
+  /* m类名已经在触发按钮上，面板里重复的表头去掉 */
   .nav-panel-title{display:none}
   .nav-panel-item{padding:11px 10px;font-size:14.5px;white-space:normal}
 
-  /* 平级链接（今日热榜 / 博客）同样整行 */
+  /* 平级链接（今Day热榜 / 博客）同样整行 */
   .top-nav-link{width:100%;padding:12px 10px;font-size:15px;justify-content:flex-start}
 
 }
@@ -439,7 +249,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 /* 实测各元素宽度：logo 109 + header-actions 195（反馈 40 / 语言 101 / 主题 40）
    + ☰ 36 + 间距内边距 42 ≈ 382px。375px 机型减去滚动条约 360px 可用 → 会溢出，
    ☰ 被挤出视口，菜单就再也打不开了。所以手机档必须再让出 40 多像素。
-   反馈按钮优先让位：页脚有同样的「问题反馈」入口，而 ☰ 是唯一入口。 */
+   反馈按钮优先让位：页脚有同样的「Feedback」入口，而 ☰ 是唯一入口。 */
 @media(max-width:430px){
   .header-actions .feedback-btn{display:none}
   .header{padding:8px 10px;gap:5px}
@@ -451,7 +261,7 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
   .logo-text{display:none}
 }
 
-/* ==================== 全站工具搜索 + 最近使用 ==================== */
+/* ==================== 全站Tool search + Recent ==================== */
 .search-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 9px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text);line-height:1}
 .search-btn:hover{background:var(--tab-hover);border-color:var(--primary);color:var(--primary)}
 .search-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-start;justify-content:center;padding-top:9vh}
@@ -478,10 +288,6 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .nav-panel-empty{padding:12px 10px;font-size:13px;color:var(--text-muted)}
 @media(max-width:430px){.search-overlay{padding-top:5vh}.search-panel{width:calc(100% - 16px)}}
 
-/* ===== 时间 / 日期工具新增样式（2026-10-15） ===== */
-.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
-.tool-card-title{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--text)}
-.tool-card-desc{font-size:13px;color:var(--text-secondary);margin:8px 0 12px}
 .dt-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;background:var(--card-bg);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
 .dt-table th{text-align:left;padding:8px 10px;background:var(--tab-hover);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border)}
 .dt-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap}
@@ -492,19 +298,19 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .dt-batch-table th{text-align:left;padding:7px 10px;background:var(--tab-hover);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border)}
 .dt-batch-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);white-space:pre-wrap;word-break:break-all}
 .dt-batch-table .dt-bad td{color:#e57373}
-.dt-center{text-align:center;padding:24px 12px}
-.dt-big{font-size:48px;font-weight:700;color:var(--text);line-height:1.1;font-family:"JetBrains Mono","Consolas",monospace}
-.dt-sub{font-size:13px;color:var(--text-secondary);margin-top:6px}
-.dt-clock{font-family:"JetBrains Mono","Consolas",monospace;font-weight:600}
-.dt-off{color:var(--text-muted);font-size:12px}
-.dt-big .dt-unit{font-size:22px;font-weight:600;color:var(--text-secondary);margin-left:4px}
 @media(max-width:900px){
   .dt-table{display:block;overflow-x:auto;white-space:nowrap}
   .dt-table td{white-space:nowrap}
-  .dt-big{font-size:38px}
 }
 
-/* ============================================================ 日历与日期（年度参考页） */
+
+.dt-batch-table .dt-k{color:var(--text-secondary);white-space:nowrap;width:1%;padding-right:16px;font-weight:500}
+.dt-batch-table .dt-v{word-break:break-all}
+</style>
+<style>
+/* evergreen.css */
+/* evergreen year reference pages — auto-split from style.css (2026-10-19 per-page asset trimming). */
+/* ============================================================ Day历与Date（Year度参考页） */
 .ev-page{max-width:100%}
 .ev-summary{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
   padding:14px 18px;margin:16px 0;font-size:14px;color:var(--text);line-height:1.7}
@@ -529,55 +335,10 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .ev-cal .ev-empty{background:transparent;border-color:transparent}
 .ev-cal .ev-today{background:var(--primary);color:#fff;font-weight:700;border-radius:var(--radius-sm)}
 .ev-cal .ev-day{cursor:default}
-
-/* ============================================================ 进制转换 */
-.base-sel{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--card-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;min-width:62px}
-.base-sel-label{font-size:13px;color:var(--text-secondary);font-weight:500;white-space:nowrap}
-.base-main-out{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:22px;
-  font-weight:600;color:var(--primary);word-break:break-all;padding:10px 2px;line-height:1.3}
-.base-all-table td{padding:5px 10px}
-.mono{font-family:"JetBrains Mono","Fira Code","Consolas",monospace}
-.dt-batch-table .dt-k{color:var(--text-secondary);white-space:nowrap;width:1%;padding-right:16px;font-weight:500}
-.dt-batch-table .dt-v{word-break:break-all}
 @media(max-width:900px){
   .ev-cal-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .ev-summary{padding:12px 14px}
 }
-/* ---- 世界时钟：模拟表盘卡片视图 ---- */
-.wc-views{display:flex;gap:8px;margin:10px 0 14px}
-.wc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px;margin:8px 0 16px}
-.wc-card{min-width:0;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
-.wc-city{font-weight:600;font-size:14px;color:var(--text)}
-.wc-tz{font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wc-dial{width:112px;height:112px;margin:10px auto 6px;display:block}
-.wc-face{fill:var(--card-bg);stroke:var(--text);stroke-width:4}
-.wc-tick{stroke:var(--text);stroke-width:3;stroke-linecap:round}
-.wc-hand{stroke-linecap:round}
-.wc-hour{stroke:var(--text);stroke-width:5}
-.wc-min{stroke:var(--text);stroke-width:3}
-.wc-sec{stroke:#e53935;stroke-width:1.6}
-.wc-pin{fill:var(--text)}
-.wc-date{font-size:12px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wc-time{font-size:15px;margin-top:2px}
-.wc-meta{display:flex;justify-content:center;gap:6px;align-items:center;margin-top:2px;min-height:18px}
-.wc-dst{font-size:11px;font-weight:600;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:0 4px}
-/* ---- 世界时钟：时区一览静态表 ---- */
-.wc-note{font-size:12px;color:var(--text-muted);margin:4px 0 10px}
-.wc-rep{display:block;font-weight:600;color:var(--text)}
-.wc-iana{display:block;font-size:11px;color:var(--text-muted);font-family:"JetBrains Mono","Consolas",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wc-off-std{font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;color:var(--text-secondary)}
-.wc-cities{color:var(--text-secondary);font-size:13px;line-height:1.5}
-.wc-search{margin:6px 0 12px}
-.wc-search-input{width:100%;box-sizing:border-box;padding:9px 12px;font-size:14px;color:var(--text);background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);outline:none}
-.wc-search-input:focus{border-color:var(--accent,#4a90d9);box-shadow:0 0 0 2px rgba(74,144,217,.18)}
-.wc-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 16px}
-.wc-search-results[hidden]{display:none}
-.wc-search-results .wc-dial{width:92px;height:92px}
-.wc-card-mini{padding:12px 8px}
-.wc-zone-cities{color:var(--text-muted);font-size:11px;line-height:1.4;margin-top:4px;word-break:break-word}
-.wc-search-empty{color:var(--text-muted);font-size:13px;padding:10px 4px}
-
 </style>
 <!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
      2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
@@ -594,23 +355,30 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
      放在 head 里是为了避免加载后再回退造成的闪烁。 -->
 <noscript><style>@media(max-width:900px){.nav-toggle{display:none}.top-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;border-bottom:0;box-shadow:none;padding:6px 0 0;max-height:none;overflow:visible}.nav-dropdown{width:auto}.nav-trigger{width:auto;font-size:14px}}</style></noscript>
 <script>
-// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
-// 爬虫跳过是为了不影响两个语言版本的收录（配合 hreflang 使用）。
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫hRun。
+// 爬虫跳过是为了不影响各语言Version的收录（配合 hreflang 使用）。
 (function () {
   try {
     var KEY = 'devtools-lang';
-    var q = location.search.match(/[?&]lang=(zh|en)(?:&|$)/);
+    var q = location.search.match(/[?&]lang=([A-Za-z-]+)(?:&|$)/);
     if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
     if (localStorage.getItem(KEY)) return;
     if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
     var langs = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || ''];
-    var preferZh = false;
+    var SUPPORTED = ["zh", "en", "ja", "ko", "es", "pt-BR", "fr", "de", "ru", "id"];
+    var want = null;
     for (var i = 0; i < langs.length; i++) {
-      if (/^zh\b/i.test(langs[i])) { preferZh = true; break; }
+      var p = (langs[i] || '').slice(0, 2).toLowerCase();
+      if (p === 'zh') { want = 'zh'; break; }
+      for (var j = 0; j < SUPPORTED.length; j++) {
+        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) { want = SUPPORTED[j]; break; }
+      }
+      if (want) break;
     }
-    var want = preferZh ? 'zh' : 'en';
-    var target = {"zh": "../../../weeks/2023/", "en": "./"}[want];
+    if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
+    var targets = {"zh": "../../../weeks/2023/", "en": "../../../en/weeks/2023/", "ja": "../../../ja/weeks/2023/", "ko": "../../../ko/weeks/2023/", "es": "../../../es/weeks/2023/", "pt-BR": "../../../pt-BR/weeks/2023/", "fr": "../../../fr/weeks/2023/", "de": "../../../de/weeks/2023/", "ru": "../../../ru/weeks/2023/", "id": "../../../id/weeks/2023/"};
+    var target = targets[want];
     if (target && want !== 'en') location.replace(target);
   } catch (e) {}
 })();
@@ -749,14 +517,30 @@ var _hmt = _hmt || [];
       <div class="nav-panel" id="recentPanel" role="menu"></div>
     </div>
   </nav>
-  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="Search" aria-label="Search">🔍</button><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch"><a class="lang-link" href="../../../weeks/2023/" data-lang-set="zh">中文</a><a class="lang-link active" href="./" data-lang-set="en">English</a></div>
+  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="Search" aria-label="Search">🔍</button><button class="feedback-btn" type="button" data-feedback-open title="Feedback" aria-label="Feedback">💬</button><div class="lang-switch">
+  <select class="lang-select" aria-label="Language">
+    <option value="../../../weeks/2023/" data-lang="zh">中文</option>
+    <option value="./" data-lang="en" selected>English</option>
+    <option value="../../../ja/weeks/2023/" data-lang="ja">日本語</option>
+    <option value="../../../ko/weeks/2023/" data-lang="ko">한국어</option>
+    <option value="../../../es/weeks/2023/" data-lang="es">Español</option>
+    <option value="../../../pt-BR/weeks/2023/" data-lang="pt-BR">Português</option>
+    <option value="../../../fr/weeks/2023/" data-lang="fr">Français</option>
+    <option value="../../../de/weeks/2023/" data-lang="de">Deutsch</option>
+    <option value="../../../ru/weeks/2023/" data-lang="ru">Русский</option>
+    <option value="../../../id/weeks/2023/" data-lang="id">Indonesia</option>
+  </select>
+</div>
 <script>
-// 记住手动选择：下次访问不再自动跳转
-document.addEventListener("click", function (e) {
-  var a = e.target.closest && e.target.closest("[data-lang-set]");
-  if (!a) return;
-  try { localStorage.setItem("devtools-lang", a.getAttribute("data-lang-set")); } catch (err) {}
-}, true);
+// 语言切换：记住手动选择，下次访问不再自动跳转
+var __ls = document.querySelector(".lang-select");
+if (__ls) {
+  __ls.addEventListener("change", function () {
+    var o = __ls.options[__ls.selectedIndex];
+    try { localStorage.setItem("devtools-lang", o.getAttribute("data-lang")); } catch (e) {}
+    location.href = __ls.value;
+  });
+}
 </script><button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌓</button></div>
 </header>
 
@@ -826,7 +610,6 @@ document.addEventListener("click", function (e) {
 </div>
 
 <script>window.__TOOL_INDEX__ = [{"slug": "json", "href": "../../../en/", "g": "JSON", "zh": {"l": "JSON", "t": "JSON Formatter & Validator Online — Free, In-Browser | DevTools", "k": "JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester"}, "en": {"l": "JSON", "t": "JSON Formatter & Validator Online — Free, In-Browser | DevTools", "k": "JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester"}}, {"slug": "hotnews", "href": "../../../en/hotnews/", "g": "Content", "zh": {"l": "Tech News", "t": "Today's Tech News — Live Headlines for Developers | DevTools", "k": "tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech"}, "en": {"l": "Tech News", "t": "Today's Tech News — Live Headlines for Developers | DevTools", "k": "tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech"}}, {"slug": "go-cheatsheet", "href": "../../../en/go-cheatsheet/", "g": "Cheat Sheets", "zh": {"l": "Go Cheat Sheet", "t": "Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools", "k": "go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables"}, "en": {"l": "Go Cheat Sheet", "t": "Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools", "k": "go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables"}}, {"slug": "diff", "href": "../../../en/diff/", "g": "Text / String", "zh": {"l": "Text Diff", "t": "Text Diff Checker — Compare Code & Text Online | DevTools", "k": "text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff"}, "en": {"l": "Text Diff", "t": "Text Diff Checker — Compare Code & Text Online | DevTools", "k": "text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff"}}, {"slug": "encode", "href": "../../../en/encode/", "g": "Encode / Crypto", "zh": {"l": "Encode", "t": "Base64 / URL / Unicode Encoder & Decoder Online | DevTools", "k": "base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text"}, "en": {"l": "Encode", "t": "Base64 / URL / Unicode Encoder & Decoder Online | DevTools", "k": "base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text"}}, {"slug": "regex", "href": "../../../en/regex/", "g": "Text / String", "zh": {"l": "Regex", "t": "Regex Tester Online — Live Highlight & Replace | DevTools", "k": "regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns"}, "en": {"l": "Regex", "t": "Regex Tester Online — Live Highlight & Replace | DevTools", "k": "regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns"}}, {"slug": "timestamp", "href": "../../../en/timestamp/", "g": "Time / Date", "zh": {"l": "Timestamp", "t": "Unix Timestamp to Date Converter — Seconds & ms | DevTools", "k": "unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,milliseconds timestamp,iso 8601,rfc 2822,utc time"}, "en": {"l": "Timestamp", "t": "Unix Timestamp to Date Converter — Seconds & ms | DevTools", "k": "unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,milliseconds timestamp,iso 8601,rfc 2822,utc time"}}, {"slug": "hash", "href": "../../../en/hash/", "g": "Encode / Crypto", "zh": {"l": "Hash", "t": "MD5 / SHA-256 Hash Generator — HMAC & Files | DevTools", "k": "md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash"}, "en": {"l": "Hash", "t": "MD5 / SHA-256 Hash Generator — HMAC & Files | DevTools", "k": "md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash"}}, {"slug": "formatter", "href": "../../../en/formatter/", "g": "Convert", "zh": {"l": "Formatter", "t": "HTML / CSS / JS / SQL Formatter & Minifier | DevTools", "k": "html formatter,css formatter,js beautifier,javascript formatter,sql formatter,xml formatter,code minifier,code beautifier"}, "en": {"l": "Formatter", "t": "HTML / CSS / JS / SQL Formatter & Minifier | DevTools", "k": "html formatter,css formatter,js beautifier,javascript formatter,sql formatter,xml formatter,code minifier,code beautifier"}}, {"slug": "string", "href": "../../../en/string/", "g": "Text / String", "zh": {"l": "Strings", "t": "String & Text Tools — Case, Sort, Dedupe & Count | DevTools", "k": "string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines"}, "en": {"l": "Strings", "t": "String & Text Tools — Case, Sort, Dedupe & Count | DevTools", "k": "string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines"}}, {"slug": "generator", "href": "../../../en/generator/", "g": "Code / Gen", "zh": {"l": "Generators", "t": "UUID, Password & QR Code Generator Online | DevTools", "k": "uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data"}, "en": {"l": "Generators", "t": "UUID, Password & QR Code Generator Online | DevTools", "k": "uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data"}}, {"slug": "color", "href": "../../../en/color/", "g": "Convert", "zh": {"l": "Color", "t": "Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools", "k": "color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color"}, "en": {"l": "Color", "t": "Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools", "k": "color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color"}}, {"slug": "case", "href": "../../../en/case/", "g": "Text / String", "zh": {"l": "Case style", "t": "Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming"}, "en": {"l": "Case style", "t": "Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming"}}, {"slug": "jwt", "href": "../../../en/jwt/", "g": "Encode / Crypto", "zh": {"l": "JWT decoder", "t": "JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools", "k": "jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify"}, "en": {"l": "JWT decoder", "t": "JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools", "k": "jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify"}}, {"slug": "yaml", "href": "../../../en/yaml/", "g": "Convert", "zh": {"l": "JSON ↔ YAML", "t": "JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools", "k": "json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter"}, "en": {"l": "JSON ↔ YAML", "t": "JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools", "k": "json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter"}}, {"slug": "toml", "href": "../../../en/toml/", "g": "Convert", "zh": {"l": "JSON ↔ TOML", "t": "JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools", "k": "json to toml,toml to json,json toml converter,online toml,toml formatter,go config"}, "en": {"l": "JSON ↔ TOML", "t": "JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools", "k": "json to toml,toml to json,json toml converter,online toml,toml formatter,go config"}}, {"slug": "csv", "href": "../../../en/csv/", "g": "Convert", "zh": {"l": "JSON ↔ CSV", "t": "JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools", "k": "json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter"}, "en": {"l": "JSON ↔ CSV", "t": "JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools", "k": "json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter"}}, {"slug": "batch", "href": "../../../en/batch/", "g": "Time / Date", "zh": {"l": "Batch TS", "t": "Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools", "k": "batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch"}, "en": {"l": "Batch TS", "t": "Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools", "k": "batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch"}}, {"slug": "timestamp-list", "href": "../../../en/timestamp-list/", "g": "Time / Date", "zh": {"l": "TS Reference", "t": "Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools", "k": "timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp"}, "en": {"l": "TS Reference", "t": "Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools", "k": "timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp"}}, {"slug": "timezones", "href": "../../../en/timezones/", "g": "Time / Date", "zh": {"l": "Time Zones", "t": "World Time Zones — UTC Offset & Current Time | DevTools", "k": "time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone"}, "en": {"l": "Time Zones", "t": "World Time Zones — UTC Offset & Current Time | DevTools", "k": "time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone"}}, {"slug": "weeknumbers", "href": "../../../en/weeknumbers/", "g": "Time / Date", "zh": {"l": "ISO Week", "t": "ISO 8601 Week Number — Current Week & Year | DevTools", "k": "iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number"}, "en": {"l": "ISO Week", "t": "ISO 8601 Week Number — Current Week & Year | DevTools", "k": "iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number"}}, {"slug": "daynumbers", "href": "../../../en/daynumbers/", "g": "Time / Date", "zh": {"l": "Day of Year", "t": "Day of the Year — Current Day Number | DevTools", "k": "day of year,current day number,julian day,days into the year,leap year days,day number"}, "en": {"l": "Day of Year", "t": "Day of the Year — Current Day Number | DevTools", "k": "day of year,current day number,julian day,days into the year,leap year days,day number"}}, {"slug": "years", "href": "../../../en/years/", "g": "Time / Date", "zh": {"l": "Leap Year", "t": "Leap Year Lookup — Leap Years 1800–2100 | DevTools", "k": "leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator"}, "en": {"l": "Leap Year", "t": "Leap Year Lookup — Leap Years 1800–2100 | DevTools", "k": "leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator"}}, {"slug": "world-clock", "href": "../../../en/world-clock/", "g": "Time / Date", "zh": {"l": "World Clock", "t": "World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools", "k": "world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison"}, "en": {"l": "World Clock", "t": "World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools", "k": "world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison"}}, {"slug": "countdown", "href": "../../../en/countdown/", "g": "Time / Date", "zh": {"l": "Countdown", "t": "Countdown to a Unix Timestamp | DevTools", "k": "countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown"}, "en": {"l": "Countdown", "t": "Countdown to a Unix Timestamp | DevTools", "k": "countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown"}}, {"slug": "date-difference", "href": "../../../en/date-difference/", "g": "Time / Date", "zh": {"l": "Date Diff", "t": "Date Difference Calculator — Days/Hours/Min/Sec | DevTools", "k": "date difference,days between dates,date calculator,time difference,days calculator,date interval"}, "en": {"l": "Date Diff", "t": "Date Difference Calculator — Days/Hours/Min/Sec | DevTools", "k": "date difference,days between dates,date calculator,time difference,days calculator,date interval"}}, {"slug": "date-calculator", "href": "../../../en/date-calculator/", "g": "Time / Date", "zh": {"l": "Date Calc", "t": "Date Add / Subtract — Add/Sub Years/Months/Days | DevTools", "k": "date add subtract,date calculator,add days to date,subtract days,date offset,add months"}, "en": {"l": "Date Calc", "t": "Date Add / Subtract — Add/Sub Years/Months/Days | DevTools", "k": "date add subtract,date calculator,add days to date,subtract days,date offset,add months"}}, {"slug": "duration", "href": "../../../en/duration/", "g": "Time / Date", "zh": {"l": "Duration", "t": "ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools", "k": "iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration"}, "en": {"l": "Duration", "t": "ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools", "k": "iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration"}}, {"slug": "uuid", "href": "../../../en/uuid/", "g": "ID / Identifiers", "zh": {"l": "UUID", "t": "UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools", "k": "uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate"}, "en": {"l": "UUID", "t": "UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools", "k": "uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate"}}, {"slug": "snowflake", "href": "../../../en/snowflake/", "g": "ID / Identifiers", "zh": {"l": "Snowflake", "t": "Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools", "k": "snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm"}, "en": {"l": "Snowflake", "t": "Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools", "k": "snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm"}}, {"slug": "tid", "href": "../../../en/tid/", "g": "ID / Identifiers", "zh": {"l": "Twitter ID", "t": "Twitter and X ID Decoder — tweet/user creation time | DevTools", "k": "twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time"}, "en": {"l": "Twitter ID", "t": "Twitter and X ID Decoder — tweet/user creation time | DevTools", "k": "twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time"}}, {"slug": "objectid", "href": "../../../en/objectid/", "g": "ID / Identifiers", "zh": {"l": "ObjectId", "t": "MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools", "k": "objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate"}, "en": {"l": "ObjectId", "t": "MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools", "k": "objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate"}}, {"slug": "firebase", "href": "../../../en/firebase/", "g": "ID / Identifiers", "zh": {"l": "Firebase ID", "t": "Firebase Push ID Parser and Generator — timestamp lookup | DevTools", "k": "firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online"}, "en": {"l": "Firebase ID", "t": "Firebase Push ID Parser and Generator — timestamp lookup | DevTools", "k": "firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online"}}, {"slug": "base", "href": "../../../en/base/", "g": "Base Convert", "zh": {"l": "Base Converter", "t": "Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools", "k": "base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter"}, "en": {"l": "Base Converter", "t": "Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools", "k": "base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter"}}, {"slug": "binary", "href": "../../../en/binary/", "g": "Base Convert", "zh": {"l": "Binary Converter", "t": "Binary Converter - binary to decimal/hex/octal | DevTools", "k": "binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes"}, "en": {"l": "Binary Converter", "t": "Binary Converter - binary to decimal/hex/octal | DevTools", "k": "binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes"}}, {"slug": "hex", "href": "../../../en/hex/", "g": "Base Convert", "zh": {"l": "Hex Converter", "t": "Hexadecimal Converter - hex to decimal/binary/octal | DevTools", "k": "hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes"}, "en": {"l": "Hex Converter", "t": "Hexadecimal Converter - hex to decimal/binary/octal | DevTools", "k": "hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes"}}, {"slug": "snippets", "href": "../../../en/snippets/", "g": "Code / Gen", "zh": {"l": "Code Snippets", "t": "Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools", "k": "code snippets,common code snippets,code snippet library,go snippets,python snippets,javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code"}, "en": {"l": "Code Snippets", "t": "Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools", "k": "code snippets,common code snippets,code snippet library,go snippets,python snippets,javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code"}}, {"slug": "blog", "href": "../../../en/blog/", "g": "Content", "zh": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}, "en": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}}];</script>
-<script>window.__WC_ZONES__ = [{"tz": "Etc/GMT+12", "off": "UTC−12:00", "label": "Baker I. (US)", "cities": ["Baker I.", "Howland I."]}, {"tz": "Pacific/Pago_Pago", "off": "UTC−11:00", "label": "Pago Pago", "cities": ["Pago Pago (American Samoa)", "Alofi (Niue)"]}, {"tz": "Pacific/Honolulu", "off": "UTC−10:00", "label": "Honolulu", "cities": ["Honolulu (Hawaii)", "Papeete (Fr. Polynesia)"]}, {"tz": "Pacific/Marquesas", "off": "UTC−09:30", "label": "Nuku Hiva", "cities": ["Nuku Hiva (Marquesas)"]}, {"tz": "America/Anchorage", "off": "UTC−09:00", "label": "Anchorage", "cities": ["Anchorage (Alaska)"]}, {"tz": "America/Los_Angeles", "off": "UTC−08:00", "label": "Los Angeles", "cities": ["Los Angeles", "Vancouver", "Tijuana"]}, {"tz": "America/Denver", "off": "UTC−07:00", "label": "Denver", "cities": ["Denver", "Phoenix", "Edmonton"]}, {"tz": "America/Chicago", "off": "UTC−06:00", "label": "Chicago", "cities": ["Chicago", "Mexico City", "Winnipeg"]}, {"tz": "America/New_York", "off": "UTC−05:00", "label": "New York", "cities": ["New York", "Toronto", "Bogotá", "Lima"]}, {"tz": "America/Halifax", "off": "UTC−04:00", "label": "Halifax", "cities": ["Halifax", "Caracas", "Santiago", "La Paz"]}, {"tz": "America/St_Johns", "off": "UTC−03:30", "label": "St. John's", "cities": ["St. John's (Newfoundland)"]}, {"tz": "America/Sao_Paulo", "off": "UTC−03:00", "label": "São Paulo", "cities": ["São Paulo", "Buenos Aires", "Montevideo"]}, {"tz": "America/Noronha", "off": "UTC−02:00", "label": "Fernando de Noronha", "cities": ["Fernando de Noronha", "South Georgia"]}, {"tz": "Atlantic/Azores", "off": "UTC−01:00", "label": "Ponta Delgada", "cities": ["Ponta Delgada (Azores)", "Praia (Cape Verde)"]}, {"tz": "UTC", "off": "UTC±00:00", "label": "UTC", "cities": ["UTC reference"]}, {"tz": "Europe/London", "off": "UTC±00:00", "label": "London", "cities": ["London", "Lisbon", "Reykjavík", "Accra"]}, {"tz": "Europe/Paris", "off": "UTC+01:00", "label": "Paris", "cities": ["Paris", "Berlin", "Rome", "Madrid", "Lagos"]}, {"tz": "Europe/Athens", "off": "UTC+02:00", "label": "Athens", "cities": ["Athens", "Cairo", "Helsinki", "Johannesburg", "Bucharest"]}, {"tz": "Europe/Moscow", "off": "UTC+03:00", "label": "Moscow", "cities": ["Moscow", "Istanbul", "Nairobi", "Riyadh"]}, {"tz": "Asia/Tehran", "off": "UTC+03:30", "label": "Tehran", "cities": ["Tehran (Iran)"]}, {"tz": "Asia/Dubai", "off": "UTC+04:00", "label": "Dubai", "cities": ["Dubai", "Baku", "Tbilisi"]}, {"tz": "Asia/Kabul", "off": "UTC+04:30", "label": "Kabul", "cities": ["Kabul (Afghanistan)"]}, {"tz": "Asia/Karachi", "off": "UTC+05:00", "label": "Karachi", "cities": ["Karachi (Pakistan)", "Tashkent", "Malé"]}, {"tz": "Asia/Kolkata", "off": "UTC+05:30", "label": "Kolkata", "cities": ["Kolkata / New Delhi", "Colombo"]}, {"tz": "Asia/Kathmandu", "off": "UTC+05:45", "label": "Kathmandu", "cities": ["Kathmandu (Nepal)"]}, {"tz": "Asia/Dhaka", "off": "UTC+06:00", "label": "Dhaka", "cities": ["Dhaka (Bangladesh)", "Almaty", "Omsk"]}, {"tz": "Asia/Yangon", "off": "UTC+06:30", "label": "Yangon", "cities": ["Yangon (Myanmar)", "Cocos Is."]}, {"tz": "Asia/Bangkok", "off": "UTC+07:00", "label": "Bangkok", "cities": ["Bangkok", "Jakarta", "Hanoi"]}, {"tz": "Asia/Shanghai", "off": "UTC+08:00", "label": "Beijing / Shanghai", "cities": ["Beijing / Shanghai", "Singapore", "Perth", "Hong Kong"]}, {"tz": "Australia/Eucla", "off": "UTC+08:45", "label": "Eucla", "cities": ["Eucla (W. Australia, ~50)"]}, {"tz": "Asia/Tokyo", "off": "UTC+09:00", "label": "Tokyo", "cities": ["Tokyo", "Seoul", "Pyongyang"]}, {"tz": "Australia/Adelaide", "off": "UTC+09:30", "label": "Adelaide", "cities": ["Adelaide", "Darwin"]}, {"tz": "Australia/Sydney", "off": "UTC+10:00", "label": "Sydney", "cities": ["Sydney", "Melbourne", "Brisbane"]}, {"tz": "Australia/Lord_Howe", "off": "UTC+10:30", "label": "Lord Howe I.", "cities": ["Lord Howe I. (~350)"]}, {"tz": "Pacific/Guadalcanal", "off": "UTC+11:00", "label": "Honiara", "cities": ["Honiara (Solomon Is.)", "Nouméa (New Caledonia)"]}, {"tz": "Pacific/Auckland", "off": "UTC+12:00", "label": "Auckland", "cities": ["Auckland", "Suva (Fiji)", "Petropavlovsk-Kamchatsky"]}, {"tz": "Pacific/Chatham", "off": "UTC+12:45", "label": "Chatham Is.", "cities": ["Chatham Is. (~600)"]}, {"tz": "Pacific/Tongatapu", "off": "UTC+13:00", "label": "Nukuʻalofa", "cities": ["Nukuʻalofa (Tonga)", "Apia (Samoa)", "Kiribati (Phoenix Is.)"]}, {"tz": "Pacific/Kiritimati", "off": "UTC+14:00", "label": "Kiritimati", "cities": ["Kiritimati (Line Is.)"]}];</script>
 <script>
 // core.js
 // core.js — Global state, editor management, theme, navigation
@@ -916,7 +699,7 @@ function copyTextById(id) {
   if (!el) return;
   navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copied'), ()=>toast('Copy failed','error'));
 }
-// 把文本结果导出成文件下载（Blob + 临时 a[download]，纯前端，不经过服务器）。
+// 把文本Result导出成文件Download（Blob + 临h a[download]，纯前端，不经过服务器）。
 function downloadText(filename, text, mime) {
   if (!text) { toast('No result to download'); return; }
   try {
@@ -926,7 +709,7 @@ function downloadText(filename, text, mime) {
     a.href = url; a.download = filename; a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob 下载。
+    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob Download。
     setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
     toast('Downloaded ' + filename);
   } catch (e) {
@@ -941,7 +724,7 @@ function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; }
 // PAGE NAVIGATION
 // ============================================================
 // 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
-// 因此不再需要客户端标签切换。当前页由构建时写入的 <html data-page="..."> 指明。
+// 因此不再需要客户端标签切换。Now页由构建h写入的 <html data-page="..."> 指明。
 const pageInited = {};
 function currentPage() {
   return document.documentElement.getAttribute('data-page') || 'json';
@@ -992,14 +775,14 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 // ============================================================
-// 全站工具搜索 + 最近使用
+// 全站Tool search + Recent
 // ============================================================
 (function () {
   var STORE_KEY = 'devtools-recent';
-  var MAX_RECENT = 8;     // 持久化保留的最近使用工具上限
+  var MAX_RECENT = 8;     // 持久化保留的Recent工具上限
   var SHOW_RECENT = 6;    // 搜索空态 / 导航下拉里展示的条数
 
-  // ---- localStorage 读写（隐私模式等不可用时静默降级）----
+  // ---- localStorage 读写（隐私模式等不可用h静默降级）----
   function loadRecent() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
     catch (e) { return {}; }
@@ -1008,7 +791,7 @@ document.addEventListener('DOMContentLoaded', init);
     try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
   }
 
-  // 记录一次工具使用：频率 + 最近时间戳
+  // 记录一次工具使用：频率 + 最近Timestamp
   function recordToolUse(slug) {
     if (!slug) return;
     var rec = loadRecent();
@@ -1018,7 +801,7 @@ document.addEventListener('DOMContentLoaded', init);
     saveRecent(rec);
   }
 
-  // 按使用频率降序、频率相同按最近使用降序
+  // 按使用频率Descending、频率相同按RecentDescending
   function getRecentSorted() {
     var rec = loadRecent();
     var arr = Object.keys(rec).map(function (k) {
@@ -1043,7 +826,7 @@ document.addEventListener('DOMContentLoaded', init);
   function itemTitle(m) { var f = m[pageLang()]; return (f && f.t) || (m.en && m.en.t) || ''; }
   function itemGroup(m) { return m.g || ''; }
 
-  // ---- 渲染：导航下拉「最近使用」面板 ----
+  // ---- 渲染：导航下拉「Recent」面板 ----
   function renderRecentPanel() {
     var panel = document.getElementById('recentPanel');
     if (!panel) return;
@@ -1067,14 +850,14 @@ document.addEventListener('DOMContentLoaded', init);
     });
   }
 
-  // 清空使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
+  // Clear使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
   function clearHistory() {
     saveRecent({});
     renderRecentPanel();
     renderSearch(input ? input.value : '');
   }
 
-  // ---- 渲染：搜索结果 / 空态（最近使用）----
+  // ---- 渲染：Results / 空态（Recent）----
   var overlay = null, input = null, results = null;
   function buildResultItem(m) {
     return '<a class="search-item" href="' + escHtml(m.href) + '">' +
@@ -1156,7 +939,7 @@ document.addEventListener('DOMContentLoaded', init);
         }
       });
     }
-    // "/" 快捷键打开搜索（输入框 / 编辑器内不触发）
+    // "/" 快捷键打开搜索（Input框 / 编辑器内不触发）
     document.addEventListener('keydown', function (e) {
       if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         var t = e.target;
@@ -1168,7 +951,7 @@ document.addEventListener('DOMContentLoaded', init);
     });
   }
 
-  // 页面初始化：记录当前工具的使用 + 渲染最近使用面板 + 初始化搜索
+  // 页面初始化：记录Now工具的使用 + 渲染Recent面板 + 初始化搜索
   function initSearchAndRecent() {
     var p = currentPage();
     var slug = (p && p.indexOf('blog') === 0) ? 'blog' : p;
@@ -1188,10 +971,10 @@ document.addEventListener('DOMContentLoaded', init);
 // MOBILE NAV（窄屏抽屉）
 // ============================================================
 // 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
-// 窄屏下把导航收进 ☰ 抽屉，分类下拉从浮层改成原地展开（配合 style.css 的媒体查询）。
+// 窄屏下把导航收进 ☰ 抽屉，m类下拉从浮层改成原地展开（配合 style.css 的媒体Query）。
 //
 // 为什么不用 :focus-within 纯 CSS：移动浏览器点击 <button> 是否获得焦点行为不一致，
-// 靠焦点展开会时灵时不灵；"点外面关闭"更是只有 JS 能做。
+// 靠焦点展开会h灵h不灵；"点外面Close"更是只有 JS 能做。
 (function () {
   var toggle = document.getElementById('navToggle');
   var nav = document.getElementById('topNav');
@@ -1203,7 +986,7 @@ document.addEventListener('DOMContentLoaded', init);
     document.body.classList.toggle('nav-open', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (!open) {
-      // 收起抽屉时把展开的分类也一并复位，下次打开是干净的初始状态
+      // 收起抽屉h把展开的m类也一并复位，下次打开是干净的初始状态
       Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (dd) {
         dd.classList.remove('open');
       });
@@ -1212,7 +995,7 @@ document.addEventListener('DOMContentLoaded', init);
 
   toggle.addEventListener('click', function () { setOpen(!isOpen()); });
 
-  // 抽屉里的分类：点分类名原地展开/收起，同时只留一个展开的
+  // 抽屉里的m类：点m类名原地展开/收起，同h只留一个展开的
   Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown'), function (dd) {
     var trig = dd.querySelector('.nav-trigger');
     if (!trig) return;
@@ -1225,23 +1008,23 @@ document.addEventListener('DOMContentLoaded', init);
     });
   });
 
-  // 点 drawer 以外的地方关闭。header 内的点击（含 ☰ 本身）都交给上面的处理器
+  // 点 drawer 以外的地方Close。header 内的点击(including ☰ 本身）都交给上面的处理器
   document.addEventListener('click', function (e) {
     if (isOpen() && !header.contains(e.target)) setOpen(false);
   });
 
-  // Esc 关闭并把焦点还给 ☰，键盘用户不会迷失位置
+  // Esc Close并把焦点还给 ☰，键盘用户不会迷失at index
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
   });
 
-  // 抽屉里点链接：跨页跳转会重载页面、自然关闭；同页锚点不会，所以手动关一次
+  // 抽屉里点链接：跨页跳转会重载页面、自然Close；同页锚点不会，所以手动关一次
   Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
     a.addEventListener('click', function () { setOpen(false); });
   });
 
-  // 转到桌面宽度时清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
-  // 桌面上打开着抽屉布局（虽然桌面媒体查询不生效，但 aria-expanded 会误导读屏软件）
+  // 转到桌面宽度h清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
+  // 桌面上打开着抽屉布局（虽然桌面媒体Query不生效，但 aria-expanded 会误导读屏软件）
   window.addEventListener('resize', function () {
     if (window.innerWidth > 900 && isOpen()) setOpen(false);
   });

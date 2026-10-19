@@ -1,0 +1,35 @@
+/* code snippets library — auto-split from style.css (2026-10-19 per-page asset trimming). */
+/* ==================== 代码片段库（/snippets/） ====================
+   与 .gocs-* 同型（构建期烘焙 + 无 JS 全可见 + JS 只过滤），
+   差别在卡片：代码块 + 右上角复制按钮。 */
+.snp{display:flex;flex-direction:column;gap:16px}
+.snp-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-lead{margin:0 0 6px;font-size:14px;color:var(--text);line-height:1.6}
+.snp-meta{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.6}
+.snp-meta b{color:var(--text-secondary);font-weight:600}
+.snp-dot{margin:0 6px;opacity:.5}
+.snp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.snp-tab{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm);font-family:inherit}
+.snp-tab:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.snp-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.snp-tab-n{font-size:10px;opacity:.65;font-variant-numeric:tabular-nums}
+.snp-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--editor-bg);color:var(--text);outline:none}
+.snp-search:focus{border-color:var(--primary)}
+.snp-group{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+.snp-group[data-on="0"]{display:none}
+.snp-group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:15px;color:var(--text)}
+.snp-group-desc{font-size:12px;color:var(--text-muted);font-weight:400}
+.snp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:12px}
+.snp-item{min-width:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg)}
+.snp-item[data-on="0"]{display:none}
+.snp-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.snp-title{margin:0;font-size:14px;font-weight:600;color:var(--text)}
+.snp-lang{flex:none;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:10px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:4px;padding:2px 7px;text-transform:uppercase;letter-spacing:.3px}
+.snp-desc{margin:0 0 10px;font-size:13px;color:var(--text-secondary);line-height:1.65}
+.snp-code-wrap{position:relative;margin-top:auto}
+.snp-code{margin:0;padding:10px 12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto}
+.snp-code code{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:12px;line-height:1.7;color:var(--text);white-space:pre;tab-size:4}
+.snp-copy{position:absolute;top:6px;right:6px;opacity:.85}
+.snp-copy:hover{opacity:1}
+.snp-nohit{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;text-align:center;color:var(--text-muted);font-size:13px}
+@media(max-width:900px){.snp-head,.snp-group{padding:14px 14px}.snp-items{grid-template-columns:1fr}.snp-copy{opacity:1}}

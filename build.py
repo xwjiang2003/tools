@@ -111,6 +111,94 @@ JS_MODULES = [
     'string-tools.js', 'generator.js',
 ]
 
+# ---------------------------------------------------------------- 按页资产裁剪（2026-10-19）
+# 背景：此前每个页面都全量内联 13 个 JS 模块 + 全量 CSS + CodeMirror 12 个脚本，
+# 单页 270KB+（gzip ~89KB），百度抓取诊断的 200K 显示上限会把正文拦腰截断。
+# 现在每页只带自己需要的资产。审计方法（tools_verify_css.py 全量断言）：
+#   - JS：core.js initPage switch 表 + 工具页 inline script 引用 + 模块函数级核对
+#   - CSS：每页静态 HTML 类 + 模块 JS 生成类（含字符串拼接类，如 word-add）
+#     必须落在该页分配的 CSS 组内，否则断言失败
+#   - __WC_ZONES__ 仅 world-clock / timezones 消费（datetime-tools.js 的
+#     worldRefBody 渲染与 initTimezonesPage），其余页整行删除
+#   - CodeMirror 仅 json 页需要（createCM 唯一调用方是 json-tools.js），
+#     且只保留 javascript 模式 + matchbrackets/closebrackets/fold 三件套
+PAGE_MODULES = {
+    'json': ('core.js', 'json-tools.js'),
+    'csv': ('core.js',),                       # textarea + 页内 IIFE，不依赖 json-tools
+    'yaml': ('core.js',), 'toml': ('core.js',), 'jwt': ('core.js',),
+    'color': ('core.js',), 'case': ('core.js',),
+    'diff': ('core.js', 'text-diff.js'),
+    'encode': ('core.js', 'encode.js'),
+    'regex': ('core.js', 'regex.js'),
+    'timestamp': ('core.js', 'timestamp.js'),
+    'batch': ('core.js', 'datetime-tools.js'),
+    'timestamp-list': ('core.js', 'datetime-tools.js'),
+    'timezones': ('core.js', 'datetime-tools.js'),
+    'weeknumbers': ('core.js', 'datetime-tools.js'),
+    'daynumbers': ('core.js', 'datetime-tools.js'),
+    'years': ('core.js', 'datetime-tools.js'),
+    'world-clock': ('core.js', 'datetime-tools.js'),
+    'countdown': ('core.js', 'datetime-tools.js'),
+    'date-difference': ('core.js', 'datetime-tools.js'),
+    'date-calculator': ('core.js', 'datetime-tools.js'),
+    'duration': ('core.js', 'datetime-tools.js'),
+    'uuid': ('core.js', 'id-tools.js'), 'snowflake': ('core.js', 'id-tools.js'),
+    'tid': ('core.js', 'id-tools.js'), 'objectid': ('core.js', 'id-tools.js'),
+    'firebase': ('core.js', 'id-tools.js'),
+    'base': ('core.js', 'base-tools.js'), 'binary': ('core.js', 'base-tools.js'),
+    'hex': ('core.js', 'base-tools.js'),
+    'hash': ('core.js', 'hash.js'),
+    'formatter': ('core.js', 'formatter.js'),
+    'string': ('core.js', 'string-tools.js'),
+    'generator': ('core.js', 'generator.js'),
+    'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
+    'blog': ('core.js',),
+    'privacy': (),
+}
+PAGE_CSS = {
+    'json': ('base', 'json'),
+    'csv': ('base',),
+    'yaml': ('base',), 'toml': ('base',), 'jwt': ('base',),
+    'color': ('base',), 'case': ('base',),
+    'diff': ('base', 'diff'),
+    'encode': ('base',),
+    'regex': ('base', 'regex'),
+    'timestamp': ('base', 'liveclock'),
+    'batch': ('base', 'time'), 'timestamp-list': ('base', 'time'),
+    'timezones': ('base', 'time'), 'weeknumbers': ('base', 'time'),
+    'daynumbers': ('base', 'time'), 'years': ('base', 'time'),
+    'world-clock': ('base', 'time', 'worldclock'),
+    'countdown': ('base', 'time'), 'date-difference': ('base', 'time'),
+    'date-calculator': ('base', 'time'), 'duration': ('base', 'time'),
+    'uuid': ('base',), 'snowflake': ('base',), 'tid': ('base',),
+    'objectid': ('base',), 'firebase': ('base',),
+    'base': ('base', 'baseconv'), 'binary': ('base', 'baseconv'),
+    'hex': ('base', 'baseconv'),
+    'hash': ('base',), 'formatter': ('base',), 'string': ('base',),
+    'generator': ('base', 'generator'),
+    'hotnews': ('base', 'hotnews'), 'go-cheatsheet': ('base', 'cheatsheet'),
+    'snippets': ('base', 'snippets'), 'blog': ('base', 'blog'),
+    'privacy': ('base', 'legal'),
+}
+PAGE_WC_ZONES = {'world-clock', 'timezones'}    # datetime-tools.js 的两个消费点
+PAGE_KEEP_CM = {'json'}                          # createCM 唯一调用方 json-tools.js
+EVERGREEN_PREFIXES = ('calendar-', 'weeks-', 'days-', 'year-')
+# CodeMirror 必需资产之外，json 页也用不到的 cdnjs 标签（死代码/冗余模式）
+CM_DEAD_TAGS = [
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>',
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>',
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>',
+    '<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>',
+]
+
+def assets_for(slug):
+    """slug → (modules, css_groups, keep_cdn)。 evergreen 页按前缀匹配。"""
+    if slug and slug.startswith(EVERGREEN_PREFIXES):
+        return (('core.js',), ('base', 'evergreen'), False)
+    mods = PAGE_MODULES.get(slug, ('core.js',))
+    groups = PAGE_CSS.get(slug, ('base',))
+    return (mods, groups, slug in PAGE_KEEP_CM)
+
 EN_DIR = 'en/'
 PRIVACY_FILE = 'privacy.html'
 REPO_URL = 'https://github.com/xwjiang2003/tools'
@@ -1015,33 +1103,64 @@ def _jsonld_raw(graph):
 
 # ---------------------------------------------------------------- 资源内联
 
-def inline_assets(tpl, with_js=True, only_modules=None):
-    """把 CSS 与 JS 内联进模板。
+# CSS 组文件的固定级联顺序：base 永远第一，其余组按此序追加，
+# 保证与原 style.css 单文件内的规则顺序一致（如 .tool-card 的 base 定义
+# 必须早于 time 组的覆盖定义）。
+CSS_GROUPS = ['base', 'json', 'diff', 'regex', 'generator', 'liveclock',
+              'time', 'baseconv', 'worldclock', 'hotnews', 'cheatsheet',
+              'snippets', 'blog', 'evergreen', 'legal']
 
-    only_modules 给定时只内联列出的模块，其余 `<script src="js/...">` 和
-    所有 cdnjs 标签一并删掉。用于热榜页这类「不需要编辑器」的页面：
-    默认模板会把 10 个模块和 12 个 CodeMirror/QRCode 的 CDN 标签全部带上，
-    对新闻页来说那是纯浪费（实测单页因此从约 14 KB 涨到 120 KB，还要多 14 个外部请求）。
+# 模板处理结果按资产组合 memoize：756 个页面实际只有十几种
+# (modules, css_groups, keep_cdn) 组合，每组合只做一次字符串替换。
+_TPL_CACHE = {}
+
+
+def inline_assets(tpl, modules=JS_MODULES, css_groups=None, keep_cdn=False):
+    """把 CSS 与 JS 按页裁剪内联进模板。
+
+    modules    要内联的 JS 模块（顺序须保持 core.js 在前）；不在列表里的
+               `<script src="js/...">` 整行删除。
+    css_groups 要内联的 CSS 组（级联顺序，base 必须在首位）；None = 全部组。
+    keep_cdn   False：删掉所有 cdnjs 外链；'cm'：保留 CodeMirror 必需资产
+               （codemirror 核心 + javascript 模式 + monokai 主题 +
+                matchbrackets/closebrackets/foldcode/foldgutter/brace-fold），
+               只删 xml/css/sql 模式、xml-fold 等冗余标签。
     """
-    css = (SRC / 'css' / 'style.css').read_text('utf-8')
+    key = (tuple(modules), tuple(css_groups) if css_groups else None, keep_cdn)
+    if key in _TPL_CACHE:
+        return _TPL_CACHE[key]
+    if css_groups is None:
+        css_groups = CSS_GROUPS
+    styles = []
+    for g in css_groups:
+        p = SRC / 'css' / (g + '.css')
+        if not p.exists():
+            raise SystemExit(f'❌ 缺少 CSS 组文件: {p}')
+        styles.append('<style>\n/* ' + g + '.css */\n'
+                      + p.read_text('utf-8').rstrip('\n') + '\n</style>')
     tpl = tpl.replace('<link rel="stylesheet" href="css/style.css">',
-                      '<style>\n' + css + '\n</style>')
-    if not with_js:
-        return tpl
+                      '\n'.join(styles))
     for mod in JS_MODULES:
-        js = (SRC / 'js' / mod).read_text('utf-8')
         tag = f'<script src="js/{mod}"></script>'
         if tag not in tpl:
+            if not modules:
+                continue          # privacy 模板本就没有 JS 模块标签
             raise SystemExit(f'❌ 模板中找不到脚本标签: {tag}')
-        if only_modules is not None and mod not in only_modules:
+        if mod not in modules:
             tpl = tpl.replace(tag + '\n', '')          # 整行连标签一并去掉
             continue
+        js = (SRC / 'js' / mod).read_text('utf-8')
         tpl = tpl.replace(tag, '<script>\n// ' + mod + '\n' + js + '\n</script>')
-    if only_modules is not None:
+    if keep_cdn == 'cm':
+        for dead in CM_DEAD_TAGS:
+            if dead + '\n' in tpl:
+                tpl = tpl.replace(dead + '\n', '')
+    elif not keep_cdn:
         tpl = re.sub(r'\n<link rel="stylesheet" href="https://cdnjs\.cloudflare\.com/[^"]*">',
                      '', tpl)
         tpl = re.sub(r'\n<script src="https://cdnjs\.cloudflare\.com/[^"]*"></script>',
                      '', tpl)
+    _TPL_CACHE[key] = tpl
     return tpl
 
 
@@ -1109,7 +1228,8 @@ def content_for(tool, lang):
     return c
 
 
-def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home):
+def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home,
+                 wc_zones=True):
     page = page.replace('{{PAGE}}', slug)
     page = page.replace('{{LANG}}', HTML_LANG[lang])
     page = page.replace('{{TITLE}}', esc(title))
@@ -1133,7 +1253,12 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{TOOL}}', body)
     page = page.replace('{{SEO}}', seo)
     page = page.replace('{{TOOL_INDEX}}', tool_index_json(base, lang))
-    page = page.replace('{{WC_ZONES}}', wc_zones_json(lang))
+    if wc_zones:
+        page = page.replace('{{WC_ZONES}}', wc_zones_json(lang))
+    else:
+        # 非世界时钟/时区页：整行删除注入脚本（datetime-tools.js 两处消费点
+        # 都有 `|| []` 兜底，且这两类页之外根本不渲染时区数据）
+        page = page.replace('<script>window.__WC_ZONES__ = {{WC_ZONES}};</script>\n', '')
     page = page.replace('{{PRIVACY_BODY}}', seo)
     page = page.replace('{{HOME}}', home)
     page = page.replace('{{BASE}}', base)
@@ -1171,12 +1296,19 @@ def _safe_rmtree(path):
 
 
 def build(clean=True, outdirs=None):
-    tpl = inline_assets((SRC / 'index.html').read_text('utf-8'))
-    # 热榜页只需要 core.js（主题、语言切换、反馈弹窗）：编辑器模块和 CodeMirror/QRCode
-    # 的 CDN 标签对它毫无用处，去掉后单页体积与外部请求都只剩零头。
-    news_tpl = inline_assets((SRC / 'index.html').read_text('utf-8'),
-                             only_modules=('core.js',))
-    privacy_tpl = inline_assets((SRC / 'privacy.html').read_text('utf-8'), with_js=False)
+    index_tpl = (SRC / 'index.html').read_text('utf-8')
+    privacy_src = (SRC / 'privacy.html').read_text('utf-8')
+
+    def tpl_for(slug):
+        """按页面资产组合生成（memoize 命中时零成本）内联后的模板。"""
+        mods, groups, keep_cdn = assets_for(slug)
+        return inline_assets(index_tpl, modules=mods, css_groups=groups,
+                             keep_cdn=keep_cdn)
+
+    def wc_for(slug):
+        return slug in PAGE_WC_ZONES
+
+    privacy_tpl = inline_assets(privacy_src, modules=(), css_groups=('base', 'legal'))
     news = load_news()
 
     pages = {}
@@ -1184,15 +1316,15 @@ def build(clean=True, outdirs=None):
         for t in TOOLS:
             c = content_for(t, lang)
             if t['slug'] == NEWS_SLUG:
-                page_tpl, body = news_tpl, render_news_body(lang, news)
+                page_tpl, body = tpl_for(NEWS_SLUG), render_news_body(lang, news)
             elif t['slug'] == CHEAT_SLUG:
                 # 速查表与热榜同型：只需要 core.js 的轻量模板 + 构建期渲染的正文
-                page_tpl, body = news_tpl, render_cheat_body(lang)
+                page_tpl, body = tpl_for(CHEAT_SLUG), render_cheat_body(lang)
             elif t['slug'] == SNIP_SLUG:
                 # 片段库同理：core.js + 构建期渲染的正文（复制按钮走 copyTextById）
-                page_tpl, body = news_tpl, render_snippets_body(lang)
+                page_tpl, body = tpl_for(SNIP_SLUG), render_snippets_body(lang)
             else:
-                page_tpl = tpl
+                page_tpl = tpl_for(t['slug'])
                 body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
             base = lang_prefix(lang, rel_root(lang, t['path']))
             home = base or './'
@@ -1201,7 +1333,7 @@ def build(clean=True, outdirs=None):
                                 c['description'], c['keywords'], body, seo_section(c),
                                 jsonld(c, canonical_url(lang, t['path']), lang, news,
                                       t['slug'], t['path']),
-                                base, home)
+                                base, home, wc_zones=wc_for(t['slug']))
             if lang != DEFAULT_LANG:
                 page = localize(page, lang)
             pages[out_path(lang, t['path'])] = page
@@ -1220,10 +1352,10 @@ def build(clean=True, outdirs=None):
             seo_data = EV.render_seo(ety, eyear, lang, base)
             c.update({k: seo_data[k] for k in ('intro', 'features', 'steps', 'faq', 'seealso')})
             page = apply_common(
-                news_tpl, lang, eslug, epath, m['title'], m['description'], m['keywords'],
+                tpl_for(eslug), lang, eslug, epath, m['title'], m['description'], m['keywords'],
                 EV.render_body(ety, eyear, lang, base), seo_section(c),
                 jsonld(c, canonical_url(lang, epath), lang, None, eslug, epath),
-                base, home)
+                base, home, wc_zones=False)
             if lang != DEFAULT_LANG:
                 page = localize(page, lang)
             pages[out_path(lang, epath)] = page
@@ -1237,12 +1369,12 @@ def build(clean=True, outdirs=None):
         bt = BLOG_TEXT[lang]
 
         base = lang_prefix(lang, rel_root(lang, BLOG_INDEX))
-        page = apply_common(news_tpl, lang, 'blog', BLOG_INDEX, bt['index_title'],
+        page = apply_common(tpl_for('blog'), lang, 'blog', BLOG_INDEX, bt['index_title'],
                             bt['index_desc'], bt['index_kw'],
                             render_blog_index(lang, ARTICLES_EN, base), '',
                             _jsonld_raw(blog_index_jsonld(
                                 lang_articles, canonical_url(lang, BLOG_INDEX), lang)),
-                            base, base or './')
+                            base, base or './', wc_zones=False)
         if lang != DEFAULT_LANG:
             page = localize(page, lang)
         pages[out_path(lang, BLOG_INDEX)] = page
@@ -1250,12 +1382,12 @@ def build(clean=True, outdirs=None):
         for a in lang_articles:
             apath = article_path(a['slug'])
             base = lang_prefix(lang, rel_root(lang, apath))
-            page = apply_common(news_tpl, lang, 'blog-' + a['slug'], apath, a['title'],
+            page = apply_common(tpl_for('blog'), lang, 'blog-' + a['slug'], apath, a['title'],
                                 a['description'], a['keywords'],
                                 render_article(lang, a, base), '',
                                 _jsonld_raw([article_jsonld(
                                     a, canonical_url(lang, apath), lang)]),
-                                base, base or './')
+                                base, base or './', wc_zones=False)
             if lang != DEFAULT_LANG:
                 page = localize(page, lang)
             pages[out_path(lang, apath)] = page
@@ -1274,7 +1406,7 @@ def build(clean=True, outdirs=None):
         kw = ('DevTools隐私政策,在线工具隐私,数据本地处理' if lang == 'zh'
               else 'DevTools privacy policy,online tools privacy,local processing')
         page = apply_common(privacy_tpl, lang, 'privacy', PRIVACY_FILE, title, desc, kw,
-                            '', body, '', base, home)
+                            '', body, '', base, home, wc_zones=False)
         if lang != DEFAULT_LANG:
             page = localize(page, lang)
         pages[out_path(lang, PRIVACY_FILE)] = page
@@ -1337,7 +1469,7 @@ def build(clean=True, outdirs=None):
 
     n_cdn = len(cdn_assets)
     n_root = len(root_files)
-    print(f'  ✓ 内联 CSS + {len(JS_MODULES)} 个 JS 模块 × 2 语言'
+    print(f'  ✓ 按页裁剪内联 CSS 组 + JS 模块（{len(_TPL_CACHE)} 种资产组合）'
           + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else '')
           + (f'\n  ✓ 站点根附加文件 {n_root} 个 → 发布根（验证文件 / 图标）' if n_root else ''))
     for rel in sorted(pages, key=str):
