@@ -1050,7 +1050,9 @@ function updateHashOptions() {
   const titles = {md5:'MD5 Hash', sha1:'SHA-1 Hash', sha256:'SHA-256 Hash', sha512:'SHA-512 Hash', hmac:'HMAC Hash', aes:'AES'};
   document.getElementById('hashResultTitle').textContent = titles[hashCurrentOp] || 'Hash result';
   if (hashCurrentOp === 'hmac') {
-    o.innerHTML = '<span style="font-size:12px">Key:</span><input type="text" class="format-select" id="hmacKey" placeholder="Enter the HMAC key" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select>';
+    // HMAC 模式下主Input框的改动不会自动重算（只有切密钥/算法才触发），
+    // 之前这里没有Run按钮 —— 用户先切到 HMAC 再填文本会永远看不到Result。补上与 AES 一致的Run按钮。
+    o.innerHTML = '<span style="font-size:12px">Key:</span><input type="text" class="format-select" id="hmacKey" placeholder="Enter the HMAC key" style="width:180px" onchange="doHash()"><select class="format-select" id="hmacAlgo" onchange="doHash()"><option value="SHA-256">HMAC-SHA256</option><option value="SHA-1">HMAC-SHA1</option><option value="SHA-512">HMAC-SHA512</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">Run</button>';
   } else if (hashCurrentOp === 'aes') {
     o.innerHTML = '<span style="font-size:12px">Key:</span><input type="text" class="format-select" id="aesKey" placeholder="AES key" style="width:180px"><select class="format-select" id="aesMode"><option value="encrypt">Encrypt</option><option value="decrypt">Decrypt</option></select><button class="btn btn-sm btn-primary" onclick="doHash()">Run</button>';
   } else {
