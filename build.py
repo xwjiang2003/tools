@@ -568,14 +568,22 @@ def feedback_modal_html():
 
 def autodetect_html(lang, path, langs=None):
     """首次访问按浏览器语言跳到对应语言版本；已手动选择过或疑似爬虫则不跳。
-    langs 限定可选语言（如课程板块仅 zh/en 有页面）。"""
+    langs 限定可选语言（如课程板块仅 zh/en 有页面）。
+
+    算法集中在 src/js/lang-detect.js（resolveAutoLang），由本函数内联进 <head>；
+    这里只注入每页数据（可选语言 + 各语言 URL 映射）。改语言策略只动那个 js 文件。
+    """
     langs = langs or LANGS
     rel = rel_root(lang, path)
     targets = json.dumps({L: ((rel + lang_dir(L) + path) or './') for L in langs})
     lang_list = json.dumps(list(langs))
+    # 算法源文件：内联到 head，保证首访早跳转、不闪，且全站单一来源。
+    alg = (SRC / 'js' / 'lang-detect.js').read_text('utf-8').rstrip('\n')
     return f'''<script>
 // 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
-// 爬虫跳过是为了不影响各语言版本的收录（配合 hreflang 使用）。
+// 算法见 src/js/lang-detect.js（单一来源），构建期内联到此；爬虫跳过是为了
+// 不影响各语言版本的收录（配合 hreflang 使用）。
+{alg}
 (function () {{
   try {{
     var KEY = 'devtools-lang';
@@ -583,28 +591,9 @@ def autodetect_html(lang, path, langs=None):
     if (q) {{ try {{ localStorage.setItem(KEY, q[1]); }} catch (e) {{}} return; }}
     if (localStorage.getItem(KEY)) return;
     if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
-    var langs = (navigator.languages && navigator.languages.length)
+    var bl = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || ''];
-    var SUPPORTED = {lang_list};
-    var want = null;
-    // 优先级：浏览器语言列表里只要含中文（无论排第几），一律优先中文。
-    // 否则才按首个命中的非中文支持语言回退（避免 ['en-US','zh-CN'] 这类双语用户被误导进英文版）。
-    var prefersZh = false;
-    for (var i = 0; i < langs.length; i++) {{
-      if ((langs[i] || '').slice(0, 2).toLowerCase() === 'zh') {{ prefersZh = true; break; }}
-    }}
-    if (prefersZh) {{
-      want = 'zh';
-    }} else {{
-      for (var i = 0; i < langs.length; i++) {{
-        var p = (langs[i] || '').slice(0, 2).toLowerCase();
-        for (var j = 0; j < SUPPORTED.length; j++) {{
-          if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
-        }}
-        if (want) break;
-      }}
-    }}
-    if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
+    var want = resolveAutoLang(bl, {lang_list});
     var targets = {targets};
     var target = targets[want];
     if (target && want !== '{lang}') location.replace(target);
