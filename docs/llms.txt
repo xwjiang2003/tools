@@ -103,6 +103,32 @@ Key facts:
 - [gofmt 和 goimports 的区别：为什么 CI 里的格式化检查会失败](https://devtools.help/blog/gofmt-vs-goimports/): gofmt 管排版、goimports 管排版 + import，对同一份代码两者的输出可以不同。讲清差异产生的三种场景，以及 CI 里统一的检查姿势。
   - English: [gofmt vs goimports: Why Your CI Formatting Check Fails](https://devtools.help/en/blog/gofmt-vs-goimports/) — gofmt handles layout, goimports handles layout plus imports — and their output can differ on the same file. Here are the three diverging scenarios and the one CI setup that ends the confusion.
 
+## Go Course / Go 课程
+
+- [Go 语言从入门到精通（课程中心页）](https://devtools.help/go-course/): 6 大模块 41 课图文教程，零基础到高级工程实践；每课含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频课程。
+  - English: [Go from Zero to Pro](https://devtools.help/en/go-course/) — 41-lesson illustrated Go tutorial across 6 modules, zero to advanced engineering; each lesson has objectives, explanations, runnable code, pitfalls, best practices and exercises.
+- [Go 语言是什么：起源、设计哲学与适用场景](https://devtools.help/go-course/m01-l01/): Go 课程第 1 课：Go 语言是什么：起源、设计哲学与适用场景。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+  - English: [What Is Go: Origins, Design Philosophy and Use Cases](https://devtools.help/en/go-course/m01-l01/) — Go course lesson 1: What Is Go: Origins, Design Philosophy and Use Cases. Learning objectives, explanations, runnable example code, common-mistake pitfalls, best practices and exercise answers, paired with a Bilibili video.
+- [开发环境搭建：安装 Go、GOROOT/GOPATH/GOPROXY 与 go env](https://devtools.help/go-course/m01-l02/): Go 课程第 2 课：开发环境搭建：安装 Go、GOROOT/GOPATH/GOPROXY 与 go env。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [第一个 Go 程序与 go 命令详解：module 与工程初识](https://devtools.help/go-course/m01-l03/): Go 课程第 3 课：第一个 Go 程序与 go 命令详解：module 与工程初识。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [Go 基础语法：变量、常量、基本类型与类型转换](https://devtools.help/go-course/m01-l04/): Go 课程第 4 课：Go 基础语法：变量、常量、基本类型与类型转换。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [运算符、流程控制与作用域](https://devtools.help/go-course/m01-l05/): Go 课程第 5 课：运算符、流程控制与作用域。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [函数基础：多返回值、命名返回值与可变参数](https://devtools.help/go-course/m01-l06/): Go 课程第 6 课：函数基础：多返回值、命名返回值与可变参数。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [数组、切片与 map：最常用的三种容器](https://devtools.help/go-course/m01-l07/): Go 课程第 7 课：数组、切片与 map：最常用的三种容器。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [字符串与 Unicode：rune、byte 与 strings 包](https://devtools.help/go-course/m01-l08/): Go 课程第 8 课：字符串与 Unicode：rune、byte 与 strings 包。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [模块一综合实战：命令行单词统计工具 mini-wc](https://devtools.help/go-course/m01-l09/): Go 课程第 9 课：模块一综合实战：命令行单词统计工具 mini-wc。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [指针与内存：&、*、逃逸分析初识](https://devtools.help/go-course/m02-l01/): Go 课程第 10 课：指针与内存：&、*、逃逸分析初识。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [结构体与方法：Go 的面向对象基石](https://devtools.help/go-course/m02-l02/): Go 课程第 11 课：结构体与方法：Go 的面向对象基石。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [接口：隐式实现、空接口与类型断言](https://devtools.help/go-course/m02-l03/): Go 课程第 12 课：接口：隐式实现、空接口与类型断言。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [组合优于继承：嵌入、接口组合与设计套路](https://devtools.help/go-course/m02-l04/): Go 课程第 13 课：组合优于继承：嵌入、接口组合与设计套路。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [错误处理：error 接口、错误包装与 sentinel error](https://devtools.help/go-course/m02-l05/): Go 课程第 14 课：错误处理：error 接口、错误包装与 sentinel error。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [泛型：类型参数、约束与泛型实践](https://devtools.help/go-course/m02-l06/): Go 课程第 15 课：泛型：类型参数、约束与泛型实践。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [并发模型：Goroutine 与 GMP 调度器](https://devtools.help/go-course/m03-l01/): Go 课程第 16 课：并发模型：Goroutine 与 GMP 调度器。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [Channel 详解：通信、缓冲与方向](https://devtools.help/go-course/m03-l02/): Go 课程第 17 课：Channel 详解：通信、缓冲与方向。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [Select 与超时控制：多路复用实战](https://devtools.help/go-course/m03-l03/): Go 课程第 18 课：Select 与超时控制：多路复用实战。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [sync 包：Mutex、RWMutex、WaitGroup、Once](https://devtools.help/go-course/m03-l04/): Go 课程第 19 课：sync 包：Mutex、RWMutex、WaitGroup、Once。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+- [Context：超时、取消与请求域数据](https://devtools.help/go-course/m03-l05/): Go 课程第 20 课：Context：超时、取消与请求域数据。含学习目标、知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频。
+
 ## News / 资讯
 
 - [今日科技热榜 / Today's Tech News](https://devtools.help/hotnews/): 每天 08:00 自动聚合 IT之家、少数派、InfoQ、开源中国、Solidot、爱范儿、钛媒体、雷峰网与 Hacker News、TechCrunch、The Verge、Ars Technica 的最新条目，每条给出标题、来源、发布时间与原文直达链接。

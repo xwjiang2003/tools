@@ -56,8 +56,8 @@ from blog import (ARTICLES, BLOG_INDEX, TEXT as BLOG_TEXT,  # noqa: E402
                   render_article, render_index as render_blog_index)
 from blog_en import ARTICLES_EN                           # noqa: E402
 import evergreen as EV                                     # noqa: E402
-from course import (COURSE_INDEX, COURSE_TEXT, MODULES, PUBLISHED,  # noqa: E402
-                    course_index_jsonld, lesson_jsonld, lesson_meta,
+from course import (COURSE_INDEX, COURSE_LANGS, COURSE_TEXT, MODULES, PUBLISHED,  # noqa: E402
+                    LESSON_BODIES_EN, course_index_jsonld, lesson_jsonld, lesson_meta,
                     lesson_path, render_course_index, render_lesson)
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
@@ -410,9 +410,10 @@ def canonical_url(lang, path):
 
 # ---------------------------------------------------------------- 页面片段
 
-def hreflang_html(path):
+def hreflang_html(path, langs=None):
+    langs = langs or LANGS
     links = []
-    for L in LANGS:
+    for L in langs:
         links.append('<link rel="alternate" hreflang="%s" href="%s">'
                      % (HREFLANG_CODE[L], SITE['base_url'] + lang_dir(L) + path))
     links.append('<link rel="alternate" hreflang="x-default" href="%s">'
@@ -420,13 +421,15 @@ def hreflang_html(path):
     return '\n'.join(links)
 
 
-def lang_switch_html(lang, path):
+def lang_switch_html(lang, path, langs=None):
     """N 语言切换器：`<select>` 下拉，避免 10 种语言横排挤爆 header 宽度预算。
     每个选项的 value 是「当前页在目标语言下的相对 URL」，change 时记到 localStorage 并跳转。
-    aria-label 用当前语言表述，避免英文页出现英文标签这种小瑕疵。"""
+    aria-label 用当前语言表述，避免英文页出现英文标签这种小瑕疵。
+    langs 限定可选语言（如课程板块仅 zh/en 有页面）。"""
+    langs = langs or LANGS
     rel = rel_root(lang, path)
     opts = []
-    for L in LANGS:
+    for L in langs:
         if L == lang:
             href = './'                      # 当前页：预选中，不跳转
         else:
@@ -563,11 +566,13 @@ def feedback_modal_html():
        .replace('__EMAIL__', FEEDBACK_EMAIL)
 
 
-def autodetect_html(lang, path):
-    """首次访问按浏览器语言跳到对应语言版本；已手动选择过或疑似爬虫则不跳。"""
+def autodetect_html(lang, path, langs=None):
+    """首次访问按浏览器语言跳到对应语言版本；已手动选择过或疑似爬虫则不跳。
+    langs 限定可选语言（如课程板块仅 zh/en 有页面）。"""
+    langs = langs or LANGS
     rel = rel_root(lang, path)
-    targets = json.dumps({L: ((rel + lang_dir(L) + path) or './') for L in LANGS})
-    lang_list = json.dumps(list(LANGS))
+    targets = json.dumps({L: ((rel + lang_dir(L) + path) or './') for L in langs})
+    lang_list = json.dumps(list(langs))
     return f'''<script>
 // 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫时执行。
 // 爬虫跳过是为了不影响各语言版本的收录（配合 hreflang 使用）。
@@ -582,13 +587,22 @@ def autodetect_html(lang, path):
       ? navigator.languages : [navigator.language || ''];
     var SUPPORTED = {lang_list};
     var want = null;
+    // 优先级：浏览器语言列表里只要含中文（无论排第几），一律优先中文。
+    // 否则才按首个命中的非中文支持语言回退（避免 ['en-US','zh-CN'] 这类双语用户被误导进英文版）。
+    var prefersZh = false;
     for (var i = 0; i < langs.length; i++) {{
-      var p = (langs[i] || '').slice(0, 2).toLowerCase();
-      if (p === 'zh') {{ want = 'zh'; break; }}
-      for (var j = 0; j < SUPPORTED.length; j++) {{
-        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
+      if ((langs[i] || '').slice(0, 2).toLowerCase() === 'zh') {{ prefersZh = true; break; }}
+    }}
+    if (prefersZh) {{
+      want = 'zh';
+    }} else {{
+      for (var i = 0; i < langs.length; i++) {{
+        var p = (langs[i] || '').slice(0, 2).toLowerCase();
+        for (var j = 0; j < SUPPORTED.length; j++) {{
+          if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
+        }}
+        if (want) break;
       }}
-      if (want) break;
     }}
     if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
     var targets = {targets};
@@ -758,8 +772,8 @@ def nav_html(active_slug, base, labels, lang='zh'):
             out.append(f'    <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
             continue
         if slug == 'go-course':
-            # Go 课程图文板块当前只有中文版：非中文语言页不显示入口，避免指向死链
-            if lang != DEFAULT_LANG:
+            # Go 课程图文板块有 zh / en 两个版本；其余语言无课程页，不显示入口避免死链
+            if lang not in COURSE_LANGS:
                 continue
             cls = ('top-nav-link active' if active_slug == 'go-course'
                    else 'top-nav-link')
@@ -1191,6 +1205,7 @@ HEADINGS = {
                '全部在浏览器本地运行，粘贴的内容不会上传服务器。按分类列出如下：')},
     'en': {'_features_heading': 'Features', '_steps_heading': 'How to use',
            '_faq_heading': 'FAQ', '_home': 'Home', '_blog': 'Blog',
+           '_course': 'Go Course',
            '_related_heading': 'Related tools & reading',
            '_all_tools_heading': 'All developer tools on this site',
            '_all_tools_intro': (
@@ -1242,18 +1257,18 @@ def content_for(tool, lang):
 
 
 def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home,
-                 wc_zones=True, mono=False):
+                 wc_zones=True, mono=False, langs=None):
     page = page.replace('{{PAGE}}', slug)
     page = page.replace('{{LANG}}', HTML_LANG[lang])
     page = page.replace('{{TITLE}}', esc(title))
     page = page.replace('{{DESCRIPTION}}', esc(description))
     page = page.replace('{{KEYWORDS}}', esc(keywords))
     page = page.replace('{{CANONICAL}}', canonical_url(lang, path))
-    # mono=True：单语言页（如仅中文的 Go 课程板块），不生成 hreflang 备用链接、
-    # 语言切换器与浏览器语言自动跳转，避免指向不存在的多语言版本。
-    page = page.replace('{{HREFLANG}}', '' if mono else hreflang_html(path))
-    page = page.replace('{{AUTODETECT}}', '' if mono else autodetect_html(lang, path))
-    page = page.replace('{{LANGSWITCH}}', '' if mono else lang_switch_html(lang, path))
+    # mono=True：单语言页，不生成 hreflang 备用链接、语言切换器与浏览器语言自动跳转；
+    # langs 限定该页可用的语言列表（默认全站语言）；课程板块传 COURSE_LANGS（仅 zh/en）。
+    page = page.replace('{{HREFLANG}}', '' if mono else hreflang_html(path, langs))
+    page = page.replace('{{AUTODETECT}}', '' if mono else autodetect_html(lang, path, langs))
+    page = page.replace('{{LANGSWITCH}}', '' if mono else lang_switch_html(lang, path, langs))
     page = page.replace('{{ANALYTICS}}', analytics_html())
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
@@ -1409,34 +1424,41 @@ def build(clean=True, outdirs=None):
                 page = localize(page, lang)
             pages[out_path(lang, apath)] = page
 
-        # ---------------- Go 课程图文板块：中心页 + 已发布课程页 ----------------
+        # ---------------- Go 课程图文板块：中心页 + 已发布课程页（zh / en） ----------------
         # 与博客同哲学：正文构建期烘焙（数据来自 course_lessons.py，由仓库根目录
-        # convert_lessons.py 从本地讲义 Markdown 生成）。当前只有中文版，所以：
-        #   - 只在默认语言生成页面；
-        #   - 页面用 mono=True（无 hreflang / 语言切换 / 自动跳转）；
-        #   - sitemap 只列中文一条（见 sitemap_xml 中课程块）。
+        # convert_lessons.py 从本地讲义 Markdown 生成）。当前支持 zh（全部 41 课）
+        # 与 en（已翻译的课，LESSON_BODIES_EN）。非课程语言（ja/ko/es 等）不生成。
+        # 页面 hreflang / 语言切换器 / 自动跳转限定在 COURSE_LANGS（仅中英互指，
+        # 避免指向不存在的课程页语言版本）。
         if lang == DEFAULT_LANG:
-            ct = COURSE_TEXT
-            base = lang_prefix(lang, rel_root(lang, COURSE_INDEX))
-            page = apply_common(tpl_for('go-course'), lang, 'go-course', COURSE_INDEX,
-                                ct['index_title'], ct['index_desc'], ct['index_kw'],
-                                render_course_index(base), '',
-                                _jsonld_raw([course_index_jsonld(
-                                    canonical_url(lang, COURSE_INDEX))]),
-                                base, base or './', wc_zones=False, mono=True)
-            pages[out_path(lang, COURSE_INDEX)] = page
+            for clang in COURSE_LANGS:
+                ct = COURSE_TEXT[clang]
+                base = lang_prefix(clang, rel_root(clang, COURSE_INDEX))
+                page = apply_common(tpl_for('go-course'), clang, 'go-course', COURSE_INDEX,
+                                    ct['index_title'], ct['index_desc'], ct['index_kw'],
+                                    render_course_index(base, clang), '',
+                                    _jsonld_raw([course_index_jsonld(
+                                        canonical_url(clang, COURSE_INDEX), clang)]),
+                                    base, base or './', wc_zones=False, langs=COURSE_LANGS)
+                if clang != DEFAULT_LANG:
+                    page = localize(page, clang)
+                pages[out_path(clang, COURSE_INDEX)] = page
 
-            for slug in PUBLISHED:
-                lpath = lesson_path(slug)
-                lm = lesson_meta(slug)
-                base = lang_prefix(lang, rel_root(lang, lpath))
-                page = apply_common(tpl_for('go-course'), lang, 'go-course-' + slug, lpath,
-                                    lm['title'], lm['description'], lm['keywords'],
-                                    render_lesson(slug, base), '',
-                                    _jsonld_raw([lesson_jsonld(
-                                        lm, canonical_url(lang, lpath))]),
-                                    base, base or './', wc_zones=False, mono=True)
-                pages[out_path(lang, lpath)] = page
+                for slug in PUBLISHED:
+                    if clang == 'en' and slug not in LESSON_BODIES_EN:
+                        continue
+                    lpath = lesson_path(slug)
+                    lm = lesson_meta(slug, clang)
+                    base = lang_prefix(clang, rel_root(clang, lpath))
+                    page = apply_common(tpl_for('go-course'), clang, 'go-course-' + slug, lpath,
+                                        lm['title'], lm['description'], lm['keywords'],
+                                        render_lesson(slug, base, clang), '',
+                                        _jsonld_raw([lesson_jsonld(
+                                            lm, canonical_url(clang, lpath), clang)]),
+                                        base, base or './', wc_zones=False, langs=COURSE_LANGS)
+                    if clang != DEFAULT_LANG:
+                        page = localize(page, clang)
+                    pages[out_path(clang, lpath)] = page
 
         # 隐私政策
         body = PRIVACY_BODY_ZH if lang == 'zh' else PRIVACY_BODY_EN
@@ -1555,18 +1577,30 @@ def sitemap_xml(news=None):
         entries.append((p, '0.6', 'yearly', ''))
 
     rows = []
-    # Go 课程图文板块：只有中文版，单语言各自成条（不生成多语言 alternates）。
-    for p, pri, freq, lastmod_day in [
-            (COURSE_INDEX, '0.6', 'weekly', ''),
-            *((lesson_path(s), '0.7', 'monthly', '') for s in PUBLISHED)]:
-        lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
+    # Go 课程图文板块：zh / en 双语各自成条 + 中英 hreflang 互指（其余语言无课程页不列）。
+    # 英文条目只列已翻译正文的课（LESSON_BODIES_EN），避免 sitemap 指向不存在的英文页。
+    course_langs = COURSE_LANGS
+    course_pages = [COURSE_INDEX] + [lesson_path(s) for s in PUBLISHED]
+    for p in course_pages:
+        pri, freq = ('0.6', 'weekly') if p == COURSE_INDEX else ('0.7', 'monthly')
+        lastmod = ''
         meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
-        rows.append(
-            '  <url>\n'
-            f'    <loc>{SITE["base_url"] + lang_dir(DEFAULT_LANG) + p}</loc>{lastmod}\n'
-            + meta +
-            '  </url>'
-        )
+        alternates = ''.join(
+            f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
+            f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
+            for L in course_langs)
+        alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
+                       f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
+        for L in course_langs:
+            if L == 'en' and p != COURSE_INDEX and p.rstrip('/').split('/')[-1] not in LESSON_BODIES_EN:
+                continue
+            loc = SITE['base_url'] + lang_dir(L) + p
+            rows.append(
+                '  <url>\n'
+                f'    <loc>{loc}</loc>{lastmod}\n'
+                + alternates + meta +
+                '  </url>'
+            )
     for p, pri, freq, lastmod_day in entries:
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
         alternates = ''.join(
@@ -1707,10 +1741,17 @@ def llms_txt():
         f'- [Go 语言从入门到精通（课程中心页）]({SITE["base_url"]}{COURSE_INDEX}): '
         '6 大模块 41 课图文教程，零基础到高级工程实践；每课含学习目标、知识讲解、'
         '可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频课程。',
+        f'  - English: [Go from Zero to Pro]({SITE["base_url"]}{EN_DIR}{COURSE_INDEX}) — '
+        '41-lesson illustrated Go tutorial across 6 modules, zero to advanced engineering; '
+        'each lesson has objectives, explanations, runnable code, pitfalls, best practices and exercises.',
     ]
     for slug in PUBLISHED:
         lm = lesson_meta(slug)
         out.append(f'- [{lm["h1"]}]({SITE["base_url"]}{lesson_path(slug)}): {lm["description"]}')
+        if slug in LESSON_BODIES_EN:
+            lm_en = lesson_meta(slug, 'en')
+            out.append(f'  - English: [{lm_en["h1"]}]({SITE["base_url"]}{EN_DIR}{lesson_path(slug)})'
+                       f' — {lm_en["description"]}')
     out += [
         '',
         '## News / 资讯',

@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="fr" data-page="snowflake">
+<head>
+<meta charset="UTF-8">
+<!-- Chrome 117+ 默认禁用 unload 事件：第三方统计脚本（百度 hm.js）注册 unload 处理函数时
+     控制台会刷 "[Violation] Permissions policy violation: unload is not allowed"。
+     这里显式放开 unload 策略消除该告警（本站无 iframe，unload 非敏感特性，* 无额外风险）；
+     百度统计官方片段保持一字未动，安装检查不受影响。 -->
+<meta http-equiv="Permissions-Policy" content="unload=*">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decodeur et Constructeur de Snowflake ID — timestamp Twitter/Discord | DevTools</title>
+<meta name="description" content="Decodez les Snowflake IDs de Twitter, Discord et plus: recuperez le timestamp en millisecondes, la machine et la sequence. Construisez un Snowflake a partir d&#x27;une heure avec une epoque personnalisee. Tout calcule localement.">
+<meta name="keywords" content="decodeur snowflake,snowflake id,decodeur twitter id,decodeur discord id,timestamp snowflake,algorithme snowflake">
+<meta name="robots" content="index, follow">
+<meta name="author" content="DevTools">
+<link rel="canonical" href="https://devtools.help/fr/snowflake/">
+<meta property="og:title" content="Decodeur et Constructeur de Snowflake ID — timestamp Twitter/Discord | DevTools">
+<meta property="og:description" content="Decodez les Snowflake IDs de Twitter, Discord et plus: recuperez le timestamp en millisecondes, la machine et la sequence. Construisez un Snowflake a partir d&#x27;une heure avec une epoque personnalisee. Tout calcule localement.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtools.help/fr/snowflake/">
+<meta property="og:site_name" content="DevTools">
+<meta name="theme-color" content="#4a90d9">
+<!-- 图标：绝对路径（页面分布在 /、/en/、/blog/<slug>/ 多层，相对路径要逐层算）。
+     ICO 与 SVG 都声明 —— 老浏览器只认 /favicon.ico，现代浏览器优先用矢量版，
+     且 .ico 落在发布目录根，浏览器自动请求 /favicon.ico 时也不会 404。 -->
+<link rel="icon" href="/favicon.ico" sizes="48x48 32x32 16x16">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="alternate" hreflang="zh-CN" href="https://devtools.help/snowflake/">
+<link rel="alternate" hreflang="en" href="https://devtools.help/en/snowflake/">
+<link rel="alternate" hreflang="ja" href="https://devtools.help/ja/snowflake/">
+<link rel="alternate" hreflang="ko" href="https://devtools.help/ko/snowflake/">
+<link rel="alternate" hreflang="es" href="https://devtools.help/es/snowflake/">
+<link rel="alternate" hreflang="pt-BR" href="https://devtools.help/pt-BR/snowflake/">
+<link rel="alternate" hreflang="fr" href="https://devtools.help/fr/snowflake/">
+<link rel="alternate" hreflang="de" href="https://devtools.help/de/snowflake/">
+<link rel="alternate" hreflang="ru" href="https://devtools.help/ru/snowflake/">
+<link rel="alternate" hreflang="id" href="https://devtools.help/id/snowflake/">
+<link rel="alternate" hreflang="x-default" href="https://devtools.help/snowflake/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Decodeur et Constructeur de Snowflake ID", "url": "https://devtools.help/fr/snowflake/", "description": "Decodez les Snowflake IDs de Twitter, Discord et plus: recuperez le timestamp en millisecondes, la machine et la sequence. Construisez un Snowflake a partir d'une heure avec une epoque personnalisee. Tout calcule localement.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "browserRequirements": "Nécessite un navigateur moderne avec JavaScript activé", "inLanguage": "fr", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why are the IDs so long?", "acceptedAnswer": {"@type": "Answer", "text": "A Snowflake is a 63-bit unsigned integer, typically 18-19 decimal digits; it is parsed as a string to avoid JavaScript number precision loss."}}, {"@type": "Question", "name": "What epoch do I enter for custom?", "acceptedAnswer": {"@type": "Answer", "text": "Enter your system's epoch in milliseconds (Twitter is 1288834974657), keeping the common 41/10/12 bit layout."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "DevTools", "item": "https://devtools.help/fr/"}, {"@type": "ListItem", "position": 2, "name": "ID / Identifiers", "item": "https://devtools.help/fr/uuid/"}, {"@type": "ListItem", "position": 3, "name": "Decodeur et Constructeur de Snowflake ID", "item": "https://devtools.help/fr/snowflake/"}]}]}</script>
+<style>
+/* base.css */
+/* base layout / chrome (all pages) — auto-split from style.css (2026-10-19 per-page asset trimming). */
+:root {
+  --bg: #f0f2f5; --card-bg: #ffffff; --text: #2c3e50; --text-secondary: #6c757d;
+  --text-muted: #adb5bd; --border: #e1e5eb; --primary: #4a90d9;
+  --primary-hover: #357abd; --primary-light: #e8f0fe; --success: #27ae60;
+  --danger: #e74c3c; --warning: #f39c12; --header-bg: #ffffff; --toolbar-bg: #ffffff;
+  --tab-hover: #f0f4f8; --tab-active-bg: #e8f0fe; --tab-active-text: #4a90d9;
+  --editor-bg: #fafbfc; --diff-add: #d4edda; --diff-remove: #f8d7da;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07); --radius: 8px; --radius-sm: 6px; --transition: 0.2s ease;
+}
+[data-theme="dark"] {
+  --bg: #1a1d23; --card-bg: #252830; --text: #d1d5db; --text-secondary: #9ca3af;
+  --text-muted: #6b7280; --border: #374151; --primary: #60a5fa; --primary-hover: #3b82f6;
+  --primary-light: #1e293b; --header-bg: #1f2329; --toolbar-bg: #252830;
+  --tab-hover: #2d3139; --tab-active-bg: #1e293b; --tab-active-text: #60a5fa;
+  --editor-bg: #1e2127; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+/* Ad containers */
+.ad-container{max-width:1600px;margin:0 auto;padding:8px 20px 0;text-align:center;min-height:0}
+.ad-placeholder{background:var(--card-bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:20px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.ad-placeholder:hover{border-color:var(--primary);background:var(--primary-light)}
+.ad-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.ad-container.has-ad .ad-placeholder{border:solid var(--border);padding:0;min-height:90px}
+@media(max-width:900px){.ad-container{padding:4px 8px 0}}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;flex-wrap:wrap;min-height:52px;height:auto;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;gap:8px}
+.logo{font-size:18px;font-weight:700;color:var(--primary);margin-right:20px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.top-nav{display:flex;flex-wrap:wrap;align-items:center;gap:2px;flex:1;min-width:0}
+.nav-dropdown{position:relative;display:flex;align-items:center}
+.nav-trigger{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid transparent;background:none;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text-secondary);font-weight:500;white-space:nowrap;border-radius:var(--radius-sm);transition:background var(--transition),color var(--transition),border-color var(--transition);line-height:1.3}
+.nav-trigger:hover,.nav-trigger:focus-visible{color:var(--text);background:var(--tab-hover);outline:none}
+.nav-trigger.active{color:var(--primary);background:var(--tab-active-bg);border-color:var(--primary)}
+.caret{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;opacity:.55;transition:transform var(--transition),opacity var(--transition)}
+.nav-dropdown:hover .caret,.nav-dropdown:focus-within .caret{opacity:1}
+.nav-panel{position:absolute;top:calc(100% + 8px);left:0;min-width:216px;background:var(--header-bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity var(--transition),transform var(--transition),visibility var(--transition);z-index:200;display:flex;flex-direction:column;gap:2px}
+.nav-dropdown:hover .nav-panel,.nav-dropdown:focus-within .nav-panel{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-panel-title{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;padding:4px 10px 7px}
+.nav-panel-item{display:block;padding:8px 10px;border-radius:var(--radius-sm);font-size:13.5px;color:var(--text);text-decoration:none;white-space:nowrap;transition:background var(--transition),color var(--transition)}
+.nav-panel-item:hover{background:var(--tab-hover);color:var(--primary)}
+.nav-panel-item.active{background:var(--tab-active-bg);color:var(--primary);font-weight:600}
+.top-nav-link{display:inline-flex;align-items:center;padding:7px 12px;font-size:14px;color:var(--text-secondary);text-decoration:none;white-space:nowrap;border-radius:var(--radius-sm);border:1px solid transparent;transition:background var(--transition),color var(--transition)}
+.top-nav-link:hover{color:var(--text);background:var(--tab-hover)}
+.top-nav-link.active{color:var(--primary);background:var(--tab-active-bg);border-color:var(--primary);font-weight:600}
+.nav-dropdown:last-of-type .nav-panel{left:auto;right:0}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.theme-toggle,.feedback-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 8px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text)}
+.theme-toggle:hover,.feedback-btn:hover{background:var(--tab-hover)}
+.main{max-width:1600px;margin:0 auto;padding:16px 20px}
+.page{display:none}
+.page.active{display:block}
+.tool-layout{display:flex;gap:16px;height:calc(100vh - 130px);max-height:calc(100vh - 130px)}
+.input-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.input-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.input-panel-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.ta-input{width:100%;height:100%;min-height:400px;border:none;padding:16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;resize:none;background:var(--editor-bg);color:var(--text);line-height:1.6;outline:none;tab-size:2}
+.ta-input::placeholder{color:var(--text-muted)}
+.ops-panel{width:480px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.op-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.op-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;background:var(--card-bg);color:var(--text-secondary);transition:all var(--transition);white-space:nowrap;box-shadow:var(--shadow-sm)}
+.op-btn:hover{background:var(--tab-hover);color:var(--text);border-color:var(--primary)}
+.op-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.op-options{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg);border-radius:var(--radius-sm);border:1px solid var(--border);box-shadow:var(--shadow-sm);font-size:13px;flex-wrap:wrap}
+.op-options select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.result-panel{flex:1;background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+.result-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--toolbar-bg)}
+.result-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+.result-content{flex:1;overflow-y:auto;padding:12px 16px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;background:var(--editor-bg)}
+.info-stats{display:flex;gap:16px;padding:8px 12px;background:var(--primary-light);border-radius:var(--radius-sm);font-size:12px;color:var(--primary);font-weight:500;flex-wrap:wrap}
+.section-title{font-size:15px;font-weight:700;color:var(--text);margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.tool-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;background:var(--card-bg);color:var(--text);transition:all var(--transition);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--tab-hover)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#219a52}
+.btn-sm{padding:4px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:0}
+.toast-container{position:fixed;top:64px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;animation:slideIn .3s ease;box-shadow:var(--shadow-md);pointer-events:none}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+.hash-output{font-family:"JetBrains Mono",monospace;font-size:14px;padding:12px;background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);word-break:break-all;min-height:44px}
+.hash-output.err{background:#f8d7da;color:#721c24;border-color:#f5c6cb}
+.hash-output.warn{background:#fff3cd;color:#856404;border-color:#ffeaa7}
+input[type="text"].expr-input,input[type="number"].num-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:"JetBrains Mono",monospace;background:var(--card-bg);color:var(--text)}
+label.checkbox-label{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px}
+label.form-label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:3px}
+select.format-select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--text);font-size:12px}
+.footer{text-align:center;padding:16px;color:var(--text-muted);font-size:12px;margin-top:32px}
+.footer-stats{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+.footer-stats em{font-style:normal;font-weight:600;color:var(--text-secondary)}
+.footer-stats .stat-dot{opacity:.6}
+/* 导航与 logo 现在是真实链接 */
+.logo{text-decoration:none}
+.top-nav-item{text-decoration:none}
+/* 页脚工具链接 */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-bottom:8px}
+.footer-links a{color:var(--text-muted);text-decoration:none;font-size:12px}
+.footer-links a:hover{color:var(--primary);text-decoration:underline}
+/* 语言切换（下拉选择，N 语言不挤爆 header） */
+.lang-switch{display:flex;align-items:center;margin-right:6px}
+.lang-select{padding:4px 6px;font-size:12px;color:var(--text-secondary);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.4;cursor:pointer;max-width:128px;transition:all var(--transition)}
+.lang-select:hover{background:var(--tab-hover);color:var(--text)}
+.lang-select:focus{outline:2px solid var(--primary);outline-offset:1px}
+/* 工具页正文（构建h烘焙进 HTML 的Description/步骤/FAQ） */
+.seo-content{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 32px;margin-top:20px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
+.seo-content h1{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.45}
+.seo-content h2{font-size:16px;color:var(--text);margin:26px 0 10px}
+.seo-content p{margin-bottom:10px}
+.seo-content ul,.seo-content ol{margin:0 0 10px 20px}
+.seo-content li{margin-bottom:6px}
+.seo-content b{color:var(--text)}
+.seo-content a{color:var(--primary)}
+.seo-features{list-style:none;margin-left:0!important}
+.seo-features li{padding-left:16px;position:relative}
+.seo-features li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+/* 首页「全部在线开发工具」清单：两列排布，窄屏回退单列（38 条单列会拉出很长一屏） */
+.seo-content h3{font-size:15px;color:var(--text);margin:18px 0 6px}
+.faq details{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;background:var(--bg)}
+.faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:13px}
+.faq summary::before{content:'＋';color:var(--primary);margin-right:8px;font-weight:700}
+.faq details[open] summary::before{content:'－'}
+.faq details p{margin:10px 0 0}
+@media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}}
+/* 反馈弹窗（原生 <dialog>，无第三方依赖）
+   注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
+   默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
+.feedback-modal{margin:auto;inset:0;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);padding:0;max-width:540px;width:calc(100% - 32px);box-shadow:var(--shadow-md)}
+.feedback-modal::backdrop{background:rgba(0,0,0,.45)}
+.fb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fb-head h3{font-size:15px}
+.fb-close{background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--text-muted);padding:0 4px}
+.fb-close:hover{color:var(--text)}
+.fb-lead{padding:14px 18px 0;font-size:13px;color:var(--text-secondary);line-height:1.7}
+.fb-links{display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+.fb-link{display:block;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;color:inherit;transition:all var(--transition)}
+.fb-link:hover{border-color:var(--primary);background:var(--primary-light)}
+.fb-link b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.fb-link span{font-size:12px;color:var(--text-secondary)}
+.fb-diag{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 18px 14px}
+.fb-hint{font-size:12px;color:var(--text-muted);flex:1;min-width:180px;line-height:1.6}
+.fb-note{padding:0 18px 18px;font-size:12px;color:var(--text-muted)}
+
+/* ============================================================
+   窄屏导航（2026-10-10）
+   ------------------------------------------------------------
+   问题：.header 是 sticky + flex-wrap:wrap，而 6 个min类下拉 + 2 个平级链接
+   + 右侧 3 个按钮在 390px 屏上会换行成 7 lignes，占掉屏幕顶部约三min之一，
+   且右侧按钮Groupe被挤出视口。根因不是某个元素写错，是整套导航从未做过窄屏处理。
+
+   方案：<=900px h header 锁成一行（logo + 操作按钮 + ☰），导航整体收进
+   ☰ 抽屉；抽屉里的min类下拉由浮层改为原地展开（position:static + max-height
+   过渡），因为浮层在窄屏上会向右溢出视口。
+
+   开关状态放在 body.nav-open 上而不是 :focus-within —— 移动浏览器点击
+   <button> 的聚焦行为不一致，靠焦点展开会h灵h不灵；点击外部Fermer也只有 JS 能做。
+   ============================================================ */
+
+/* ☰ 按钮：桌面隐藏，样式先在这里定义好，避免窄屏媒体Interroger里塞一大坨 */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:34px;padding:0 8px;flex:none;cursor:pointer;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);transition:background var(--transition),border-color var(--transition)}
+.nav-toggle:hover{background:var(--tab-hover)}
+.nav-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.nav-toggle span{display:block;width:100%;height:2px;border-radius:1px;background:var(--text);transition:transform var(--transition),opacity var(--transition)}
+/* 展开h三条线变成 ✕ */
+body.nav-open .nav-toggle span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+body.nav-open .nav-toggle span:nth-child(2){opacity:0}
+body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+@media(max-width:900px){
+  .header{flex-wrap:nowrap;padding:8px 12px;gap:6px}
+  .logo{order:1;margin-right:0}
+  .header-actions{order:2;margin-left:auto;gap:4px}
+  .nav-toggle{order:3;display:inline-flex}
+
+  /* 抽屉本体：吸附在 header 下沿，独立滚动，不挤占页面内容 */
+  .top-nav{order:4;position:absolute;top:100%;left:0;right:0;z-index:150;display:none;flex-direction:column;align-items:stretch;gap:2px;flex:0 0 auto;background:var(--header-bg);border-bottom:1px solid var(--border);box-shadow:var(--shadow-md);padding:10px 12px 16px;max-height:calc(100vh - 60px);overflow-y:auto;overscroll-behavior:contain}
+  body.nav-open .top-nav{display:flex}
+
+  /* 抽屉内所有项一律整行，触发按钮占满宽度、箭头推到最右 */
+  .nav-dropdown{display:block;width:100%;position:static}
+  .nav-trigger{width:100%;justify-content:space-between;text-align:left;padding:12px 10px;font-size:15px;border-radius:var(--radius-sm)}
+  .nav-trigger.active{background:var(--tab-active-bg)}
+
+  /* min类面板：浮层 -> 原地展开。max-height 过渡而不是 height，省得动态量高度 */
+  .nav-panel{position:static;left:auto;right:auto;min-width:0;opacity:1;visibility:visible;transform:none;background:transparent;border:0;box-shadow:none;padding:0 0 0 12px;max-height:0;overflow:hidden;transition:max-height .22s ease}
+  .nav-dropdown.open .nav-panel{max-height:420px;padding-bottom:6px}
+  .nav-dropdown.open .caret{transform:rotate(180deg)}
+  /* min类名已经在触发按钮上，面板里重复的表头去掉 */
+  .nav-panel-title{display:none}
+  .nav-panel-item{padding:11px 10px;font-size:14.5px;white-space:normal}
+
+  /* 平级链接（今Jour热榜 / 博客）同样整行 */
+  .top-nav-link{width:100%;padding:12px 10px;font-size:15px;justify-content:flex-start}
+
+}
+
+/* 实测各元素宽度：logo 109 + header-actions 195（反馈 40 / 语言 101 / 主题 40）
+   + ☰ 36 + 间距内边距 42 ≈ 382px。375px 机型减去滚动条约 360px 可用 → 会溢出，
+   ☰ 被挤出视口，菜单就再也打不开了。所以手机档必须再让出 40 多像素。
+   反馈按钮优先让位：页脚有同样的「Commentaires」入口，而 ☰ 是唯一入口。 */
+@media(max-width:430px){
+  .header-actions .feedback-btn{display:none}
+  .header{padding:8px 10px;gap:5px}
+  .lang-switch{margin-right:0}
+}
+
+/* 320px 档（iPhone SE 等）：logo 文字也让位。总宽降到约 252px，留足余量 */
+@media(max-width:359px){
+  .logo-text{display:none}
+}
+
+/* ==================== 全站Rechercher des outils + Récents ==================== */
+.search-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:16px;padding:5px 9px;border-radius:var(--radius-sm);transition:all var(--transition);color:var(--text);line-height:1}
+.search-btn:hover{background:var(--tab-hover);border-color:var(--primary);color:var(--primary)}
+.search-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-start;justify-content:center;padding-top:9vh}
+.search-overlay[hidden]{display:none}
+.search-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.search-panel{position:relative;width:min(640px,calc(100% - 24px));max-height:78vh;display:flex;flex-direction:column;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);overflow:hidden}
+.search-box{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.search-ico{font-size:16px;opacity:.7;flex:none}
+.search-input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:var(--text);font-family:inherit;min-width:0}
+.search-input::placeholder{color:var(--text-muted)}
+.search-close{background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-sm);flex:none}
+.search-close:hover{background:var(--tab-hover);color:var(--text)}
+.search-results{overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:2px}
+.search-section-title{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;padding:8px 10px 4px}
+.search-item{display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:var(--radius-sm);text-decoration:none;color:var(--text);transition:background var(--transition)}
+.search-item:hover{background:var(--tab-hover)}
+.search-item-label{font-size:14px;font-weight:600}
+.search-item-group{font-size:11px;color:var(--primary);font-weight:500}
+.search-item-title{font-size:12px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-empty{padding:24px 12px;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.7}
+.recent-clear{margin:8px 10px 4px;padding:7px 12px;align-self:flex-start;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--text-secondary);font-family:inherit;transition:all var(--transition)}
+.recent-clear:hover{background:var(--tab-hover);color:var(--danger);border-color:var(--danger)}
+.search-clear{align-self:stretch;text-align:center}
+.nav-panel-empty{padding:12px 10px;font-size:13px;color:var(--text-muted)}
+@media(max-width:430px){.search-overlay{padding-top:5vh}.search-panel{width:calc(100% - 16px)}}
+
+.dt-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;background:var(--card-bg);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.dt-table th{text-align:left;padding:8px 10px;background:var(--tab-hover);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border)}
+.dt-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap}
+.dt-table tr:last-child td{border-bottom:none}
+.dt-table tr.dt-now{background:rgba(74,144,217,.10)}
+.dt-table .dt-bad td{color:#e57373}
+.dt-batch-table{width:100%;border-collapse:collapse;font-size:13px;font-family:"JetBrains Mono","Consolas",monospace}
+.dt-batch-table th{text-align:left;padding:7px 10px;background:var(--tab-hover);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border)}
+.dt-batch-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);white-space:pre-wrap;word-break:break-all}
+.dt-batch-table .dt-bad td{color:#e57373}
+@media(max-width:900px){
+  .dt-table{display:block;overflow-x:auto;white-space:nowrap}
+  .dt-table td{white-space:nowrap}
+}
+
+
+.dt-batch-table .dt-k{color:var(--text-secondary);white-space:nowrap;width:1%;padding-right:16px;font-weight:500}
+.dt-batch-table .dt-v{word-break:break-all}
+</style>
+<!-- ===== 站点归属验证（拿到验证码后取消注释并填入 content 即可）=====
+     2026-09 起本站迁到自定义域名 https://devtools.help/，本站发布目录根（docs/）就是主机根，
+     所以两种验证方式都可用：
+       - 文件验证：把 baidu_verify_xxx.html / googleXXXX.html 放进本仓库 docs/ 目录；
+       - 标记验证：取消下面某一行注释并填入验证码（改的是本文件，构建后需重新推送）。
+     注意：验证是按「域名」算的，换到 devtools.help 需要重新验证，旧 github.io 资源的验证不能复用。
+     Google Search Console / Bing 网站管理员工具 / 百度搜索资源平台 均支持这两种方式。 -->
+<!-- <meta name="google-site-verification" content="粘贴 Google Search Console 的验证码"> -->
+<!-- <meta name="msvalidate.01" content="粘贴 Bing 网站管理员工具的验证码"> -->
+<!-- <meta name="baidu-site-verification" content="粘贴百度搜索资源平台的验证码"> -->
+<!-- JS 不可用时的兜底：窄屏抽屉靠 body.nav-open 打开，没有 JS 就永远打不开。
+     这里把导航退回成可用的换行布局（会多占几行，但菜单一定点得到）。
+     放在 head 里是为了避免加载后再回退造成的闪烁。 -->
+<noscript><style>@media(max-width:900px){.nav-toggle{display:none}.top-nav{position:static;display:flex;flex-direction:row;flex-wrap:wrap;border-bottom:0;box-shadow:none;padding:6px 0 0;max-height:none;overflow:visible}.nav-dropdown{width:auto}.nav-trigger{width:auto;font-size:14px}}</style></noscript>
+<script>
+// 语言自动选择：仅在用户没手动选过、且不是搜索引擎爬虫hExécuter。
+// 爬虫跳过是为了不影响各语言Version的收录（配合 hreflang 使用）。
+(function () {
+  try {
+    var KEY = 'devtools-lang';
+    var q = location.search.match(/[?&]lang=([A-Za-z-]+)(?:&|$)/);
+    if (q) { try { localStorage.setItem(KEY, q[1]); } catch (e) {} return; }
+    if (localStorage.getItem(KEY)) return;
+    if (/(bot|crawler|spider|crawling|slurp|bingpreview)/i.test(navigator.userAgent)) return;
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var SUPPORTED = ["zh", "en", "ja", "ko", "es", "pt-BR", "fr", "de", "ru", "id"];
+    var want = null;
+    for (var i = 0; i < langs.length; i++) {
+      var p = (langs[i] || '').slice(0, 2).toLowerCase();
+      if (p === 'zh') { want = 'zh'; break; }
+      for (var j = 0; j < SUPPORTED.length; j++) {
+        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) { want = SUPPORTED[j]; break; }
+      }
+      if (want) break;
+    }
+    if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
+    var targets = {"zh": "../../snowflake/", "en": "../../en/snowflake/", "ja": "../../ja/snowflake/", "ko": "../../ko/snowflake/", "es": "../../es/snowflake/", "pt-BR": "../../pt-BR/snowflake/", "fr": "../../fr/snowflake/", "de": "../../de/snowflake/", "ru": "../../ru/snowflake/", "id": "../../id/snowflake/"};
+    var target = targets[want];
+    if (target && want !== 'fr') location.replace(target);
+  } catch (e) {}
+})();
+</script>
+<!-- 百度统计（Baidu Analytics）：按官方要求置于 head 结束标签之前，全站所有页面 -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?e9b85aa19d65fd425765334c56874861";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<!-- Ahrefs Web Analytics：置于 head 结束标签之前，全站所有页面 -->
+<script src="https://analytics.ahrefs.com/analytics.js" data-key="PRpvcCuMLrHbGbDAXyFg9Q" async></script>
+</head>
+<body>
+<header class="header">
+  <a class="logo" href="../../fr/" aria-label="Accueil de DevTools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <span class="logo-text">DevTools</span>
+  </a>
+  <!-- 窄屏导航开关：桌面端由 CSS 隐藏，手机端把整个导航收进抽屉。
+       不加这个的话，6 个分类下拉 + 2 个平级链接会让 sticky 的 header 在
+       390px 屏上换行成 7 行、占掉屏幕顶部约三分之一，右侧按钮还会被挤出视口。 -->
+  <button class="nav-toggle" id="navToggle" type="button"
+          aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="topNav">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="top-nav" id="topNav">
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">JSON<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">JSON</div>
+        <a class="nav-panel-item" href="../../fr/">JSON</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Convert<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Convert</div>
+        <a class="nav-panel-item" href="../../fr/formatter/">Formateur</a>
+        <a class="nav-panel-item" href="../../fr/yaml/">JSON &lt;-&gt; YAML</a>
+        <a class="nav-panel-item" href="../../fr/toml/">JSON &lt;-&gt; TOML</a>
+        <a class="nav-panel-item" href="../../fr/csv/">JSON &lt;-&gt; CSV</a>
+        <a class="nav-panel-item" href="../../fr/color/">Couleur</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Base Convert<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Base Convert</div>
+        <a class="nav-panel-item" href="../../fr/base/">Base</a>
+        <a class="nav-panel-item" href="../../fr/binary/">Binaire</a>
+        <a class="nav-panel-item" href="../../fr/hex/">Hex</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Encode / Crypto<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Encode / Crypto</div>
+        <a class="nav-panel-item" href="../../fr/encode/">Encoder</a>
+        <a class="nav-panel-item" href="../../fr/hash/">Hash</a>
+        <a class="nav-panel-item" href="../../fr/jwt/">JWT</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Text / String<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Text / String</div>
+        <a class="nav-panel-item" href="../../fr/diff/">Diff Texte</a>
+        <a class="nav-panel-item" href="../../fr/string/">Chaines</a>
+        <a class="nav-panel-item" href="../../fr/regex/">Regex</a>
+        <a class="nav-panel-item" href="../../fr/case/">Style de casse</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Code / Gen<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Code / Gen</div>
+        <a class="nav-panel-item" href="../../fr/generator/">Generateurs</a>
+        <a class="nav-panel-item" href="../../fr/snippets/">Snippets</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Time / Date<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Time / Date</div>
+        <a class="nav-panel-item" href="../../fr/timestamp/">Timestamp</a>
+        <a class="nav-panel-item" href="../../fr/batch/">Batch TS</a>
+        <a class="nav-panel-item" href="../../fr/timestamp-list/">Ref TS</a>
+        <a class="nav-panel-item" href="../../fr/timezones/">Fuseaux Horaires</a>
+        <a class="nav-panel-item" href="../../fr/weeknumbers/">Semaine ISO</a>
+        <a class="nav-panel-item" href="../../fr/daynumbers/">Jour de l&#x27;Annee</a>
+        <a class="nav-panel-item" href="../../fr/years/">Annee Bissextile</a>
+        <a class="nav-panel-item" href="../../fr/world-clock/">Horloge Mondiale</a>
+        <a class="nav-panel-item" href="../../fr/countdown/">Compte a Rebours</a>
+        <a class="nav-panel-item" href="../../fr/date-difference/">Diff. Dates</a>
+        <a class="nav-panel-item" href="../../fr/date-calculator/">Calc. Dates</a>
+        <a class="nav-panel-item" href="../../fr/duration/">Duree</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger active" type="button" aria-haspopup="true" aria-expanded="false">ID / Identifiers<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">ID / Identifiers</div>
+        <a class="nav-panel-item" href="../../fr/uuid/">UUID</a>
+        <a class="nav-panel-item active" href="../../fr/snowflake/">Snowflake</a>
+        <a class="nav-panel-item" href="../../fr/tid/">ID Twitter</a>
+        <a class="nav-panel-item" href="../../fr/objectid/">ObjectId</a>
+        <a class="nav-panel-item" href="../../fr/firebase/">ID Firebase</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Cheat Sheets<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Cheat Sheets</div>
+        <a class="nav-panel-item" href="../../fr/go-cheatsheet/">Go Cheat</a>
+      </div>
+    </div>
+    <a class="top-nav-link" href="../../fr/hotnews/">Actus Tech</a>
+    <a class="top-nav-link" href="../../fr/blog/">Blog</a>
+    <div class="nav-dropdown">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Calendrier et dates<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" role="menu">
+        <div class="nav-panel-title">Calendrier et dates</div>
+        <a class="nav-panel-item" href="../../fr/calendar/2026/">2026 Calendar</a>
+        <a class="nav-panel-item" href="../../fr/weeks/2026/">2026 Week Numbers</a>
+        <a class="nav-panel-item" href="../../fr/days/2026/">2026 Day of Year</a>
+        <a class="nav-panel-item" href="../../fr/year/2026/">2026 Year Overview</a>
+      </div>
+    </div>
+    <div class="nav-dropdown nav-recent">
+      <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Récents<span class="caret" aria-hidden="true"></span></button>
+      <div class="nav-panel" id="recentPanel" role="menu"></div>
+    </div>
+  </nav>
+  <div class="header-actions"><button class="search-btn" id="searchBtn" type="button" title="Rechercher des outils" aria-label="Rechercher des outils">🔍</button><button class="feedback-btn" type="button" data-feedback-open title="Commentaires" aria-label="Commentaires">💬</button><div class="lang-switch">
+  <select class="lang-select" aria-label="Langue">
+    <option value="../../snowflake/" data-lang="zh">中文</option>
+    <option value="../../en/snowflake/" data-lang="en">English</option>
+    <option value="../../ja/snowflake/" data-lang="ja">日本語</option>
+    <option value="../../ko/snowflake/" data-lang="ko">한국어</option>
+    <option value="../../es/snowflake/" data-lang="es">Español</option>
+    <option value="../../pt-BR/snowflake/" data-lang="pt-BR">Português</option>
+    <option value="./" data-lang="fr" selected>Français</option>
+    <option value="../../de/snowflake/" data-lang="de">Deutsch</option>
+    <option value="../../ru/snowflake/" data-lang="ru">Русский</option>
+    <option value="../../id/snowflake/" data-lang="id">Indonesia</option>
+  </select>
+</div>
+<script>
+// 语言切换：记住手动选择，下次访问不再自动跳转
+var __ls = document.querySelector(".lang-select");
+if (__ls) {
+  __ls.addEventListener("change", function () {
+    var o = __ls.options[__ls.selectedIndex];
+    try { localStorage.setItem("devtools-lang", o.getAttribute("data-lang")); } catch (e) {}
+    location.href = __ls.value;
+  });
+}
+</script><button class="theme-toggle" id="themeToggle" title="Basculer en mode sombre">🌓</button></div>
+</header>
+
+<!-- Ad slot: top banner 970x90 / 728x90.
+     Currently empty and hidden. When an ad network is wired up, drop the `hidden`
+     attribute and replace the placeholder below with the ad code. -->
+<div class="ad-container" id="adTop" hidden>
+  <div class="ad-placeholder">
+    <span class="ad-label">SPONSORED</span>
+  </div>
+</div>
+
+<main class="main">
+<div class="page active" id="page-snowflake">
+<div class="tool-layout" id="sfTool">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> Décoder et construire un ID Snowflake</div></div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <select class="format-select" id="sfPreset">
+          <option value="twitter">Twitter</option>
+          <option value="discord">Discord</option>
+          <option value="custom">Personnalisé</option>
+        </select>
+      </div>
+      <div id="sfEpochRow" style="display:none" class="row">
+        <label class="hash-output" style="min-height:auto;flex:1">Époque personnalisée (ms)</label>
+        <input type="number" class="num-input" id="sfEpoch" value="1288834974657" style="flex:1" />
+      </div>
+      <input type="text" class="expr-input" id="sfId" placeholder="Collez un ID Snowflake, ex. : 1888944671579078978" />
+      <div class="result-panel" style="min-height:auto">
+        <div class="result-panel-header"><span class="result-panel-title">Résultat décodé</span></div>
+        <div class="result-content" id="sfDecodeResult" style="overflow:auto"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">Construit</span></div>
+      <div class="result-content" style="overflow:auto;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">Heure (locale)</label>
+          <input type="datetime-local" class="expr-input" id="sfDate" style="flex:1;min-width:200px" />
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <label style="font-size:13px">ID de nœud</label>
+          <input type="number" class="num-input" id="sfNode" value="1" style="width:90px" />
+          <label style="font-size:13px">Numéro de séquence</label>
+          <input type="number" class="num-input" id="sfStep" value="0" style="width:90px" />
+        </div>
+        <button class="btn" id="sfEncodeBtn">Construire l'ID</button>
+        <div id="sfEncodeResult"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<section class="seo-content">
+  <h1>Decodeur et Constructeur de Snowflake ID</h1>
+  <p>A Snowflake is Twitter&#x27;s 64-bit distributed ID: 41 bits of millisecond timestamp, 10 bits of machine and 12 bits of sequence. Paste one to reveal its creation time and machine/sequence fields.</p>
+  <p>Pick Twitter, Discord or a custom epoch, and on the right you can also build a Snowflake from a given time — handy for &quot;ID at a moment&quot; boundary checks.</p>
+  <h2>Features</h2>
+  <ul class="seo-features">
+    <li><b>Multi-platform presets</b> — Built-in Twitter (epoch 2010-11-04) and Discord (epoch 2015-01-01) presets, plus custom epoch and bit-width.</li>
+    <li><b>Timestamp recovery</b> — Decodes the millisecond timestamp and shows both UTC and local time.</li>
+    <li><b>Reverse building</b> — Given a time and machine/sequence, build a valid Snowflake for timestamp to ID range conversion.</li>
+  </ul>
+  <h2>How to use</h2>
+  <ol class="seo-steps">
+    <li>Choose Twitter, Discord or Custom in the preset.</li>
+    <li>Paste the Snowflake ID on the left; the right side shows timestamp, machine and sequence.</li>
+    <li>Fill time, node and sequence on the right and click &quot;Build ID&quot; to generate one.</li>
+  </ol>
+  <h2>FAQ</h2>
+  <div class="faq">
+    <details><summary>Why are the IDs so long?</summary><p>A Snowflake is a 63-bit unsigned integer, typically 18-19 decimal digits; it is parsed as a string to avoid JavaScript number precision loss.</p></details>
+    <details><summary>What epoch do I enter for custom?</summary><p>Enter your system&#x27;s epoch in milliseconds (Twitter is 1288834974657), keeping the common 41/10/12 bit layout.</p></details>
+  </div>
+  <h2>Related tools &amp; reading</h2>
+  <ul class="seo-related">
+    <li><a href="../../fr/tid/">Twitter and X ID decoder</a></li>
+    <li><a href="../../fr/uuid/">UUID parser and generator</a></li>
+    <li><a href="../../fr/timestamp/">Unix Timestamp and Date Converter</a></li>
+  </ul>
+</section>
+</main>
+
+<footer class="footer">
+  <nav class="footer-links"><a href="../../fr/">Home</a><a href="../../fr/hotnews/">Actus Tech</a><a href="../../fr/go-cheatsheet/">Go Cheat</a><a href="../../fr/diff/">Diff Texte</a><a href="../../fr/encode/">Encoder</a><a href="../../fr/regex/">Regex</a><a href="../../fr/timestamp/">Timestamp</a><a href="../../fr/hash/">Hash</a><a href="../../fr/formatter/">Formateur</a><a href="../../fr/string/">Chaines</a><a href="../../fr/generator/">Generateurs</a><a href="../../fr/color/">Couleur</a><a href="../../fr/case/">Style de casse</a><a href="../../fr/jwt/">JWT</a><a href="../../fr/yaml/">JSON &lt;-&gt; YAML</a><a href="../../fr/toml/">JSON &lt;-&gt; TOML</a><a href="../../fr/csv/">JSON &lt;-&gt; CSV</a><a href="../../fr/batch/">Batch TS</a><a href="../../fr/timestamp-list/">Ref TS</a><a href="../../fr/timezones/">Fuseaux Horaires</a><a href="../../fr/weeknumbers/">Semaine ISO</a><a href="../../fr/daynumbers/">Jour de l&#x27;Annee</a><a href="../../fr/years/">Annee Bissextile</a><a href="../../fr/world-clock/">Horloge Mondiale</a><a href="../../fr/countdown/">Compte a Rebours</a><a href="../../fr/date-difference/">Diff. Dates</a><a href="../../fr/date-calculator/">Calc. Dates</a><a href="../../fr/duration/">Duree</a><a href="../../fr/uuid/">UUID</a><a href="../../fr/snowflake/">Snowflake</a><a href="../../fr/tid/">ID Twitter</a><a href="../../fr/objectid/">ObjectId</a><a href="../../fr/firebase/">ID Firebase</a><a href="../../fr/base/">Base</a><a href="../../fr/binary/">Binaire</a><a href="../../fr/hex/">Hex</a><a href="../../fr/snippets/">Snippets</a><a href="../../fr/blog/">Blog</a><a href="../../fr/privacy.html">Politique de confidentialité</a><a href="#" data-feedback-open>Commentaires</a></nav>
+  <div class="footer-note">Les données saisies sont traitées localement dans votre navigateur et jamais envoyées à un serveur</div>
+  <div class="footer-stats" id="footerStats">
+    <span id="busuanzi_container_site_pv" style="display:none">Page views <em id="busuanzi_value_site_pv">-</em></span>
+    <span class="stat-dot" aria-hidden="true">·</span>
+    <span id="busuanzi_container_site_uv" style="display:none">Visitors <em id="busuanzi_value_site_uv">-</em></span>
+  </div>
+</footer>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 全站工具搜索 + 最近使用 -->
+<div class="search-overlay" id="searchOverlay" hidden>
+  <div class="search-backdrop" data-search-close></div>
+  <div class="search-panel" role="dialog" aria-modal="true" aria-label="Rechercher des outils">
+    <div class="search-box">
+      <span class="search-ico" aria-hidden="true">🔍</span>
+      <input type="text" id="searchInput" class="search-input" placeholder="Rechercher des outils par mot-clé…" autocomplete="off" spellcheck="false" aria-label="Rechercher des outils">
+      <button class="search-close" type="button" data-search-close aria-label="Fermer">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script>window.__TOOL_INDEX__ = [{"slug": "json", "href": "../../fr/", "g": "JSON", "zh": {"l": "JSON", "t": "Formateur et Validateur JSON en ligne — Gratuit, dans le navigateur | DevTools", "k": "formateur json,validateur json,beautifier json,minifier json,trier json,echapper json,arbre json,diff json,json vers csv,json vers xml,json vers yaml,testeur jsonpath"}, "en": {"l": "JSON", "t": "JSON Formatter & Validator Online — Free, In-Browser | DevTools", "k": "JSON formatter,JSON validator,JSON beautifier,JSON minify,JSON sort,JSON escape,JSON tree view,JSON diff,JSON to CSV,JSON to XML,JSON to YAML,JSONPath tester"}}, {"slug": "hotnews", "href": "../../fr/hotnews/", "g": "Content", "zh": {"l": "Actus Tech", "t": "Actualites Tech du Jour — Titres en direct pour developpeurs | DevTools", "k": "actus tech aujourd'hui,titres tech quotidiens,page d'accueil hacker news,actualites developpeurs,agregateur actu tech,titres techcrunch,ars technica,the verge tech"}, "en": {"l": "Tech News", "t": "Today's Tech News — Live Headlines for Developers | DevTools", "k": "tech news today,daily tech headlines,hacker news front page,developer news,tech news aggregator,techcrunch headlines,ars technica,the verge tech"}}, {"slug": "go-cheatsheet", "href": "../../fr/go-cheatsheet/", "g": "Cheat Sheets", "zh": {"l": "Go Cheat", "t": "Aide-Memoire des Commandes Go - go build / go mod / gofmt / Compilation Croisee | DevTools", "k": "aide-memoire commandes go,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go compilation croisee,GOOS GOARCH,gotoolchain,go build flags,goprivate,commandes go mod,variables environnement go"}, "en": {"l": "Go Cheat Sheet", "t": "Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools", "k": "go command cheat sheet,go mod tidy,go get,gofmt vs goimports,goproxy,go.mod replace,go cross compile,GOOS GOARCH,gotoolchain,go build flags,goprivate,go mod commands,go environment variables"}}, {"slug": "diff", "href": "../../fr/diff/", "g": "Text / String", "zh": {"l": "Diff Texte", "t": "Comparateur de Diff de Texte — Comparez code et texte en ligne | DevTools", "k": "diff texte,comparer texte,diff en ligne,comparateur diff,comparer deux textes,diff code,comparer chaines,diff cote a cote"}, "en": {"l": "Text Diff", "t": "Text Diff Checker — Compare Code & Text Online | DevTools", "k": "text diff,text compare,online diff,diff checker,compare two texts,code diff,string compare,side by side diff"}}, {"slug": "encode", "href": "../../fr/encode/", "g": "Encode / Crypto", "zh": {"l": "Encoder", "t": "Encodeur et Decodeur Base64 / URL / Unicode en ligne | DevTools", "k": "encoder base64,decoder base64,base64 en ligne,encoder url,decoder url,convertisseur unicode,echapper entite html,encoder hex,hex vers texte"}, "en": {"l": "Encode", "t": "Base64 / URL / Unicode Encoder & Decoder Online | DevTools", "k": "base64 encode,base64 decode,base64 online,url encode,url decode,unicode converter,html entity escape,hex encode,hex to text"}}, {"slug": "regex", "href": "../../fr/regex/", "g": "Text / String", "zh": {"l": "Regex", "t": "Testeur d'Expressions Regulieres en ligne — Surbrillance et Remplacement en direct | DevTools", "k": "testeur regex,regex en ligne,testeur expression reguliere,correspondance regex,remplacement regex,syntaxe regex,motifs regex courants"}, "en": {"l": "Regex", "t": "Regex Tester Online — Live Highlight & Replace | DevTools", "k": "regex tester,regex online,regular expression tester,regex match,regex replace,regex syntax,common regex patterns"}}, {"slug": "timestamp", "href": "../../fr/timestamp/", "g": "Time / Date", "zh": {"l": "Timestamp", "t": "Convertisseur Timestamp Unix en Date — Secondes et ms | DevTools", "k": "timestamp unix,convertisseur timestamp,convertisseur epoch,timestamp en date,date en timestamp,millisecondes timestamp,iso 8601,rfc 2822,heure utc"}, "en": {"l": "Timestamp", "t": "Unix Timestamp to Date Converter — Seconds & ms | DevTools", "k": "unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,milliseconds timestamp,iso 8601,rfc 2822,utc time"}}, {"slug": "hash", "href": "../../fr/hash/", "g": "Encode / Crypto", "zh": {"l": "Hash", "t": "Generateur de Hash MD5 / SHA-256 — HMAC et Fichiers | DevTools", "k": "md5 en ligne,sha256 en ligne,sha1,generateur de hash,somme de controle fichier,hmac,chiffrer dechiffrer aes,hash fichier"}, "en": {"l": "Hash", "t": "MD5 / SHA-256 Hash Generator — HMAC & Files | DevTools", "k": "md5 online,sha256 online,sha1,hash generator,file checksum,hmac,aes encrypt decrypt,file hash"}}, {"slug": "formatter", "href": "../../fr/formatter/", "g": "Convert", "zh": {"l": "Formateur", "t": "Formateur et Minifieur HTML / CSS / JS / SQL | DevTools", "k": "formateur html,formateur css,embellisseur js,formateur javascript,formateur sql,formateur xml,minifieur code,embellisseur code"}, "en": {"l": "Formatter", "t": "HTML / CSS / JS / SQL Formatter & Minifier | DevTools", "k": "html formatter,css formatter,js beautifier,javascript formatter,sql formatter,xml formatter,code minifier,code beautifier"}}, {"slug": "string", "href": "../../fr/string/", "g": "Text / String", "zh": {"l": "Chaines", "t": "Outils de Chaines et Texte — Casse, Tri, Dedoublonnage et Comptage | DevTools", "k": "outils chaines,dedoublonner texte,trier texte,convertisseur casse,convertisseur camelcase,compteur caracteres,remplacer texte,supprimer lignes dupliquees"}, "en": {"l": "Strings", "t": "String & Text Tools — Case, Sort, Dedupe & Count | DevTools", "k": "string tools,text dedupe,text sorter,case converter,camelcase converter,character counter,text replace,remove duplicate lines"}}, {"slug": "generator", "href": "../../fr/generator/", "g": "Code / Gen", "zh": {"l": "Generateurs", "t": "Generateur UUID, Mot de Passe et Code QR en ligne | DevTools", "k": "generateur uuid,uuid en ligne,generateur guid,generateur mot de passe aleatoire,generateur code qr,lorem ipsum,generateur donnees aleatoires,donnees de test"}, "en": {"l": "Generators", "t": "UUID, Password & QR Code Generator Online | DevTools", "k": "uuid generator,online uuid,guid generator,random password generator,qr code generator,lorem ipsum,random data generator,test data"}}, {"slug": "color", "href": "../../fr/color/", "g": "Convert", "zh": {"l": "Couleur", "t": "Convertisseur de Couleur en ligne — Hex / RGB / HSL / Nom CSS | DevTools", "k": "convertisseur couleur,hex vers rgb,rgb vers hsl,nom couleur css,convertisseur couleur en ligne,couleur hex,couleur rgb"}, "en": {"l": "Color", "t": "Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools", "k": "color converter,hex to rgb,rgb to hsl,css color name,online color converter,hex color,rgb color"}}, {"slug": "case", "href": "../../fr/case/", "g": "Text / String", "zh": {"l": "Style de casse", "t": "Convertisseur de Style de Casse — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "convertisseur casse,convertisseur camelcase,convertisseur snake_case,kebab-case,PascalCase,nommage variables"}, "en": {"l": "Case style", "t": "Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools", "k": "case converter,camelCase converter,snake_case converter,kebab-case,PascalCase,variable naming"}}, {"slug": "jwt", "href": "../../fr/jwt/", "g": "Encode / Crypto", "zh": {"l": "JWT", "t": "Decodeur et Verificateur JWT en ligne — Analyser En-tete/Payload, Verifier Expiration | DevTools", "k": "decodeur jwt,analyseur jwt,verificateur jwt,expiration jwt,jwt en ligne,json web token,verifier hs256"}, "en": {"l": "JWT decoder", "t": "JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools", "k": "jwt decoder,jwt parser,jwt verifier,jwt expiry,jwt online,json web token,hs256 verify"}}, {"slug": "yaml", "href": "../../fr/yaml/", "g": "Convert", "zh": {"l": "JSON <-> YAML", "t": "Convertisseur JSON <-> YAML en ligne — JSON vers YAML / YAML vers JSON | DevTools", "k": "json vers yaml,yaml vers json,convertisseur json yaml,yaml en ligne,json vers yml,formateur yaml"}, "en": {"l": "JSON ↔ YAML", "t": "JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools", "k": "json to yaml,yaml to json,json yaml converter,online yaml,json to yml,yaml formatter"}}, {"slug": "toml", "href": "../../fr/toml/", "g": "Convert", "zh": {"l": "JSON <-> TOML", "t": "Convertisseur JSON <-> TOML en ligne — JSON vers TOML / TOML vers JSON | DevTools", "k": "json vers toml,toml vers json,convertisseur json toml,toml en ligne,formateur toml,config go"}, "en": {"l": "JSON ↔ TOML", "t": "JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools", "k": "json to toml,toml to json,json toml converter,online toml,toml formatter,go config"}}, {"slug": "csv", "href": "../../fr/csv/", "g": "Convert", "zh": {"l": "JSON <-> CSV", "t": "Convertisseur JSON <-> CSV en ligne — Tableau JSON vers CSV / CSV vers JSON | DevTools", "k": "json vers csv,csv vers json,tableau json vers csv,csv vers objets json,csv en ligne,convertisseur tableau"}, "en": {"l": "JSON ↔ CSV", "t": "JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools", "k": "json to csv,csv to json,json array to csv,csv to json objects,online csv,table converter"}}, {"slug": "batch", "href": "../../fr/batch/", "g": "Time / Date", "zh": {"l": "Batch TS", "t": "Convertisseur de Timestamp Unix en Lot — ts<->date en masse, Export CSV | DevTools", "k": "timestamp lot,lot timestamp,timestamp en masse,convertisseur date lot,timestamp en date en masse,timestamp unix lot"}, "en": {"l": "Batch TS", "t": "Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools", "k": "batch timestamp,timestamp batch,bulk timestamp,batch date converter,timestamp to date bulk,unix timestamp batch"}}, {"slug": "timestamp-list", "href": "../../fr/timestamp-list/", "g": "Time / Date", "zh": {"l": "Ref TS", "t": "Aide-Memoire Timestamp — Points Courants en Secondes et ms | DevTools", "k": "aide-memoire timestamp,reference timestamp,tableau timestamp unix,timestamps courants,timestamps millisecondes,timestamp 2038"}, "en": {"l": "TS Reference", "t": "Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools", "k": "timestamp cheat sheet,timestamp reference,unix timestamp table,common timestamps,millisecond timestamps,2038 timestamp"}}, {"slug": "timezones", "href": "../../fr/timezones/", "g": "Time / Date", "zh": {"l": "Fuseaux Horaires", "t": "Fuseaux Horaires Mondiaux — Decalage UTC et Heure Actuelle | DevTools", "k": "convertisseur fuseau horaire,fuseaux horaires mondiaux,reference fuseau horaire,decalage utc,difference horaire,heure d'ete,heure actuelle par zone"}, "en": {"l": "Time Zones", "t": "World Time Zones — UTC Offset & Current Time | DevTools", "k": "time zone converter,world time zones,time zone reference,utc offset,time difference,daylight saving,current time by zone"}}, {"slug": "weeknumbers", "href": "../../fr/weeknumbers/", "g": "Time / Date", "zh": {"l": "Semaine ISO", "t": "Numero de Semaine ISO 8601 — Semaine et Annee Actuelles | DevTools", "k": "numero semaine iso,semaine iso 8601,numero semaine actuelle,annee semaine iso,calculateur numero semaine,semaine iso"}, "en": {"l": "ISO Week", "t": "ISO 8601 Week Number — Current Week & Year | DevTools", "k": "iso week number,iso 8601 week,current week number,iso week year,week number calculator,iso week number"}}, {"slug": "daynumbers", "href": "../../fr/daynumbers/", "g": "Time / Date", "zh": {"l": "Jour de l'Annee", "t": "Jour de l'Annee — Numero du Jour Actuel | DevTools", "k": "jour de l'annee,numero jour actuel,jour julien,jours ecoules dans l'annee,jours annee bissextile,numero jour"}, "en": {"l": "Day of Year", "t": "Day of the Year — Current Day Number | DevTools", "k": "day of year,current day number,julian day,days into the year,leap year days,day number"}}, {"slug": "years", "href": "../../fr/years/", "g": "Time / Date", "zh": {"l": "Annee Bissextile", "t": "Recherche Annee Bissextile — Annees Bissextiles 1800-2100 | DevTools", "k": "verifier annee bissextile,liste annees bissextiles,annee commune vs bissextile,jours par annee,quelles annees sont bissextiles,calculateur annee bissextile"}, "en": {"l": "Leap Year", "t": "Leap Year Lookup — Leap Years 1800–2100 | DevTools", "k": "leap year check,leap year list,common vs leap year,days per year,which years are leap,leap year calculator"}}, {"slug": "world-clock", "href": "../../fr/world-clock/", "g": "Time / Date", "zh": {"l": "Horloge Mondiale", "t": "Horloge Mondiale — Cadrans d'Horloge Analogique et Heure Actuelle dans les Grandes Villes | DevTools", "k": "horloge mondiale,horloge analogique,cadrans horloge,heure multiville,comparaison heure ville,heure mondiale,horloge en ligne,comparaison fuseau horaire"}, "en": {"l": "World Clock", "t": "World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools", "k": "world clock,analog clock,clock faces,multi-city time,city time comparison,world time,online clock,time zone comparison"}}, {"slug": "countdown", "href": "../../fr/countdown/", "g": "Time / Date", "zh": {"l": "Compte a Rebours", "t": "Compte a Rebours jusqu'a un Timestamp Unix | DevTools", "k": "compte a rebours,compte a rebours timestamp,compte a rebours unix,temps jusqu'au timestamp,minuterie en ligne,compte a rebours cible"}, "en": {"l": "Countdown", "t": "Countdown to a Unix Timestamp | DevTools", "k": "countdown,timestamp countdown,unix countdown,time to timestamp,online timer,target countdown"}}, {"slug": "date-difference", "href": "../../fr/date-difference/", "g": "Time / Date", "zh": {"l": "Diff. Dates", "t": "Calculateur de Difference de Dates — Jours/Heures/Min/Sec | DevTools", "k": "difference dates,jours entre dates,calculateur dates,difference temps,calculateur jours,intervalle dates"}, "en": {"l": "Date Diff", "t": "Date Difference Calculator — Days/Hours/Min/Sec | DevTools", "k": "date difference,days between dates,date calculator,time difference,days calculator,date interval"}}, {"slug": "date-calculator", "href": "../../fr/date-calculator/", "g": "Time / Date", "zh": {"l": "Calc. Dates", "t": "Ajouter / Soustraire des Dates — Ajouter/Soustraire Annees/Mois/Jours | DevTools", "k": "ajouter soustraire dates,calculateur dates,ajouter jours a date,soustraire jours,decalage date,ajouter mois"}, "en": {"l": "Date Calc", "t": "Date Add / Subtract — Add/Sub Years/Months/Days | DevTools", "k": "date add subtract,date calculator,add days to date,subtract days,date offset,add months"}}, {"slug": "duration", "href": "../../fr/duration/", "g": "Time / Date", "zh": {"l": "Duree", "t": "Convertisseur de Duree ISO 8601 — Chaine de Duree <-> Secondes | DevTools", "k": "duree iso 8601,convertisseur duree,duree en secondes,secondes en duree,P1DT12H,duree iso"}, "en": {"l": "Duration", "t": "ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools", "k": "iso 8601 duration,duration converter,duration to seconds,seconds to duration,P1DT12H,iso duration"}}, {"slug": "uuid", "href": "../../fr/uuid/", "g": "ID / Identifiers", "zh": {"l": "UUID", "t": "Analyseur et Generateur UUID — version v1/v4, variante, timestamp | DevTools", "k": "analyseur uuid,generateur uuid,uuid v4,uuid en ligne,timestamp uuid,version uuid,valider uuid"}, "en": {"l": "UUID", "t": "UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools", "k": "uuid parser,uuid generator,uuid v4,uuid online,uuid timestamp,uuid version,uuid validate"}}, {"slug": "snowflake", "href": "../../fr/snowflake/", "g": "ID / Identifiers", "zh": {"l": "Snowflake", "t": "Decodeur et Constructeur de Snowflake ID — timestamp Twitter/Discord | DevTools", "k": "decodeur snowflake,snowflake id,decodeur twitter id,decodeur discord id,timestamp snowflake,algorithme snowflake"}, "en": {"l": "Snowflake", "t": "Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools", "k": "snowflake decoder,snowflake id,twitter id decoder,discord id decoder,snowflake timestamp,snowflake algorithm"}}, {"slug": "tid", "href": "../../fr/tid/", "g": "ID / Identifiers", "zh": {"l": "ID Twitter", "t": "Decodeur d'ID Twitter et X — heure de creation tweet/utilisateur | DevTools", "k": "decodeur twitter id,decodeur x id,heure tweet id,timestamp twitter,twitter snowflake,x snowflake,heure creation tweet"}, "en": {"l": "Twitter ID", "t": "Twitter and X ID Decoder — tweet/user creation time | DevTools", "k": "twitter id decoder,x id decoder,tweet id time,twitter timestamp,twitter snowflake,x snowflake,tweet creation time"}}, {"slug": "objectid", "href": "../../fr/objectid/", "g": "ID / Identifiers", "zh": {"l": "ObjectId", "t": "Analyseur et Generateur MongoDB ObjectId — temps/machine/compteur | DevTools", "k": "analyseur objectid,generateur objectid,id mongodb,temps mongodb objectid,objectid en ligne,valider objectid"}, "en": {"l": "ObjectId", "t": "MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools", "k": "objectid parser,objectid generator,mongodb id,mongodb objectid time,objectid online,objectid validate"}}, {"slug": "firebase", "href": "../../fr/firebase/", "g": "ID / Identifiers", "zh": {"l": "ID Firebase", "t": "Analyseur et Generateur Firebase Push ID — recherche de timestamp | DevTools", "k": "analyseur firebase id,firebase push id,decodeur push id,timestamp firebase,generateur firebase id,firebase id en ligne"}, "en": {"l": "Firebase ID", "t": "Firebase Push ID Parser and Generator — timestamp lookup | DevTools", "k": "firebase id parser,firebase push id,push id decoder,firebase timestamp,firebase id generator,firebase id online"}}, {"slug": "base", "href": "../../fr/base/", "g": "Base Convert", "zh": {"l": "Base", "t": "Convertisseur de Base - convertir entre base 2-36 (binaire/octal/decimal/hex) | DevTools", "k": "convertisseur base,convertisseur radix,binaire en decimal,decimal en binaire,decimal en hex,hex en decimal,convertisseur base arbitraire,convertisseur grands nombres"}, "en": {"l": "Base Converter", "t": "Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools", "k": "base converter,radix converter,binary to decimal,decimal to binary,decimal to hex,hex to decimal,arbitrary base converter,big number converter"}}, {"slug": "binary", "href": "../../fr/binary/", "g": "Base Convert", "zh": {"l": "Binaire", "t": "Convertisseur Binaire - binaire en decimal/hex/octal | DevTools", "k": "convertisseur binaire,binaire en decimal,decimal en binaire,binaire en hex,groupement binaire,bits en octets"}, "en": {"l": "Binary Converter", "t": "Binary Converter - binary to decimal/hex/octal | DevTools", "k": "binary converter,binary to decimal,decimal to binary,binary to hex,binary grouping,bits to bytes"}}, {"slug": "hex", "href": "../../fr/hex/", "g": "Base Convert", "zh": {"l": "Hex", "t": "Convertisseur Hexadecimal - hex en decimal/binaire/octal | DevTools", "k": "convertisseur hex,hex en decimal,decimal en hex,hex en binaire,convertisseur hexadecimal,octets hex"}, "en": {"l": "Hex Converter", "t": "Hexadecimal Converter - hex to decimal/binary/octal | DevTools", "k": "hex converter,hex to decimal,decimal to hex,hex to binary,hexadecimal converter,hex bytes"}}, {"slug": "snippets", "href": "../../fr/snippets/", "g": "Code / Gen", "zh": {"l": "Snippets", "t": "Extraits de Code Courants - Go/Python/JavaScript/Shell/SQL/Git, prets a copier | DevTools", "k": "extraits code,extraits code courants,bibliotheque extraits,go snippets,python snippets,javascript snippets,extraits shell,requetes sql courantes,commandes git courantes,code copier coller"}, "en": {"l": "Code Snippets", "t": "Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools", "k": "code snippets,common code snippets,code snippet library,go snippets,python snippets,javascript snippets,shell script snippets,common sql queries,common git commands,copy paste code"}}, {"slug": "blog", "href": "../../fr/blog/", "g": "Content", "zh": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}, "en": {"l": "Blog", "t": "Blog - Go Toolchain & Developer How-Tos | DevTools", "k": "go tutorial,gofmt,go mod,go toolchain,developer tools,ci practice"}}];</script>
+<script>
+// core.js
+// core.js — Global state, editor management, theme, navigation
+"use strict";
+// ============================================================
+// GLOBAL STATE & UTILS
+// ============================================================
+const editors = {};
+const NL = '\n';                    // newline constant - use instead of '\n' everywhere
+const CM_OPTS = () => {
+  const d = document.documentElement.getAttribute('data-theme') === 'dark';
+  return { mode: {name:'javascript',json:true}, theme: d?'monokai':'default',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, foldGutter:true,
+    gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
+    tabSize:2, indentUnit:2, lineWrapping:true, viewportMargin:Infinity };
+};
+function createCM(id, ro) {
+  if (editors[id]) return editors[id];
+  const ta = document.getElementById(id); if (!ta) return null;
+  const e = CodeMirror.fromTextArea(ta, {...CM_OPTS(), readOnly:ro?'nocursor':false});
+  editors[id] = e;
+  // Size editor to fill available space
+  resizeEditor(e);
+  return e;
+}
+function resizeEditor(e) {
+  const wrap = e.getWrapperElement().parentElement;
+  if (!wrap) return;
+  // If parent is input-editor-wrap, calculate available height
+  if (wrap.classList.contains('input-editor-wrap')) {
+    const panel = wrap.closest('.input-panel');
+    if (panel) {
+      const panelRect = panel.getBoundingClientRect();
+      const header = panel.querySelector('.input-panel-header');
+      const headerH = header ? header.getBoundingClientRect().height : 40;
+      const availH = panelRect.height - headerH;
+      if (availH > 200) e.setSize(null, availH);
+      else e.setSize(null, 400);
+    }
+  } else {
+    // Card editors etc: use parent height
+    const h = wrap.clientHeight;
+    if (h > 50) e.setSize(null, h);
+  }
+}
+function resizeAllEditors() {
+  Object.values(editors).forEach(e => {
+    const wrap = e.getWrapperElement().parentElement;
+    if (wrap && wrap.classList.contains('input-editor-wrap')) resizeEditor(e);
+  });
+}
+window.addEventListener('resize', resizeAllEditors);
+function getVal(id) { const e = editors[id]; if (e) return e.getValue(); const ta = document.getElementById(id); return ta ? ta.value : ''; }
+function setVal(id, v) { const e = editors[id]; if (e) { e.setValue(v); return; } const ta = document.getElementById(id); if (ta) ta.value = v; }
+function clearVal(id) { setVal(id, ''); }
+function clearInput(id) { clearVal(id); }
+function clearTa(id) { const ta = document.getElementById(id); if (ta) ta.value = ''; }
+function refreshEditors() { Object.values(editors).forEach(e => e.refresh()); }
+
+// ============================================================
+// THEME
+// ============================================================
+(function(){
+  const saved = localStorage.getItem('devtools-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeToggle').onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('devtools-theme', next);
+    const isDark = next === 'dark';
+    Object.values(editors).forEach(e => e.setOption('theme', isDark ? 'monokai' : 'default'));
+  };
+})();
+
+// ============================================================
+// TOAST & UTILS
+// ============================================================
+function toast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+function copyTextById(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || el.value || '').then(()=>toast('Copié'), ()=>toast('Échec de la copie','error'));
+}
+// 把文本Résultat导出成文件Télécharger（Blob + 临h a[download]，纯前端，不经过服务器）。
+function downloadText(filename, text, mime) {
+  if (!text) { toast('Aucun résultat à télécharger'); return; }
+  try {
+    const blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    // 延迟清理：headless 下若立即 remove + revoke，浏览器会取消正在进行的 blob Télécharger。
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+    toast('Téléchargé ' + filename);
+  } catch (e) {
+    toast('Échec du téléchargement');
+  }
+}
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+// 顶部导航已是真实链接：每个工具一个独立 URL、独立 HTML，各自只包含自己的 UI，
+// 因此不再需要客户端标签切换。Maintenant页由构建h写入的 <html data-page="..."> 指明。
+const pageInited = {};
+function currentPage() {
+  return document.documentElement.getAttribute('data-page') || 'json';
+}
+function initPage(name) {
+  if (pageInited[name]) return;
+  pageInited[name] = true;
+  switch (name) {
+    case 'json': initJsonPage(); break;
+    case 'diff': initDiffPage(); break;
+    case 'encode': initEncodePage(); break;
+    case 'regex': initRegexPage(); break;
+    case 'timestamp': initTimestampPage(); break;
+    case 'batch': initBatchPage(); break;
+    case 'timestamp-list': initTimestampListPage(); break;
+    case 'timezones': initTimezonesPage(); break;
+    case 'weeknumbers': initWeeknumbersPage(); break;
+    case 'daynumbers': initDaynumbersPage(); break;
+    case 'years': initYearsPage(); break;
+    case 'world-clock': initWorldClockPage(); break;
+    case 'countdown': initCountdownPage(); break;
+    case 'date-difference': initDateDifferencePage(); break;
+    case 'date-calculator': initDateCalculatorPage(); break;
+    case 'duration': initDurationPage(); break;
+    case 'uuid': initUuidPage(); break;
+    case 'snowflake': initSnowflakePage(); break;
+    case 'tid': initTidPage(); break;
+    case 'objectid': initObjectIdPage(); break;
+    case 'firebase': initFirebasePage(); break;
+    case 'base': initBasePage(); break;
+    case 'binary': initBinaryPage(); break;
+    case 'hex': initHexPage(); break;
+    case 'hash': initHashPage(); break;
+    case 'formatter': initFormatterPage(); break;
+    case 'string': initStringPage(); break;
+    case 'generator': initGeneratorPage(); break;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const name = currentPage();
+  setTimeout(() => { initPage(name); resizeAllEditors(); }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+// 全站Rechercher des outils + Récents
+// ============================================================
+(function () {
+  var STORE_KEY = 'devtools-recent';
+  var MAX_RECENT = 8;     // 持久化保留的Récents工具上限
+  var SHOW_RECENT = 6;    // 搜索空态 / 导航下拉里展示的条数
+
+  // ---- localStorage 读写（隐私模式等不可用h静默降级）----
+  function loadRecent() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveRecent(obj) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+
+  // 记录一次工具使用：频率 + 最近Horodatage
+  function recordToolUse(slug) {
+    if (!slug) return;
+    var rec = loadRecent();
+    var e = rec[slug] || { count: 0, last: 0 };
+    e.count += 1; e.last = Date.now();
+    rec[slug] = e;
+    saveRecent(rec);
+  }
+
+  // 按使用频率Décroissant、频率相同按RécentsDécroissant
+  function getRecentSorted() {
+    var rec = loadRecent();
+    var arr = Object.keys(rec).map(function (k) {
+      return { slug: k, count: rec[k].count, last: rec[k].last };
+    });
+    arr.sort(function (a, b) { return b.count - a.count || b.last - a.last; });
+    return arr;
+  }
+
+  function metaOf(slug) {
+    var idx = window.__TOOL_INDEX__ || [];
+    for (var i = 0; i < idx.length; i++) if (idx[i].slug === slug) return idx[i];
+    return null;
+  }
+
+  function pageLang() {
+    var l = (document.documentElement.getAttribute('lang') || 'zh-CN').toLowerCase();
+    return l.indexOf('en') === 0 ? 'en' : 'zh';
+  }
+
+  function itemLabel(m) { var f = m[pageLang()]; return (f && f.l) || (m.en && m.en.l) || m.slug; }
+  function itemTitle(m) { var f = m[pageLang()]; return (f && f.t) || (m.en && m.en.t) || ''; }
+  function itemGroup(m) { return m.g || ''; }
+
+  // ---- 渲染：导航下拉「Récents」面板 ----
+  function renderRecentPanel() {
+    var panel = document.getElementById('recentPanel');
+    if (!panel) return;
+    var sorted = getRecentSorted().slice(0, MAX_RECENT);
+    if (!sorted.length) {
+      panel.innerHTML = '<div class="nav-panel-empty">Aucun historique</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var m = metaOf(sorted[i].slug);
+      if (!m) continue;
+      html += '<a class="nav-panel-item" href="' + escHtml(m.href) + '">' + escHtml(itemLabel(m)) + '</a>';
+    }
+    html += '<button class="recent-clear" type="button" id="recentClear">Effacer l\'historique</button>';
+    panel.innerHTML = html;
+    var clr = document.getElementById('recentClear');
+    if (clr) clr.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      clearHistory();
+    });
+  }
+
+  // Effacer使用记录：同步刷新导航下拉面板与（若打开的）搜索浮层
+  function clearHistory() {
+    saveRecent({});
+    renderRecentPanel();
+    renderSearch(input ? input.value : '');
+  }
+
+  // ---- 渲染：Résultats / 空态（Récents）----
+  var overlay = null, input = null, results = null;
+  function buildResultItem(m) {
+    return '<a class="search-item" href="' + escHtml(m.href) + '">' +
+             '<span class="search-item-label">' + escHtml(itemLabel(m)) + '</span>' +
+             (itemGroup(m) ? '<span class="search-item-group">' + escHtml(itemGroup(m)) + '</span>' : '') +
+             (itemTitle(m) ? '<span class="search-item-title">' + escHtml(itemTitle(m)) + '</span>' : '') +
+           '</a>';
+  }
+
+  function renderSearch(q) {
+    if (!results) return;
+    var idx = window.__TOOL_INDEX__ || [];
+    q = (q || '').trim().toLowerCase();
+    if (!q) {
+      var sorted = getRecentSorted().slice(0, SHOW_RECENT);
+      var h = '<div class="search-section-title">Récents</div>';
+      if (!sorted.length) {
+        h += '<div class="search-empty">Aucun historique<br>Les outils que vous avez utilisés apparaîtront ici</div>';
+      } else {
+        for (var i = 0; i < sorted.length; i++) {
+          var m = metaOf(sorted[i].slug); if (!m) continue;
+          h += buildResultItem(m);
+        }
+        h += '<button class="recent-clear search-clear" type="button" id="searchClear">Effacer l\'historique</button>';
+      }
+      results.innerHTML = h;
+      var sc = document.getElementById('searchClear');
+      if (sc) sc.addEventListener('click', clearHistory);
+      return;
+    }
+    var hits = [];
+    for (var j = 0; j < idx.length; j++) {
+      var d = idx[j];
+      var hay = ((d.zh.l || '') + (d.zh.t || '') + (d.zh.k || '') +
+                 (d.en.l || '') + (d.en.t || '') + (d.en.k || '')).toLowerCase();
+      if (hay.indexOf(q) !== -1) hits.push(d);
+    }
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">Aucun outil trouvé</div>';
+      return;
+    }
+    var out = '<div class="search-section-title">Résultats（' + hits.length + '）</div>';
+    for (var k = 0; k < hits.length; k++) out += buildResultItem(hits[k]);
+    results.innerHTML = out;
+  }
+
+  function openSearch() {
+    if (!overlay) return;
+    overlay.hidden = false;
+    document.body.classList.add('search-open');
+    if (input) { input.value = ''; renderSearch(''); setTimeout(function () { input.focus(); }, 30); }
+  }
+  function closeSearch() {
+    if (!overlay) return;
+    overlay.hidden = true;
+    document.body.classList.remove('search-open');
+    if (input) input.blur();
+  }
+
+  function initSearch() {
+    overlay = document.getElementById('searchOverlay');
+    input = document.getElementById('searchInput');
+    results = document.getElementById('searchResults');
+    var btn = document.getElementById('searchBtn');
+    if (btn) btn.addEventListener('click', openSearch);
+    if (overlay) {
+      Array.prototype.forEach.call(overlay.querySelectorAll('[data-search-close]'), function (el) {
+        el.addEventListener('click', closeSearch);
+      });
+    }
+    if (input) {
+      input.addEventListener('input', function () { renderSearch(input.value); });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          var first = results && results.querySelector('.search-item');
+          if (first) window.location.href = first.getAttribute('href');
+        } else if (e.key === 'Escape') {
+          closeSearch();
+        }
+      });
+    }
+    // "/" 快捷键打开搜索（Entrée框 / 编辑器内不触发）
+    document.addEventListener('keydown', function (e) {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        var t = e.target;
+        var tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+        var editing = tag === 'input' || tag === 'textarea' || (t && t.isContentEditable) ||
+                      (t && t.closest && t.closest('.CodeMirror'));
+        if (!editing && overlay && overlay.hidden) { e.preventDefault(); openSearch(); }
+      }
+    });
+  }
+
+  // 页面初始化：记录Maintenant工具的使用 + 渲染Récents面板 + 初始化搜索
+  function initSearchAndRecent() {
+    var p = currentPage();
+    var slug = (p && p.indexOf('blog') === 0) ? 'blog' : p;
+    if (metaOf(slug)) recordToolUse(slug);
+    renderRecentPanel();
+    initSearch();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearchAndRecent);
+  } else {
+    initSearchAndRecent();
+  }
+})();
+
+// ============================================================
+// MOBILE NAV（窄屏抽屉）
+// ============================================================
+// 桌面端这段完全不起作用：CSS 里 .nav-toggle 是 display:none，.top-nav 保持原样。
+// 窄屏下把导航收进 ☰ 抽屉，min类下拉从浮层改成原地展开（配合 style.css 的媒体Interroger）。
+//
+// 为什么不用 :focus-within 纯 CSS：移动浏览器点击 <button> 是否获得焦点行为不一致，
+// 靠焦点展开会h灵h不灵；"点外面Fermer"更是只有 JS 能做。
+(function () {
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('topNav');
+  var header = document.querySelector('.header');
+  if (!toggle || !nav || !header) return;
+
+  function isOpen() { return document.body.classList.contains('nav-open'); }
+  function setOpen(open) {
+    document.body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) {
+      // 收起抽屉h把展开的min类也一并复位，下次打开是干净的初始状态
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (dd) {
+        dd.classList.remove('open');
+      });
+    }
+  }
+
+  toggle.addEventListener('click', function () { setOpen(!isOpen()); });
+
+  // 抽屉里的min类：点min类名原地展开/收起，同h只留一个展开的
+  Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown'), function (dd) {
+    var trig = dd.querySelector('.nav-trigger');
+    if (!trig) return;
+    trig.addEventListener('click', function () {
+      var willOpen = !dd.classList.contains('open');
+      Array.prototype.forEach.call(nav.querySelectorAll('.nav-dropdown.open'), function (o) {
+        if (o !== dd) o.classList.remove('open');
+      });
+      dd.classList.toggle('open', willOpen);
+    });
+  });
+
+  // 点 drawer 以外的地方Fermer。header 内的点击(dont ☰ 本身）都交给上面的处理器
+  document.addEventListener('click', function (e) {
+    if (isOpen() && !header.contains(e.target)) setOpen(false);
+  });
+
+  // Esc Fermer并把焦点还给 ☰，键盘用户不会迷失à l\'index
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
+  });
+
+  // 抽屉里点链接：跨页跳转会重载页面、自然Fermer；同页锚点不会，所以手动关一次
+  Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+
+  // 转到桌面宽度h清掉状态：否则从横屏转竖屏再转回来，body.nav-open 会残留，
+  // 桌面上打开着抽屉布局（虽然桌面媒体Interroger不生效，但 aria-expanded 会误导读屏软件）
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 900 && isOpen()) setOpen(false);
+  });
+})();
+</script>
+<script>
+// id-tools.js
+// id-tools.js — 衍生 ID 换算簇：UUID / Snowflake / TID / MongoDB ObjectId / Firebase Push ID
+// 纯函数 + 页面初始化；浏览器与 Node（单测）共用。
+// 全部Analyser函数返回 {valid:false, reason} 而非抛异常，便于 UI 友好提示。
+
+// ---------------------------------------------------------------- i18n
+// 语言感知：中文页直接显示原串；英文页优先用 ID_MSG 映射，且构建期 localize() 已把源码里的
+// 中文串整体Remplacer par英文，双重保险保证英文页零中文残留。
+var ID_MSG = {
+    'UUID invalide': 'Invalid UUID',
+    'Saisissez un UUID': 'Enter a UUID',
+    'Version': 'Version',
+    'Variante': 'Variant',
+    'Horodatage': 'Timestamp',
+    'Nœud': 'Node',
+    'Séquence': 'Sequence',
+    'Datacenter': 'Datacenter',
+    'Worker': 'Worker',
+    'UUID v4 généré': 'Generated UUID v4',
+    'ID Snowflake invalide (chiffres uniquement)': 'Invalid Snowflake ID (digits only)',
+    'Champ horaire hors plage (ID plus long que la configuration)': 'Timestamp field overflow (ID too long)',
+    'Nœud / séquence hors plage': 'Node / Sequence out of range',
+    'ID Twitter invalide (chiffres uniquement)': 'Invalid Twitter ID (digits only)',
+    'Cet ID est antérieur à l\'époque Snowflake ; aucune heure encodée': 'This ID predates the Snowflake epoch; no embedded time',
+    'ObjectId invalide (24 caractères hexadécimaux requis)': 'Invalid ObjectId (need 24 hex chars)',
+    'ID Firebase invalide (20 caractères valides requis)': 'Invalid Firebase ID (need 20 valid chars)',
+    'Générer': 'Generate',
+    'Analyser': 'Parse',
+    'Décoder': 'Decode',
+    'Construire': 'Build',
+    'Copier': 'Copy',
+    'Résultat': 'Result',
+    'Invalide': 'Invalid',
+    'Valide': 'Valid',
+    'Créé le': 'Created',
+    'Horodatage (ms)': 'Timestamp (ms)',
+    'Suffixe aléatoire': 'Random suffix',
+    'Saisissez d\'abord quelque chose': 'Enter something first',
+    'Date de génération': 'Generated time',
+    'Machine': 'Machine',
+    'PID': 'PID',
+    'Compteur': 'Counter',
+    'ms': 'ms',
+    'trop de chiffres': 'too many digits',
+    'ID séquentiel antérieur à Snowflake': 'pre-Snowflake sequential ID',
+    'Génération impossible (date antérieure à l\'époque ou dépassant 41 bits)': 'Cannot build (time before epoch or > 41 bits)',
+    'Génération impossible (date trop ancienne ou hors plage)': 'Cannot build (time too early or out of range)',
+};
+
+function idMsg(zh) {
+    var code = (document.documentElement.lang || 'zh-CN').slice(0, 2);
+    if (code === 'en' && typeof ID_MSG !== 'undefined' && ID_MSG[zh]) return ID_MSG[zh];
+    return zh;
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// ================================================================ UUID
+function uuidValidate(s) {
+    if (typeof s !== 'string') return false;
+    s = s.trim();
+    var hex = s.replace(/-/g, '');
+    if (hex.length !== 32) return false;
+    return /^[0-9a-fA-F]{32}$/.test(hex);
+}
+
+function uuidGetVersion(s) {
+    var hex = s.replace(/-/g, '');
+    return parseInt(hex[12], 16);
+}
+
+function uuidGetVariant(s) {
+    var n = parseInt(s.replace(/-/g, '')[16], 16);
+    if ((n & 0x8) === 0) return 'NCS';
+    if ((n & 0xC) === 0x8) return 'RFC4122';
+    if ((n & 0xE) === 0xC) return 'Microsoft';
+    return 'Reserved';
+}
+
+// 100-ns 间隔：1582-10-15 → 1970-01-01
+var UUID_GREG = 122192928000000000;
+
+function uuidParse(s) {
+    var res = { valid: false };
+    if (!uuidValidate(s)) return res;
+    var hex = s.replace(/-/g, '');
+    var ver = uuidGetVersion(s);
+    var variant = uuidGetVariant(s);
+    res.valid = true;
+    res.version = ver;
+    res.variant = variant;
+    if (ver === 1 || ver === 2) {
+        var tl = parseInt(hex.substr(0, 8), 16);
+        var tm = parseInt(hex.substr(8, 4), 16);
+        var th = parseInt(hex.substr(12, 4), 16);
+        var ts = (th & 0x0FFF) * 0x1000000000000 + tm * 0x100000000 + tl; // 60-bit 100ns ticks: hi<<48 | mid<<32 | low
+        // 转为 Unix ms：先扣除 1582→1970 的 100ns 间隔Décalage，再 100ns→ms(÷10000)
+        var ms = (ts - UUID_GREG) / 10000;
+        res.timestampMs = ms;
+        res.date = new Date(ms).toISOString();
+        res.node = hex.substr(20, 12);
+    }
+    return res;
+}
+
+function uuidV4() {
+    var bytes = new Uint8Array(16);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        crypto.getRandomValues(bytes);
+    } else {
+        for (var i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var h = [];
+    for (var j = 0; j < 16; j++) h.push(bytes[j].toString(16).padStart(2, '0'));
+    return h.slice(0, 4).join('') + '-' + h.slice(4, 6).join('') + '-' + h.slice(6, 8).join('') +
+        '-' + h.slice(8, 10).join('') + '-' + h.slice(10, 16).join('');
+}
+
+// ================================================================ Snowflake
+var SF_PRESETS = {
+    twitter: { epoch: 1288834974657, tsBits: 41, nodeBits: 10, stepBits: 12 },
+    discord: { epoch: 1420070400000, tsBits: 41, nodeBits: 10, stepBits: 12 },
+};
+
+// 通用 Snowflake Décoder：idStr 为十进制字符串（必须字符串传入，避免 2^53 精度丢失）
+function sfDecode(idStr, cfg) {
+    var s = String(idStr).trim();
+    if (!/^\d+$/.test(s)) return { valid: false, reason: 'format' };
+    var id = BigInt(s);
+    var total = cfg.tsBits + cfg.nodeBits + cfg.stepBits;
+    if (id >> BigInt(total) !== 0n) return { valid: false, reason: 'overflow' };
+    var stepMask = (1n << BigInt(cfg.stepBits)) - 1n;
+    var nodeMask = (1n << BigInt(cfg.nodeBits)) - 1n;
+    var step = id & stepMask;
+    var node = (id >> BigInt(cfg.stepBits)) & nodeMask;
+    var ts = id >> BigInt(cfg.nodeBits + cfg.stepBits);
+    var timestampMs = Number(ts) + cfg.epoch;
+    return {
+        valid: true, step: Number(step), node: Number(node),
+        timestampMs: timestampMs, date: new Date(timestampMs).toISOString(), epoch: cfg.epoch,
+    };
+}
+
+function sfEncode(tsMs, node, step, cfg) {
+    var ts = BigInt(Math.floor(tsMs)) - BigInt(cfg.epoch);
+    if (ts < 0n) return { valid: false, reason: 'time-before-epoch' };
+    if (ts >= (1n << BigInt(cfg.tsBits))) return { valid: false, reason: 'time-overflow' };
+    var n = BigInt(node), st = BigInt(step);
+    if (n < 0n || n >= (1n << BigInt(cfg.nodeBits))) return { valid: false, reason: 'node-overflow' };
+    if (st < 0n || st >= (1n << BigInt(cfg.stepBits))) return { valid: false, reason: 'step-overflow' };
+    var id = (ts << BigInt(cfg.nodeBits + cfg.stepBits)) | (n << BigInt(cfg.stepBits)) | st;
+    return { valid: true, id: id.toString() };
+}
+
+// ================================================================ TID (Twitter / X)
+var TWITTER_EPOCH = 1288834974657;
+var TWITTER_PRE = 29700859247; // 该值及更小的 ID 早于 Snowflake，是纯自增Chiffres
+
+function tidToTime(idStr) {
+    var s = String(idStr).trim();
+    if (!/^\d+$/.test(s)) return { valid: false, reason: 'format' };
+    var id = BigInt(s);
+    if (id <= BigInt(TWITTER_PRE)) return { valid: true, predates: true };
+    return sfDecode(s, { tsBits: 41, nodeBits: 10, stepBits: 12, epoch: TWITTER_EPOCH });
+}
+
+function timeToTid(ms) {
+    return sfEncode(ms, 0, 0, { tsBits: 41, nodeBits: 10, stepBits: 12, epoch: TWITTER_EPOCH });
+}
+
+// ================================================================ MongoDB ObjectId
+function oidValidate(s) {
+    return /^[0-9a-fA-F]{24}$/.test(String(s).trim());
+}
+
+function oidDecode(s) {
+    s = String(s).trim();
+    if (!oidValidate(s)) return { valid: false, reason: 'format' };
+    var ts = parseInt(s.substr(0, 8), 16);
+    return {
+        valid: true, timestampSec: ts, date: new Date(ts * 1000).toISOString(),
+        machine: s.substr(8, 6), pid: s.substr(14, 4), counter: s.substr(18, 6),
+    };
+}
+
+function oidGenerate() {
+    var ts = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+    function r(n) { var x = ''; for (var i = 0; i < n; i++) x += Math.floor(Math.random() * 16).toString(16); return x; }
+    // 4 字节h间 + 3 字节机器 + 2 字节进程 + 3 字节Compteur = 24 hex
+    return ts + r(6) + r(4) + r(6);
+}
+
+// ================================================================ Firebase Push ID
+// 字母表（顺序关键），8 位Horodatage以「最高位在前」写入，保证字典序 ≈ h间顺序
+var FB_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+
+function fbValidate(s) {
+    s = String(s).trim();
+    if (s.length !== 20) return false;
+    for (var i = 0; i < 20; i++) if (FB_CHARS.indexOf(s[i]) < 0) return false;
+    return true;
+}
+
+function fbDecode(s) {
+    s = String(s).trim();
+    if (!fbValidate(s)) return { valid: false, reason: 'format' };
+    var ts = 0;
+    for (var i = 0; i < 8; i++) ts = ts * 64 + FB_CHARS.indexOf(s[i]); // 最高位在前
+    return { valid: true, timestampMs: ts, date: new Date(ts).toISOString() };
+}
+
+function fbEncode(tsMs) {
+    var n = Math.floor(tsMs);
+    if (n < 0 || n >= Math.pow(64, 8)) return { valid: false, reason: 'range' };
+    var arr = [];
+    for (var i = 7; i >= 0; i--) { arr[i] = FB_CHARS[n % 64]; n = Math.floor(n / 64); }
+    var id = arr.join('');
+    for (var j = 0; j < 12; j++) id += FB_CHARS[Math.floor(Math.random() * 64)];
+    return { valid: true, id: id };
+}
+
+// ================================================================ 展示辅助（浏览器）
+function idFmtDate(ms) {
+    var d = new Date(ms);
+    var utc = d.toISOString();
+    // 不要用 toLocaleString()（无 locale h取浏览器/系统语言）也不要 Date.toString()
+    // （括号内Fuseau horaire名同理），否则非中文页会显示中文。统一按页面语言Formater。
+    var loc = (document.documentElement && document.documentElement.lang) || 'zh-CN';
+    if (loc.slice(0, 2) === 'en') loc = 'en-US';
+    var local;
+    try {
+        local = new Intl.DateTimeFormat(loc, { dateStyle: 'full', timeStyle: 'long' }).format(d);
+    } catch (e) {
+        local = String(d).replace(/\s*\([^)]*\)\s*$/, '');
+    }
+    return utc + '  (UTC)<br><span style="opacity:.7">' + escapeHtml(local) + ' (locale)</span>';
+}
+
+function idRow(label, value) {
+    return '<tr><td class="dt-k">' + escapeHtml(label) + '</td><td class="dt-v">' + escapeHtml(String(value)) + '</td></tr>';
+}
+
+// ================================================================ 页面初始化
+function initUuidPage() {
+    var root = document.getElementById('uuidTool');
+    if (!root) return;
+    var input = document.getElementById('uuidInput');
+    var genBtn = document.getElementById('uuidGenBtn');
+    var result = document.getElementById('uuidResult');
+    function run() {
+        var v = input.value.trim();
+        if (!v) { result.innerHTML = ''; return; }
+        if (!uuidValidate(v)) {
+            result.innerHTML = '<div class="hash-output err">' + idMsg('UUID invalide') + '</div>';
+            return;
+        }
+        var p = uuidParse(v);
+        var html = '<table class="dt-batch-table"><tbody>';
+        html += idRow(idMsg('Valide'), '✓ RFC4122');
+        html += idRow(idMsg('Version'), p.version);
+        html += idRow(idMsg('Variante'), p.variant);
+        if (p.version === 1 || p.version === 2) {
+            html += idRow(idMsg('Horodatage') + ' (ms)', p.timestampMs);
+            html += idRow(idMsg('Créé le'), idFmtDate(p.timestampMs));
+            html += idRow(idMsg('Nœud'), p.node);
+        }
+        html += '</tbody></table>';
+        result.innerHTML = html;
+    }
+    input.oninput = function () { debounce(run, 200)(); };
+    if (genBtn) genBtn.onclick = function () {
+        input.value = uuidV4(); run();
+    };
+    run();
+}
+
+function initSnowflakePage() {
+    var root = document.getElementById('sfTool');
+    if (!root) return;
+    var preset = document.getElementById('sfPreset');
+    var epochRow = document.getElementById('sfEpochRow');
+    var epochInput = document.getElementById('sfEpoch');
+    var idInput = document.getElementById('sfId');
+    var decRes = document.getElementById('sfDecodeResult');
+    var dateInput = document.getElementById('sfDate');
+    var nodeInput = document.getElementById('sfNode');
+    var stepInput = document.getElementById('sfStep');
+    var encBtn = document.getElementById('sfEncodeBtn');
+    var encRes = document.getElementById('sfEncodeResult');
+    function cfg() {
+        var name = preset.value;
+        if (name === 'custom') return { epoch: parseInt(epochInput.value, 10) || 0, tsBits: 41, nodeBits: 10, stepBits: 12 };
+        return SF_PRESETS[name];
+    }
+    function syncEpoch() { epochRow.style.display = preset.value === 'custom' ? '' : 'none'; }
+    preset.onchange = function () { syncEpoch(); runDecode(); };
+    if (epochInput) epochInput.oninput = runDecode;
+    function runDecode() {
+        var v = idInput.value.trim();
+        if (!v) { decRes.innerHTML = ''; return; }
+        var r = sfDecode(v, cfg());
+        if (!r.valid) {
+            decRes.innerHTML = '<div class="hash-output err">' +
+                (r.reason === 'format' ? idMsg('ID Snowflake invalide (chiffres uniquement)') :
+                    idMsg('Champ horaire hors plage (ID plus long que la configuration)')) + '</div>';
+            return;
+        }
+        var html = '<table class="dt-batch-table"><tbody>';
+        html += idRow(idMsg('Horodatage') + ' (ms)', r.timestampMs);
+        html += idRow(idMsg('Créé le'), idFmtDate(r.timestampMs));
+        html += idRow(idMsg('Nœud'), r.node);
+        html += idRow(idMsg('Séquence'), r.step);
+        html += '</tbody></table>';
+        decRes.innerHTML = html;
+    }
+    idInput.oninput = function () { debounce(runDecode, 200)(); };
+    if (encBtn) encBtn.onclick = function () {
+        var ms = dtParseDateInputSafe(dateInput.value);
+        if (ms === null) { encRes.innerHTML = '<div class="hash-output err">' + idMsg('Saisissez d\'abord quelque chose') + '</div>'; return; }
+        var node = parseInt(nodeInput.value, 10) || 0;
+        var step = parseInt(stepInput.value, 10) || 0;
+        var r = sfEncode(ms, node, step, cfg());
+        if (!r.valid) { encRes.innerHTML = '<div class="hash-output err">' + idMsg('Génération impossible (date antérieure à l\'époque ou dépassant 41 bits)') + '</div>'; return; }
+        encRes.innerHTML = '<table class="dt-batch-table"><tbody>' +
+            idRow('ID', r.id) + '</tbody></table>';
+    };
+    syncEpoch();
+    runDecode();
+}
+
+function initTidPage() {
+    var root = document.getElementById('tidTool');
+    if (!root) return;
+    var idInput = document.getElementById('tidId');
+    var decRes = document.getElementById('tidResult');
+    var dateInput = document.getElementById('tidDate');
+    var encBtn = document.getElementById('tidEncodeBtn');
+    var encRes = document.getElementById('tidEncodeResult');
+    function runDecode() {
+        var v = idInput.value.trim();
+        if (!v) { decRes.innerHTML = ''; return; }
+        var r = tidToTime(v);
+        if (!r.valid) {
+            decRes.innerHTML = '<div class="hash-output err">' + idMsg('ID Twitter invalide (chiffres uniquement)') + '</div>';
+            return;
+        }
+        if (r.predates) {
+            decRes.innerHTML = '<div class="hash-output warn">' + idMsg('Cet ID est antérieur à l\'époque Snowflake ; aucune heure encodée') +
+                '（' + idMsg('ID séquentiel antérieur à Snowflake') + '）</div>';
+            return;
+        }
+        var html = '<table class="dt-batch-table"><tbody>';
+        html += idRow(idMsg('Horodatage') + ' (ms)', r.timestampMs);
+        html += idRow(idMsg('Créé le'), idFmtDate(r.timestampMs));
+        html += idRow(idMsg('Nœud'), r.node);
+        html += idRow(idMsg('Séquence'), r.step);
+        html += '</tbody></table>';
+        decRes.innerHTML = html;
+    }
+    idInput.oninput = function () { debounce(runDecode, 200)(); };
+    if (encBtn) encBtn.onclick = function () {
+        var ms = dtParseDateInputSafe(dateInput.value);
+        if (ms === null) { encRes.innerHTML = '<div class="hash-output err">' + idMsg('Saisissez d\'abord quelque chose') + '</div>'; return; }
+        var r = timeToTid(ms);
+        if (!r.valid) { encRes.innerHTML = '<div class="hash-output err">' + idMsg('Génération impossible (date antérieure à l\'époque ou dépassant 41 bits)') + '</div>'; return; }
+        encRes.innerHTML = '<table class="dt-batch-table"><tbody>' + idRow('ID', r.id) + '</tbody></table>';
+    };
+    runDecode();
+}
+
+function initObjectIdPage() {
+    var root = document.getElementById('oidTool');
+    if (!root) return;
+    var input = document.getElementById('oidInput');
+    var genBtn = document.getElementById('oidGenBtn');
+    var result = document.getElementById('oidResult');
+    function run() {
+        var v = input.value.trim();
+        if (!v) { result.innerHTML = ''; return; }
+        if (!oidValidate(v)) {
+            result.innerHTML = '<div class="hash-output err">' + idMsg('ObjectId invalide (24 caractères hexadécimaux requis)') + '</div>';
+            return;
+        }
+        var p = oidDecode(v);
+        var html = '<table class="dt-batch-table"><tbody>';
+        html += idRow(idMsg('Horodatage') + ' (s)', p.timestampSec);
+        html += idRow(idMsg('Créé le'), idFmtDate(p.timestampSec * 1000));
+        html += idRow(idMsg('Machine'), p.machine);
+        html += idRow(idMsg('PID'), p.pid);
+        html += idRow(idMsg('Compteur'), p.counter);
+        html += '</tbody></table>';
+        result.innerHTML = html;
+    }
+    input.oninput = function () { debounce(run, 200)(); };
+    if (genBtn) genBtn.onclick = function () { input.value = oidGenerate(); run(); };
+    run();
+}
+
+function initFirebasePage() {
+    var root = document.getElementById('fbTool');
+    if (!root) return;
+    var input = document.getElementById('fbInput');
+    var genBtn = document.getElementById('fbGenBtn');
+    var dateInput = document.getElementById('fbDate');
+    var genDateBtn = document.getElementById('fbGenDateBtn');
+    var result = document.getElementById('fbResult');
+    function run() {
+        var v = input.value.trim();
+        if (!v) { result.innerHTML = ''; return; }
+        if (!fbValidate(v)) {
+            result.innerHTML = '<div class="hash-output err">' + idMsg('ID Firebase invalide (20 caractères valides requis)') + '</div>';
+            return;
+        }
+        var p = fbDecode(v);
+        var html = '<table class="dt-batch-table"><tbody>';
+        html += idRow(idMsg('Horodatage') + ' (ms)', p.timestampMs);
+        html += idRow(idMsg('Créé le'), idFmtDate(p.timestampMs));
+        html += idRow(idMsg('Suffixe aléatoire'), v.substr(8));
+        html += '</tbody></table>';
+        result.innerHTML = html;
+    }
+    input.oninput = function () { debounce(run, 200)(); };
+    function gen(tsMs) {
+        var r = fbEncode(tsMs);
+        if (!r.valid) { result.innerHTML = '<div class="hash-output err">' + idMsg('Génération impossible (date trop ancienne ou hors plage)') + '</div>'; return; }
+        input.value = r.id; run();
+    }
+    if (genBtn) genBtn.onclick = function () { gen(Date.now()); };
+    if (genDateBtn) genDateBtn.onclick = function () {
+        var ms = dtParseDateInputSafe(dateInput.value);
+        if (ms === null) { result.innerHTML = '<div class="hash-output err">' + idMsg('Saisissez d\'abord quelque chose') + '</div>'; return; }
+        gen(ms);
+    };
+    run();
+}
+
+// datetime-tools.js 已定义 debounce / escapeHtml；此处再定义一份以备 Node 单测环境
+if (typeof debounce === 'undefined') {
+    function debounce(fn, ms) {
+        var t = null;
+        return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+    }
+}
+// 安全Analyser datetime-local Entrée为ms（datetime-tools.dtParseDateInput 返回s，这里统一成ms）
+function dtParseDateInputSafe(val) {
+    if (typeof dtParseDateInput === 'function') {
+        var sec = dtParseDateInput(val, 'UTC');
+        return sec === null ? null : sec * 1000;
+    }
+    if (!val) return null;
+    var d = new Date(val);
+    if (isNaN(d.getTime())) return null;
+    return d.getTime();
+}
+
+// Node 单测导出（浏览器中 module 为 undefined，自动跳过）
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        uuidValidate: uuidValidate, uuidGetVersion: uuidGetVersion, uuidGetVariant: uuidGetVariant,
+        uuidParse: uuidParse, uuidV4: uuidV4,
+        SF_PRESETS: SF_PRESETS, sfDecode: sfDecode, sfEncode: sfEncode,
+        TWITTER_EPOCH: TWITTER_EPOCH, TWITTER_PRE: TWITTER_PRE, tidToTime: tidToTime, timeToTid: timeToTid,
+        oidValidate: oidValidate, oidDecode: oidDecode, oidGenerate: oidGenerate,
+        FB_CHARS: FB_CHARS, fbValidate: fbValidate, fbDecode: fbDecode, fbEncode: fbEncode,
+    };
+}
+
+</script>
+<!-- ========== Analytics: busuanzi ==========
+     Loaded on production only; skipped for file:// previews and localhost so local
+     testing never pollutes the live numbers.
+     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
+     domain, no dashboard). -->
+<script>
+(function () {
+  var host = location.hostname;
+  if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  s.referrerPolicy = 'no-referrer-when-downgrade';
+  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.onerror = function () {
+    var f = document.getElementById('footerStats');
+    if (f && f.parentNode) f.parentNode.removeChild(f);
+  };
+  document.body.appendChild(s);
+})();
+</script>
+<dialog class="feedback-modal" id="feedbackModal">
+  <div class="fb-head">
+    <h3>Commentaires</h3>
+    <button class="fb-close" type="button" data-feedback-close aria-label="Fermer">&times;</button>
+  </div>
+  <p class="fb-lead">Ce site est uniquement frontal : pas de backend ni de compte. Les commentaires vont sur GitHub Issues, Discussions ou par e-mail.</p>
+  <div class="fb-links">
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=bug_report.yml&amp;labels=bug" target="_blank" rel="noopener">
+      <b>🐞 Signaler un problème</b><span>Plantages, résultat incorrect, mise en page cassée</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/issues/new?template=feature_request.yml&amp;labels=enhancement" target="_blank" rel="noopener">
+      <b>💡 Proposer une fonctionnalité</b><span>Un nouvel outil ou une meilleure expérience</span>
+    </a>
+    <a class="fb-link" href="https://github.com/xwjiang2003/tools/discussions" target="_blank" rel="noopener">
+      <b>💬 Discussions</b><span>Questions d'usage, astuces ou tout retour dont vous doutez qu'il s'agisse d'un bug</span>
+    </a>
+  </div>
+  <div class="fb-diag">
+    <button class="btn btn-sm" type="button" id="fbCopyDiag">📋 Copier le diagnostic</button>
+    <span class="fb-hint">Collez ceci dans l'issue ou l'e-mail pour m'aider à localiser le problème ; cela n'inclut rien de ce que vous avez saisi</span>
+  </div>
+  <p class="fb-note">
+    <span>Aussi :</span><a href="https://github.com/xwjiang2003/tools/issues" target="_blank" rel="noopener">Voir les commentaires existants</a>
+    <span>·</span>
+    <span>Commentaires par e-mail (sans compte GitHub) :</span><a href="mailto:278975598@qq.com?subject=%5BDevTools%5D%20Feedback">278975598@qq.com</a>
+  </p>
+</dialog>
+<script>
+(function () {
+  var modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  function open(e) {
+    if (e) e.preventDefault();
+    if (typeof modal.showModal === 'function') { if (!modal.open) modal.showModal(); }
+    else { window.open('https://github.com/xwjiang2003/tools/issues', '_blank', 'noopener'); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-open]'), function (el) {
+    el.addEventListener('click', open);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feedback-close]'), function (el) {
+    el.addEventListener('click', function () { modal.close(); });
+  });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+  var copy = document.getElementById('fbCopyDiag');
+  if (copy) copy.addEventListener('click', function () {
+    var text = [
+      'Page : ' + location.href,
+      'Navigateur : ' + navigator.userAgent,
+      'Langue : ' + (navigator.language || '') + ' / Interface : ' + document.documentElement.lang,
+      'Écran : ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x',
+      'Thème : ' + (document.documentElement.getAttribute('data-theme') || 'light'),
+      'Heure : ' + new Date().toISOString()
+    ].join('\n');
+    function done(ok) {
+      copy.textContent = ok ? '✅ Copié' : '❌ Échec de la copie';
+      setTimeout(function () { copy.textContent = '📋 Copier le diagnostic'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else { done(false); }
+  });
+})();
+</script>
+</body>
+</html>

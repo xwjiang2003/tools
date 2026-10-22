@@ -32,12 +32,14 @@ ROOT = Path(__file__).parent
 # build() 在 `if __name__ == '__main__'` 内，导入不会触发构建。
 try:
     from build import LANGS, EN, MSGS, DEFAULT_LANG, LANG_DIRS  # noqa: F401
+    from course import COURSE_LANGS                        # noqa: F401
     _HAS_BUILD = True
 except Exception:                                   # noqa: BLE001
     _HAS_BUILD = False
     DEFAULT_LANG = 'zh'
     LANGS = ('zh', 'en')
     LANG_DIRS = {'zh': '', 'en': 'en/'}
+    COURSE_LANGS = ('zh', 'en')
     EN, MSGS = {}, {'en': {}}
 
 CJK = re.compile(r'[\u4e00-\u9fff]')
@@ -184,14 +186,20 @@ def main():
                 shown = '、'.join(missing[:5])
                 more = f' …等 {len(missing)} 个' if len(missing) > 5 else ''
                 errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
+            # Go 课程板块只发布 zh/en，hreflang 备用链接按 COURSE_LANGS 数校验；
+            # 其余页面全站 8 语言 + x-default。
+            def _expected_alts(loc):
+                return len(COURSE_LANGS) + 1 if '/go-course/' in loc else len(LANGS) + 1
+
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data
                       for u in urls
-                      if len(u.getElementsByTagName('xhtml:link')) != len(LANGS) + 1
-                      # Go 课程图文板块只有中文版，单语言页无多语言 hreflang 备用链接
-                      and '/go-course/' not in u.getElementsByTagName('loc')[0].firstChild.data]
+                      if len(u.getElementsByTagName('xhtml:link')) != _expected_alts(
+                          u.getElementsByTagName('loc')[0].firstChild.data)]
             if no_alt:
-                errors.append(f'{len(no_alt)} 条 url 的 hreflang 备用链接数 '
-                              f'!= {len(LANGS) + 1}（应为 {len(LANGS)} 语言 + x-default）')
+                shown = '、'.join(no_alt[:3])
+                more = f' …等 {len(no_alt)} 个' if len(no_alt) > 3 else ''
+                errors.append(f'{len(no_alt)} 条 url 的 hreflang 备用链接数不符预期 '
+                              f'（课程页应 {len(COURSE_LANGS) + 1}，其余页应 {len(LANGS) + 1}）: {shown}{more}')
         except Exception as e:                                   # noqa: BLE001
             print(f'  ❌ sitemap.xml 解析失败: {e}')
             errors.append('sitemap.xml 非法')
