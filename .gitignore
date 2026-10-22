@@ -1,5 +1,7 @@
-# Build output
+# Build output（docs/ 是 build.py 的发布产物，服务器每次部署从源码重建，
+# 不应进 git —— 进 git 会导致每次改动都塞进数百个差异文件、推送撞 GitHub 体积上限）
 dist/
+docs/
 
 # IDE
 .idea/
