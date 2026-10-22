@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 """把本地 Go 课程讲义（Markdown）转换为课程图文正文数据。
 
-讲义源：D:\\AI\\go学习\\course\\lessons\\*.md  —— 唯一内容源，改讲义后重跑本脚本再重新构建
-产物：src/course_lessons.py（LESSON_BODIES: slug -> body HTML 片段）
+中文讲义源：D:\\AI\\go学习\\course\\lessons\\*.md    —— 唯一内容源（zh）
+英文讲义源：D:\\AI\\go学习\\course\\lessons-en\\*.md —— 英文版（en，由中文讲义翻译而来）
+产物：src/course_lessons.py（LESSON_BODIES: slug -> zh HTML；LESSON_BODIES_EN: slug -> en HTML）
 
 正文由构建期烘焙进静态页（与博客同哲学），不依赖 JS 注入；
 代码块用 pygments 在构建期着色（Go / 无语言标记的 text 块）。
 
 用法：
-  python convert_lessons.py            # 转换全部 41 课
-  python convert_lessons.py m01-l01    # 只转换指定课
+  python convert_lessons.py            # 转换全部中文讲义 + 已翻译的英文讲义
+  python convert_lessons.py m01-l01    # 只转换指定课（中英都转）
 """
 
 import re
@@ -22,10 +23,11 @@ import markdown
 ROOT = Path(__file__).parent
 SRC = ROOT / 'src'
 LESSONS_DIR = Path(r'D:\AI\go学习\course\lessons')
+LESSONS_DIR_EN = Path(r'D:\AI\go学习\course\lessons-en')
 OUT_FILE = SRC / 'course_lessons.py'
 
 # 讲义章节标题 → 区块类型（按出现顺序匹配，标题含关键词即命中）
-SECTION_RULES = [
+SECTION_RULES_ZH = [
     ('学习目标', 'goal'),
     ('知识讲解', 'body'),
     ('示例代码', 'body'),
@@ -35,6 +37,21 @@ SECTION_RULES = [
     ('参考答案', 'answers'),
     ('本课小结', 'summary'),
 ]
+SECTION_RULES_EN = [
+    ('Learning Objectives', 'goal'),
+    ('Core Concepts', 'body'),
+    ('Example Code', 'body'),
+    ('Common Mistakes', 'warn'),
+    ('Best Practices', 'tip'),
+    ('Exercises', 'exercise'),
+    ('Reference Answers', 'answers'),
+    ('Lesson Summary', 'summary'),
+]
+
+ANSWERS_SUMMARY = {
+    'zh': '参考答案（点击展开 / 收起）',
+    'en': 'Reference Answers (click to expand / collapse)',
+}
 
 MD = markdown.Markdown(
     extensions=['fenced_code', 'codehilite', 'tables', 'sane_lists', 'attr_list'],
@@ -48,12 +65,13 @@ def md_to_html(text):
     return MD.convert(text).strip()
 
 
-def split_head_and_sections(raw):
+def split_head_and_sections(raw, lang='zh'):
     """把讲义拆成 (头部引用块 markdown, [(章节标题, 类型, 章节 markdown)])。
 
     头部 = 第一个 `## ` 之前的内容；其中第一行的 `# 课程标题` 被剥离——
     页面 h1 由 course.py 的渲染函数输出，避免页面出现两个 h1。
     """
+    rules = SECTION_RULES_EN if lang == 'en' else SECTION_RULES_ZH
     m = re.search(r'^## ', raw, re.M)
     if m:
         head = raw[:m.start()].strip()
@@ -68,15 +86,15 @@ def split_head_and_sections(raw):
         title = parts[i][2:].strip()
         content = parts[i + 1].strip() if i + 1 < len(parts) else ''
         kind = 'body'
-        for key, k in SECTION_RULES:
-            if key in title:
+        for key, k in rules:
+            if key.lower() in title.lower():
                 kind = k
                 break
         sections.append((title, kind, content))
     return head, sections
 
 
-def build_body(head, sections):
+def build_body(head, sections, lang='zh'):
     """按类型组装课程页正文 HTML 片段（不含页面的 h1 / 元信息，那些由 course.py 渲染）。"""
     out = []
     if head:
@@ -97,7 +115,7 @@ def build_body(head, sections):
         elif kind == 'answers':
             out.append(f'<h2>{title}</h2>')
             out.append('<details class="course-answers">')
-            out.append('<summary>参考答案（点击展开 / 收起）</summary>')
+            out.append(f'<summary>{ANSWERS_SUMMARY.get(lang, ANSWERS_SUMMARY["zh"])}</summary>')
             out.append(html)
             out.append('</details>')
         elif kind == 'summary':
@@ -109,41 +127,53 @@ def build_body(head, sections):
     return '\n'.join(out)
 
 
-def convert_one(slug):
-    path = LESSONS_DIR / f'{slug}.md'
+def convert_one(slug, lang='zh'):
+    src_dir = LESSONS_DIR if lang == 'zh' else LESSONS_DIR_EN
+    path = src_dir / f'{slug}.md'
+    if not path.exists():
+        return None
     raw = path.read_text(encoding='utf-8')
-    head, sections = split_head_and_sections(raw)
-    return build_body(head, sections)
+    head, sections = split_head_and_sections(raw, lang)
+    return build_body(head, sections, lang)
 
 
 def main():
     args = sys.argv[1:]
-    files = sorted(LESSONS_DIR.glob('*.md'))
+    zh_files = sorted(LESSONS_DIR.glob('*.md'))
     if args:
-        files = [LESSONS_DIR / f'{a}.md' for a in args if (LESSONS_DIR / f'{a}.md').exists()]
+        zh_files = [LESSONS_DIR / f'{a}.md' for a in args if (LESSONS_DIR / f'{a}.md').exists()]
 
-    bodies = {}
-    for f in files:
+    bodies, bodies_en = {}, {}
+    for f in zh_files:
         slug = f.stem
-        body = convert_one(slug)
+        body = convert_one(slug, 'zh')
         bodies[slug] = body
-        print(f'  ✓ {slug}  ({len(body)} chars)')
+        print(f'  ✓ {slug}  (zh, {len(body)} chars)')
+    for f in sorted(LESSONS_DIR_EN.glob('*.md')):
+        slug = f.stem
+        body = convert_one(slug, 'en')
+        if body is not None:
+            bodies_en[slug] = body
+            print(f'  ✓ {slug}  (en, {len(body)} chars)')
 
     header = (
         '# -*- coding: utf-8 -*-\n'
         '"""课程正文数据（由 convert_lessons.py 从本地讲义 Markdown 生成，勿手改）。\n'
         '\n'
         '键：课时 slug（如 m01-l01）；值：课程页正文 HTML 片段。\n'
+        'LESSON_BODIES = 中文版；LESSON_BODIES_EN = 英文版（lessons-en 已翻译的课）。\n'
         '生成后需在 dev-tools 仓库重新构建（python build.py）才会生效。\n'
         '"""\n'
-        'LESSON_BODIES = {\n'
     )
-    lines = [header]
+    lines = [header, 'LESSON_BODIES = {\n']
     for slug in sorted(bodies):
         lines.append(f'    {slug!r}: {bodies[slug]!r},\n')
+    lines.append('}\n\nLESSON_BODIES_EN = {\n')
+    for slug in sorted(bodies_en):
+        lines.append(f'    {slug!r}: {bodies_en[slug]!r},\n')
     lines.append('}\n')
     OUT_FILE.write_text(''.join(lines), encoding='utf-8')
-    print(f'\n已写入 {OUT_FILE}（{len(bodies)} 课）')
+    print(f'\n已写入 {OUT_FILE}（zh {len(bodies)} 课，en {len(bodies_en)} 课）')
 
 
 if __name__ == '__main__':
