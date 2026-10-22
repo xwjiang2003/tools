@@ -587,13 +587,22 @@ def autodetect_html(lang, path, langs=None):
       ? navigator.languages : [navigator.language || ''];
     var SUPPORTED = {lang_list};
     var want = null;
+    // 优先级：浏览器语言列表里只要含中文（无论排第几），一律优先中文。
+    // 否则才按首个命中的非中文支持语言回退（避免 ['en-US','zh-CN'] 这类双语用户被误导进英文版）。
+    var prefersZh = false;
     for (var i = 0; i < langs.length; i++) {{
-      var p = (langs[i] || '').slice(0, 2).toLowerCase();
-      if (p === 'zh') {{ want = 'zh'; break; }}
-      for (var j = 0; j < SUPPORTED.length; j++) {{
-        if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
+      if ((langs[i] || '').slice(0, 2).toLowerCase() === 'zh') {{ prefersZh = true; break; }}
+    }}
+    if (prefersZh) {{
+      want = 'zh';
+    }} else {{
+      for (var i = 0; i < langs.length; i++) {{
+        var p = (langs[i] || '').slice(0, 2).toLowerCase();
+        for (var j = 0; j < SUPPORTED.length; j++) {{
+          if (SUPPORTED[j] !== 'zh' && SUPPORTED[j].toLowerCase().indexOf(p) === 0) {{ want = SUPPORTED[j]; break; }}
+        }}
+        if (want) break;
       }}
-      if (want) break;
     }}
     if (!want) want = (SUPPORTED.indexOf('en') >= 0) ? 'en' : SUPPORTED[0];
     var targets = {targets};
