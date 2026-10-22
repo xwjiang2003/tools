@@ -56,6 +56,9 @@ from blog import (ARTICLES, BLOG_INDEX, TEXT as BLOG_TEXT,  # noqa: E402
                   render_article, render_index as render_blog_index)
 from blog_en import ARTICLES_EN                           # noqa: E402
 import evergreen as EV                                     # noqa: E402
+from course import (COURSE_INDEX, COURSE_TEXT, MODULES, PUBLISHED,  # noqa: E402
+                    course_index_jsonld, lesson_jsonld, lesson_meta,
+                    lesson_path, render_course_index, render_lesson)
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 
 SRC = ROOT / 'src'
@@ -152,7 +155,7 @@ PAGE_MODULES = {
     'string': ('core.js', 'string-tools.js'),
     'generator': ('core.js', 'generator.js'),
     'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
-    'blog': ('core.js',),
+    'blog': ('core.js',), 'go-course': ('core.js',),
     'privacy': (),
 }
 PAGE_CSS = {
@@ -178,6 +181,7 @@ PAGE_CSS = {
     'generator': ('base', 'generator'),
     'hotnews': ('base', 'hotnews'), 'go-cheatsheet': ('base', 'cheatsheet'),
     'snippets': ('base', 'snippets'), 'blog': ('base', 'blog'),
+    'go-course': ('base', 'blog', 'course'),
     'privacy': ('base', 'legal'),
 }
 PAGE_WC_ZONES = {'world-clock', 'timezones'}    # datetime-tools.js 的两个消费点
@@ -610,7 +614,7 @@ NAV_GROUPS = [
     {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
-CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog']}
+CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog', 'go-course']}
 
 # 首页「全部工具」板块的一句话说明（每个工具 ≤ 30 字）。
 #
@@ -752,6 +756,14 @@ def nav_html(active_slug, base, labels, lang='zh'):
         if slug == 'blog':
             cls = 'top-nav-link active' if active_slug == 'blog' else 'top-nav-link'
             out.append(f'    <a class="{cls}" href="{base}{BLOG_INDEX}">{esc(labels["_blog"])}</a>')
+            continue
+        if slug == 'go-course':
+            # Go 课程图文板块当前只有中文版：非中文语言页不显示入口，避免指向死链
+            if lang != DEFAULT_LANG:
+                continue
+            cls = ('top-nav-link active' if active_slug == 'go-course'
+                   else 'top-nav-link')
+            out.append(f'    <a class="{cls}" href="{base}{COURSE_INDEX}">{esc(labels["_course"])}</a>')
             continue
         t = _TOOL_BY_SLUG.get(slug)
         if not t:
@@ -1108,7 +1120,7 @@ def _jsonld_raw(graph):
 # 必须早于 time 组的覆盖定义）。
 CSS_GROUPS = ['base', 'json', 'diff', 'regex', 'generator', 'liveclock',
               'time', 'baseconv', 'worldclock', 'hotnews', 'cheatsheet',
-              'snippets', 'blog', 'evergreen', 'legal']
+              'snippets', 'blog', 'course', 'evergreen', 'legal']
 
 # 模板处理结果按资产组合 memoize：756 个页面实际只有十几种
 # (modules, css_groups, keep_cdn) 组合，每组合只做一次字符串替换。
@@ -1169,6 +1181,7 @@ def inline_assets(tpl, modules=JS_MODULES, css_groups=None, keep_cdn=False):
 HEADINGS = {
     'zh': {'_features_heading': '主要功能', '_steps_heading': '使用步骤',
            '_faq_heading': '常见问题', '_home': '首页', '_blog': '博客',
+           '_course': 'Go 课程',
            '_related_heading': '相关工具与阅读',
            # 首页专用：JSON 之外的全部工具清单（见 TOOL_BLURBS 与 all_tools_section）
            '_all_tools_heading': '全部在线开发工具',
@@ -1229,16 +1242,18 @@ def content_for(tool, lang):
 
 
 def apply_common(page, lang, slug, path, title, description, keywords, body, seo, ld, base, home,
-                 wc_zones=True):
+                 wc_zones=True, mono=False):
     page = page.replace('{{PAGE}}', slug)
     page = page.replace('{{LANG}}', HTML_LANG[lang])
     page = page.replace('{{TITLE}}', esc(title))
     page = page.replace('{{DESCRIPTION}}', esc(description))
     page = page.replace('{{KEYWORDS}}', esc(keywords))
     page = page.replace('{{CANONICAL}}', canonical_url(lang, path))
-    page = page.replace('{{HREFLANG}}', hreflang_html(path))
-    page = page.replace('{{AUTODETECT}}', autodetect_html(lang, path))
-    page = page.replace('{{LANGSWITCH}}', lang_switch_html(lang, path))
+    # mono=True：单语言页（如仅中文的 Go 课程板块），不生成 hreflang 备用链接、
+    # 语言切换器与浏览器语言自动跳转，避免指向不存在的多语言版本。
+    page = page.replace('{{HREFLANG}}', '' if mono else hreflang_html(path))
+    page = page.replace('{{AUTODETECT}}', '' if mono else autodetect_html(lang, path))
+    page = page.replace('{{LANGSWITCH}}', '' if mono else lang_switch_html(lang, path))
     page = page.replace('{{ANALYTICS}}', analytics_html())
     page = page.replace('{{FEEDBACK_BTN}}', feedback_btn_html())
     page = page.replace('{{FEEDBACK_MODAL}}', feedback_modal_html())
@@ -1247,6 +1262,8 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
         active = 'evergreen'
     if slug and str(slug).startswith('blog'):
         active = 'blog'
+    if slug and str(slug).startswith('go-course'):
+        active = 'go-course'
     page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang], lang))
     page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))
     page = page.replace('{{JSONLD}}', ld)
@@ -1392,6 +1409,35 @@ def build(clean=True, outdirs=None):
                 page = localize(page, lang)
             pages[out_path(lang, apath)] = page
 
+        # ---------------- Go 课程图文板块：中心页 + 已发布课程页 ----------------
+        # 与博客同哲学：正文构建期烘焙（数据来自 course_lessons.py，由仓库根目录
+        # convert_lessons.py 从本地讲义 Markdown 生成）。当前只有中文版，所以：
+        #   - 只在默认语言生成页面；
+        #   - 页面用 mono=True（无 hreflang / 语言切换 / 自动跳转）；
+        #   - sitemap 只列中文一条（见 sitemap_xml 中课程块）。
+        if lang == DEFAULT_LANG:
+            ct = COURSE_TEXT
+            base = lang_prefix(lang, rel_root(lang, COURSE_INDEX))
+            page = apply_common(tpl_for('go-course'), lang, 'go-course', COURSE_INDEX,
+                                ct['index_title'], ct['index_desc'], ct['index_kw'],
+                                render_course_index(base), '',
+                                _jsonld_raw([course_index_jsonld(
+                                    canonical_url(lang, COURSE_INDEX))]),
+                                base, base or './', wc_zones=False, mono=True)
+            pages[out_path(lang, COURSE_INDEX)] = page
+
+            for slug in PUBLISHED:
+                lpath = lesson_path(slug)
+                lm = lesson_meta(slug)
+                base = lang_prefix(lang, rel_root(lang, lpath))
+                page = apply_common(tpl_for('go-course'), lang, 'go-course-' + slug, lpath,
+                                    lm['title'], lm['description'], lm['keywords'],
+                                    render_lesson(slug, base), '',
+                                    _jsonld_raw([lesson_jsonld(
+                                        lm, canonical_url(lang, lpath))]),
+                                    base, base or './', wc_zones=False, mono=True)
+                pages[out_path(lang, lpath)] = page
+
         # 隐私政策
         body = PRIVACY_BODY_ZH if lang == 'zh' else PRIVACY_BODY_EN
         base = lang_prefix(lang, rel_root(lang, PRIVACY_FILE))
@@ -1509,6 +1555,18 @@ def sitemap_xml(news=None):
         entries.append((p, '0.6', 'yearly', ''))
 
     rows = []
+    # Go 课程图文板块：只有中文版，单语言各自成条（不生成多语言 alternates）。
+    for p, pri, freq, lastmod_day in [
+            (COURSE_INDEX, '0.6', 'weekly', ''),
+            *((lesson_path(s), '0.7', 'monthly', '') for s in PUBLISHED)]:
+        lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
+        meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
+        rows.append(
+            '  <url>\n'
+            f'    <loc>{SITE["base_url"] + lang_dir(DEFAULT_LANG) + p}</loc>{lastmod}\n'
+            + meta +
+            '  </url>'
+        )
     for p, pri, freq, lastmod_day in entries:
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
         alternates = ''.join(
@@ -1641,6 +1699,18 @@ def llms_txt():
         en_a.update(ARTICLES_EN[a['slug']])
         out.append(f'  - English: [{en_a["h1"]}]'
                    f'({SITE["base_url"]}{EN_DIR}{article_path(a["slug"])}) — {en_a["summary"]}')
+    # Go 课程图文板块：每篇已发布课程都列出，否则新课上线不进这份摘要，等于白写。
+    out += [
+        '',
+        '## Go Course / Go 课程',
+        '',
+        f'- [Go 语言从入门到精通（课程中心页）]({SITE["base_url"]}{COURSE_INDEX}): '
+        '6 大模块 41 课图文教程，零基础到高级工程实践；每课含学习目标、知识讲解、'
+        '可运行示例代码、常见错误避坑、最佳实践与练习参考答案，配套 B 站视频课程。',
+    ]
+    for slug in PUBLISHED:
+        lm = lesson_meta(slug)
+        out.append(f'- [{lm["h1"]}]({SITE["base_url"]}{lesson_path(slug)}): {lm["description"]}')
     out += [
         '',
         '## News / 资讯',
