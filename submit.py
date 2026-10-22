@@ -32,19 +32,40 @@ sys.path.insert(0, str(ROOT / 'src'))
 from site_config import INDEXNOW_KEY, KEY_LOCATION, ENDPOINTS, ROOT_SITE_URL  # noqa: E402
 
 
+def _sitemap_children_text():
+    """拼接 sitemap 索引引用的全部子文件文本。
+
+    2026-10-22 起 sitemap.xml 是 sitemapindex，只列子 sitemap 文件名；
+    页面 URL 全在 sitemap-*.xml 里。只读索引会把子 sitemap 自己的 URL
+    当成页面 URL 提交，必须展开。
+    """
+    docs = ROOT / 'docs'
+    index = docs / 'sitemap.xml'
+    if not index.exists():
+        print(f'❌ 找不到 {index}，先运行 python3 build.py')
+        return ''
+    texts = []
+    for m in re.findall(r'<loc>(.*?)</loc>', index.read_text('utf-8')):
+        name = m.rsplit('/', 1)[-1]
+        cf = docs / name
+        if not cf.exists():
+            print(f'❌ 找不到 {cf}，先运行 python3 build.py')
+            return ''
+        texts.append(cf.read_text('utf-8'))
+    return '\n'.join(texts)
+
+
 def all_urls():
-    """站点全部 URL：直接读构建产物 docs/sitemap.xml。
+    """站点全部 URL：读构建产物 docs/sitemap.xml 索引及其子文件。
 
     以前是从 TOOLS 手算一份路径列表，结果是每加一种新页面（速查表、博客文章）
     都要记得回来同步一次，忘了就漏提交——而漏提交的后果恰恰是最难发现的那种。
-    sitemap.xml 由 build.py 生成、且与真实页面一一对应（check.py 会校验条数），
+    sitemap 由 build.py 生成、且与真实页面一一对应（check.py 会校验条数），
     用它当唯一来源，新增页面自动进提交列表。
     """
-    sitemap = ROOT / 'docs' / 'sitemap.xml'
-    if not sitemap.exists():
-        print(f'❌ 找不到 {sitemap}，先运行 python3 build.py')
+    text = _sitemap_children_text()
+    if not text:
         return []
-    text = sitemap.read_text('utf-8')
 
     # sitemap 里中英是一对：<loc> 是中文页，英文页在 hreflang="en" 的备用链接里。
     # 只看 <loc> 会漏掉整套英文站，所以两个都要取。

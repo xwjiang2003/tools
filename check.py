@@ -11,7 +11,7 @@
   1. 每段内联 <script> 用 node --check 做语法校验（需要 node）
   2. 不残留 {{占位符}}
   3. 每个页面都有且只有一个 <dialog id="feedbackModal">
-  4. sitemap.xml 是合法 XML，且 URL 数与页面数一致
+  4. sitemap.xml（索引）合法、子文件齐全，且全量 URL 数与页面数一致
   5. 英文页面除白名单外无残留中文
 
 用法:
@@ -159,12 +159,33 @@ def main():
     print(f'  {"✅" if not fb_bad else "❌"} 反馈弹窗唯一性' + (f' — {fb_bad}' if fb_bad else ''))
     errors += fb_bad
 
-    # 4) sitemap
+    # 4) sitemap（索引 + 子文件）
+    #    2026-10-22 起 sitemap.xml 是 sitemapindex，URL 在 sitemap-*.xml
+    #    子文件里（每文件 ≤100 条）。拆分原因：百度 Spider socket 超时 60s，
+    #    中澳链路最差 ~10KB/s，858KB 单文件要 90s，必被掐断（百度抓取诊断
+    #    实报「socket 读写错误」）。
+    #    校验：索引合法 → 子文件齐全 → 全量 URL 数与页面数一致 →
+    #    每页 canonical 在并集里 → hreflang 备用链接数符合预期。
     sm = target / 'sitemap.xml'
     if sm.exists():
         try:
-            d = xml.dom.minidom.parse(str(sm))
-            urls = d.getElementsByTagName('url')
+            idx = xml.dom.minidom.parse(str(sm))
+            child_names = []
+            for el in idx.getElementsByTagName('loc'):
+                loc = el.firstChild.data
+                name = loc.rsplit('/', 1)[-1]
+                if not (name.startswith('sitemap-') and name.endswith('.xml')):
+                    raise ValueError(f'索引引用了非子文件条目: {loc}')
+                child_names.append(name)
+            urls, missing_child = [], []
+            for name in child_names:
+                cf = target / name
+                if not cf.exists():
+                    missing_child.append(name)
+                    continue
+                urls += xml.dom.minidom.parse(str(cf)).getElementsByTagName('url')
+            if missing_child:
+                raise FileNotFoundError(f'索引引用了不存在的子文件: {missing_child}')
             n = len(urls)
             # 中英各自独立成条（满足 ahrefs「每个可索引页都要在 sitemap 里有独立 <loc>」），
             # 所以条数应等于「全部内容页面数」（含 /en/）。早期中英共用一条、英文页只当
@@ -182,8 +203,8 @@ def main():
                 elif m.group(1) not in loc_set:
                     missing.append(f'{f.relative_to(target)}({m.group(1)})')
             ok = (n == len(pages)) and not missing
-            print(f'  {"✅" if ok else "❌"} sitemap.xml 合法，含 {n} 条 url'
-                  f'（内容页面 {len(pages)} 个，中英各自成条）')
+            print(f'  {"✅" if ok else "❌"} sitemap.xml 合法（索引 + {len(child_names)} 个子文件），'
+                  f'共 {n} 条 url（内容页面 {len(pages)} 个，中英各自成条）')
             if n != len(pages):
                 errors.append(f'sitemap url 数 {n} != 页面数 {len(pages)}')
             if missing:

@@ -12,7 +12,7 @@
   英文（/en/ 前缀）
     en/index.html  en/<slug>/index.html  en/privacy.html
   公共
-    sitemap.xml（带 hreflang 备用链接） / robots.txt / .nojekyll
+    sitemap 索引 + 子文件（带 hreflang 备用链接） / robots.txt / .nojekyll
 
 两种语言各自拥有独立的 URL、标题、描述、canonical、hreflang 与正文，
 英文页面在构建时就把界面文案整体替换掉，因此不依赖运行时 JS 翻译。
@@ -22,6 +22,7 @@
   python3 build.py --watch    # 监听并重建（需要: pip install watchdog）
 """
 
+import gzip
 import html
 import json
 import os
@@ -1468,7 +1469,15 @@ def build(clean=True, outdirs=None):
             page = localize(page, lang)
         pages[out_path(lang, PRIVACY_FILE)] = page
 
-    pages[Path('sitemap.xml')] = sitemap_xml(news)
+    # sitemap：索引 + 按板块子文件（详见 sitemap_files 的注释：百度 60s
+    # socket 超时 × 中澳链路最差 ~10KB/s，858KB 单文件必被掐断）。
+    sm_files = sitemap_files(news)
+    pages.update({Path(fn): text for fn, text in sm_files.items()})
+    # 每个 sitemap .xml 预生成 .gz：nginx gzip_static 命中后零 CPU 直发，
+    # 客户端不带 Accept-Encoding 时回退到 on-the-fly gzip。
+    # mtime=0 保证每次构建的 .gz 字节一致（gzip 头里的时间戳不会漂）。
+    sm_gz = {Path(fn + '.gz'): gzip.compress(text.encode('utf-8'), 9, mtime=0)
+             for fn, text in sm_files.items()}
     pages[Path('robots.txt')] = robots_txt()
     pages[Path('llms.txt')] = llms_txt()
     pages[Path('.nojekyll')] = ''
@@ -1519,7 +1528,7 @@ def build(clean=True, outdirs=None):
             fp.write_text(content, 'utf-8')
         # 二进制写入：这些是压缩过的产物，不能用 write_text，
         # 否则 Windows 上会把内部的 \n 转成 \r\n，文件就废了。
-        for rel, data in {**cdn_assets, **root_files}.items():
+        for rel, data in {**cdn_assets, **root_files, **sm_gz}.items():
             fp = outdir / rel
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_bytes(data)
@@ -1528,7 +1537,9 @@ def build(clean=True, outdirs=None):
     n_root = len(root_files)
     print(f'  ✓ 按页裁剪内联 CSS 组 + JS 模块（{len(_TPL_CACHE)} 种资产组合）'
           + (f'\n  ✓ 自托管第三方资源 {n_cdn} 个 → {CDN_OUT.as_posix()}/' if n_cdn else '')
-          + (f'\n  ✓ 站点根附加文件 {n_root} 个 → 发布根（验证文件 / 图标）' if n_root else ''))
+          + (f'\n  ✓ 站点根附加文件 {n_root} 个 → 发布根（验证文件 / 图标）' if n_root else '')
+          + f'\n  ✓ sitemap 索引 + {len(sm_files) - 1} 个子文件'
+            f'（每文件 ≤ {SITEMAP_CHUNK} 条 URL），各附 .gz 预压缩')
     for rel in sorted(pages, key=str):
         print(f'  ✓ {str(rel):28s} {len(pages[rel]) / 1024:7.1f} KB')
     where = ' + '.join(d.name for d in targets)
@@ -1536,14 +1547,49 @@ def build(clean=True, outdirs=None):
     return True
 
 
-def sitemap_xml(news=None):
-    # 只有「确实会变」的页面才写 <lastmod>。热榜每天变、博客文章有真实的
-    # 发布/校订日期，这两类的 lastmod 是真的；其余页面变化很少，如果跟着构建
-    # 时间天天变，反而会让搜索引擎不再信任这个字段。
+# ── sitemap：索引 + 按板块子文件 ──────────────────────────────
+# 为什么不再用单文件 urlset：百度 Spider 的 socket 超时是 60 秒，而中澳链路
+# 实测最差只有 ~10KB/s（2026-10-22 郑州联通实测：877KB 的 sitemap 要 90.5
+# 秒，百度抓取诊断报「socket 读写错误」；同体积换一次连接能到 200KB/s，
+# 说明是「链路波动 + 文件过大」叠加，只优化一边都不稳）。
+# 对策双管齐下：
+#   1) 拆：按板块切成 ≤100 条/文件（≈110KB，最差 11 秒下完）；
+#   2) 压：每个 .xml 预生成 .gz（≈15KB），nginx gzip_static 零 CPU 直发。
+# 入口 URL 不变，仍是 /sitemap.xml，只是内容从 urlset 变成 sitemapindex，
+# robots.txt 的 Sitemap 行无需改动；百度官方帮助明确支持索引文件提交
+# （「可以使用XML格式、文本格式以及Sitemap索引文件提交」）。
+SITEMAP_CHUNK = 100
+# 子文件的命名与索引中的排列顺序
+_SITEMAP_SECTIONS = ('pages', 'tools', 'evergreen', 'blog', 'course')
+
+
+def _url_block(loc, alternates, meta, lastmod=''):
+    return ('  <url>\n'
+            f'    <loc>{loc}</loc>{lastmod}\n'
+            + alternates + meta +
+            '  </url>')
+
+
+def _sitemap_sections(news=None):
+    """按板块归组的 sitemap 条目：{板块: {'rows': [...], 'lastmod': 日期}}。
+
+    条目内容（优先级 / changefreq / hreflang / lastmod 口径）与拆分前
+    完全一致，只是额外记录板块归属与各板块最新的真实 lastmod——索引里
+    只对「确实会变」的板块写 lastmod，跟着构建时间天天变的字段搜索引擎
+    会不再信任（与条目级 lastmod 同一原则）。
+    """
     news_day = ''
     if news and news.get('generated_at'):
         from datetime import datetime
         news_day = datetime.fromtimestamp(news['generated_at'], CST).strftime('%Y-%m-%d')
+
+    sections = {name: {'rows': [], 'lastmod': ''} for name in _SITEMAP_SECTIONS}
+
+    def add(name, row, lastmod_day=''):
+        sec = sections[name]
+        sec['rows'].append(row)
+        if lastmod_day and (not sec['lastmod'] or lastmod_day > sec['lastmod']):
+            sec['lastmod'] = lastmod_day
 
     # (path, priority, changefreq, lastmod)
     entries = []
@@ -1565,31 +1611,19 @@ def sitemap_xml(news=None):
     for p in EV.evergreen_paths():
         entries.append((p, '0.6', 'yearly', ''))
 
-    rows = []
-    # Go 课程图文板块：zh / en 双语各自成条 + 中英 hreflang 互指（其余语言无课程页不列）。
-    # 英文条目只列已翻译正文的课（LESSON_BODIES_EN），避免 sitemap 指向不存在的英文页。
-    course_langs = COURSE_LANGS
-    course_pages = [COURSE_INDEX] + [lesson_path(s) for s in PUBLISHED]
-    for p in course_pages:
-        pri, freq = ('0.6', 'weekly') if p == COURSE_INDEX else ('0.7', 'monthly')
-        lastmod = ''
-        meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
-        alternates = ''.join(
-            f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
-            f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
-            for L in course_langs)
-        alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
-                       f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
-        for L in course_langs:
-            if L == 'en' and p != COURSE_INDEX and p.rstrip('/').split('/')[-1] not in LESSON_BODIES_EN:
-                continue
-            loc = SITE['base_url'] + lang_dir(L) + p
-            rows.append(
-                '  <url>\n'
-                f'    <loc>{loc}</loc>{lastmod}\n'
-                + alternates + meta +
-                '  </url>'
-            )
+    # 首页 / 热榜 / 隐私政策是小体量稳定页，归 'pages'；博客与常青页各自
+    # 成组；其余工具页（含速查表、片段库）进 'tools'。
+    evergreen_set = set(EV.evergreen_paths())
+
+    def section_of(p):
+        if p.startswith('blog'):
+            return 'blog'
+        if p in evergreen_set:
+            return 'evergreen'
+        if p in ('', NEWS_PATH, PRIVACY_FILE):
+            return 'pages'
+        return 'tools'
+
     for p, pri, freq, lastmod_day in entries:
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
         alternates = ''.join(
@@ -1602,16 +1636,59 @@ def sitemap_xml(news=None):
         # 各语言各自独立成条：每语言页有自己的 canonical、是独立的可索引 URL。
         for L in LANGS:
             loc = SITE['base_url'] + lang_dir(L) + p
-            rows.append(
-                '  <url>\n'
-                f'    <loc>{loc}</loc>{lastmod}\n'
-                + alternates + meta +
-                '  </url>'
-            )
-    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
-            '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
-            + '\n'.join(rows) + '\n</urlset>\n')
+            add(section_of(p), _url_block(loc, alternates, meta, lastmod), lastmod_day)
+
+    # Go 课程图文板块：zh / en 双语各自成条 + 中英 hreflang 互指（其余语言无课程页不列）。
+    # 英文条目只列已翻译正文的课（LESSON_BODIES_EN），避免 sitemap 指向不存在的英文页。
+    course_langs = COURSE_LANGS
+    course_pages = [COURSE_INDEX] + [lesson_path(s) for s in PUBLISHED]
+    for p in course_pages:
+        pri, freq = ('0.6', 'weekly') if p == COURSE_INDEX else ('0.7', 'monthly')
+        meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
+        alternates = ''.join(
+            f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
+            f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
+            for L in course_langs)
+        alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
+                       f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
+        for L in course_langs:
+            if L == 'en' and p != COURSE_INDEX and p.rstrip('/').split('/')[-1] not in LESSON_BODIES_EN:
+                continue
+            loc = SITE['base_url'] + lang_dir(L) + p
+            add('course', _url_block(loc, alternates, meta))
+    return sections
+
+
+def sitemap_files(news=None):
+    """{文件名: XML 文本}：sitemap.xml（索引）+ sitemap-<板块>[-n].xml（子文件）。
+
+    索引本身 <1KB，任何链路都是秒下；子文件按板块聚合、≤100 条，单个
+    ≈110KB，最差链路 11 秒内可下完（百度 socket 超时 60 秒）。
+    """
+    sections = _sitemap_sections(news)
+    files, index_rows = {}, []
+    for name in _SITEMAP_SECTIONS:
+        sec = sections[name]
+        if not sec['rows']:
+            continue
+        chunks = [sec['rows'][i:i + SITEMAP_CHUNK]
+                  for i in range(0, len(sec['rows']), SITEMAP_CHUNK)]
+        for i, chunk in enumerate(chunks, 1):
+            fn = f'sitemap-{name}.xml' if len(chunks) == 1 else f'sitemap-{name}-{i}.xml'
+            files[fn] = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
+                         '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+                         + '\n'.join(chunk) + '\n</urlset>\n')
+            lastmod = f'\n    <lastmod>{sec["lastmod"]}</lastmod>' if sec['lastmod'] else ''
+            index_rows.append(
+                '  <sitemap>\n'
+                f'    <loc>{SITE["base_url"]}{fn}</loc>{lastmod}\n'
+                '  </sitemap>')
+    files['sitemap.xml'] = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + '\n'.join(index_rows) + '\n</sitemapindex>\n')
+    return files
 
 
 def robots_txt():

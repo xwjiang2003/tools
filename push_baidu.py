@@ -73,15 +73,27 @@ MAX_URLS = 2000
 def zh_urls(with_en=False):
     """中文页（默认）；--with-en 时把英文页也带上。
 
-    URL 列表来自构建产物 docs/sitemap.xml，而不是在这里手算一份路径清单：
-    速查表、博客文章这类新页面是后加的，手算清单每加一种就要回来同步一次，
-    忘了就静默漏推。sitemap 与真实页面一一对应（check.py 校验条数），用它最稳。
+    URL 列表来自构建产物 docs/sitemap.xml 索引及其子文件，而不是在这里手算一份
+    路径清单：速查表、博客文章这类新页面是后加的，手算清单每加一种就要回来同步
+    一次，忘了就静默漏推。sitemap 与真实页面一一对应（check.py 校验条数），用它最稳。
+
+    2026-10-22 起 sitemap.xml 是 sitemapindex，只列子 sitemap 文件名，
+    页面 URL 在 sitemap-*.xml 里，必须先展开再取 <loc>。
     """
-    sitemap = ROOT / 'docs' / 'sitemap.xml'
-    if not sitemap.exists():
-        print(f'❌ 找不到 {sitemap}，先运行 python3 build.py')
+    docs = ROOT / 'docs'
+    index = docs / 'sitemap.xml'
+    if not index.exists():
+        print(f'❌ 找不到 {index}，先运行 python3 build.py')
         return []
-    text = sitemap.read_text('utf-8')
+    texts = []
+    for m in re.findall(r'<loc>(.*?)</loc>', index.read_text('utf-8')):
+        name = m.rsplit('/', 1)[-1]
+        cf = docs / name
+        if not cf.exists():
+            print(f'❌ 找不到 {cf}，先运行 python3 build.py')
+            return []
+        texts.append(cf.read_text('utf-8'))
+    text = '\n'.join(texts)
     en_prefix = SITE['base_url'] + EN_DIR
     locs = re.findall(r'<loc>(.*?)</loc>', text)
     en_locs = re.findall(r'hreflang="en" href="(.*?)"', text)
