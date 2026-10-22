@@ -186,7 +186,9 @@ def main():
                 errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data
                       for u in urls
-                      if len(u.getElementsByTagName('xhtml:link')) != len(LANGS) + 1]
+                      if len(u.getElementsByTagName('xhtml:link')) != len(LANGS) + 1
+                      # Go 课程图文板块只有中文版，单语言页无多语言 hreflang 备用链接
+                      and '/go-course/' not in u.getElementsByTagName('loc')[0].firstChild.data]
             if no_alt:
                 errors.append(f'{len(no_alt)} 条 url 的 hreflang 备用链接数 '
                               f'!= {len(LANGS) + 1}（应为 {len(LANGS)} 语言 + x-default）')
