@@ -52,10 +52,10 @@
 .course-meta-phase{background:var(--tab-hover);color:var(--text-secondary)}
 .course-meta-id{font-family:"JetBrains Mono","Fira Code","Consolas",monospace;background:var(--bg);color:var(--text-muted)}
 
-/* 配套视频 */
+/* 配套视频（.course-post a 会以更高特异性覆盖 color，这里用 .course-post 前缀压回白字） */
 .course-video{margin:0 0 18px}
-.course-video-link{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;font-size:13.5px;font-weight:600;text-decoration:none;border-radius:var(--radius-sm);padding:8px 16px;transition:background var(--transition)}
-.course-video-link:hover{background:var(--primary-hover);color:#fff}
+.course-post .course-video-link{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;font-size:13.5px;font-weight:600;text-decoration:none;border-radius:var(--radius-sm);padding:8px 16px;transition:background var(--transition)}
+.course-post .course-video-link:hover{background:var(--primary-hover);color:#fff}
 .course-video-coming{font-size:12.5px;color:var(--text-muted);background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:8px 14px;display:inline-block}
 
 /* 头部引用卡（所属/目标） */
