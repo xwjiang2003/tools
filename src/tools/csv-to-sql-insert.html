@@ -1,0 +1,92 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="c2sClear()">清空</button><button class="btn btn-sm" onclick="c2sSample()">示例</button></div></div>
+    <textarea class="ta-input" id="c2sInput" placeholder="Paste CSV here. First line is treated as the header row:&#10;id,name,email&#10;1,Alice,alice@example.com&#10;2,Bob,bob@example.com"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>表名</span><input type="text" id="c2sTable" value="my_table" style="flex:1;min-width:0;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:13px"></div>
+    <div class="op-buttons"><button class="op-btn active" onclick="c2sRun()">生成</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="c2sDlBtn" onclick="c2sDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('c2sResult')">复制</button></div></div>
+      <div class="result-content" id="c2sResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// CSV to SQL INSERT statements. Header row becomes the column list; values are
+// escaped by doubling single quotes; empty cells become NULL.
+(function(){
+  function splitCsvLine(line){
+    var out = [], cur = '', inQ = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (inQ) {
+        if (c === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += c;
+      } else if (c === '"') inQ = true;
+      else if (c === ',') { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out.map(function(s){ return s.trim(); });
+  }
+  function sqlVal(v){
+    if (v === '') return 'NULL';
+    if (/^-?\d+(\.\d+)?$/.test(v)) return v;
+    return "'" + v.replace(/'/g, "''") + "'";
+  }
+  function sqlIdent(s){ return '`' + String(s).replace(/`/g, '') + '`'; }
+  var lastSql = { text: '', name: 'insert.sql' };
+  function setDl(on){ var b = document.getElementById('c2sDlBtn'); if (b) b.disabled = !on; }
+  function c2sRun(){
+    var text = getVal('c2sInput');
+    var out = document.getElementById('c2sResult');
+    var table = (document.getElementById('c2sTable').value || 'my_table').trim();
+    if (!text.trim()) {
+      out.innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+      lastSql.text = ''; setDl(false); return;
+    }
+    var lines = text.replace(/\r\n?/g, '\n').split('\n').filter(function(l){ return l.trim() !== ''; });
+    if (lines.length < 2) {
+      out.innerHTML = '<span style="color:#dc2626">错误: CSV 至少需要表头行和一行数据</span>';
+      lastSql.text = ''; setDl(false); return;
+    }
+    var cols = splitCsvLine(lines[0]);
+    var colSql = cols.map(sqlIdent).join(', ');
+    var rows = [];
+    for (var i = 1; i < lines.length; i++) {
+      var cells = splitCsvLine(lines[i]);
+      var vals = cols.map(function(_, j){ return sqlVal(cells[j] === undefined ? '' : cells[j]); });
+      rows.push('(' + vals.join(', ') + ')');
+    }
+    var sql = 'INSERT INTO ' + sqlIdent(table) + ' (' + colSql + ') VALUES\n' + rows.join(',\n') + ';';
+    out.textContent = sql;
+    lastSql.text = sql;
+    setDl(true);
+    toast('生成完成');
+  }
+  window.c2sClear = function(){
+    setVal('c2sInput', '');
+    document.getElementById('c2sResult').innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+    lastSql.text = ''; setDl(false);
+  };
+  window.c2sSample = function(){
+    setVal('c2sInput',
+      'id,name,email,score\n' +
+      '1,Alice,alice@example.com,91.5\n' +
+      '2,"Bob, Jr.",bob@example.com,\n' +
+      '3,O\'Neil,oneil@example.com,77');
+    c2sRun();
+  };
+  window.c2sRun = c2sRun;
+  window.c2sDownload = function(){
+    if (!lastSql.text) { toast('没有可下载的结果'); return; }
+    downloadText(lastSql.name, lastSql.text, 'application/sql');
+  };
+  var el = document.getElementById('c2sInput');
+  if (el) el.addEventListener('input', function(){ lastSql.text = ''; setDl(false); });
+  // tool body script runs before core.js: nothing to render until the user acts
+})();
+</script>

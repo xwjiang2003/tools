@@ -1,0 +1,208 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="md2hClear()">清空</button><button class="btn btn-sm" onclick="md2hSample()">示例</button></div></div>
+    <textarea class="ta-input" id="md2hInput" placeholder="Paste Markdown here. Headings, lists, tables, code blocks, quotes and links are supported:&#10;&#10;# Title&#10;&#10;Some **bold** and *italic* text."></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>预览</span><input type="checkbox" id="md2hPreview" checked></div>
+    <div class="op-buttons"><button class="op-btn active" onclick="md2hRun()">转换</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="md2hDlBtn" onclick="md2hDownload()" disabled>下载</button><button class="btn btn-sm" onclick="md2hCopy()">复制</button></div></div>
+      <div class="result-content" id="md2hResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// Markdown to HTML. Subset renderer: headings, hr, blockquote, fenced code,
+// lists (one nesting level), tables, inline code/bold/italic/del/link/image.
+// All text is HTML-escaped before inline rules run, and link/image URLs are
+// scheme-checked, so pasted HTML or javascript: URLs cannot break out.
+(function(){
+  function escapeHtml(s){
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function safeUrl(u){
+    return /^\s*(javascript|vbscript|data):/i.test(u) ? '#' : u;
+  }
+  function inline(s){
+    s = escapeHtml(s).replace(/\n/g, ' ');
+    var codes = [];
+    s = s.replace(/`([^`]+)`/g, function(_, c){ codes.push(c); return '\u0000C' + (codes.length - 1) + '\u0000'; });
+    // note: text is already escaped, so a title quote shows up as &quot;
+    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, function(_, alt, url, title){
+      return '<img src="' + safeUrl(url) + '" alt="' + alt + '"' +
+        (title ? ' title="' + title + '"' : '') + ' loading="lazy">';
+    });
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, function(_, txt, url, title){
+      return '<a href="' + safeUrl(url) + '"' + (title ? ' title="' + title + '"' : '') +
+        ' target="_blank" rel="noopener">' + txt + '</a>';
+    });
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+    s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+    s = s.replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?]|$)/g, '$1<em>$2</em>');
+    s = s.replace(/\u0000C(\d+)\u0000/g, function(_, n){ return '<code>' + codes[+n] + '</code>'; });
+    return s;
+  }
+  function splitRow(line){
+    return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function(c){ return c.trim(); });
+  }
+  function alignAttr(cell){
+    var l = cell.charAt(0) === ':', r = cell.charAt(cell.length - 1) === ':';
+    if (l && r) return ' style="text-align:center"';
+    if (r) return ' style="text-align:right"';
+    return '';
+  }
+  function renderList(items){
+    var parts = [], cur = null;
+    var i = 0;
+    while (i < items.length) {
+      var it = items[i];
+      if (!cur) { cur = 'ul'; parts.push('<ul>'); }
+      var tag = it.ordered ? 'ol' : 'ul';
+      if (cur !== tag) { parts.push('</' + cur + '><' + tag + '>'); cur = tag; }
+      var sub = [], k = i + 1;
+      while (k < items.length && items[k].indent > 0) { sub.push(items[k]); k++; }
+      var li = '<li>' + inline(it.text);
+      if (sub.length) {
+        li += '\n' + renderList(sub.map(function(s){ return { indent: 0, ordered: s.ordered, text: s.text }; }));
+      }
+      parts.push(li + '</li>');
+      i = k;
+    }
+    if (cur) parts.push('</' + cur + '>');
+    return parts.join('\n');
+  }
+  function renderBlocks(src){
+    var lines = String(src).replace(/\r\n?/g, '\n').split('\n');
+    var out = [], i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+      var fence = line.match(/^```(\w*)\s*$/);
+      if (fence) {
+        var buf = [], j = i + 1;
+        while (j < lines.length && !/^```\s*$/.test(lines[j])) { buf.push(lines[j]); j++; }
+        out.push('<pre><code' + (fence[1] ? ' class="lang-' + fence[1] + '"' : '') + '>' +
+          escapeHtml(buf.join('\n')) + '</code></pre>');
+        i = j + 1; continue;
+      }
+      var h = line.match(/^(#{1,6})\s+(.*)$/);
+      if (h) {
+        out.push('<h' + h[1].length + '>' + inline(h[2].replace(/\s+#+\s*$/, '')) + '</h' + h[1].length + '>');
+        i++; continue;
+      }
+      if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
+      if (/^\s*>\s?/.test(line)) {
+        var qb = [];
+        while (i < lines.length && /^\s*>\s?/.test(lines[i])) { qb.push(lines[i].replace(/^\s*>\s?/, '')); i++; }
+        out.push('<blockquote>' + renderBlocks(qb.join('\n')) + '</blockquote>');
+        continue;
+      }
+      if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        var header = splitRow(line);
+        var aligns = splitRow(lines[i + 1]).map(alignAttr);
+        var j = i + 2, rows = [];
+        while (j < lines.length && /^\s*\|.*\|\s*$/.test(lines[j])) { rows.push(splitRow(lines[j])); j++; }
+        var t = '<table><thead><tr>';
+        header.forEach(function(c, k){ t += '<th' + aligns[k] + '>' + inline(c) + '</th>'; });
+        t += '</tr></thead><tbody>';
+        rows.forEach(function(r){
+          t += '<tr>';
+          r.forEach(function(c, k){ t += '<td' + aligns[k] + '>' + inline(c) + '</td>'; });
+          t += '</tr>';
+        });
+        out.push(t + '</tbody></table>');
+        i = j; continue;
+      }
+      var lm = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)$/);
+      if (lm) {
+        var items = [], j2 = i;
+        while (j2 < lines.length) {
+          var m = lines[j2].match(/^(\s*)([-*+]|\d+\.)\s+(.*)$/);
+          if (m) { items.push({ indent: m[1].length, ordered: /\d/.test(m[2].charAt(0)), text: m[3] }); j2++; continue; }
+          if (items.length && lines[j2].trim() !== '' && /^\s{2,}\S/.test(lines[j2])) {
+            items[items.length - 1].text += ' ' + lines[j2].trim(); j2++; continue;
+          }
+          break;
+        }
+        out.push(renderList(items));
+        i = j2; continue;
+      }
+      if (line.trim() === '') { i++; continue; }
+      var pb = [line], j3 = i + 1;
+      while (j3 < lines.length && lines[j3].trim() !== '' &&
+             !/^(#{1,6}\s|```|>|\s*([-*+]|\d+\.)\s|\s*\|)/.test(lines[j3])) {
+        pb.push(lines[j3]); j3++;
+      }
+      out.push('<p>' + inline(pb.join('\n').trim()) + '</p>');
+      i = j3;
+    }
+    return out.join('\n');
+  }
+  var lastHtml = '';
+  function setDl(on){ var b = document.getElementById('md2hDlBtn'); if (b) b.disabled = !on; }
+  function md2hRun(){
+    var text = getVal('md2hInput');
+    var out = document.getElementById('md2hResult');
+    if (!text.trim()) {
+      out.innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+      lastHtml = ''; setDl(false); return;
+    }
+    lastHtml = renderBlocks(text);
+    if (document.getElementById('md2hPreview').checked) out.innerHTML = lastHtml;
+    else { out.textContent = ''; out.appendChild(document.createElement('pre')).textContent = lastHtml; }
+    setDl(true);
+    toast('转换完成');
+  }
+  window.md2hClear = function(){
+    setVal('md2hInput', '');
+    document.getElementById('md2hResult').innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+    lastHtml = ''; setDl(false);
+  };
+  window.md2hSample = function(){
+    setVal('md2hInput',
+      '# Release notes\n' +
+      '\n' +
+      'Version **2.1** ships *three* big things:\n' +
+      '\n' +
+      '- faster startup (see [changelog](https://example.com/changelog))\n' +
+      '- new `--json` flag\n' +
+      '- bug fixes\n' +
+      '\n' +
+      '## Benchmarks\n' +
+      '\n' +
+      '| build | before | after |\n' +
+      '| --- | ---: | ---: |\n' +
+      '| cold | 420ms | 210ms |\n' +
+      '| warm | 90ms | 45ms |\n' +
+      '\n' +
+      '> Tip: run `mytool doctor` first.\n' +
+      '\n' +
+      '```js\n' +
+      "console.log('hello');\n" +
+      '```\n' +
+      '\n' +
+      '---\n' +
+      '\n' +
+      'Done.');
+    md2hRun();
+  };
+  window.md2hRun = md2hRun;
+  window.md2hCopy = function(){
+    if (!lastHtml) { toast('没有可下载的结果'); return; }
+    navigator.clipboard.writeText(lastHtml).then(function(){ toast('已复制'); }, function(){ toast('复制失败', 'error'); });
+  };
+  window.md2hDownload = function(){
+    if (!lastHtml) { toast('没有可下载的结果'); return; }
+    var doc = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+      '<title>Document</title>\n</head>\n<body>\n' + lastHtml + '\n</body>\n</html>\n';
+    downloadText('document.html', doc, 'text/html');
+  };
+  var el = document.getElementById('md2hInput');
+  if (el) el.addEventListener('input', function(){ lastHtml = ''; setDl(false); });
+  // tool body script runs before core.js: nothing to render until the user acts
+})();
+</script>
