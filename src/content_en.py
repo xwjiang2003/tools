@@ -16,7 +16,7 @@ SITE_EN = {
 TOOLS_EN = {
     'json': {
         'nav': 'JSON',
-        'title': 'JSON Formatter & Validator Online — Free, In-Browser | DevTools',
+        'title': 'JSON Formatter & Validator — Free, In-Browser | DevTools',
         'description': (
             'Format, validate, minify and sort JSON, convert between JSON and CSV, XML or YAML, '
             'diff two documents and query with JSONPath — all locally in your browser.'
@@ -131,7 +131,16 @@ TOOLS_EN = {
              'The algorithm scales with the number of lines, and anything up to a few thousand lines is '
              'effectively instant. With tens of thousands of lines and very large differences the browser '
              'may briefly stutter, so it is worth trimming to the section you actually need to check.'),
+            ('Are the two texts I compare saved or uploaded?',
+             'No. The comparison runs entirely in your browser; the page contains no code that sends your text anywhere and writes no logs. It keeps working offline (the first load needs the network for page resources).'),
         ],
+        'seealso': [
+            ('Text case & style converter', 'string/'),
+            ('Regex tester', 'regex/'),
+            ('Case converter (camel/snake/kebab)', 'case/'),
+            ('JSON formatter & validator', './'),
+        ],
+
     },
     'encode': {
         'nav': 'Encode',
@@ -189,10 +198,14 @@ TOOLS_EN = {
              'Usually the original was encoded with a character set other than UTF-8, or the content was '
              'encoded twice. Try decoding once more and see whether the result still looks encoded; this '
              'page always treats text as UTF-8.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Hex to Decimal / Binary', 'hex/'),
             ('Any-Base Converter', 'base/'),
+            ('Is the content I encode uploaded?',
+             'No. Base64, URL, Unicode, HTML entity and hex encoding/decoding all run in JavaScript in your browser. Your input never leaves the device and the tool works offline.'),
         ],
     },
     'regex': {
@@ -251,7 +264,22 @@ TOOLS_EN = {
             ('Does the page record the patterns and text I enter?',
              'No. Matching and replacement both run inside your browser, and your input is never sent to '
              'a server.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
+        'seealso': [
+            ('Text case & style converter', 'string/'),
+            ('Text diff tool', 'diff/'),
+            ('Case converter (camel/snake/kebab)', 'case/'),
+            ('UUID & random data generator', 'generator/'),
+            ('Are the pattern and text I test saved?',
+             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
+            ('Are the pattern and text I test saved?',
+             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
+            ('Are the pattern and text I test saved?',
+             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
+        ],
+
     },
     'timestamp': {
         'nav': 'Timestamp',
@@ -311,6 +339,14 @@ TOOLS_EN = {
              'Almost always a timezone setting. A Unix timestamp is an absolute UTC value; whether you '
              'display it as local time or UTC only affects the presentation. Compare the two with the '
              'timezone switcher to confirm.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+        ],
+        'seealso': [
+            ('Cron expression generator', 'cron-generator/'),
+            ('Batch timestamp converter', 'batch/'),
+            ('Common timestamp lookup (today / this week / this month)', 'timestamp-list/'),
+            ('World time zones & current time', 'timezones/'),
         ],
     },
     'hash': {
@@ -369,7 +405,16 @@ TOOLS_EN = {
              'Hash functions are deterministic: the same input must produce the same output, and that is '
              'precisely what makes them useful for verification. If you need unpredictable output, add a '
              'random salt to the input.'),
+            ('Is the content or file I hash uploaded?',
+             'No. MD5, SHA and HMAC computation runs entirely in your browser, and files are handled through the local file reading API — nothing leaves your device. The tool works offline.'),
         ],
+        'seealso': [
+            ('Base64 / URL / Unicode codec', 'encode/'),
+            ('JWT decoder & verifier', 'jwt/'),
+            ('UUID generator & parser', 'uuid/'),
+            ('Password & random data generator', 'generator/'),
+        ],
+
     },
     'formatter': {
         'nav': 'Formatter',
@@ -430,13 +475,14 @@ TOOLS_EN = {
              'blog for a detailed comparison of the two tools.'),
         ],
         'seealso': [
+            ('Go formatter online (gofmt)', 'gofmt-online/'),
             ('Go command cheat sheet (gofmt / goimports usage)', 'go-cheatsheet/'),
             ('Blog: gofmt vs goimports, and how to wire them into CI', 'blog/gofmt-vs-goimports/'),
         ],
     },
     'go-cheatsheet': {
         'nav': 'Go Cheat Sheet',
-        'title': 'Go Command Cheat Sheet - go build / go mod / gofmt / Cross-Compilation | DevTools',
+        'title': 'Go Command Cheat Sheet — build / mod / gofmt | DevTools',
         'description': (
             'A searchable Go toolchain cheat sheet: go build, go test, go mod tidy, go get, '
             'gofmt vs goimports, GOPROXY mirrors, GOPRIVATE, go.mod directives '
@@ -510,11 +556,19 @@ TOOLS_EN = {
              'No. It was the module-mode switch of the Go 1.11–1.22 era and was removed from '
              'the go command entirely in Go 1.23 — setting it has no effect. Delete '
              'GO111MODULE=on from legacy CI scripts.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
             ('Blog: gofmt vs goimports, and how to wire them into CI', 'blog/gofmt-vs-goimports/'),
             ('JSON formatter & validator', './'),
+            ('Is my lookup recorded when I use the cheatsheet?',
+             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
+            ('Is my lookup recorded when I use the cheatsheet?',
+             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
+            ('Is my lookup recorded when I use the cheatsheet?',
+             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
         ],
     },
     'string': {
@@ -573,7 +627,16 @@ TOOLS_EN = {
             ('Does it slow down with very long text?',
              'Routine processing of up to tens of thousands of lines is instant. For much larger inputs '
              'it is better to work in chunks, so the browser does not have to build one enormous string.'),
+            ('Is the text I process uploaded?',
+             'No. Case conversion, de-duplication, sorting and counting all run in your browser; the page contains no code that sends your text anywhere. It works offline.'),
         ],
+        'seealso': [
+            ('Case converter (camel/snake/kebab)', 'case/'),
+            ('Text diff tool', 'diff/'),
+            ('Regex tester', 'regex/'),
+            ('JSON formatter & validator', './'),
+        ],
+
     },
     'generator': {
         'nav': 'Generators',
@@ -633,7 +696,22 @@ TOOLS_EN = {
              'The QR code format is an open standard and free to use. Do make sure the URL or content '
              'you encode is lawful — the code is only a carrier and does not change who is responsible '
              'for what it contains.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
+        'seealso': [
+            ('UUID generator & parser', 'uuid/'),
+            ('Snowflake ID decoder & builder', 'snowflake/'),
+            ('MD5 / SHA / HMAC hashing', 'hash/'),
+            ('Text case & style converter', 'string/'),
+            ('Are generated passwords and random data recorded?',
+             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
+            ('Are generated passwords and random data recorded?',
+             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
+            ('Are generated passwords and random data recorded?',
+             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
+        ],
+
     },
     'hotnews': {
         'nav': 'Tech News',
@@ -700,11 +778,20 @@ TOOLS_EN = {
             ('Do the outbound links carry ads or redirects?',
              'No. Headlines point directly at the article URL. This site adds no interstitial, no '
              'affiliate parameters and no redirect layer.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
+        'seealso': [
+            ('Common timestamp lookup (today / this week / this month)', 'timestamp-list/'),
+            ('Unix timestamp converter', 'timestamp/'),
+            ('Go toolchain cheatsheet', 'go-cheatsheet/'),
+            ('JSON formatter & validator', './'),
+        ],
+
     },
     'color': {
         'nav': 'Color',
-        'title': 'Color Converter Online — Hex / RGB / HSL / CSS Name | DevTools',
+        'title': 'Color Converter — Hex / RGB / HSL / CSS Name | DevTools',
         'description': (
             'Convert colors between Hex, RGB, HSL and CSS color names with a live preview. '
             'Supports 3/6/8-digit Hex, rgb()/rgba(), hsl()/hsla() and all 148 CSS named colors. '
@@ -739,15 +826,19 @@ TOOLS_EN = {
             ('Why do some colors show no name?',
              'CSS only defines 148 named colors such as red, blue and rebeccapurple. Most colors '
              'have no English name, so this field shows "-" — use Hex/RGB/HSL instead.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Hex to Binary / Decimal', 'hex/'),
             ('Any-Base Converter', 'base/'),
+            ('Are the color values I pick uploaded?',
+             'No. HEX / RGB / HSL parsing and conversion run entirely in your browser; the page has no code that sends color values anywhere. The picker only reads values you paste or type — it never touches your photo library.'),
         ],
     },
     'case': {
         'nav': 'Case style',
-        'title': 'Case Style Converter — camelCase / snake_case / kebab-case / PascalCase | DevTools',
+        'title': 'Case Converter — camel/snake/kebab/Pascal Online | DevTools',
         'description': (
             'Convert identifiers between camelCase, snake_case, kebab-case, PascalCase and '
             'CONSTANT_CASE. Auto-splits camelCase and underscores, handles digit boundaries, '
@@ -780,11 +871,22 @@ TOOLS_EN = {
             ('CONSTANT_CASE vs snake_case?',
              'Both separate words with underscores; CONSTANT_CASE is all uppercase (used for macros, '
              'constants and enums), while snake_case is all lowercase (common for Python names).'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
+        'seealso': [
+            ('Text case & style converter', 'string/'),
+            ('Regex tester', 'regex/'),
+            ('Go formatter online (gofmt)', 'gofmt-online/'),
+            ('JSON formatter & validator', './'),
+            ('Is the text I convert uploaded?',
+             'No. Name-style detection and conversion run entirely in your browser; the page contains no code that sends your text anywhere. It works offline.'),
+        ],
+
     },
     'jwt': {
         'nav': 'JWT decoder',
-        'title': 'JWT Decoder & Verifier Online — Parse Header/Payload, Check Expiry | DevTools',
+        'title': 'JWT Decoder — Parse Header/Payload, Check Expiry | DevTools',
         'description': (
             'Decode JWTs online: parse the Header and Payload, turn exp/iat/nbf into readable times, '
             'and verify HS256/384/512 signatures with a secret. Decoding and verification happen '
@@ -821,11 +923,22 @@ TOOLS_EN = {
             ('If exp has passed, is it definitely invalid?',
              'Yes, exp is the expiry time and servers reject expired tokens. This tool only decodes and '
              'displays; whether a token is accepted is always up to your server.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
+        'seealso': [
+            ('MD5 / SHA / HMAC hashing', 'hash/'),
+            ('Base64 / URL / Unicode codec', 'encode/'),
+            ('Unix timestamp converter', 'timestamp/'),
+            ('JSON formatter & validator', './'),
+            ('Is the token I parse uploaded?',
+             'No. JWT decoding and HS256 / 384 / 512 signature verification all run in your browser — the token never leaves your device. That matters most for production tokens with sensitive claims.'),
+        ],
+
     },
     'yaml': {
         'nav': 'JSON ↔ YAML',
-        'title': 'JSON ↔ YAML Converter Online — JSON to YAML / YAML to JSON | DevTools',
+        'title': 'JSON ↔ YAML Converter Online — Both Ways, Private | DevTools',
         'description': (
             'Convert between JSON and YAML online: JSON to YAML and YAML to JSON, preserving structure. '
             'Parsed with js-yaml and processed locally in your browser.'
@@ -855,11 +968,20 @@ TOOLS_EN = {
             ('Does conversion need a network?',
              'No. The js-yaml parser is served from this site\u2019s own domain alongside the page, with no '
              'third-party CDN involved; the whole conversion runs locally in your browser.'),
+            ('Is the YAML / JSON I convert uploaded?',
+             'No. YAML parsing and JSON serialisation run in the js-yaml library inside your browser; the page has no code that sends your configuration anywhere. Feel free to use it offline with config files that contain secrets.'),
         ],
+        'seealso': [
+            ('JSON ↔ CSV / XML converter', './'),
+            ('JSON ↔ TOML converter', 'toml/'),
+            ('CSV viewer & converter', 'csv/'),
+            ('CSV to SQL INSERT generator', 'csv-to-sql-insert/'),
+        ],
+
     },
     'toml': {
         'nav': 'JSON ↔ TOML',
-        'title': 'JSON ↔ TOML Converter Online — JSON to TOML / TOML to JSON | DevTools',
+        'title': 'TOML to JSON Converter Online — Private | DevTools',
         'description': (
             'Convert between JSON and TOML online: JSON to TOML and TOML to JSON, suited to Go / Rust '
             'config files. Parsed with @iarna/toml and processed locally in your browser.'
@@ -890,11 +1012,20 @@ TOOLS_EN = {
             ('Does conversion need a network?',
              'No. The @iarna/toml parser is served from this site\u2019s own domain alongside the page, '
              'with no third-party CDN involved; the whole conversion runs locally in your browser.'),
+            ('Is the TOML / JSON I convert uploaded?',
+             'No. TOML parsing and JSON serialisation run in a library inside your browser. Your configuration never leaves the device and the tool works offline.'),
         ],
+        'seealso': [
+            ('JSON ↔ YAML converter', 'yaml/'),
+            ('JSON ↔ CSV / XML converter', './'),
+            ('CSV viewer & converter', 'csv/'),
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+        ],
+
     },
     'csv': {
         'nav': 'JSON ↔ CSV',
-        'title': 'JSON ↔ CSV Converter Online — JSON Array to CSV / CSV to JSON | DevTools',
+        'title': 'JSON ↔ CSV Converter Online — Both Ways, Private | DevTools',
         'description': (
             'Convert between JSON and CSV online: JSON arrays (of objects or 2-D arrays) to CSV, and '
             'CSV back to JSON using the first row as header. Handles quoting and comma escaping, all '
@@ -927,11 +1058,21 @@ TOOLS_EN = {
             ('What column order is used for JSON → CSV?',
              'Columns follow the keys of the first object; extra keys from later objects are appended '
              'at the end, keeping the table tidy without dropping data.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+        ],
+        'seealso': [
+            ('CSV to SQL INSERT generator', 'csv-to-sql-insert/'),
+            ('JSON ↔ CSV / XML / YAML converter (JSON toolbox)', './'),
+            ('JSON ↔ YAML converter', 'yaml/'),
+            ('JSON ↔ TOML converter', 'toml/'),
+            ('Is my CSV data uploaded?',
+             'No. CSV parsing, viewing and JSON conversion all run in your browser — the data never leaves your device. Feel free to use it offline with exports that contain business data.'),
         ],
     },
     'batch': {
         'nav': 'Batch TS',
-        'title': 'Batch Unix Timestamp Converter — Bulk ts↔date, CSV Export | DevTools',
+        'title': 'Batch Timestamp Converter — Bulk Convert, CSV Out | DevTools',
         'description': (
             'Bulk-convert Unix timestamps online: paste many timestamps or dates at once to convert '
             'between seconds/milliseconds timestamps and dates, with timezone selection and '
@@ -961,16 +1102,20 @@ TOOLS_EN = {
              'It depends on browser memory; a few thousand rows usually convert instantly. For very large inputs, paste in chunks to avoid building one huge table at once.'),
             ('What happens to a row with the wrong date format?',
              'Unparseable rows are flagged in red and marked "invalid"; the other valid rows still convert, so the whole batch does not fail.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter (single)', 'timestamp/'),
             ('Timestamp cheat sheet', 'timestamp-list/'),
             ('World time zones & current time', 'timezones/'),
+            ('Are the timestamps I batch-convert uploaded?',
+             'No. Batch parsing and date conversion run entirely in your browser; the page has no code that sends your timestamps anywhere. It works offline.'),
         ],
     },
     'timestamp-list': {
         'nav': 'TS Reference',
-        'title': 'Timestamp Cheat Sheet — Common Points in Seconds & ms | DevTools',
+        'title': 'Timestamp Cheat Sheet — Common Values in s & ms | DevTools',
         'description': (
             'Timestamp cheat sheet: seconds and milliseconds Unix timestamps plus the matching date '
             'for common reference points — now, start of today, this Monday, 1st of month, start of '
@@ -999,10 +1144,18 @@ TOOLS_EN = {
             ('What is the 2038 limit?',
              'The largest seconds timestamp a signed 32-bit integer can hold is 2147483647, which is '
              '2038-01-19 03:14:07 UTC. Systems past that overflow — this is the year-2038 problem.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Batch timestamp conversion', 'batch/'),
+            ('Does this cheat sheet record my lookups?',
+             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
+            ('Does this cheat sheet record my lookups?',
+             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
+            ('Does this cheat sheet record my lookups?',
+             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
         ],
     },
     'timezones': {
@@ -1038,10 +1191,14 @@ TOOLS_EN = {
             ('Are "UTC" and "GMT" the same?',
              'For everyday use, essentially yes; strictly, UTC is atomic-clock based and GMT is '
              'astronomical, and they agree to the second. This site labels offsets with UTC.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('World clock', 'world-clock/'),
+            ('Are the time zones I select uploaded?',
+             "No. Conversions use the browser's built-in time zone database locally; the page has no code that sends your city or time selections anywhere. It works offline."),
         ],
     },
     'weeknumbers': {
@@ -1075,10 +1232,18 @@ TOOLS_EN = {
             ('How is the ISO week number different from the common one?',
              'Many US-style systems start the week on Sunday and count the week containing Jan 1 as week '
              '1; ISO starts on Monday and uses the Thursday rule, so the two can differ by a week at year start/end.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Current day of the year', 'daynumbers/'),
             ('Leap years & days per year', 'years/'),
+            ('Are the dates I look up recorded?',
+             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
+            ('Are the dates I look up recorded?',
+             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
+            ('Are the dates I look up recorded?',
+             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
         ],
     },
     'daynumbers': {
@@ -1107,10 +1272,18 @@ TOOLS_EN = {
             ('Is this the same as a "Julian day"?',
              'No. Here it is "day of the year" (restarting at 1 each year); a Julian day is a '
              'continuous count from 4713 BCE, not reset annually, and is used in astronomy and historiography.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
             ('Leap years & days per year', 'years/'),
+            ('Are the dates I look up recorded?',
+             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
+            ('Are the dates I look up recorded?',
+             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
+            ('Are the dates I look up recorded?',
+             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
         ],
     },
     'years': {
@@ -1141,15 +1314,23 @@ TOOLS_EN = {
              'The leap rule has an exception: a year divisible by 100 must also be divisible by 400 to '
              'be a leap year. 1900 is divisible by 100 but not by 400, so it is a common year; 2000 is '
              'divisible by 400, so it is a leap year.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
             ('Current day of the year', 'daynumbers/'),
+            ('Are the years I view recorded?',
+             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
+            ('Are the years I view recorded?',
+             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
+            ('Are the years I view recorded?',
+             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
         ],
     },
     'world-clock': {
         'nav': 'World Clock',
-        'title': 'World Clock — Analog Clock Faces & Current Time in Major Cities | DevTools',
+        'title': 'World Clock — Current Time in Major Cities | DevTools',
         'description': (
             'Online world clock: shows current time and UTC offset for UTC, Beijing, Tokyo, London, New '
             'York, Paris, Sydney and other major cities as analog clock faces or a list, refreshed every '
@@ -1182,10 +1363,14 @@ TOOLS_EN = {
             ('Why is a city\'s offset different from last time I looked?',
              'Cities with daylight saving move the clock forward an hour in certain months, so the '
              'offset changes; the page handles it automatically.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('World time zones & current time', 'timezones/'),
             ('Unix Timestamp & Date Converter', 'timestamp/'),
+            ('Are the cities I add uploaded?',
+             'No. The world clock uses local system time and built-in time zone data. Your city list is kept only in browser localStorage — never synced to any server — and disappears when you clear your browser data.'),
         ],
     },
     'countdown': {
@@ -1219,10 +1404,14 @@ TOOLS_EN = {
              'The target timestamp in the link is an absolute UTC instant; the "time remaining" depends '
              'on the opener\'s local current time, so different people and times see different '
              'remainders, but the target moment itself is the same.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Date difference', 'date-difference/'),
+            ('Are the countdowns I set uploaded?',
+             'No. Countdowns are computed locally in your browser and events are kept only in browser localStorage — never synced to any server.'),
         ],
     },
     'date-difference': {
@@ -1252,10 +1441,14 @@ TOOLS_EN = {
             ('How are cross-time-zone inputs computed?',
              'The page interprets the entered date-time in your browser\'s local time zone. If you need '
              'it in another zone, convert it to your local wall-clock time first, then enter it.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Date add / subtract', 'date-calculator/'),
             ('Countdown', 'countdown/'),
+            ('Are the dates I calculate with uploaded?',
+             'No. Date-difference calculation runs locally in your browser; the page has no code that sends your dates anywhere. It works offline.'),
         ],
     },
     'date-calculator': {
@@ -1288,15 +1481,19 @@ TOOLS_EN = {
              'February has no 31st, so adding a month directly would "overflow" into early March, which '
              'feels wrong in most cases. This tool clamps the day to the last day of the target month, '
              'giving Feb 28 (or 29 in a leap year).'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Date difference', 'date-difference/'),
             ('Leap years & days per year', 'years/'),
+            ('Are the dates I calculate with uploaded?',
+             'No. Date arithmetic runs locally in your browser; the page has no code that sends your dates anywhere. It works offline.'),
         ],
     },
     'duration': {
         'nav': 'Duration',
-        'title': 'ISO 8601 Duration Converter — Duration String ↔ Seconds | DevTools',
+        'title': 'ISO 8601 Duration Converter — String ↔ Seconds | DevTools',
         'description': (
             'Online ISO 8601 duration converter: convert between a PnYnMnDTnHnMnS duration string and '
             'seconds. Supports P1W, PT1H30M and more. Computed locally.'
@@ -1327,15 +1524,19 @@ TOOLS_EN = {
             ('Can P1Y2M3DT4H5M6S be round-tripped?',
              'Yes. As long as you do not mix approximate units like month/year, the round trip is '
              'consistent and exact; conversions involving years/months carry rounding error from the approximation.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Date difference', 'date-difference/'),
+            ('Are the durations I calculate with uploaded?',
+             'No. ISO 8601 duration and seconds conversion runs locally in your browser; the page has no code that sends your durations anywhere.'),
         ],
     },
     'uuid': {
         'nav': 'UUID',
-        'title': 'UUID Parser and Generator — v1/v4 version, variant, timestamp | DevTools',
+        'title': 'UUID Generator & Parser — v1/v4, Timestamp | DevTools',
         'description': (
             'Parse any UUID online: detect version (v1/v3/v4/v5) and variant (RFC4122, etc.), recover '
             'the timestamp and node for v1, and generate RFC4122 v4 UUIDs. All processing is local in your browser.'
@@ -1361,16 +1562,24 @@ TOOLS_EN = {
         'faq': [
             ('Are UUIDs case-insensitive?', 'The letter part is case-insensitive by spec, but the standard form is lowercase; this tool ignores case when parsing.'),
             ('Are v4 UUIDs really unique?', 'v4 uses 122 random bits, making collisions negligible. This tool only parses and generates; it does not guarantee global uniqueness across devices.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp and Date Converter', 'timestamp/'),
             ('Snowflake ID parser', 'snowflake/'),
             ('MongoDB ObjectId parser', 'objectid/'),
+            ('Are generated UUIDs recorded?',
+             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
+            ('Are generated UUIDs recorded?',
+             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
+            ('Are generated UUIDs recorded?',
+             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
         ],
     },
     'snowflake': {
         'nav': 'Snowflake',
-        'title': 'Snowflake ID Decoder and Builder — Twitter/Discord timestamp | DevTools',
+        'title': 'Snowflake ID Decoder — Twitter/Discord Timestamp | DevTools',
         'description': (
             'Decode Snowflake IDs from Twitter, Discord and more: recover the millisecond timestamp, machine and '
             'sequence. Build a Snowflake from a time with a custom epoch. All computed locally.'
@@ -1396,16 +1605,20 @@ TOOLS_EN = {
         'faq': [
             ('Why are the IDs so long?', 'A Snowflake is a 63-bit unsigned integer, typically 18-19 decimal digits; it is parsed as a string to avoid JavaScript number precision loss.'),
             ('What epoch do I enter for custom?', 'Enter your system\'s epoch in milliseconds (Twitter is 1288834974657), keeping the common 41/10/12 bit layout.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Twitter and X ID decoder', 'tid/'),
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
+            ('Is the Snowflake ID I parse uploaded?',
+             'No. Decoding and building Snowflake IDs run entirely in your browser; the page has no code that sends your IDs anywhere. It works offline.'),
         ],
     },
     'tid': {
         'nav': 'Twitter ID',
-        'title': 'Twitter and X ID Decoder — tweet/user creation time | DevTools',
+        'title': 'Twitter/X ID Decoder — Tweet Creation Time | DevTools',
         'description': (
             'Decode any Twitter / X Snowflake ID: paste a tweet, user or DM id to recover its creation time, '
             'machine and sequence. Fully local, no X login required.'
@@ -1429,15 +1642,19 @@ TOOLS_EN = {
         'faq': [
             ('Why do some IDs have no time?', 'IDs before Snowflake launched in Nov 2010 are plain sequential numbers (about <= 29700859247) and contain no time to recover.'),
             ('Does decoding need an X login?', 'No. The Snowflake timestamp is encoded in the ID itself; this tool computes locally with no X API involved.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Snowflake ID decoder', 'snowflake/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
+            ('Is the ID I parse uploaded?',
+             'No. ID-to-creation-time conversion runs locally in your browser; the page has no code that sends your IDs anywhere.'),
         ],
     },
     'objectid': {
         'nav': 'ObjectId',
-        'title': 'MongoDB ObjectId Parser and Generator — time/machine/counter | DevTools',
+        'title': 'MongoDB ObjectId Parser & Generator — Timestamp | DevTools',
         'description': (
             'Parse a 24-hex MongoDB ObjectId online: recover creation time, machine, process and counter, and '
             'generate a new ObjectId. All done locally in your browser.'
@@ -1461,15 +1678,19 @@ TOOLS_EN = {
         'faq': [
             ('Is the ObjectId time accurate?', 'The first 4 bytes are the second-level Unix time of creation, precise to the second; it is client-generated and usually reflects the creation moment.'),
             ('Does the generated one match the database?', 'The structure is identical (time plus random machine/process plus counter), but machine and counter are random fill for local testing, not a real instance.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
+            ('Is the ObjectId I parse uploaded?',
+             'No. Decoding and generating ObjectIds run entirely in your browser; the page has no code that sends your IDs anywhere. It works offline.'),
         ],
     },
     'firebase': {
         'nav': 'Firebase ID',
-        'title': 'Firebase Push ID Parser and Generator — timestamp lookup | DevTools',
+        'title': 'Firebase Push ID Parser & Generator — Timestamp | DevTools',
         'description': (
             'Decode a 20-char Firebase Push ID\'s creation timestamp, or generate a valid ID from the current or a '
             'chosen time. Fully local, no data uploaded.'
@@ -1494,6 +1715,8 @@ TOOLS_EN = {
         'faq': [
             ('Why are the first 8 chars the time?', 'Firebase encodes the timestamp in base-64 with the most significant digit first, so the IDs also sort chronologically by dictionary order.'),
             ('Can the generated ID be written to the database?', 'The structure is valid, but the suffix is random and meant for local testing, not a real write order.'),
+            ('Is the Push ID I parse uploaded?',
+             'No. Push-ID-to-time conversion runs locally in your browser; the page has no code that sends your IDs anywhere.'),
         ],
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
@@ -1502,7 +1725,7 @@ TOOLS_EN = {
     },
     'base': {
         'nav': 'Base Converter',
-        'title': 'Base Converter - convert between base 2-36 (binary/octal/decimal/hex) | DevTools',
+        'title': 'Base Converter — Binary/Octal/Decimal/Hex (2-36) | DevTools',
         'description': (
             'Free online base converter: convert between binary, octal, decimal, hex and any base 2-36. '
             'Arbitrary precision for big numbers, 0x/0b/0o prefixes and auto-detect, all bases at a glance. Fully local.'
@@ -1528,12 +1751,16 @@ TOOLS_EN = {
             ('Why is big-number conversion exact?', 'Plain math uses floats and loses precision past 2^53; here every digit is processed with big-integer arithmetic, so the result is exact.'),
             ('How does Auto-detect decide the base?', '0x means hex, 0b binary, 0o octal; all-digit input is decimal; input with a-f but no prefix is treated as hex.'),
             ('Are fractions supported?', 'Only integers for now; fractional base conversion is error-prone and rarely needed.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Binary Converter', 'binary/'),
             ('Hexadecimal Converter', 'hex/'),
             ('Text and Hex encoder', 'encode/'),
             ('Hex to RGB color', 'color/'),
+            ('Are the numbers I convert uploaded?',
+             'No. Any-base parsing and conversion run locally in your browser; the page has no code that sends your numbers anywhere. It works offline.'),
         ],
     },
     'binary': {
@@ -1562,16 +1789,20 @@ TOOLS_EN = {
         'faq': [
             ('Why is my binary flagged invalid?', 'Binary uses only 0 and 1; any 2-9 or letter is invalid. For other bases use the Any-Base Converter.'),
             ('How do I convert text to binary?', 'That is text encoding - use the Hex view in the Encode tool; this tool focuses on numeric base conversion.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Any-Base Converter', 'base/'),
             ('Hexadecimal Converter', 'hex/'),
             ('Text and Hex encoder', 'encode/'),
+            ('Are the numbers I convert uploaded?',
+             'No. Binary/decimal conversion runs locally in your browser; the page has no code that sends your numbers anywhere.'),
         ],
     },
     'hex': {
         'nav': 'Hex Converter',
-        'title': 'Hexadecimal Converter - hex to decimal/binary/octal | DevTools',
+        'title': 'Hex Converter — Hex to Decimal/Binary/Octal | DevTools',
         'description': (
             'Online hex converter: convert hex to decimal, binary and octal and back, with byte count and every base 2-36, '
             'arbitrary precision. Accepts 0x prefixes and upper/lower case. Fully local.'
@@ -1595,17 +1826,21 @@ TOOLS_EN = {
         'faq': [
             ('How is this different from Hex in the Encode tool?', 'Here hex is treated as a number for base conversion; the Encode tool turns text into hex byte strings - different purposes.'),
             ('Why are upper and lower case both fine?', 'Hex digits a-f are case-insensitive, so the tool accepts either.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Any-Base Converter', 'base/'),
             ('Binary Converter', 'binary/'),
             ('Text and Hex encoder', 'encode/'),
             ('Hex to RGB color', 'color/'),
+            ('Is the hex I convert uploaded?',
+             'No. Hex to decimal/binary conversion runs locally in your browser; the page has no code that sends your values anywhere.'),
         ],
     },
     'snippets': {
         'nav': 'Code Snippets',
-        'title': 'Common Code Snippets - Go/Python/JavaScript/Shell/SQL/Git, ready to copy | DevTools',
+        'title': 'Code Snippets — Go/Python/JS/SQL/Git | DevTools',
         'description': (
             'A library of common code snippets in six languages - Go, Python, JavaScript, Shell, SQL and Git - '
             '46 copy-ready snippets covering env vars, HTTP timeouts, concurrent error collection, debounce and '
@@ -1652,12 +1887,350 @@ TOOLS_EN = {
             ('How often are snippets updated?',
              'The page header shows the last update. Entries affected by a new language release (Go, Python, ...) '
              'are revised afterwards, and better approaches are folded in as they are found.'),
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Go toolchain cheatsheet', 'go-cheatsheet/'),
             ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
             ('JSON formatter & validator', './'),
             ('Any-Base Converter', 'base/'),
+            ('Does using the snippet library record my actions?',
+             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
+            ('Does using the snippet library record my actions?',
+             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
+            ('Does using the snippet library record my actions?',
+             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
+        ],
+    },
+    'sql-formatter': {
+        'nav': 'SQL Formatter',
+        'title': 'SQL Formatter Online — Pretty-Print SQL Free | DevTools',
+        'description': (
+            'Free online SQL formatter: line breaks, indentation and keyword casing for SELECT, '
+            'multi-table JOIN, subqueries, INSERT, UPDATE and CREATE TABLE. Indent width 2 or 4 spaces, '
+            'optional keyword uppercasing, everything runs locally in your browser.'
+        ),
+        'keywords': (
+            'sql formatter,online sql formatter,sql beautifier,sql format online,'
+            'sql keyword uppercase,sql pretty print,format sql query'
+        ),
+        'h1': 'SQL Formatter Online',
+        'intro': [
+            'One-line SQL is hard to review. This tool restores its structure: every major clause on its '
+            'own line, field lists and conditions one per line, JOIN / ON / AND indented by level, and '
+            'keywords uppercased — subqueries, INSERT, UPDATE and CREATE TABLE follow the same rules.',
+            'Indent width (2 or 4 spaces) and keyword casing are both optional, and the output only '
+            'changes layout, never meaning. Everything runs locally in your browser; your SQL never '
+            'leaves the page.',
+        ],
+        'features': [
+            ('Clause-level breaks', 'SELECT, FROM, WHERE, GROUP BY, ORDER BY, HAVING, LIMIT and friends each get their own line.'),
+            ('Condition & JOIN indent', 'AND / OR / ON nest by level, so multi-table joins and subqueries read cleanly.'),
+            ('Optional casing', 'Uppercase keywords or keep the original spelling; identifiers and string literals are never touched.'),
+            ('Indent width', 'Switch between 2 and 4 spaces to match your team style guide.'),
+            ('Multi-statement ready', 'A whole script is split on semicolons and each statement is formatted on its own.'),
+            ('Runs locally', 'Parsing and layout happen in the browser — no upload, no server round-trip.'),
+        ],
+        'steps': [
+            'Paste the SQL you want formatted into the left panel — one statement or a whole script.',
+            'Adjust the "大写" (uppercase) and Indent options if needed.',
+            'Hit 格式化 (Format) and read the result on the right.',
+            'Copy or download the result and paste it back into your database client.',
+        ],
+        'faq': [
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs '
+             'locally in your browser, so your input is never sent to any server. Apart from the footer '
+             'traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site '
+             'collects nothing about your visit.'),
+            ('Does formatting change the meaning of my SQL?',
+             'No. Only whitespace and line breaks change: keyword casing, indentation and clause breaks. '
+             'String literals, comments and identifiers are preserved exactly as written.'),
+            ('Which SQL dialects are supported?',
+             'The layout rules target common SQL and cover the usual MySQL, PostgreSQL, SQLite and SQL '
+             'Server syntax: multi-word keywords (GROUP BY, LEFT OUTER JOIN), qualified names '
+             '(schema.table) and all three quote styles are recognised.'),
+            ('Why did my comments move?',
+             'Line comments (-- and #) and block comments (/* */) are kept verbatim as their own tokens, '
+             'but the line they sit on is re-indented with the surrounding clause. Comment text itself '
+             'is never modified.'),
+            ('Why does the comma inside a function not break the line?',
+             'Commas inside parentheses are treated as function arguments and stay inline (count(a, b)); '
+             'only top-level lists such as the SELECT list or GROUP BY break one item per line, so '
+             'function calls are never torn apart.'),
+        ],
+        'seealso': [
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('CSV to SQL INSERT generator', 'csv-to-sql-insert/'),
+            ('JSON and CSV converter', 'json/'),
+            ('Go toolchain cheatsheet', 'go-cheatsheet/'),
+            ('Code snippets (Go / Python / JS / SQL / Git)', 'snippets/'),
+        ],
+    },
+    'markdown-to-html': {
+        'nav': 'MD to HTML',
+        'title': 'Markdown to HTML — Online MD Converter | DevTools',
+        'description': (
+            'Convert Markdown to HTML online: headings, ordered and unordered lists, tables, fenced code '
+            'blocks, quotes, links and images all render to clean semantic HTML. Copy the fragment or '
+            'download a full page — everything runs locally in your browser.'
+        ),
+        'keywords': (
+            'markdown to html,online markdown converter,md to html,markdown converter,'
+            'markdown preview,markdown html,convert markdown'
+        ),
+        'h1': 'Markdown to HTML Converter',
+        'intro': [
+            'Turn Markdown into clean semantic HTML in real time: heading levels, lists, tables, fenced '
+            'code blocks, block quotes, horizontal rules and inline bold, italic, strikethrough, code, '
+            'links and images all get their proper tags. Toggle 预览 (preview) to see the rendered page.',
+            'All text is HTML-escaped before the Markdown rules run, and link or image URLs are '
+            'scheme-checked — pasted HTML or javascript: links cannot escape into executable markup. '
+            'Conversion happens entirely in the browser; your Markdown is never sent anywhere.',
+        ],
+        'features': [
+            ('Full block syntax', 'Headings, lists (one nesting level), tables, code fences, quotes, rules and paragraphs.'),
+            ('Complete inline set', 'Bold, italic, strikethrough, inline code, links and images; code content is never re-parsed.'),
+            ('XSS-safe', 'Text is escaped first and javascript: / data: URLs are rejected, so nothing executes.'),
+            ('Table alignment', 'Left, right and centre column alignment in Markdown tables.'),
+            ('Fragment or page', 'Copy just the HTML fragment, or download a complete .html file with DOCTYPE and viewport.'),
+            ('Runs locally', 'No backend call at all — works offline once the page has loaded.'),
+        ],
+        'steps': [
+            'Paste Markdown into the left panel; the 示例 (sample) button loads a full demo.',
+            'Hit 转换 (Convert) and read the result on the right as preview or source.',
+            'Copy the HTML fragment, or download it as a complete web page file.',
+        ],
+        'faq': [
+            ('Does this page collect my data?',
+             'No. The content is either baked into the HTML at build time or every calculation runs '
+             'locally in your browser, so your input is never sent to any server. Apart from the footer '
+             'traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site '
+             'collects nothing about your visit.'),
+            ('Can I use the output on a production page?',
+             'Yes. The output is standard semantic HTML (h1-h6, p, ul/ol/li, table, pre/code, '
+             'blockquote) and carries no styling of its own; the download option even wraps it in a '
+             'full document with DOCTYPE and viewport.'),
+            ('Are GFM strikethrough and tables supported?',
+             'Yes. ~~strikethrough~~, | tables | and ``` fenced code are all supported. Task lists '
+             '(- [ ]) are not, and render as plain list items.'),
+            ('Why did the HTML tags I pasted disappear?',
+             'For safety every text run is HTML-escaped first, so <div> shows up as &lt;div&gt; instead '
+             'of becoming a real tag. This is deliberate: the tool converts Markdown syntax to HTML, '
+             'it does not execute the HTML you paste.'),
+            ('Is Markdown syntax inside code blocks processed?',
+             'No. Fenced code blocks and inline code are escaped as plain text, so ** and [link] '
+             'inside them display literally instead of being rendered.'),
+        ],
+        'seealso': [
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('JSON and YAML converter', 'yaml/'),
+            ('JSON and TOML converter', 'toml/'),
+            ('JSON and CSV converter', 'json/'),
+            ('Code snippets (Go / Python / JS / SQL / Git)', 'snippets/'),
+        ],
+    },
+    'gofmt-online': {
+        'path': 'gofmt-online/',
+        'nav': 'Go Formatter',
+        'title': 'Go Formatter Online — Free gofmt, Runs In-Browser | DevTools',
+        'description': (
+            'Format Go code online with real gofmt rules — a WebAssembly build of Go\'s official '
+            'go/format package running entirely in your browser. Nothing is uploaded. '
+            'Copy or download the .go file, with line:column errors for syntax problems.'
+        ),
+        'keywords': (
+            'gofmt online,go formatter,format go code,gofmt tool,go beautifier,'
+            'golang formatter,go code formatter,goimports alternative'
+        ),
+        'h1': 'Go Formatter Online (gofmt)',
+        'intro': [
+            'Paste Go source code, hit Format, and get exactly what gofmt produces: tab '
+            'indentation, aligned operators, grouped imports and struct fields lined up by the '
+            'longest name. The rules come from real gofmt, not a regex approximation.',
+            'The formatting engine is Go\'s official go/format package compiled to WebAssembly, '
+            'so every calculation happens in your browser and your code is never sent anywhere. '
+            'That is the difference from most "online formatters" — it keeps working offline, '
+            'and pasting company code carries no leak risk.',
+        ],
+        'features': [
+            ('Real gofmt rules', 'The engine is Go\'s official go/format package compiled to WebAssembly with TinyGo. Output is byte-for-byte identical to the command-line gofmt, tabs and alignment included.'),
+            ('Runs in your browser', 'The 268 KB wasm engine is self-hosted and warms up in the background after page load. Formatting is fully local — your code never leaves your device.'),
+            ('Syntax error positions', 'Invalid code produces Go-compiler-style messages with line:column and a reason, pointing straight at the problem.'),
+            ('Copy or download', 'Copy the result in one click or download it as a .go file. Code that is already gofmt-formatted comes back unchanged.'),
+            ('No sign-up, no ads', 'Open the page and use it. No accounts, no queues, no limits, no ads or pop-ups.'),
+            ('Go resources included', 'The site also has a Go toolchain cheatsheet, a deep dive on gofmt vs goimports, and copy-ready Go snippets to go with this tool.'),
+        ],
+        'steps': [
+            'Paste Go source code into the left editor, or click "Example" to load an unformatted demo.',
+            'Click "Format" — the gofmt output appears on the right immediately.',
+            'Click "Copy" to put the result on your clipboard, or "Download" to save it as a .go file.',
+            'If a syntax error is reported, fix the line:column it points to and format again.',
+        ],
+        'faq': [
+            ('Is my code uploaded to a server?',
+             'No. The formatting engine is Go compiled to WebAssembly and runs in your browser; '
+             'the page contains no code that sends your source anywhere. You can disconnect from '
+             'the network and keep using this page (the first load needs the network to fetch the '
+             'wasm engine file).'),
+            ('Is the output identical to the command-line gofmt?',
+             'Yes. The engine is Go\'s official go/format package and applies the same rules as '
+             'go fmt. The only difference is that the CLI version reads and writes files, while '
+             'this tool works on pasted text.'),
+            ('Why are there no options for indent width or quote style?',
+             'Because gofmt\'s design philosophy is "no configuration" — every Go codebase in the '
+             'world looks the same, and that is precisely its value over other languages\' '
+             'formatters. This tool deliberately offers no knobs either.'),
+            ('Does it organise imports like goimports?',
+             'No. goimports adds and removes imports based on dependency information, which '
+             'cannot be fully done in a pure front end. This tool only formats, exactly like '
+             'gofmt. Read the site blog post "gofmt vs goimports" for the difference.'),
+            ('How large a file can it handle?',
+             'Files of a few hundred KB are no problem (a 3000-line file formats in about 130 ms '
+             'in testing). For anything larger, use the command-line gofmt — the editor input '
+             'experience reaches its limits first anyway.'),
+        ],
+        'seealso': [
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('Blog: gofmt vs goimports and CI practice', 'blog/gofmt-vs-goimports/'),
+            ('Go toolchain cheatsheet', 'go-cheatsheet/'),
+            ('Code snippets (Go / Python / JS / SQL / Git)', 'snippets/'),
+            ('JSON formatter & validator', './'),
+        ],
+    },
+    'cron-generator': {
+        'path': 'cron-generator/',
+        'nav': 'Cron Generator',
+        'title': 'Cron Expression Generator — Visual Builder | DevTools',
+        'description': (
+            'Generate cron expressions online: pick values for the five cron fields '
+            '(minute, hour, day, month, weekday) and get a standard 5-field crontab '
+            'expression instantly, with built-in */n steps. Copy or download it. '
+            'Runs entirely in your browser.'
+        ),
+        'keywords': (
+            'cron expression generator,cron generator,crontab generator,linux cron job,'
+            'cron expression builder,crontab expression,schedule expression'
+        ),
+        'h1': 'Cron Expression Generator',
+        'intro': [
+            'The five crontab fields (minute, hour, day, month, weekday) are easy to remember '
+            'and easy to get wrong: one extra space, a weekday of 8, or */5 typed as 5, and '
+            'the job fires at a strange time. This generator turns the five fields into '
+            'dropdowns — pick, and the standard expression is assembled for you.',
+            'Every field accepts "every" or a specific value, and the minute and hour fields '
+            'include */2, */5, */10, */15 and */30 steps for the most common patterns like '
+            '"every 5 minutes". Everything runs locally in your browser; nothing is sent anywhere.',
+        ],
+        'features': [
+            ('Five visual fields', 'Pick minute / hour / day / month / weekday in order and get a standard 5-field cron expression, with no risk of mistyping a field.'),
+            ('Steps and common values built in', 'Minute and hour include */2 through */30 steps; hour, day, month and weekday offer every common value, with weekdays shown as 0-7 plus the weekday abbreviation.'),
+            ('Live regeneration', 'Once an expression exists, changing any field regenerates it immediately — no button pressing required.'),
+            ('Copy or download', 'Copy the expression to your clipboard or download it as crontab.txt, ready to paste into crontab -e.'),
+            ('Local and dependency-free', 'The page is static HTML with no backend calls; the generation logic is built in and works offline.'),
+            ('Real-world ready', 'Output works as-is in Linux crontab, in-container cron for Docker, and in the schedule field of GitHub Actions.'),
+        ],
+        'steps': [
+            'Select values for minute, hour, day, month and weekday on the left (all default to *, i.e. every unit).',
+            'Click "Generate" — the assembled cron expression appears on the right.',
+            'Click "Copy" or "Download" and paste the expression into crontab -e or your CI config.',
+            'Changing any field regenerates instantly; "Clear" resets everything to the defaults.',
+        ],
+        'faq': [
+            ('Can I use the expression right away?',
+             'Yes. The output is a standard 5-field crontab expression (minute hour day month '
+             'weekday), identical in format to crontab -e, in-container Docker cron and CI '
+             'schedule fields — paste and run.'),
+            ('Do 0 and 7 both mean Sunday?',
+             'Yes. In the crontab spec both 0 and 7 represent Sunday, so this tool offers both; '
+             'for weekdays use 1-5, and for weekends 6 (Saturday) or 0/7 (Sunday).'),
+            ('Why is there no "next run time" preview?',
+             'Generating an expression and explaining one are two different jobs; this page '
+             'focuses on the former — turning visual picks into an expression. Explaining an '
+             'existing expression (with next-run computation) belongs on a separate page, so '
+             'neither has to carry two sets of logic.'),
+            ('Are seconds or a year field supported?',
+             'No. Standard crontab has five fields and no seconds; the 6/7-field Spring format '
+             'and the 7-field Quartz format mean different things per field, and mixing them '
+             'up causes mistakes. Configure those per their own framework documentation.'),
+            ('Is my input uploaded?',
+             'No. This page makes no backend calls at all; all fields and expressions are '
+             'handled in the browser and the page works offline.'),
+        ],
+        'seealso': [
+            ('Unix timestamp converter', 'timestamp/'),
+            ('Batch timestamp converter', 'batch/'),
+            ('Common timestamp lookup (today / this week / this month)', 'timestamp-list/'),
+            ('CSV to SQL INSERT generator', 'csv-to-sql-insert/'),
+            ('JSON formatter & validator', './'),
+        ],
+    },
+    'csv-to-sql-insert': {
+        'path': 'csv-to-sql-insert/',
+        'nav': 'CSV to SQL',
+        'title': 'CSV to SQL INSERT Generator — Bulk INSERTs | DevTools',
+        'description': (
+            'Convert CSV to SQL INSERT statements online: the first row becomes the column '
+            'list, empty cells become NULL, single quotes are escaped by doubling, and quoted '
+            'commas are parsed correctly. Bulk-generate executable INSERT statements — all '
+            'in your browser, nothing uploaded.'
+        ),
+        'keywords': (
+            'csv to sql,csv to insert,csv to sql insert,sql insert generator,'
+            'import csv to sql,bulk insert generator,csv to database'
+        ),
+        'h1': 'CSV to SQL INSERT Generator',
+        'intro': [
+            'The fastest way to load a CSV into a database is a single INSERT statement with '
+            'many VALUES tuples. Paste your CSV, set the table name, and get executable SQL '
+            'immediately: the first row becomes the column list, empty cells become NULL, '
+            'single quotes are doubled per the SQL standard, and quoted comma fields are '
+            'split correctly.',
+            'The conversion runs entirely in your browser and your CSV is never sent to a '
+            'server — for export files with sensitive data, that matters more than "online" itself.',
+        ],
+        'features': [
+            ('First row is the header', 'The CSV header row is detected automatically and becomes the column list — no separate column input needed.'),
+            ('Standard SQL escaping', 'Single quotes are doubled (O\'Neil → \'O\'\'Neil\'), empty values become NULL, numbers stay unquoted and strings are quoted.'),
+            ('Quoted field support', 'Parsing follows RFC 4180: "a,b" stays one field, and embedded commas and escaped quotes ("") are handled.'),
+            ('Custom table name', 'Set the table name; identifiers are wrapped in backticks (MySQL style) so reserved words do not break the statement.'),
+            ('Bulk multi-row output', 'All data rows become multiple VALUES tuples in one INSERT statement — efficient to execute.'),
+            ('Fully local', 'No backend API; the CSV never leaves the browser. Copy the SQL or download it as a .sql file.'),
+        ],
+        'steps': [
+            'Paste CSV content into the left panel — the first line must be the header (column names).',
+            'Fill in the table name (defaults to my_table).',
+            'Click "Generate" — the INSERT statement appears on the right.',
+            'Click "Copy" or "Download", and check column names and table structure before executing.',
+        ],
+        'faq': [
+            ('Is my CSV data uploaded?',
+             'No. Parsing and generation are done by JavaScript in the page; there is no code '
+             'that sends your CSV anywhere, and the page works offline (the first load needs '
+             'the network for page resources).'),
+            ('Which database dialect is the output?',
+             'MySQL / MariaDB style: backticked identifiers, single-quoted strings, doubled '
+             'quote escaping. PostgreSQL and SQLite mostly accept it too; for SQL Server '
+             'change the backticks to square brackets — NULL and escaping rules are the same.'),
+            ('What if the first row is not a header?',
+             'The first row is always treated as the header for now. If your data has none, '
+             'add a column-name line (e.g. c1,c2,c3) at the top before generating, then rename '
+             'the columns to the real ones before executing.'),
+            ('Do commas and newlines inside fields break it?',
+             'No. Parsing follows the quoting rules: a field like "a,b" stays intact, and '
+             'embedded commas and escaped quotes ("") are handled correctly.'),
+            ('Can I execute the output directly?',
+             'The statement is a standard INSERT, but confirm the table exists, the column '
+             'names and data types match, and the row count fits your transaction budget — '
+             'this tool only generates SQL and makes no assumptions about your schema.'),
+        ],
+        'seealso': [
+            ('CSV viewer & converter', 'csv/'),
+            ('JSON ↔ CSV converter (JSON toolbox)', './'),
+            ('Cron expression generator', 'cron-generator/'),
+            ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
+            ('Code snippets (Go / Python / JS / SQL / Git)', 'snippets/'),
         ],
     },
 }

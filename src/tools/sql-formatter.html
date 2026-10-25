@@ -1,0 +1,264 @@
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 输入</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="sqlfmtClear()">清空</button><button class="btn btn-sm" onclick="sqlfmtSample()">示例</button></div></div>
+    <textarea class="ta-input" id="sqlfmtInput" placeholder="Paste SQL here, then hit Format:&#10;select id, name from users where status='active' order by id;"></textarea>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options"><span>大写</span><input type="checkbox" id="sqlfmtUpper" checked><span>Indent</span><select id="sqlfmtIndent"><option value="2">2</option><option value="4">4</option></select></div>
+    <div class="op-buttons"><button class="op-btn active" onclick="sqlfmtRun()">格式化</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="sqlfmtDlBtn" onclick="sqlfmtDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('sqlfmtResult')">复制</button></div></div>
+      <div class="result-content" id="sqlfmtResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// SQL formatter: tokenize, then re-emit with clause breaks and indentation.
+// Multi-word keywords (GROUP BY, LEFT OUTER JOIN, ...) are merged during a
+// post-tokenize pass. Option labels stay in English on purpose: they are SQL
+// jargon, matching the "code identifiers are not translated" convention.
+(function(){
+  var MULTI_KW = [
+    'LEFT OUTER JOIN','RIGHT OUTER JOIN','FULL OUTER JOIN','CROSS JOIN',
+    'INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN',
+    'GROUP BY','ORDER BY','UNION ALL','INSERT INTO','DELETE FROM',
+    'CREATE TABLE','CREATE INDEX','CREATE VIEW','DROP TABLE','ALTER TABLE',
+    'IS NOT NULL','NOT NULL','PRIMARY KEY','FOREIGN KEY'
+  ];
+  var TOP_KW = {
+    'SELECT':1,'FROM':1,'WHERE':1,'GROUP BY':1,'ORDER BY':1,'HAVING':1,
+    'LIMIT':1,'OFFSET':1,'UNION':1,'UNION ALL':1,'INSERT INTO':1,'VALUES':1,
+    'UPDATE':1,'SET':1,'DELETE FROM':1,'CREATE TABLE':1,'CREATE INDEX':1,
+    'CREATE VIEW':1,'DROP TABLE':1,'ALTER TABLE':1,'WITH':1,'RETURNING':1
+  };
+  var JOIN_KW = {
+    'JOIN':1,'INNER JOIN':1,'LEFT JOIN':1,'LEFT OUTER JOIN':1,'RIGHT JOIN':1,
+    'RIGHT OUTER JOIN':1,'FULL JOIN':1,'FULL OUTER JOIN':1,'CROSS JOIN':1
+  };
+  var SUB_KW = { 'ON':1, 'USING':1, 'AND':1, 'OR':1 };
+  // keywords that stay inline but are still uppercased
+  var INLINE_KW = {
+    'ASC':1, 'DESC':1, 'NULL':1, 'NOT':1, 'NULLS':1, 'FIRST':1, 'LAST':1,
+    'TRUE':1, 'FALSE':1, 'DEFAULT':1, 'UNIQUE':1, 'CHECK':1, 'CASCADE':1,
+    'AUTOINCREMENT':1, 'TEMPORARY':1, 'IF':1, 'EXISTS':1, 'IN':1, 'AS':1
+  };
+  // words that take a space before an opening paren: IN (1,2), NOT (x), CASE (x)...
+  var KW_SPACE_PAREN = {
+    'ON':1, 'USING':1, 'AND':1, 'OR':1, 'IN':1, 'NOT':1, 'EXISTS':1, 'AS':1,
+    'ALL':1, 'ANY':1, 'SOME':1, 'CASE':1, 'WHEN':1, 'THEN':1, 'ELSE':1,
+    'END':1, 'BETWEEN':1, 'LIKE':1, 'IS':1, 'DISTINCT':1
+  };
+  // column lists under these clauses break onto one line per column
+  var DDL_KW = {
+    'CREATE TABLE':1, 'CREATE INDEX':1, 'CREATE VIEW':1, 'ALTER TABLE':1, 'DROP TABLE':1
+  };
+  // after these clauses, "name (col, ...)" keeps a space before the paren
+  var KW_TABLE_PAREN = {
+    'INSERT INTO':1, 'CREATE TABLE':1, 'CREATE INDEX':1, 'CREATE VIEW':1, 'ALTER TABLE':1
+  };
+
+  function isIdentStart(c){ return /[A-Za-z_$@#]/.test(c); }
+  function isIdentChar(c){ return /[A-Za-z0-9_$@#]/.test(c); }
+
+  function tokenize(sql){
+    var toks = [], i = 0, n = sql.length;
+    while (i < n) {
+      var c = sql[i];
+      if (c === ' ' || c === '\t' || c === '\n' || c === '\r') { i++; continue; }
+      // line comments: -- to end of line, # for MySQL
+      if ((c === '-' && sql[i+1] === '-') || c === '#') {
+        var j = sql.indexOf('\n', i);
+        if (j < 0) j = n;
+        toks.push({ t:'cmt', v: sql.slice(i, j).replace(/\s+$/, '') });
+        i = j; continue;
+      }
+      // block comment
+      if (c === '/' && sql[i+1] === '*') {
+        var j = sql.indexOf('*/', i + 2);
+        j = j < 0 ? n : j + 2;
+        toks.push({ t:'cmt', v: sql.slice(i, j).replace(/\s+$/, '') });
+        i = j; continue;
+      }
+      // quoted string / quoted identifier
+      if (c === "'" || c === '"' || c === '`') {
+        var q = c, j = i + 1;
+        while (j < n) {
+          if (sql[j] === q) {
+            if (sql[j+1] === q) { j += 2; continue; }
+            j++; break;
+          }
+          j++;
+        }
+        toks.push({ t:'str', v: sql.slice(i, j) });
+        i = j; continue;
+      }
+      // number
+      if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(sql[i+1] || ''))) {
+        var j = i;
+        while (j < n && /[0-9.]/.test(sql[j])) j++;
+        toks.push({ t:'num', v: sql.slice(i, j) });
+        i = j; continue;
+      }
+      // identifier, merging schema.table / db.dbo.table
+      if (isIdentStart(c)) {
+        var j = i;
+        while (j < n && isIdentChar(sql[j])) j++;
+        while (sql[j] === '.' && isIdentStart(sql[j+1] || '')) {
+          j++;
+          while (j < n && isIdentChar(sql[j])) j++;
+        }
+        toks.push({ t:'word', v: sql.slice(i, j) });
+        i = j; continue;
+      }
+      var two = sql.slice(i, i + 2);
+      if (['::','<=','>=','<>','!=','||','->'].indexOf(two) >= 0) {
+        toks.push({ t:'op', v: two }); i += 2; continue;
+      }
+      toks.push({ t:'op', v: c }); i++;
+    }
+    return toks;
+  }
+
+  function mergeMulti(toks){
+    var out = [], i = 0;
+    while (i < toks.length) {
+      var t = toks[i], matched = null;
+      if (t.t === 'word') {
+        for (var k = 3; k >= 2; k--) {
+          if (i + k > toks.length) continue;
+          var ok = true, parts = [t.v.toUpperCase()], raws = [t.v];
+          for (var j = 1; j < k; j++) {
+            if (toks[i+j].t !== 'word') { ok = false; break; }
+            parts.push(toks[i+j].v.toUpperCase());
+            raws.push(toks[i+j].v);
+          }
+          if (ok && MULTI_KW.indexOf(parts.join(' ')) >= 0) {
+            matched = { t:'word', v: raws.join(' '), kw: parts.join(' ') };
+            break;
+          }
+        }
+      }
+      if (matched) { out.push(matched); i += matched.kw.split(' ').length; continue; }
+      out.push(t); i++;
+    }
+    return out;
+  }
+
+  var OPS = { '=':1, '<':1, '>':1, '+':1, '-':1, '*':1, '/':1, '%':1, '::':1, '<=':1, '>=':1, '<>':1, '!=':1, '||':1, '->':1 };
+
+  function format(sql, upper, indentUnit){
+    var toks = mergeMulti(tokenize(sql));
+    var lines = [], cur = '', indent = 0, paren = 0, last = null, lastTop = '';
+    var openStack = []; // one entry per open paren: { multi: did it span lines }
+    function flush(){
+      if (openStack.length) openStack[openStack.length - 1].multi = true;
+      if (cur.replace(/\s+$/, '') !== '') {
+        var pad = '';
+        for (var p = 0; p < indent; p++) pad += indentUnit;
+        lines.push(pad + cur.replace(/^\s+/, '').replace(/\s+$/, ''));
+      }
+      cur = '';
+    }
+    function emit(s){ cur += s; }
+    function spaced(){
+      if (cur === '' || /\s$/.test(cur)) return;
+      if (last && last.t === 'op' && last.v === '(') return; // no space after (
+      emit(' ');
+    }
+    function isKw(tok){ return !!(tok.kw || TOP_KW[tok.v.toUpperCase()] || JOIN_KW[tok.v.toUpperCase()] || SUB_KW[tok.v.toUpperCase()] || INLINE_KW[tok.v.toUpperCase()]); }
+    function kwOf(tok){
+      if (isKw(tok)) return upper ? (tok.kw || tok.v.toUpperCase()) : tok.v;
+      return tok.v;
+    }
+    toks.forEach(function(t){
+      if (t.t === 'word') {
+        var up = t.kw || t.v.toUpperCase();
+        if (TOP_KW[up] || JOIN_KW[up]) {
+          flush(); indent = paren; lastTop = up; emit(kwOf(t));
+        } else if (SUB_KW[up]) {
+          flush(); indent = paren + 1; emit(kwOf(t));
+        } else {
+          spaced(); emit(kwOf(t));
+        }
+      } else if (t.t === 'str' || t.t === 'num' || t.t === 'cmt') {
+        spaced(); emit(t.v);
+      } else { // op
+        var c = t.v;
+        if (c === '(') {
+          if (last && last.t === 'word') {
+            var lup = last.kw || last.v.toUpperCase();
+            if (isKw(last) || KW_SPACE_PAREN[lup] || KW_TABLE_PAREN[lastTop]) emit(' (');
+            else emit('(');
+          } else {
+            emit(' (');
+          }
+          paren++;
+          openStack.push({ multi: false });
+          if (DDL_KW[lastTop]) { flush(); indent = paren; }
+        } else if (c === ')') {
+          var np = paren > 0 ? paren - 1 : 0;
+          var multi = openStack.length ? openStack.pop().multi : false;
+          if (multi) { flush(); indent = np; } // only re-indent when the paren spanned lines
+          paren = np;
+          emit(')');
+        } else if (c === ',') {
+          emit(',');
+          if (paren === 0 && lastTop !== 'VALUES') { flush(); indent = paren + 1; }
+          else if (DDL_KW[lastTop]) { flush(); indent = paren; }
+        } else if (c === ';') {
+          emit(';'); flush(); indent = 0; paren = 0; lastTop = ''; openStack = [];
+        } else if (OPS[c]) {
+          emit(' ' + c + ' ');
+        } else if (c === '.') {
+          cur = cur.replace(/\s+$/, ''); emit('.');
+        } else {
+          emit(c);
+        }
+      }
+      last = t;
+    });
+    flush();
+    return lines.join('\n');
+  }
+
+  var lastSql = '';
+  function setDl(on){ var b = document.getElementById('sqlfmtDlBtn'); if (b) b.disabled = !on; }
+  function sqlfmtRun(){
+    var text = getVal('sqlfmtInput');
+    var out = document.getElementById('sqlfmtResult');
+    if (!text.trim()) {
+      out.innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+      lastSql = ''; setDl(false); return;
+    }
+    var upper = document.getElementById('sqlfmtUpper').checked;
+    var unit = document.getElementById('sqlfmtIndent').value === '4' ? '    ' : '  ';
+    var formatted = format(text, upper, unit);
+    out.textContent = formatted;
+    lastSql = formatted;
+    setDl(true);
+    toast('格式化完成');
+  }
+  window.sqlfmtClear = function(){
+    setVal('sqlfmtInput', '');
+    document.getElementById('sqlfmtResult').innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+    lastSql = ''; setDl(false);
+  };
+  window.sqlfmtSample = function(){
+    setVal('sqlfmtInput',
+      "select u.id, u.name, count(o.id) as order_count from users u " +
+      "left join orders o on o.user_id=u.id " +
+      "where u.status='active' and o.created_at>'2024-01-01' " +
+      "group by u.id,u.name having count(o.id)>1 " +
+      "order by order_count desc limit 10;");
+    sqlfmtRun();
+  };
+  window.sqlfmtRun = sqlfmtRun;
+  window.sqlfmtDownload = function(){
+    if (!lastSql) { toast('没有可下载的结果'); return; }
+    downloadText('query.sql', lastSql + '\n', 'application/sql');
+  };
+  var el = document.getElementById('sqlfmtInput');
+  if (el) el.addEventListener('input', function(){ lastSql = ''; setDl(false); });
+  // tool body script runs before core.js: nothing to render until the user acts
+})();
+</script>

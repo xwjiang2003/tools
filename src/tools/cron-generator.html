@@ -1,0 +1,83 @@
+<div class="tool-layout">
+  <div class="input-panel" style="overflow-y:auto">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> 参数配置</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="cronReset()">清空</button></div></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:20px">
+      <div class="op-options"><span>minute</span><select id="cronMinute"></select></div>
+      <div class="op-options"><span>hour</span><select id="cronHour"></select></div>
+      <div class="op-options"><span>day</span><select id="cronDay"></select></div>
+      <div class="op-options"><span>month</span><select id="cronMonth"></select></div>
+      <div class="op-options"><span>weekday</span><select id="cronWeekday"></select></div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-buttons"><button class="op-btn active" onclick="cronBuild()">生成</button></div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">输出结果</span><div class="row" style="gap:4px"><button class="btn btn-sm" id="cronDlBtn" onclick="cronDownload()" disabled>下载</button><button class="btn btn-sm" onclick="copyTextById('cronResult')">复制</button></div></div>
+      <div class="result-content" id="cronResult"><span style="color:var(--text-muted)">选择操作开始</span></div>
+    </div>
+  </div>
+</div>
+<script>
+// Cron expression generator: the five standard cron fields, nothing else.
+// Field labels are the canonical cron field names (code identifiers), and every
+// option value is a number or a */n step — so the UI needs no translation.
+(function(){
+  var WEEKDAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fillSelect(id, values, everyLabel){
+    var html = '<option value="*">* (every ' + everyLabel + ')</option>';
+    for (var i = 0; i < values.length; i++) {
+      html += '<option value="' + values[i].value + '">' + values[i].text + '</option>';
+    }
+    document.getElementById(id).innerHTML = html;
+  }
+  function range(a, b){ var out = []; for (var i = a; i <= b; i++) out.push(i); return out; }
+  function steps(max, label){
+    var vals = [];
+    [2, 5, 10, 15, 30].forEach(function(n){
+      if (n <= max) vals.push({ value: '*/' + n, text: '*/' + n + ' (every ' + n + ' ' + label + ')' });
+    });
+    return vals;
+  }
+  function initFields(){
+    fillSelect('cronMinute', steps(59, 'min'), 'minute');
+    fillSelect('cronHour', steps(23, 'hour').concat(range(0, 23).map(function(n){
+      return { value: String(n), text: ('0' + n).slice(-2) };
+    })), 'hour');
+    fillSelect('cronDay', range(1, 31).map(function(n){ return { value: String(n), text: String(n) }; }), 'day');
+    fillSelect('cronMonth', range(1, 12).map(function(n){
+      return { value: String(n), text: n + ' (' + MONTH_NAMES[n - 1] + ')' };
+    }), 'month');
+    fillSelect('cronWeekday', range(0, 6).map(function(d){
+      return { value: String(d), text: d + ' (' + WEEKDAY_NAMES[d] + ')' };
+    }), 'weekday');
+  }
+  function val(id){ return document.getElementById(id).value; }
+  function setDl(on){ var b = document.getElementById('cronDlBtn'); if (b) b.disabled = !on; }
+  var lastCron = '';
+  function cronBuild(){
+    var expr = [val('cronMinute'), val('cronHour'), val('cronDay'), val('cronMonth'), val('cronWeekday')].join(' ');
+    document.getElementById('cronResult').textContent = expr;
+    lastCron = expr;
+    setDl(true);
+  }
+  window.cronReset = function(){
+    initFields();
+    document.getElementById('cronResult').innerHTML = '<span style="color:var(--text-muted)">选择操作开始</span>';
+    lastCron = '';
+    setDl(false);
+  };
+  window.cronBuild = cronBuild;
+  window.cronDownload = function(){
+    if (!lastCron) { toast('没有可下载的结果'); return; }
+    downloadText('crontab.txt', lastCron + '\n', 'text/plain');
+  };
+  ['cronMinute','cronHour','cronDay','cronMonth','cronWeekday'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', function(){ if (lastCron) cronBuild(); });
+  });
+  // tool body script runs before core.js: defer field fill until DOM ready
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initFields); }
+  else { initFields(); }
+})();
+</script>
