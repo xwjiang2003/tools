@@ -1759,18 +1759,23 @@ def llms_txt():
     真正的收录仍取决于常规索引与检索。这份文件成本极低，属于「有比没有好」，
     但不要指望它是收录开关。
     """
+    # 头部文案里的工具数必须动态算：写死数字，每加一个工具这份摘要就撒一次谎
+    tool_count = sum(1 for t in TOOLS if t['slug'] not in (NEWS_SLUG, CHEAT_SLUG, SNIP_SLUG))
     out = [
         f'# {SITE["name"]} — 在线开发工具集 / Online Developer Tools',
         '',
-        '> 免注册、免安装的纯浏览器端开发者工具集合，覆盖 JSON、文本比对、编解码、正则、',
-        '> 时间戳、哈希、代码格式化、字符串处理与生成器共 9 个工具。所有解析与计算都在用户',
-        '> 浏览器内完成，输入内容不会上传到任何服务器。中英双语，免费无广告。',
+        f'> 免注册、免安装的纯浏览器端开发者工具集合，覆盖 JSON、文本比对、编解码、正则、',
+        f'> 时间戳、哈希、代码格式化、字符串处理、数据库与生成器共 {tool_count} 个工具。',
+        '> 所有解析与计算都在用户浏览器内完成，输入内容不会上传到任何服务器。',
+        '> 全站 10 种语言（中文在根路径，英文 /en/、日文 /ja/、韩文 /ko/、西班牙语 /es/、',
+        '> 葡萄牙语 /pt-BR/、法语 /fr/、德语 /de/、俄语 /ru/、印尼语 /id/ 各有完整翻译）。',
         '> 另有一个「今日科技热榜」页面，每天 08:00 自动聚合十余家科技媒体的最新资讯。',
         '',
         'Key facts:',
-        '- 9 tools, each on its own URL; every page runs entirely client-side '
+        f'- {tool_count} tools, each on its own URL; every page runs entirely client-side '
         '(no upload, no signup, no ads).',
-        '- Bilingual: Chinese at the root, English under /en/. Same tools, independent copy.',
+        '- 10 languages: Chinese at the root and en/ja/ko/es/pt-BR/fr/de/ru/id directories, '
+        'each with a full translated copy of every page.',
         '- A tech news page is rebuilt daily at 08:00 UTC+8 from public RSS feeds; '
         'each item links out to the original article.',
         '- Verification hooks: /sitemap.xml (with hreflang alternates), /robots.txt, '
