@@ -79,7 +79,7 @@ TOOLS_DE = {
     'hotnews': {
         'nav': 'Tech-News',
         'title': "Tech-News von heute — Live-Schlagzeilen für Entwickler | DevTools",
-        'description': "Eine Tech-News-Seite, die täglich automatisch aus Hacker News, TechCrunch, The Verge und Ars Technica neu aufgebaut wird. Jede Schlagzeile verlinkt direkt zum Originalartikel. Keine Anmeldung, keine Werbung, kein Tracking.",
+        'description': "Eine Tech-News-Seite, die täglich automatisch aus Hacker News, TechCrunch, The Verge, Ars Technica und Joho no Todai neu aufgebaut wird. Jede Schlagzeile verlinkt direkt zum Originalartikel. Keine Anmeldung, keine Werbung, kein Tracking.",
         'keywords': "tech news heute,tech schlagzeilen täglich,hacker news titelseite,entwickler news,tech news aggregator,techcrunch schlagzeilen,ars technica,the verge tech",
         'h1': "Tech-News von heute für Entwickler",
     },

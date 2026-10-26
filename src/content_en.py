@@ -718,7 +718,7 @@ TOOLS_EN = {
         'title': "Today's Tech News — Live Headlines for Developers | DevTools",
         'description': (
             'A tech news page rebuilt automatically every day from Hacker News, TechCrunch, '
-            'The Verge and Ars Technica. Every headline links straight to the original article. '
+            'The Verge, Ars Technica and Joho no Todai. Every headline links straight to the original article. '
             'No signup, no ads, no tracking.'
         ),
         'keywords': (
@@ -728,7 +728,7 @@ TOOLS_EN = {
         'h1': "Today's Tech News for Developers",
         'intro': [
             'One page with the day\u2019s most useful technology reading. It pulls the public RSS '
-            'feeds of Hacker News, TechCrunch, The Verge and Ars Technica into a single list, keeps '
+            'feeds of Hacker News, TechCrunch, The Verge, Ars Technica and Joho no Todai into a single list, keeps '
             'the source\u2019s own ordering, and links every headline straight to the original '
             'article. Nothing is republished here — the copyright stays with each publisher.',
             'The list is refreshed and the page rebuilt once a day. Because the '

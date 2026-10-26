@@ -149,7 +149,7 @@ SOURCES = [
     {
         'id': 'theverge', 'lang': 'en', 'kind': 'atom',
         'name': 'The Verge', 'desc': 'Consumer tech and culture',
-        'note': 'The widest range of the four, from phones to policy to internet culture, '
+        'note': 'The widest range of the group, from phones to policy to internet culture, '
                 'and usually the best writing. Reviews are opinionated, so check a second '
                 'source before buying on one.',
         'home': 'https://www.theverge.com/', 'url': 'https://www.theverge.com/rss/index.xml',
@@ -157,10 +157,19 @@ SOURCES = [
     {
         'id': 'arstechnica', 'lang': 'en', 'kind': 'rss',
         'name': 'Ars Technica', 'desc': 'Deep dives into technology',
-        'note': 'The most technical of the four, with long explainers on chips, science and '
+        'note': 'The most technical of the English sources here, with long explainers on chips, science and '
                 'policy. Worth opening when you have time rather than for quick headlines.',
         'home': 'https://arstechnica.com/', 'url':
             'https://feeds.arstechnica.com/arstechnica/technology-lab',
+    },
+    {
+        'id': 'johotodai', 'lang': 'en', 'kind': 'rss',
+        'name': 'Joho no Todai', 'desc': 'Daily explainers on OS, chips and security',
+        'note': 'A one-person Japanese newsroom posting several English explainers a day, '
+                'each traced to primary sources — the deepest source here for OS kernel, '
+                'chip and security stories. Expect occasional typos and a strong Japan '
+                'focus; gadget launches and funding news are not its beat.',
+        'home': 'https://joho-todai.com/en/', 'url': 'https://joho-todai.com/en/rss/',
     },
 ]
 
@@ -437,7 +446,7 @@ def visible_items(data, src):
 TEXT = {
     'zh': {
         'updated': '更新于',
-        'lead': '聚合 8 家中文科技媒体与 4 家英文科技媒体的最新条目，只做索引与直达，不转载正文',
+        'lead': '聚合 8 家中文科技媒体与 5 家英文科技媒体的最新条目，只做索引与直达，不转载正文',
         'total': '本期共 ',
         'unit': ' 条',
         'all': '全部',
@@ -452,7 +461,7 @@ TEXT = {
     },
     'en': {
         'updated': 'Updated',
-        'lead': 'Four English tech publications, newest first — headlines link straight to the '
+        'lead': 'Five English tech publications, newest first — headlines link straight to the '
                 'publisher and nothing is republished here',
         'total': 'Total ',
         'unit': ' items',

@@ -79,7 +79,7 @@ TOOLS_KO = {
     'hotnews': {
         'nav': '테크 뉴스',
         'title': "오늘의 테크 뉴스 — 개발자를 위한 라이브 헤드라인 | DevTools",
-        'description': "Hacker News, TechCrunch, The Verge, Ars Technica에서 매일 자동 재구성되는 테크 뉴스 페이지. 각 헤드라인은 원문 기사로 직접 연결됩니다. 가입·광고·추적 없음.",
+        'description': "Hacker News, TechCrunch, The Verge, Ars Technica, Joho no Todai에서 매일 자동 재구성되는 테크 뉴스 페이지. 각 헤드라인은 원문 기사로 직접 연결됩니다. 가입·광고·추적 없음.",
         'keywords': "오늘 테크 뉴스,매일 테크 헤드라인,hacker news 메인,개발자 뉴스,테크 뉴스 애그리게이터,techcrunch 헤드라인,ars technica,the verge tech",
         'h1': "개발자를 위한 오늘의 테크 뉴스",
     },

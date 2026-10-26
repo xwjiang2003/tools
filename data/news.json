@@ -1,5 +1,5 @@
 {
- "generated_at": 1791611687,
+ "generated_at": 1793002256,
  "sources": {
   "ithome": {
    "ok": true,
@@ -1214,6 +1214,13 @@
     }
    ],
    "fetch_secs": 0.3
+  },
+  "johotodai": {
+   "ok": false,
+   "fetched_at": 0,
+   "items": [],
+   "error": "URLError: <urlopen error _ssl.c:1015: The handshake operation timed out>",
+   "fetch_secs": 30.3
   }
  }
 }

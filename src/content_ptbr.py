@@ -78,7 +78,7 @@ TOOLS_PTBR = {
     'hotnews': {
         'nav': 'Notícias Tech',
         'title': "Notícias de Tech de Hoje — Manchetes ao Vivo para Desenvolvedores | DevTools",
-        'description': "Uma página de notícias de tech reconstruída automaticamente todos os dias a partir do Hacker News, TechCrunch, The Verge e Ars Technica. Cada manchete links diretamente para o artigo original. Sem cadastro, sem anúncios, sem rastreamento.",
+        'description': "Uma página de notícias de tech reconstruída automaticamente todos os dias a partir do Hacker News, TechCrunch, The Verge, Ars Technica e Joho no Todai. Cada manchete links diretamente para o artigo original. Sem cadastro, sem anúncios, sem rastreamento.",
         'keywords': "noticias tech hoje,manchetes tech diárias,página inicial hacker news,noticias para desenvolvedores,agregador noticias tech,manchetes techcrunch,ars technica,the verge tech",
         'h1': "Notícias de Tech de Hoje para Desenvolvedores",
     },

@@ -79,7 +79,7 @@ TOOLS_ID = {
     'hotnews': {
         'nav': 'Berita Tech',
         'title': "Berita Tech Hari Ini — Headline Langsung untuk Pengembang | DevTools",
-        'description': "Halaman berita tech yang dibangun ulang otomatis setiap hari dari Hacker News, TechCrunch, The Verge, dan Ars Technica. Setiap headline taut langsung ke artikel asli. Tanpa daftar, tanpa iklan, tanpa pelacakan.",
+        'description': "Halaman berita tech yang dibangun ulang otomatis setiap hari dari Hacker News, TechCrunch, The Verge, Ars Technica, dan Joho no Todai. Setiap headline taut langsung ke artikel asli. Tanpa daftar, tanpa iklan, tanpa pelacakan.",
         'keywords': "berita tech hari ini,headline tech harian,beranda hacker news,berita pengembang,agregator berita tech,headline techcrunch,ars technica,the verge tech",
         'h1': "Berita Tech Hari Ini untuk Pengembang",
     },

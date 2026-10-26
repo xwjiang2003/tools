@@ -77,7 +77,7 @@ TOOLS = [
         'description': (
             '每天自动更新的科技资讯热榜：聚合 IT之家、少数派、InfoQ、开源中国、'
             'Solidot、爱范儿、钛媒体、雷峰网等中文科技媒体，以及 Hacker News、TechCrunch、'
-            'The Verge、Ars Technica 等英文来源，每条都可直接打开原文，免注册、无广告。'
+            'The Verge、Ars Technica、Joho no Todai 等英文来源，每条都可直接打开原文，免注册、无广告。'
         ),
         'keywords': (
             '科技热榜,今日热榜,科技资讯,实时资讯,科技新闻聚合,IT资讯,开发者资讯,'
@@ -87,7 +87,7 @@ TOOLS = [
         'intro': [
             '这个页面把当天最值得看的科技资讯集中在一处。中文来源覆盖 IT之家、少数派、InfoQ、'
             '开源中国、Solidot、爱范儿、钛媒体与雷峰网，英文来源覆盖 Hacker News、TechCrunch、'
-            'The Verge 与 Ars Technica。每条都保留指向原站的链接，点标题即在新标签页打开原文；'
+            'The Verge、Ars Technica 与 Joho no Todai。每条都保留指向原站的链接，点标题即在新标签页打开原文；'
             '本站只做聚合与排版，不转载正文，版权归原媒体所有。',
             '内容每天定时抓取一次，结果在构建期直接写进 HTML。'
             '因此页面不依赖任何接口，打开就完整可见，爬虫不执行 JavaScript 也能读到全部条目；'

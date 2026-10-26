@@ -80,7 +80,7 @@ TOOLS_ES = {
     'hotnews': {
         'nav': 'Noticias Tech',
         'title': 'Noticias Tecnologicas de Hoy — Titulares en vivo para desarrolladores | DevTools',
-        'description': 'Una pagina de noticias tecnologicas reconstruida automaticamente cada dia a partir de Hacker News, TechCrunch, The Verge y Ars Technica. Cada titular enlaza directamente al articulo original. Sin registro, sin anuncios, sin rastreo.',
+        'description': 'Una pagina de noticias tecnologicas reconstruida automaticamente cada dia a partir de Hacker News, TechCrunch, The Verge, Ars Technica y Joho no Todai. Cada titular enlaza directamente al articulo original. Sin registro, sin anuncios, sin rastreo.',
         'keywords': 'noticias tech hoy,titulares tech diarios,portada de hacker news,noticias para desarrolladores,agregador de noticias tech,titulares techcrunch,ars technica,the verge tech',
         'h1': 'Noticias Tecnologicas de Hoy para Desarrolladores',
     },
