@@ -1,6 +1,6 @@
 // E2E: drive real Chrome via CDP (Node 22 global WebSocket) against the built site.
 // Covers the 5 newest tool pages end to end in the browser: wasm load, convert buttons,
-// clear/reset, result rendering, i18n switch. Run: node tests/e2e_new_tools.mjs [baseUrl]
+// clear/reset, result rendering, i18n switch. Run: node tests/e2e_new_tools.cjs [baseUrl]
 'use strict';
 
 const http = require('http');
@@ -189,20 +189,71 @@ const PAGES = [
       { name: 'fields populated + default expression', expr: HELPERS + `
         window.cronBuild();
         var t = resultText('cronResult');
-        return {cond: /^[\\d*/,\\-]+ [\\d*/,\\-]+ [\\d*/,\\-]+ [\\d*/,\\-]+ [\\d*/,\\-]+$/.test(t.trim().split('\\n')[0]), extra: t.slice(0,200)};` },
+        var first = t.trim().split(String.fromCharCode(10))[0];
+        var parts = first.split(' ');
+        return {cond: parts.length === 5, extra: t.slice(0,200)};` },
       { name: 'changing a field rebuilds the expression', expr: HELPERS + `
         var sel = document.getElementById('cronMinute');
         var opts = Array.prototype.map.call(sel.options, function(o){return o.value;});
-        var pick = opts.filter(function(v){return /^\\d+$/.test(v);})[0] || opts[1];
+        var pick = opts.filter(function(v){return v.indexOf('*') < 0 && v.indexOf('/') < 0;})[0] || opts[1];
         sel.value = pick;
         sel.dispatchEvent(new Event('change', {bubbles:true}));
         var t = resultText('cronResult');
-        return {cond: t.trim().indexOf(pick + ' ') === 0 || t.indexOf('\\n' + pick + ' ') >= 0 || t.indexOf(pick) >= 0, extra: 'picked ' + pick + ' -> ' + t.slice(0,120)};` },
+        var nl = String.fromCharCode(10);
+        return {cond: t.trim().indexOf(pick + ' ') === 0 || t.indexOf(nl + pick + ' ') >= 0 || t.indexOf(pick) >= 0, extra: 'picked ' + pick + ' -> ' + t.slice(0,120)};` },
+      { name: 'step option reveals the start input', expr: HELPERS + `
+        var sel = document.getElementById('cronMinute');
+        sel.value = '*/2';
+        sel.dispatchEvent(new Event('change', {bubbles:true}));
+        var wrap = document.getElementById('cronMinuteStart').parentNode;
+        return {cond: wrap.style.display !== 'none', extra: 'display=' + JSON.stringify(wrap.style.display)};` },
+      { name: 'start value turns */2 into 5/2', expr: HELPERS + `
+        window.cronBuild();
+        var sel = document.getElementById('cronMinute');
+        sel.value = '*/2';
+        sel.dispatchEvent(new Event('change', {bubbles:true}));
+        var st = document.getElementById('cronMinuteStart');
+        st.value = '5';
+        st.dispatchEvent(new Event('input', {bubbles:true}));
+        var t = resultText('cronResult');
+        return {cond: t.trim().indexOf('5/2 ') === 0, extra: t.slice(0,80)};` },
+      { name: 'start 0 keeps canonical */2', expr: HELPERS + `
+        var st = document.getElementById('cronMinuteStart');
+        st.value = '0';
+        st.dispatchEvent(new Event('input', {bubbles:true}));
+        var t = resultText('cronResult');
+        return {cond: t.trim().indexOf('*/2 ') === 0, extra: t.slice(0,80)};` },
+      { name: 'out-of-range start is ignored', expr: HELPERS + `
+        var st = document.getElementById('cronMinuteStart');
+        st.value = '99';
+        st.dispatchEvent(new Event('input', {bubbles:true}));
+        var t = resultText('cronResult');
+        return {cond: t.trim().indexOf('*/2 ') === 0, extra: t.slice(0,80)};` },
+      { name: 'month step with start gives 2/3', expr: HELPERS + `
+        var msel = document.getElementById('cronMonth');
+        var has = Array.prototype.some.call(msel.options, function(o){return o.value === '*/3';});
+        msel.value = '*/3';
+        msel.dispatchEvent(new Event('change', {bubbles:true}));
+        var mst = document.getElementById('cronMonthStart');
+        mst.value = '2';
+        mst.dispatchEvent(new Event('input', {bubbles:true}));
+        var t = resultText('cronResult');
+        return {cond: has && t.indexOf(' 2/3 ') >= 0, extra: 'has */3=' + has + ' -> ' + t.slice(0,80)};` },
+      { name: 'fixed value hides the start input', expr: HELPERS + `
+        var sel = document.getElementById('cronMinute');
+        sel.value = '30';
+        sel.dispatchEvent(new Event('change', {bubbles:true}));
+        var wrap = document.getElementById('cronMinuteStart').parentNode;
+        var t = resultText('cronResult');
+        return {cond: wrap.style.display === 'none' && t.trim().indexOf('30 ') === 0, extra: 'display=' + wrap.style.display + ' result=' + t.slice(0,60)};` },
       { name: 'reset restores defaults', expr: HELPERS + `
         window.cronReset();
         var sel = document.getElementById('cronMinute');
+        var st = document.getElementById('cronMinuteStart');
+        var wrap = st.parentNode;
         var t = resultText('cronResult');
-        return {cond: sel.selectedIndex === 0 || /\\* \\* \\* \\* \\*/.test(t), extra: 'sel=' + sel.selectedIndex + ' result=' + t.slice(0,80)};` },
+        var placeholder = t.indexOf('选择操作开始') >= 0 || t.indexOf('Choose an operation') >= 0;
+        return {cond: sel.selectedIndex === 0 && st.value === '' && wrap.style.display === 'none' && placeholder, extra: 'sel=' + sel.selectedIndex + ' start=' + JSON.stringify(st.value) + ' result=' + t.slice(0,80)};` },
     ],
   },
   {
