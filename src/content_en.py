@@ -2106,12 +2106,14 @@ TOOLS_EN = {
         'description': (
             'Generate cron expressions online: pick values for the five cron fields '
             '(minute, hour, day, month, weekday) and get a standard 5-field crontab '
-            'expression instantly, with built-in */n steps. Copy or download it. '
+            'expression instantly, with built-in */n steps on every field and optional '
+            'start values for start/step forms like 5/2. Copy or download it. '
             'Runs entirely in your browser.'
         ),
         'keywords': (
             'cron expression generator,cron generator,crontab generator,linux cron job,'
-            'cron expression builder,crontab expression,schedule expression'
+            'cron expression builder,crontab expression,schedule expression,'
+            'cron every n minutes,cron start step'
         ),
         'h1': 'Cron Expression Generator',
         'intro': [
@@ -2119,25 +2121,32 @@ TOOLS_EN = {
             'and easy to get wrong: one extra space, a weekday of 8, or */5 typed as 5, and '
             'the job fires at a strange time. This generator turns the five fields into '
             'dropdowns — pick, and the standard expression is assembled for you.',
-            'Every field accepts "every" or a specific value, and the minute and hour fields '
-            'include */2, */5, */10, */15 and */30 steps for the most common patterns like '
-            '"every 5 minutes". Everything runs locally in your browser; nothing is sent anywhere.',
+            'Every field accepts "every", a specific value or a */n step, and picking a step '
+            'reveals a start input — minute */2 with start 5 yields 5/2, every 2 minutes '
+            'from minute 5, keeping the job off the congested top of the hour. '
+            'Everything runs locally in your browser; nothing is sent anywhere.',
         ],
         'features': [
             ('Five visual fields', 'Pick minute / hour / day / month / weekday in order and get a standard 5-field cron expression, with no risk of mistyping a field.'),
-            ('Steps and common values built in', 'Minute and hour include */2 through */30 steps; hour, day, month and weekday offer every common value, with weekdays shown as 0-7 plus the weekday abbreviation.'),
+            ('Steps and common values built in', 'All five fields include */n steps (minute up to */30, month also */3, */4 and */6); hour, day, month and weekday offer every common value, with weekdays shown as 0-7 plus the weekday abbreviation.'),
+            ('Custom start with start/step', 'Pick any step and the adjacent start input rewrites */2 into 5/2 (every 2 minutes from minute 5), shifting jobs off the top of the hour; leave it empty or at the field minimum to keep the canonical */2.'),
             ('Live regeneration', 'Once an expression exists, changing any field regenerates it immediately — no button pressing required.'),
             ('Copy or download', 'Copy the expression to your clipboard or download it as crontab.txt, ready to paste into crontab -e.'),
             ('Local and dependency-free', 'The page is static HTML with no backend calls; the generation logic is built in and works offline.'),
             ('Real-world ready', 'Output works as-is in Linux crontab, in-container cron for Docker, and in the schedule field of GitHub Actions.'),
         ],
         'steps': [
-            'Select values for minute, hour, day, month and weekday on the left (all default to *, i.e. every unit).',
+            'Select values for minute, hour, day, month and weekday on the left (all default to *, i.e. every unit); when you pick a */n step, the start input next to it offsets it — minute */2 with start 5 gives 5/2.',
             'Click "Generate" — the assembled cron expression appears on the right.',
             'Click "Copy" or "Download" and paste the expression into crontab -e or your CI config.',
             'Changing any field regenerates instantly; "Clear" resets everything to the defaults.',
         ],
         'faq': [
+            ('How do I run a job every 2 minutes starting at minute 5?',
+             'Pick */2 (every 2 minutes) for minute and type 5 into the start input that '
+             'appears; the expression becomes 5/2 * * * * — firing at minutes 5, 7, 9 … 59. '
+             'Leaving start empty or at 0 keeps the canonical */2. Note that start/step is '
+             'a cronie extension; on older systems write the equivalent 5-59/2.'),
             ('Can I use the expression right away?',
              'Yes. The output is a standard 5-field crontab expression (minute hour day month '
              'weekday), identical in format to crontab -e, in-container Docker cron and CI '
