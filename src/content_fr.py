@@ -79,7 +79,7 @@ TOOLS_FR = {
     'hotnews': {
         'nav': 'Actus Tech',
         'title': "Actualites Tech du Jour — Titres en direct pour developpeurs | DevTools",
-        'description': "Une page d'actualites tech reconstruite automatiquement chaque jour a partir de Hacker News, TechCrunch, The Verge et Ars Technica. Chaque titre renvoie directement a l'article original. Sans inscription, sans publicite, sans suivi.",
+        'description': "Une page d'actualites tech reconstruite automatiquement chaque jour a partir de Hacker News, TechCrunch, The Verge, Ars Technica et Joho no Todai. Chaque titre renvoie directement a l'article original. Sans inscription, sans publicite, sans suivi.",
         'keywords': "actus tech aujourd'hui,titres tech quotidiens,page d'accueil hacker news,actualites developpeurs,agregateur actu tech,titres techcrunch,ars technica,the verge tech",
         'h1': "Actualites Tech du Jour pour Developpeurs",
     },

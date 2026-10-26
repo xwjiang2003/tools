@@ -79,7 +79,7 @@ TOOLS_JA = {
     'hotnews': {
         'nav': 'テックニュース',
         'title': "今日のテックニュース — 開発者向けライブ見出し | DevTools",
-        'description': "Hacker News、TechCrunch、The Verge、Ars Technicaから毎日自動再構築されるテックニュースページ。各見出しは元記事に直接リンク。登録・広告・追跡なし。",
+        'description': "Hacker News、TechCrunch、The Verge、Ars Technica、Joho no Todaiから毎日自動再構築されるテックニュースページ。各見出しは元記事に直接リンク。登録・広告・追跡なし。",
         'keywords': "今日のテックニュース,毎日のテック見出し,hacker news トップ,開発者 ニュース,テックニュース アグリゲーター,techcrunch 見出し,ars technica,the verge tech",
         'h1': "開発者向け 今日のテックニュース",
     },
