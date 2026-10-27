@@ -164,7 +164,10 @@ SOURCES = [
     },
     {
         'id': 'johotodai', 'lang': 'en', 'kind': 'rss',
-        'name': 'Joho no Todai', 'desc': 'Daily explainers on OS, chips and security',
+        'name': 'Joho no Todai',
+        'desc': 'Joho no Todai publishes technology news and analysis on operating '
+                'systems, computer hardware, semiconductors, open-source software, '
+                'AI and security, with links to primary sources.',
         'note': 'A one-person Japanese newsroom posting several English explainers a day, '
                 'each traced to primary sources — the deepest source here for OS kernel, '
                 'chip and security stories. Expect occasional typos and a strong Japan '
