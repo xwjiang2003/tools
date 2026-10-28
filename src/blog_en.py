@@ -6,6 +6,301 @@
 """
 
 ARTICLES_EN = {
+    'php2shell-black-october-2026': {
+        'tags': ['Supply Chain Security', 'CVE', 'PHP2Shell', 'Patch Management',
+                 'Zero Trust', 'Runtime Attack Surface'],
+        'title': ('Black October 2026: When the Supply Chain and Security '
+                  'Foundation Cracked at Once | DevTools Blog'),
+        'description': (
+            'October 2026 was called "Black October" in security circles: PHP2Shell '
+            '(CVE-2026-109618/109619, CVSS 9.2) enabled unauthenticated RCE across roughly '
+            '70% of the web, eMudhra certificate private keys were recoverable in under a '
+            'second, LiteLLM published a trojanized release, and GitLab shipped a CVSS 10.0 '
+            'unauthenticated RCE. This post breaks down the four events that hit developers '
+            'directly, gives a practical self-check list and hardening template, and uses '
+            'devtools.help (a static, PHP-free site) as a live example of why minimizing the '
+            'runtime attack surface is the highest-ROI security move.'
+        ),
+        'keywords': (
+            'Black October 2026,PHP2Shell,CVE-2026-109618,CVE-2026-109619,supply chain security,'
+            'patch management,eMudhra,LiteLLM,GitLab RCE,zero trust,runtime attack surface'
+        ),
+        'h1': 'Black October 2026: When the Supply Chain and Security Foundation Cracked at Once',
+        'summary': (
+            'October 2026 saw PHP2Shell, the eMudhra certificate compromise, LiteLLM '
+            'supply-chain poisoning and a GitLab CVSS 10.0 RCE land in the same window. This '
+            'post explains the root causes and fix matrix, then gives a self-check list from '
+            'runtime inventory to CA-bundle refresh, using a static site as the case for '
+            'minimizing attack surface.'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: October 2026 is being called "Black October" in security circles &mdash; not
+  one big breach but a <b>concentrated failure of the foundation</b>: base software, the
+  certificate system and the open-source supply chain all cracked in the same window. For
+  developers the move is not to chase every CVE, but to harden three routines &mdash;
+  <b>runtime-attack-surface inventory, dependency verification and CA-bundle refresh</b>. Our
+  own devtools.help is immune to PHP2Shell precisely because it is a static site that runs no
+  PHP runtime &mdash; a live example of minimizing the attack surface.</p>
+</blockquote>
+
+<h2>1. Why "Black October"</h2>
+<p>Most security events are single points: one CVE, one leak, one APT. What made October 2026
+different is that <b>at least twenty critical incidents landed almost simultaneously</b>, and all
+of them sit on layers developers cannot avoid &mdash; the software running on your servers, the
+dependencies in your pipeline, and the certificates you trust. By the third week the community
+started calling it Black October. Below are the four that hit ordinary developers most directly
+and already have a clear fix path.</p>
+
+<h2>2. Four events that hit developers directly</h2>
+<table>
+  <tr><th>Event</th><th>ID / severity</th><th>Impact</th><th>Fix</th></tr>
+  <tr><td>PHP2Shell</td><td>CVE-2026-109618, CVE-2026-109619; CVSS 9.2</td>
+  <td>Two unauthenticated remote-code-execution bugs in the PHP interpreter itself, affecting
+  PHP 5.4 through 8.5 &mdash; roughly 70% of the web (WordPress, Laravel, Symfony, Drupal and
+  many enterprise legacy systems). Even perfectly clean application code is exploitable.</td>
+  <td>PHP 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35 (released Oct 21). <b>PHP 8.1 and older get no
+  patch</b> &mdash; you must migrate, there is no fix coming.</td></tr>
+  <tr><td>eMudhra certificate compromise</td><td>8 intermediate CA private keys recoverable from public certs</td>
+  <td>An attacker could reverse the private key from the public certificate and issue look-alike
+  certs for any domain. Chrome and Firefox blocked them within hours; eMudhra exited the global
+  SSL/TLS business on Oct 22.</td>
+  <td>Browsers are covered by vendors, but <b>backend trust stores</b> (Python certifi, Java
+  cacerts, the Go cert store, Docker base images) must be refreshed and rebuilt manually.</td></tr>
+  <tr><td>LiteLLM supply-chain poisoning</td><td>published package shipped a password stealer + RAT</td>
+  <td>LiteLLM is the gateway many teams put in front of their LLM API calls (routing, rate
+  limiting, billing). This time the <b>published artifact itself</b> was tampered with &mdash;
+  a plain version-number check would not catch it.</td>
+  <td>Verify release checksums / signatures; mirror critical dependencies to a private registry
+  so a poisoned upstream still leaves you a clean copy.</td></tr>
+  <tr><td>GitLab RCE</td><td>CVE-2026-110264; integer overflow &rarr; unauthenticated RCE; CVSS 10.0</td>
+  <td>An integer overflow in GitLab&#39;s regex compiler enabled unauthenticated RCE. Over 2,700
+  Community Edition instances were exposed at disclosure.</td>
+  <td>Self-hosted GitLab: upgrade to the patched release immediately. Do not sit a 10.0 on your
+  internal network.</td></tr>
+</table>
+<p>For completeness, the same month also brought three critical NGINX flaws, an HTTP/3 bug where
+one malformed connection crashed seven of ten tested web-server implementations, 333 hijacked Tor
+relays, and an unpatched on-premises SharePoint zero-day (Microsoft gave mitigation only). The
+common lesson: <b>your attack surface is larger than you think, and the patch window is short.</b></p>
+
+<h2>3. Why you must move "now"</h2>
+<p>The most counter-intuitive detail is that <b>attacks preceded the patch</b>. PHP2Shell
+exploitation signs trace back to Oct 17, while the patch landed on the 21st, and disclosure
+leaked before its planned date. The moment the details went public, attackers launched global
+scans and mass exploitation almost immediately. The window your team gets to investigate shrank
+from "days" to "hours". The response bar moved from "this week" to "the day of disclosure".</p>
+
+<h2>4. Local angle: why devtools.help is immune to PHP2Shell</h2>
+<p>Our own site is an unintended beneficiary of this incident. Per the production architecture,
+devtools.help is a <b>pure static site</b>: nginx 1.28.3 serves static HTML directly, and the
+server runs <b>no PHP runtime at all</b> (no binary, no process, no 9000/fpm port, no .php files
+in the webroot). Vulnerabilities aimed at the PHP interpreter are therefore inert against us.</p>
+<p>This is a live demonstration of a repeatedly validated principle: <b>minimize the runtime
+attack surface</b>. Do not run a runtime you do not need; static-render what you can. It is the
+same family of thinking as the WAF "observe before you enforce" rule we covered in
+<a href="/en/blog/coraza-waf-rules/">Coraza Rules Explained</a>: shrink what must be protected
+before you worry about protecting it.</p>
+
+<h2>5. A self-check list for developers</h2>
+<ol>
+  <li><b>Inventory the runtime.</b> Does the server run PHP? What versions of GitLab / NGINX are
+  live? Scan assets with one command; do not rely on memory.</li>
+  <li><b>Apply the upgrade matrix.</b> PHP to 8.2.35+ (8.1 and older must migrate); GitLab to the
+  patched release; NGINX upgraded and re-checked.</li>
+  <li><b>Refresh CA trust stores.</b> Update certifi, Java cacerts, the Go cert store, and
+  <b>rebuild Docker base images</b> &mdash; outbound HTTPS on the backend is the easiest to miss,
+  and many services never check revocation.</li>
+  <li><b>Verify dependencies.</b> For direct deps like LiteLLM, compare release checksums /
+  signatures; do not trust the version number alone. Mirror critical deps privately.</li>
+  <li><b>Observe before you enforce.</b> Keep the WAF in DetectionOnly first; run new dependencies
+  in a sandbox before production.</li>
+  <li><b>Set an SLA.</b> Define the acceptable window from CVE disclosure to shipped fix. The
+  lesson from this month is <b>hours, not weeks</b>.</li>
+</ol>
+
+<h2>6. A minimal hardening template</h2>
+<p>A baseline you can actually run:</p>
+<pre><code># 1) Runtime inventory (Linux)
+dpkg -l | grep -iE "php|gitlab|nginx"        # list related packages and versions
+nginx -v; php -v 2>/dev/null                 # confirm what is actually running
+
+# 2) Dependency verification (LiteLLM example)
+pip download litellm==$PINNED --no-deps -d /tmp/ll
+sha256sum /tmp/ll/*                          # compare against the release checksums
+
+# 3) CA trust-store refresh (Python side)
+python -m pip install -U certifi            # then REBUILD the image, do not just update locally
+</code></pre>
+
+<h2>7. Summary</h2>
+<table>
+  <tr><th>Action</th><th>In one line</th></tr>
+  <tr><td>PHP2Shell</td><td>Upgrade to 8.2.35+; 8.1 and older must migrate</td></tr>
+  <tr><td>eMudhra</td><td>Browsers covered; backend trust stores need a manual refresh + rebuild</td></tr>
+  <tr><td>LiteLLM</td><td>Checksums / signatures + private mirror cache</td></tr>
+  <tr><td>GitLab</td><td>CVSS 10.0; self-hosted, upgrade now</td></tr>
+  <tr><td>Root principle</td><td>Minimize the runtime attack surface; observe before you enforce</td></tr>
+  <tr><td>Response tempo</td><td>From "this week" to "the day of disclosure"</td></tr>
+</table>
+<p>The lesson of Black October is not "a few more CVEs" but that <b>the reliability of your security
+foundation depends on how small you keep the attack surface and how automated you make
+verification</b>. For the "observe before you enforce" engineering example, see
+<a href="/en/blog/coraza-waf-rules/">Coraza Rules Explained</a>.</p>
+''',
+        'related': [
+            ('Coraza Rules Explained: From SecRule Syntax to Your First Rule', 'blog/coraza-waf-rules/'),
+            ('DevTools Blog', 'blog/'),
+        ],
+    },
+    'decision-models-2026': {
+        'tags': ['Decision Models', 'AI Agents', 'Low-Latency Inference',
+                 'Structured Output', 'LLM Architecture', 'Routing'],
+        'title': ('The Rise of Decision Models: Typed 100ms Decisions Instead of '
+                  'Free-Text LLM Reasoning | DevTools Blog'),
+        'description': (
+            'In the second half of 2026 a new category appeared: decision models. They emit '
+            'strongly-typed decisions instead of free text, at 100-180ms latency and a fraction '
+            'of LLM cost, replacing the free-text reasoning LLMs do at high-frequency judgment '
+            'points like "A or B", "allow or block", "route or classify". This post explains '
+            'what they are, how they differ from general LLMs / classifiers / rule engines, '
+            'where they land, the architecture pattern, and when to use them versus not.'
+        ),
+        'keywords': (
+            'decision models,OpenAI Decisions API,TypeSafe Jev,low-latency inference,'
+            'structured output,AI agents,LLM architecture,routing,classification'
+        ),
+        'h1': 'The Rise of Decision Models: Typed 100ms Decisions Instead of Free-Text LLM Reasoning',
+        'summary': (
+            'Decision models are the category that matured in H2 2026: strongly-typed, low-latency '
+            '(100-180ms), low-cost outputs that replace LLM reasoning at high-frequency judgment '
+            'points. This post gives the definition, the contrast with LLMs/classifiers/rule '
+            'engines, landing scenarios, the architecture pattern and a selection checklist.'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: In the second half of 2026 the industry got a new category &mdash;
+  <b>decision models</b>. They do not chat; they emit <b>strongly-typed decisions</b> (allow /
+  block, A or B, route to service X) at 100-180ms latency for a fraction of LLM cost. Their job
+  is clear: peel the high-frequency "A or B" judgments out of the slow, expensive, drift-prone
+  free-text LLM reasoning. Not another chat model &mdash; a <b>decision-specific layer</b> in the
+  LLM architecture.</p>
+</blockquote>
+
+<h2>1. What a decision model is</h2>
+<p>A general LLM outputs free text: you ask "should this request be allowed" and it returns a
+paragraph with reasoning you then have to parse. A decision model inverts that &mdash; its output
+is inherently <b>structured, strongly-typed, verifiable</b>: a "decision object" such as
+<code>{ "action": "block", "reason": "rate_limit", "confidence": 0.97 }</code>. It turns the
+result from "words for a human" into "instructions for a machine".</p>
+<table>
+  <tr><th>Axis</th><th>General LLM</th><th>Decision model</th><th>Rule engine</th><th>Classifier</th></tr>
+  <tr><td>Output</td><td>free text</td><td>typed decision object</td><td>if/else branch</td><td>discrete label</td></tr>
+  <tr><td>Latency</td><td>100s of ms &ndash; seconds</td><td>100-180 ms</td><td>microseconds</td><td>milliseconds</td></tr>
+  <tr><td>Explainable</td><td>weak (needs parsing)</td><td>strong (reason field)</td><td>strong</td><td>weak</td></tr>
+  <tr><td>Handles ambiguity</td><td>strong</td><td>medium (needs schema)</td><td>weak</td><td>weak</td></tr>
+  <tr><td>Maintenance</td><td>low (natural language)</td><td>medium (needs schema)</td><td>high (bloat)</td><td>medium (needs training)</td></tr>
+</table>
+
+<h2>2. Why now</h2>
+<p>Three forces stacked to push "decision model" from concept to category:</p>
+<ul>
+  <li><b>The price war forced layering.</b> From June to October 2026, OpenAI and Anthropic cut
+  LLM prices by up to 80%. When general inference gets cheap, peeling "frequent but simple"
+  judgments onto a cheaper model shows ROI immediately.</li>
+  <li><b>Inference efficiency matured.</b> OpenAI&#39;s Decisions API was reconfigured from
+  ChatGPT Luna, cutting response from 1-3 seconds to roughly 100-180ms. The same lane now has
+  TypeSafe&#39;s Jev, Liquid&#39;s D1 Ultra and Base Lab&#39;s Elephant-1.</li>
+  <li><b>Determinism demand.</b> Risk control, routing and moderation want "reproducible,
+  auditable, low-latency" rather than "creative". Typed output is natively easier for systems to
+  consume than free text.</li>
+</ul>
+
+<h2>3. Where they land</h2>
+<table>
+  <tr><th>Scenario</th><th>The decision model&#39;s job</th></tr>
+  <tr><td>Gateway front door</td><td>Per request: allow / throttle / block, before further processing</td></tr>
+  <tr><td>Smart routing</td><td>Send the request to the right downstream service, model or queue (A/B, canary)</td></tr>
+  <tr><td>Content moderation</td><td>Label pass / human-review / reject, with a reason for audit</td></tr>
+  <tr><td>Policy decision</td><td>At each agent step: continue / back off / ask a human</td></tr>
+  <tr><td>Classification / tagging</td><td>Multi-label classify docs, tickets, incidents into structured tags</td></tr>
+</table>
+
+<h2>4. Architecture pattern: peel the judgment point off the LLM</h2>
+<p>The commonest use is to slip a decision model before (or after) the LLM so it makes the hard
+call and the LLM only does what truly needs language:</p>
+<pre><code>request --&gt; decision_model(action, reason, confidence)
+                |
+                |-- action == "block"  --&gt; reject outright (no LLM, save cost)
+                |-- action == "allow"  --&gt; pass through
+                |-- action == "review" --&gt; hand to LLM for deep analysis
+                                      |
+                                      +--&gt; LLM conclusion feeds back to calibrate the model
+</code></pre>
+<p>This creates a <b>fast/slow split</b>: 90% of requests are handled cheaply at the decision
+layer, and only the genuinely hard ones consume the expensive LLM. Cost and latency drop together.</p>
+
+<h2>5. When to use, when not to</h2>
+<table>
+  <tr><th>Use a decision model</th><th>Keep the general LLM</th></tr>
+  <tr><td>High-frequency, low-latency, enumerable outcomes</td><td>Open-ended generation, creative writing, free dialogue</td></tr>
+  <tr><td>Decisions that must be auditable and reproducible</td><td>Work needing subtle semantic or common-sense reasoning</td></tr>
+  <tr><td>Cost-sensitive, high-volume branch points</td><td>Tasks whose result cannot be pre-defined as a schema</td></tr>
+</table>
+<p>Rule of thumb: <b>if the answer can be written as a schema, reach for a decision model; if the
+answer needs words organized on the fly, leave it to the LLM.</b></p>
+
+<h2>6. An integration checklist for developers</h2>
+<ol>
+  <li><b>Find the high-frequency judgment points.</b> In your existing LLM calls, circle the
+  "A or B" / "allow or block" / "route to X" branches.</li>
+  <li><b>Define a typed schema.</b> Write the decision as a struct with reason and confidence so
+  downstream and audit can consume it.</li>
+  <li><b>Replace the LLM call with the decision model</b> at those branches; keep the LLM for the
+  complex cases.</li>
+  <li><b>Add fallback.</b> On low confidence, degrade to the LLM or a human; do not be "fast but wrong".</li>
+  <li><b>Make it observable.</b> Monitor decision distribution, latency and fallback rate; calibrate
+  thresholds on real data.</li>
+</ol>
+
+<h2>7. A minimal example</h2>
+<pre><code># The decision model&#39;s typed output (schema sketch)
+{
+  "action": "review",          # allow | block | review
+  "reason": "ambiguous_intent",
+  "confidence": 0.62
+}
+
+# Call sketch (pseudo-code)
+decision = decision_model.classify(request, schema=DecisionSchema)
+if decision.action == "allow":
+    return pass_through(request)
+if decision.action == "block":
+    return reject(429)
+# review: hand to the LLM for deep analysis; conclusion feeds back to calibrate
+result = llm.analyze(request)
+decision_model.feedback(request, result)
+</code></pre>
+
+<h2>8. Summary</h2>
+<table>
+  <tr><th>Concept</th><th>In one line</th></tr>
+  <tr><td>What it is</td><td>A small, fast model that emits typed decisions, not free text</td></tr>
+  <tr><td>Latency / cost</td><td>100-180ms, far cheaper than a general LLM</td></tr>
+  <tr><td>Representatives</td><td>OpenAI Decisions API, TypeSafe Jev, Liquid D1 Ultra, Base Lab Elephant-1</td></tr>
+  <tr><td>Architecture slot</td><td>In front of / behind the LLM for fast-slow splitting</td></tr>
+  <tr><td>Selection rule</td><td>Answer fits a schema &rarr; decision model; needs wording &rarr; LLM</td></tr>
+</table>
+<p>The rise of decision models is the same idea we called <b>offloading</b> in
+<a href="/en/blog/context-engineering-2026/">Context Engineering</a>: peel the frequent, simple,
+deterministic work off the big expensive model. Whoever layers well can push both cost and latency
+of an AI system down at the same time.</p>
+''',
+        'related': [
+            ('From Long Context to Context Engineering: The Agent Architecture Shift of H2 2026', 'blog/context-engineering-2026/'),
+            ('DevTools Blog', 'blog/'),
+        ],
+    },
     'context-engineering-2026': {
         'tags': ['Context Engineering', 'AI Agents', 'Large Language Models',
                  'Prompt Engineering', 'Agent Architecture', 'RAG'],
