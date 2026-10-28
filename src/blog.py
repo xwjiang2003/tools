@@ -50,6 +50,228 @@ def category_label(slug, lang):
 
 ARTICLES = [
     {
+        'slug': 'php2shell-black-october-2026',
+        'category': 'security',
+        'date': '2026-10-28',
+        'updated': '2026-10-28',
+        'tags': ['供应链安全', 'Supply Chain Security', 'CVE', 'PHP2Shell', '漏洞修复', '零信任'],
+        'title': ('Black October 2026：供应链与安全地基的连环崩塌，开发者如何自检与加固 '
+                  '| DevTools 博客'),
+        'description': (
+            '2026 年 10 月被安全圈称为“黑色十月”：PHP2Shell（CVE-2026-109618/109619，CVSS 9.2）'
+            '未授权远程代码执行影响约七成网站，eMudhra 证书私钥可被秒级恢复，LiteLLM 发布包被植入'
+            '木马，GitLab 出现 CVSS 10.0 的未授权 RCE。本文拆解四件直接影响开发者的事件，'
+            '给出可落地的自检清单与加固模板，并以 devtools.help 纯静态无 PHP 的架构为例，'
+            '说明“最小化运行时攻击面”为何是性价比最高的安全策略。'
+        ),
+        'keywords': (
+            'Black October 2026,PHP2Shell,CVE-2026-109618,CVE-2026-109619,供应链安全,'
+            '漏洞修复,eMudhra,LiteLLM,GitLab RCE,零信任,运行时攻击面'
+        ),
+        'h1': 'Black October 2026：供应链与安全地基的连环崩塌，开发者如何自检与加固',
+        'summary': (
+            '2026 年 10 月密集爆出 PHP2Shell、eMudhra 证书失陷、LiteLLM 供应链投毒、GitLab 满分 RCE '
+            '等影响开发者的安全事件。本文拆解根因与修复矩阵，给出从运行时清点、依赖校验到 CA 信任库'
+            '刷新的自检清单，并以纯静态站点为例说明最小化攻击面的价值。'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026 年 10 月被安全圈称为“黑色十月”——不是某一次大规模入侵，而是<b>基础软件、证书体系、开源供应链在同一窗口期集中爆雷</b>。对开发者而言，最该做的不是逐条跟进 CVE，而是借这次“压力测试”把<b>运行时攻击面清点、依赖校验、CA 信任库刷新</b>三件事固化成日常动作。我们自己的 devtools.help 之所以对 PHP2Shell 天然免疫，正是因为它是纯静态站点、不跑任何 PHP 运行时——这正是“最小化攻击面”的活例子。</p>
+</blockquote>
+
+<h2>一、为什么叫“黑色十月”</h2>
+<p>过去安全事件多是单点：一个 CVE、一次数据泄露、一个 APT 组织。而 2026 年 10 月的不同之处在于，<b>至少二十起关键事件几乎同时发生</b>，且全部落在“你服务器上跑的东西、你流水线里的依赖、你信任的证书”这三个开发者无法回避的层面。安全圈在第三周前后开始把它统称为 <b>Black October</b>。下面只挑对普通开发者影响最直接、且已有明确修复路径的四件。</p>
+
+<h2>二、四件直接影响开发者的事件</h2>
+<table>
+  <tr><th>事件</th><th>编号 / 严重度</th><th>影响</th><th>修复</th></tr>
+  <tr><td>PHP2Shell</td><td>CVE-2026-109618、CVE-2026-109619；CVSS 9.2</td>
+  <td>PHP 解释器本身的两个未授权远程代码执行漏洞，影响 PHP 5.4 至 8.5，覆盖约七成网站（WordPress、Laravel、Symfony、Drupal 及大量企业遗留系统）。你的业务代码写得再干净也照样可被利用。</td>
+  <td>PHP 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35（10 月 21 日发布）。<b>PHP 8.1 及更早版本无补丁</b>，必须迁移，否则无修复可期。</td></tr>
+  <tr><td>eMudhra 证书失陷</td><td>8 张中间 CA 私钥因随机数不足被秒级恢复</td>
+  <td>攻击者可凭公钥反推私钥、为任意域名签发“看起来合法”的证书。Chrome / Firefox 数小时内拉黑，eMudhra 于 10 月 22 日宣布退出全球 SSL/TLS 业务。</td>
+  <td>浏览器已由厂商兜底；但<b>后端服务的信任库</b>（Python certifi、Java cacerts、Go cert store、Docker 基础镜像）需手动刷新并重建镜像。</td></tr>
+  <tr><td>LiteLLM 供应链投毒</td><td>发布包被植入密码窃取器 + 远程控制木马</td>
+  <td>LiteLLM 是团队在 LLM API 前最常挂的网关（路由、限流、计费）。本次是<b>发布物本身</b>被篡改，而非代码仓库被入侵——普通版本号校验发现不了。</td>
+  <td>核对发布校验和 / 签名；把关键依赖缓存到私有 registry，防止上游被投毒时措手不及。</td></tr>
+  <tr><td>GitLab RCE</td><td>CVE-2026-110264；整数溢出导致未授权 RCE；CVSS 10.0</td>
+  <td>GitLab 正则编译引擎的整数溢出，可未授权远程执行代码。披露时有 2700+ 社区版实例暴露在外。</td>
+  <td>自托管 GitLab 立即升级到已修复版本；不要用 10.0 分的风险坐在内网。</td></tr>
+</table>
+<p>顺带一提，同月还有 NGINX 三个严重漏洞、HTTP/3 一个畸形连接能打崩七成被测 Web 服务实现、Tor 333 个中继节点被劫持、SharePoint 零日（微软仅给缓解措施、暂无补丁）等。篇幅所限不逐一展开，但它们共同说明一件事：<b>你的攻击面比你想的大，且修复窗口极短</b>。</p>
+
+<h2>三、为什么必须“立刻”动</h2>
+<p>这次最反直觉的细节是<b>攻击早于补丁</b>：PHP2Shell 的利用迹象最早可追溯到 10 月 17 日，而补丁 21 日才出，披露信息还在计划日期（22 日）前提前泄露。也就是说，漏洞细节公开后，攻击者几乎在第一时间就启动了全球扫描与批量利用。企业能用来排查的窗口，从“天”被压缩到了“小时”。对响应速度的要求，已经从“本周内”变成了“披露当天”。</p>
+
+<h2>四、本地视角：devtools.help 为何对 PHP2Shell 免疫</h2>
+<p>我们自己的站点就是这次事件的“反例受益者”。根据线上架构排查，devtools.help 是<b>纯静态站</b>：nginx 1.28.3 直接服务静态 HTML，服务器上<b>没有任何 PHP 运行时</b>（无二进制、无进程、无 9000/fpm 端口，webroot 也无 .php 文件）。因此 PHP2Shell 这一类针对 PHP 解释器的漏洞，对我们天然无效。</p>
+<p>这背后是一条被反复验证的安全原则：<b>最小化运行时攻击面</b>。能不跑的运行时就不跑，能静态化的页面就静态化。这与我们博客里讲过的 WAF “先观察再拦截”思路同源——<a href="/blog/coraza-waf-rules/">Coraza 规则详解</a>里强调的，正是“任何新机制先开 DetectionOnly 观察，再决定是否拦截”。把攻击面缩到最小，等于把“需要被保护的东西”先减到最少。</p>
+
+<h2>五、开发者自检清单</h2>
+<ol>
+  <li><b>清点运行时</b>：服务器是否跑 PHP？GitLab / NGINX 版本号是多少？用一条命令扫一遍资产，别靠记忆。</li>
+  <li><b>套用升级矩阵</b>：PHP 升到 8.2.35+（8.1 及以下无补丁，必须迁移）；GitLab 打最新补丁；NGINX 升级并复核配置。</li>
+  <li><b>刷新 CA 信任库</b>：更新 certifi、Java cacerts、Go cert store，并<b>重建 Docker 基础镜像</b>——后端出站 HTTPS 最容易被忽略，很多服务从不校验吊销。</li>
+  <li><b>依赖校验</b>：对 LiteLLM 这类直接依赖，比对发布校验和 / 签名，别只信版本号；建立私有镜像缓存，上游被投毒时仍有干净副本。</li>
+  <li><b>先观察再拦截</b>：WAF 先开 DetectionOnly；新依赖先在沙箱跑一遍再进生产。</li>
+  <li><b>设 SLA</b>：定义“从 CVE 披露到上线修复”的可接受窗口。这次的经验值是<b>小时级</b>，而不是过去的“本周内”。</li>
+</ol>
+
+<h2>六、最小加固模板</h2>
+<p>一套可落地的基线（示意）：</p>
+<pre><code># 1) 运行时清点（Linux）
+dpkg -l | grep -iE "php|gitlab|nginx"        # 列出相关包与版本
+nginx -v; php -v 2>/dev/null                 # 确认实际运行版本
+
+# 2) 依赖校验（以 LiteLLM 为例）
+pip download litellm==$PINNED --no-deps -d /tmp/ll
+sha256sum /tmp/ll/*                          # 与发布页校验和比对
+
+# 3) CA 信任库刷新（Python 侧）
+python -m pip install -U certifi            # 然后重建镜像，别只更新本地
+</code></pre>
+
+<h2>七、小结</h2>
+<table>
+  <tr><th>动作</th><th>一句到位</th></tr>
+  <tr><td>PHP2Shell</td><td>升到 8.2.35+；8.1 及更早必须迁移</td></tr>
+  <tr><td>eMudhra</td><td>浏览器已兜底，后端信任库需手动刷新重建</td></tr>
+  <tr><td>LiteLLM</td><td>校验和 / 签名 + 私有镜像缓存</td></tr>
+  <tr><td>GitLab</td><td>CVSS 10.0，自托管立即升级</td></tr>
+  <tr><td>根本原则</td><td>最小化运行时攻击面；先观察再拦截</td></tr>
+  <tr><td>响应节奏</td><td>从“本周内”收紧到“披露当天”</td></tr>
+</table>
+<p>黑色十月给的教训不是“又多了几个 CVE”，而是<b>安全地基的可靠性，取决于你平时把攻击面缩得多小、把校验做得多自动化</b>。想看“先观察再拦截”的工程实例，见 <a href="/blog/coraza-waf-rules/">Coraza 规则详解</a>。</p>
+''',
+        'related': [
+            ('Coraza 规则详解：从 SecRule 语法到写出第一条防护规则', 'blog/coraza-waf-rules/'),
+            ('DevTools 博客', 'blog/'),
+        ],
+    },
+    {
+        'slug': 'decision-models-2026',
+        'category': 'ai',
+        'date': '2026-10-28',
+        'updated': '2026-10-28',
+        'tags': ['决策模型', 'Decision Models', 'AI Agent', '低延迟推理', '结构化输出', 'LLM 架构'],
+        'title': ('决策模型崛起：用 100 毫秒的强类型决策替代 LLM 的自由文本推理 '
+                  '| DevTools 博客'),
+        'description': (
+            '2026 下半年出现一个新品类“决策模型”（decision models）：输出强类型决策而非自由文本，'
+            '延迟压到 100–180 毫秒、成本极低，专门替代 LLM 在“选 A/选 B、放行/拦截、路由/分类”'
+            '这类高频判断点上的文本推理。本文讲清它是什么、与通用 LLM / 分类器 / 规则引擎的区别、'
+            '典型落地场景、架构模式，以及开发者何时该用、何时不该用。'
+        ),
+        'keywords': (
+            '决策模型,decision models,OpenAI Decisions API,TypeSafe Jev,低延迟推理,'
+            '结构化输出,AI Agent,LLM 架构,路由,分类'
+        ),
+        'h1': '决策模型崛起：用 100 毫秒的强类型决策替代 LLM 的自由文本推理',
+        'summary': (
+            '决策模型（decision models）是 2026 下半年成型的新品类：以强类型、低延迟（100–180ms）、'
+            '低成本的方式输出“决策”而非自由文本，用来替代 LLM 在高频判断点上的推理。'
+            '本文给出它的定义、与 LLM/分类器/规则引擎的区别、落地场景、架构模式与选型清单。'
+        ),
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026 下半年，行业冒出一个新品类——<b>决策模型（decision models）</b>。它不跟你“聊天”，而是输出<b>强类型的决策</b>（放行 / 拦截、选 A 还是 B、路由到哪个服务），延迟压到 100–180 毫秒，成本只有通用 LLM 的零头。它的定位很清晰：把“选 A 还是 B”这类高频判断，从又慢又贵又飘的 LLM 文本推理里<b>剥离出来</b>。这不是又一个聊天模型，而是 LLM 架构里的“决策专用层”。</p>
+</blockquote>
+
+<h2>一、什么是决策模型</h2>
+<p>通用 LLM 的输出是自由文本：你问它“这条请求该放行吗”，它给你一段带理由的话，你还得再解析。决策模型反过来——它的输出天生是<b>结构化、强类型、可校验</b>的“决策对象”，例如 <code>{ "action": "block", "reason": "rate_limit", "confidence": 0.97 }</code>。它本质上是把“推理结果”从“给人看的话”变成“给机器执行的指令”。</p>
+<table>
+  <tr><th>对比项</th><th>通用 LLM</th><th>决策模型</th><th>规则引擎</th><th>传统分类器</th></tr>
+  <tr><td>输出</td><td>自由文本</td><td>强类型决策对象</td><td>if/else 分支</td><td>离散标签</td></tr>
+  <tr><td>延迟</td><td>数百毫秒～秒级</td><td>100–180 毫秒</td><td>微秒级</td><td>毫秒级</td></tr>
+  <tr><td>可解释</td><td>弱（需再解析）</td><td>强（自带 reason 字段）</td><td>强</td><td>弱</td></tr>
+  <tr><td>处理模糊</td><td>强</td><td>中（需定义 schema）</td><td>弱</td><td>弱</td></tr>
+  <tr><td>维护成本</td><td>低（自然语言）</td><td>中（需 schema）</td><td>高（易膨胀）</td><td>中（需训练）</td></tr>
+</table>
+
+<h2>二、为什么是现在</h2>
+<p>三股力量叠加，把“决策模型”从概念推成了品类：</p>
+<ul>
+  <li><b>价格战倒逼分层</b>：2026 年 6–10 月，OpenAI / Anthropic 把 LLM 价格最高砍了 80%。当通用推理变便宜，把“高频但简单”的判断单独抽出来用更便宜的模型，ROI 立刻显现。</li>
+  <li><b>推理效率成熟</b>：OpenAI 的 Decisions API 由 ChatGPT Luna 重配置而来，把响应从 1–3 秒压到约 100–180 毫秒；同赛道的还有 TypeSafe 的 Jev、Liquid 的 D1 Ultra、Base Lab 的 Elephant-1。</li>
+  <li><b>确定性需求</b>：风控、路由、审核这类场景要的是“可复现、可审计、低延迟”，而不是“有创意”。强类型输出天生比自由文本更适合被系统直接消费。</li>
+</ul>
+
+<h2>三、典型落地场景</h2>
+<table>
+  <tr><th>场景</th><th>决策模型的职责</th></tr>
+  <tr><td>网关前置</td><td>对每条入站请求先判断 放行 / 限流 / 拦截，再做后续处理</td></tr>
+  <tr><td>智能路由</td><td>把请求分到合适的下游服务、模型或队列（A/B 分支、灰度）</td></tr>
+  <tr><td>内容审核</td><td>标注 通过 / 待人工 / 拒绝，并给出 reason 供审计</td></tr>
+  <tr><td>策略决策</td><td>在 Agent 的每一步判断“继续 / 退避 / 求助人类”</td></tr>
+  <tr><td>分类打标</td><td>对文档、工单、事件做多标签分类，输出结构化标签</td></tr>
+</table>
+
+<h2>四、架构模式：把“判断点”从大模型剥离</h2>
+<p>最常见的用法是在 LLM 之前（或之后）插一层决策模型，让它先/后做“硬判断”，LLM 只负责真正需要语言能力的部分：</p>
+<pre><code>request --&gt; decision_model(action, reason, confidence)
+                |
+                |-- action == "block"  --&gt; 直接拒绝（不调 LLM，省成本）
+                |-- action == "allow"  --&gt; 直接放行
+                |-- action == "review" --&gt; 交给 LLM 做深度分析
+                                      |
+                                      +--&gt; LLM 结论回流，作为新样本校准决策模型
+</code></pre>
+<p>这样就形成了一个<b>快慢分流</b>：90% 的请求在决策模型这层就被廉价处理掉，只有真正疑难的才消耗昂贵的 LLM。整体成本与延迟同时下降。</p>
+
+<h2>五、何时该用，何时不该用</h2>
+<table>
+  <tr><th>适合决策模型</th><th>仍该用通用 LLM</th></tr>
+  <tr><td>高频、低延迟、可枚举结果的判断</td><td>开放式生成、创意写作、自由对话</td></tr>
+  <tr><td>需要可审计、可复现的硬决策</td><td>需要细腻语义理解或常识推理</td></tr>
+  <tr><td>成本敏感、调用量巨大的分支点</td><td>结果难以预先定义 schema 的任务</td></tr>
+</table>
+<p>经验法则：<b>凡是“答案能写成 schema”的判断，优先考虑决策模型；凡是“答案需要临场组织语言”的，留给 LLM。</b></p>
+
+<h2>六、开发者接入清单</h2>
+<ol>
+  <li><b>找出高频判断点</b>：在现有 LLM 调用里，圈出“选 A/选 B”“放行/拦截”“路由到 X”这类分支。</li>
+  <li><b>定义强类型 schema</b>：把决策结果写成带 reason、confidence 的结构体，方便下游消费与审计。</li>
+  <li><b>用决策模型替代 LLM 调用</b>：在这些分支上换成决策模型，保留 LLM 处理复杂情形。</li>
+  <li><b>设回退与兜底</b>：confidence 过低时降级到 LLM 或人工，避免“快但错”。</li>
+  <li><b>可观测</b>：监控决策分布、延迟、回退率，用真实数据持续校准阈值。</li>
+</ol>
+
+<h2>七、一个最小示例</h2>
+<pre><code># 决策模型的强类型输出（示意 schema）
+{
+  "action": "review",          # allow | block | review
+  "reason": "ambiguous_intent",
+  "confidence": 0.62
+}
+
+# 调用示意（伪代码）
+decision = decision_model.classify(request, schema=DecisionSchema)
+if decision.action == "allow":
+    return pass_through(request)
+if decision.action == "block":
+    return reject(429)
+# review：交给 LLM 做深度判断，结论回流校准
+result = llm.analyze(request)
+decision_model.feedback(request, result)
+</code></pre>
+
+<h2>八、小结</h2>
+<table>
+  <tr><th>概念</th><th>一句话</th></tr>
+  <tr><td>决策模型是什么</td><td>输出强类型决策、而非自由文本的小快灵模型</td></tr>
+  <tr><td>延迟 / 成本</td><td>100–180ms，成本远低于通用 LLM</td></tr>
+  <tr><td>代表</td><td>OpenAI Decisions API、TypeSafe Jev、Liquid D1 Ultra、Base Lab Elephant-1</td></tr>
+  <tr><td>架构位置</td><td>插在 LLM 前后做快慢分流</td></tr>
+  <tr><td>选型法则</td><td>答案能写 schema 就用决策模型；要组织语言就留 LLM</td></tr>
+</table>
+<p>决策模型的走红，和我们在 <a href="/blog/context-engineering-2026/">上下文工程</a> 里说的“卸载（offloading）”是同一思路：把高频、简单、确定的活，从又大又贵的模型上卸下来。会分层的人，才能把 AI 系统的成本与延迟同时压下去。</p>
+''',
+        'related': [
+            ('从长上下文到上下文工程：2026 下半年 AI Agent 的架构范式转移', 'blog/context-engineering-2026/'),
+            ('DevTools 博客', 'blog/'),
+        ],
+    },
+    {
         'slug': 'context-engineering-2026',
         'category': 'ai',
         'date': '2026-10-28',
