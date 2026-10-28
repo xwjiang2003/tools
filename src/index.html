@@ -134,20 +134,29 @@
 <script src="js/formatter.js"></script>
 <script src="js/string-tools.js"></script>
 <script src="js/generator.js"></script>
-<!-- ========== Analytics: busuanzi ==========
-     Loaded on production only; skipped for file:// previews and localhost so local
-     testing never pollutes the live numbers.
-     Source: https://busuanzi.ibruce.info/ (free third-party service, aggregated by
-     domain, no dashboard). -->
+<!-- ========== Analytics: self-hosted visitor counter ==========
+     Replaces the flaky third-party busuanzi service (busuanzi.ibruce.info kept returning 502).
+     The counter backend runs on this same server: nginx proxies /busuanzi to a local service, so the
+     only network call is a same-origin JSONP request. Loaded on production only (skipped for file://
+     and localhost) so local testing never pollutes the live numbers. -->
 <script>
 (function () {
   var host = location.hostname;
   if (location.protocol === 'file:' || !host || host === 'localhost' || host === '127.0.0.1') return;
+  function fill(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+  function show(cid) { var el = document.getElementById(cid); if (el) el.style.display = ''; }
+  var cb = 'BusuanziCallback_' + Math.floor(Math.random() * 2147483647);
+  window[cb] = function (data) {
+    if (data.site_pv != null) { fill('busuanzi_value_site_pv', data.site_pv); show('busuanzi_container_site_pv'); }
+    if (data.site_uv != null) { fill('busuanzi_value_site_uv', data.site_uv); show('busuanzi_container_site_uv'); }
+    if (data.page_pv != null) { fill('busuanzi_value_page_pv', data.page_pv); show('busuanzi_container_page_pv'); }
+    if (data.page_uv != null) { fill('busuanzi_value_page_uv', data.page_uv); show('busuanzi_container_page_uv'); }
+    try { delete window[cb]; } catch (e) {}
+  };
   var s = document.createElement('script');
   s.async = true;
-  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
-  s.referrerPolicy = 'no-referrer-when-downgrade';
-  // If the service is unreachable, drop the counter entirely rather than showing an empty slot
+  s.src = '/busuanzi?jsonpCallback=' + encodeURIComponent(cb);
+  // If the counter backend is unreachable, drop the footer stats rather than show an empty slot
   s.onerror = function () {
     var f = document.getElementById('footerStats');
     if (f && f.parentNode) f.parentNode.removeChild(f);
