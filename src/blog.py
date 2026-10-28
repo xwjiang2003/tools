@@ -29,9 +29,29 @@ def article_path(slug):
     return f'{BLOG_INDEX}{slug}/'
 
 
+# 博客分类：slug 语言中立，展示文案按语言取（zh 用中文，其余回退英文）。
+# 顺序即索引页筛选条展示顺序。
+BLOG_CATEGORIES = [
+    ('ai', {'zh': 'AI 与大模型', 'en': 'AI & LLMs'}),
+    ('go', {'zh': 'Go 语言', 'en': 'Go'}),
+    ('security', {'zh': '安全', 'en': 'Security'}),
+    ('tooling', {'zh': '工具实战', 'en': 'Tooling'}),
+    ('web', {'zh': '建站与前端', 'en': 'Web & Frontend'}),
+]
+
+
+def category_label(slug, lang):
+    """返回某分类在当前语言下的展示名（非中文语言统一回退英文）。"""
+    for s, labels in BLOG_CATEGORIES:
+        if s == slug:
+            return labels.get(lang, labels['en'])
+    return slug
+
+
 ARTICLES = [
     {
         'slug': 'context-engineering-2026',
+        'category': 'ai',
         'date': '2026-10-28',
         'updated': '2026-10-28',
         'tags': ['上下文工程', 'Context Engineering', 'AI Agent', '大语言模型',
@@ -178,6 +198,7 @@ ARTICLES = [
     },
     {
         'slug': 'world-clock-timezones',
+        'category': 'tooling',
         'date': '2026-10-17',
         'updated': '2026-10-17',
         'tags': ['世界时钟', '时区', 'UTC', '夏令时', '时间换算', '跨国协作'],
@@ -288,6 +309,7 @@ ARTICLES = [
     },
     {
         'slug': 'coraza-waf-rules',
+        'category': 'security',
         'date': '2026-09-25',
         'updated': '2026-09-25',
         'tags': ['WAF', 'Coraza', '安全', 'ModSecurity', 'OWASP'],
@@ -535,6 +557,7 @@ example.com {
     },
     {
         'slug': 'warden-go-waf',
+        'category': 'security',
         'date': '2026-09-25',
         'updated': '2026-09-25',
         'tags': ['Go', 'WAF', '开源项目'],
@@ -730,6 +753,7 @@ CC 防护同理：先只开验证码挑战，看真实用户的通过率，再�
     },
     {
         'slug': 'gofmt-vs-goimports',
+        'category': 'go',
         'date': '2026-09-24',
         'updated': '2026-09-24',
         'tags': ['Go', '工具链', 'CI'],
@@ -895,6 +919,7 @@ TEXT = {
         'updated': '更新于',
         'related': '相关阅读',
         'back': '全部文章',
+        'cat_all': '全部',
     },
     'en': {
         'index_title': 'Blog - Go Toolchain & Developer How-Tos | DevTools',
@@ -910,6 +935,7 @@ TEXT = {
         'updated': 'Updated',
         'related': 'Further reading',
         'back': 'All articles',
+        'cat_all': 'All',
     },
 }
 
@@ -942,23 +968,62 @@ def articles_for(lang, articles_en):
 
 
 def render_index(lang, articles_en, base):
-    """博客索引页主体：简介 + 文章卡片列表。"""
+    """博客索引页主体：分类筛选条 + 文章卡片列表。"""
     t = TEXT[lang]
+    cats = ''.join(
+        f'<a class="blog-cat" data-cat="{_esc(s)}" '
+        f'href="{_esc(base + BLOG_INDEX)}?category={_esc(s)}">'
+        f'{_esc(category_label(s, lang))}</a>'
+        for s, _ in BLOG_CATEGORIES)
     out = ['<div class="blog">',
            '  <div class="blog-head">',
            f'    <p class="blog-head-lead">{_esc(t["index_lead"])}</p>',
            '  </div>',
+           '  <div class="blog-cats" id="blogCats">',
+           f'    <a class="blog-cat active" data-cat="" '
+           f'href="{_esc(base + BLOG_INDEX)}">{_esc(t["cat_all"])}</a>',
+           cats,
+           '  </div>',
            '  <div class="blog-list">']
     for a in articles_for(lang, articles_en):
         href = base + article_path(a['slug'])
+        cat = a.get('category')
+        cat_attr = f' data-cat="{_esc(cat)}"' if cat else ''
         tags = ''.join(f'<span class="blog-tag">{_esc(tag)}</span>' for tag in a['tags'])
-        out.append(f'    <a class="blog-card" href="{_esc(href)}">')
+        out.append(f'    <a class="blog-card" href="{_esc(href)}"{cat_attr}>')
         out.append(f'      <p class="blog-card-title">{_esc(a["h1"])}</p>')
         out.append(f'      <p class="blog-card-desc">{_esc(a["summary"])}</p>')
         out.append(f'      <p class="blog-card-meta"><time datetime="{a["date"]}">'
                    f'{a["date"]}</time>{tags}</p>')
         out.append('    </a>')
     out.append('  </div>')
+    out.append('''
+  <script>
+  (function(){
+    var bar=document.getElementById('blogCats'); if(!bar) return;
+    var cards=[].slice.call(document.querySelectorAll('.blog-card'));
+    function apply(cat){
+      cards.forEach(function(c){
+        c.style.display=(!cat||c.getAttribute('data-cat')===cat)?'':'none';
+      });
+      [].slice.call(bar.querySelectorAll('.blog-cat')).forEach(function(b){
+        b.classList.toggle('active', b.getAttribute('data-cat')===cat);
+      });
+    }
+    bar.addEventListener('click', function(e){
+      var b=e.target.closest('.blog-cat'); if(!b) return;
+      e.preventDefault();
+      var cur=new URLSearchParams(location.search).get('category');
+      var cat=b.getAttribute('data-cat');
+      if(cur===cat){ cat=null; }
+      var u=new URL(location.href);
+      if(cat){ u.searchParams.set('category',cat); }
+      else { u.searchParams.delete('category'); }
+      history.replaceState(null,'',u); apply(cat);
+    });
+    apply(new URLSearchParams(location.search).get('category'));
+  })();
+  </script>''')
     out.append('</div>')
     return '\n'.join(out)
 
@@ -970,6 +1035,10 @@ def render_article(lang, a, base):
     meta = [f'<time datetime="{a["date"]}">{_esc(t["published"])} {a["date"]}</time>']
     if a['updated'] != a['date']:
         meta.append(f'<time datetime="{a["updated"]}">{_esc(t["updated"])} {a["updated"]}</time>')
+    cat = a.get('category')
+    if cat:
+        meta.append(f'<a class="blog-cat-tag" href="{_esc(base + BLOG_INDEX)}?category={_esc(cat)}">'
+                    f'{_esc(category_label(cat, lang))}</a>')
     meta.append(tags)
     lang_attr = _HTML_LANG.get(lang, 'en')
     out = [f'<article class="post" lang="{lang_attr}">']
@@ -1001,6 +1070,7 @@ def article_jsonld(a, url, lang):
         'isAccessibleForFree': True,
         'author': {'@type': 'Organization', 'name': 'DevTools'},
         'keywords': a['keywords'],
+        'articleSection': category_label(a.get('category', ''), lang),
     }
 
 

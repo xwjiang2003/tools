@@ -10,6 +10,13 @@
 .blog-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500}
 .blog-head{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px}
 .blog-head-lead{margin:0;font-size:14px;color:var(--text);line-height:1.7}
+/* 分类筛选条 */
+.blog-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.blog-cat{cursor:pointer;padding:5px 14px;border:1px solid var(--border);border-radius:16px;font-size:13px;color:var(--text-secondary);background:var(--card-bg);text-decoration:none;transition:all var(--transition)}
+.blog-cat:hover{border-color:var(--primary);color:var(--primary)}
+.blog-cat.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.blog-cat-tag{padding:2px 9px;background:var(--primary-light);color:var(--primary);border-radius:12px;font-size:11px;font-weight:500;text-decoration:none}
+.blog-cat-tag:hover{text-decoration:underline}
 /* 文章页 */
 .post{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:32px 40px;line-height:1.85;font-size:14px;color:var(--text-secondary)}
 .post h1{font-size:23px;color:var(--text);margin:0 0 10px;line-height:1.45}

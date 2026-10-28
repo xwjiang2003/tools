@@ -199,7 +199,7 @@ TOOLS_EN = {
              'encoded twice. Try decoding once more and see whether the result still looks encoded; this '
              'page always treats text as UTF-8.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Hex to Decimal / Binary', 'hex/'),
@@ -265,7 +265,7 @@ TOOLS_EN = {
              'No. Matching and replacement both run inside your browser, and your input is never sent to '
              'a server.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Text case & style converter', 'string/'),
@@ -340,7 +340,7 @@ TOOLS_EN = {
              'display it as local time or UTC only affects the presentation. Compare the two with the '
              'timezone switcher to confirm.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Cron expression generator', 'cron-generator/'),
@@ -557,7 +557,7 @@ TOOLS_EN = {
              'the go command entirely in Go 1.23 — setting it has no effect. Delete '
              'GO111MODULE=on from legacy CI scripts.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
@@ -697,7 +697,7 @@ TOOLS_EN = {
              'you encode is lawful — the code is only a carrier and does not change who is responsible '
              'for what it contains.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('UUID generator & parser', 'uuid/'),
@@ -779,7 +779,7 @@ TOOLS_EN = {
              'No. Headlines point directly at the article URL. This site adds no interstitial, no '
              'affiliate parameters and no redirect layer.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Common timestamp lookup (today / this week / this month)', 'timestamp-list/'),
@@ -827,7 +827,7 @@ TOOLS_EN = {
              'CSS only defines 148 named colors such as red, blue and rebeccapurple. Most colors '
              'have no English name, so this field shows "-" — use Hex/RGB/HSL instead.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Hex to Binary / Decimal', 'hex/'),
@@ -872,7 +872,7 @@ TOOLS_EN = {
              'Both separate words with underscores; CONSTANT_CASE is all uppercase (used for macros, '
              'constants and enums), while snake_case is all lowercase (common for Python names).'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Text case & style converter', 'string/'),
@@ -924,7 +924,7 @@ TOOLS_EN = {
              'Yes, exp is the expiry time and servers reject expired tokens. This tool only decodes and '
              'displays; whether a token is accepted is always up to your server.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('MD5 / SHA / HMAC hashing', 'hash/'),
@@ -1059,7 +1059,7 @@ TOOLS_EN = {
              'Columns follow the keys of the first object; extra keys from later objects are appended '
              'at the end, keeping the table tidy without dropping data.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('CSV to SQL INSERT generator', 'csv-to-sql-insert/'),
@@ -1103,7 +1103,7 @@ TOOLS_EN = {
             ('What happens to a row with the wrong date format?',
              'Unparseable rows are flagged in red and marked "invalid"; the other valid rows still convert, so the whole batch does not fail.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter (single)', 'timestamp/'),
@@ -1145,7 +1145,7 @@ TOOLS_EN = {
              'The largest seconds timestamp a signed 32-bit integer can hold is 2147483647, which is '
              '2038-01-19 03:14:07 UTC. Systems past that overflow — this is the year-2038 problem.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
@@ -1192,7 +1192,7 @@ TOOLS_EN = {
              'For everyday use, essentially yes; strictly, UTC is atomic-clock based and GMT is '
              'astronomical, and they agree to the second. This site labels offsets with UTC.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
@@ -1233,7 +1233,7 @@ TOOLS_EN = {
              'Many US-style systems start the week on Sunday and count the week containing Jan 1 as week '
              '1; ISO starts on Monday and uses the Thursday rule, so the two can differ by a week at year start/end.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Current day of the year', 'daynumbers/'),
@@ -1273,7 +1273,7 @@ TOOLS_EN = {
              'No. Here it is "day of the year" (restarting at 1 each year); a Julian day is a '
              'continuous count from 4713 BCE, not reset annually, and is used in astronomy and historiography.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
@@ -1315,7 +1315,7 @@ TOOLS_EN = {
              'be a leap year. 1900 is divisible by 100 but not by 400, so it is a common year; 2000 is '
              'divisible by 400, so it is a leap year.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
@@ -1364,7 +1364,7 @@ TOOLS_EN = {
              'Cities with daylight saving move the clock forward an hour in certain months, so the '
              'offset changes; the page handles it automatically.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('World time zones & current time', 'timezones/'),
@@ -1405,7 +1405,7 @@ TOOLS_EN = {
              'on the opener\'s local current time, so different people and times see different '
              'remainders, but the target moment itself is the same.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
@@ -1442,7 +1442,7 @@ TOOLS_EN = {
              'The page interprets the entered date-time in your browser\'s local time zone. If you need '
              'it in another zone, convert it to your local wall-clock time first, then enter it.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Date add / subtract', 'date-calculator/'),
@@ -1482,7 +1482,7 @@ TOOLS_EN = {
              'feels wrong in most cases. This tool clamps the day to the last day of the target month, '
              'giving Feb 28 (or 29 in a leap year).'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Date difference', 'date-difference/'),
@@ -1525,7 +1525,7 @@ TOOLS_EN = {
              'Yes. As long as you do not mix approximate units like month/year, the round trip is '
              'consistent and exact; conversions involving years/months carry rounding error from the approximation.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
@@ -1563,7 +1563,7 @@ TOOLS_EN = {
             ('Are UUIDs case-insensitive?', 'The letter part is case-insensitive by spec, but the standard form is lowercase; this tool ignores case when parsing.'),
             ('Are v4 UUIDs really unique?', 'v4 uses 122 random bits, making collisions negligible. This tool only parses and generates; it does not guarantee global uniqueness across devices.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Unix Timestamp and Date Converter', 'timestamp/'),
@@ -1606,7 +1606,7 @@ TOOLS_EN = {
             ('Why are the IDs so long?', 'A Snowflake is a 63-bit unsigned integer, typically 18-19 decimal digits; it is parsed as a string to avoid JavaScript number precision loss.'),
             ('What epoch do I enter for custom?', 'Enter your system\'s epoch in milliseconds (Twitter is 1288834974657), keeping the common 41/10/12 bit layout.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Twitter and X ID decoder', 'tid/'),
@@ -1643,7 +1643,7 @@ TOOLS_EN = {
             ('Why do some IDs have no time?', 'IDs before Snowflake launched in Nov 2010 are plain sequential numbers (about <= 29700859247) and contain no time to recover.'),
             ('Does decoding need an X login?', 'No. The Snowflake timestamp is encoded in the ID itself; this tool computes locally with no X API involved.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Snowflake ID decoder', 'snowflake/'),
@@ -1679,7 +1679,7 @@ TOOLS_EN = {
             ('Is the ObjectId time accurate?', 'The first 4 bytes are the second-level Unix time of creation, precise to the second; it is client-generated and usually reflects the creation moment.'),
             ('Does the generated one match the database?', 'The structure is identical (time plus random machine/process plus counter), but machine and counter are random fill for local testing, not a real instance.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
@@ -1752,7 +1752,7 @@ TOOLS_EN = {
             ('How does Auto-detect decide the base?', '0x means hex, 0b binary, 0o octal; all-digit input is decimal; input with a-f but no prefix is treated as hex.'),
             ('Are fractions supported?', 'Only integers for now; fractional base conversion is error-prone and rarely needed.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Binary Converter', 'binary/'),
@@ -1790,7 +1790,7 @@ TOOLS_EN = {
             ('Why is my binary flagged invalid?', 'Binary uses only 0 and 1; any 2-9 or letter is invalid. For other bases use the Any-Base Converter.'),
             ('How do I convert text to binary?', 'That is text encoding - use the Hex view in the Encode tool; this tool focuses on numeric base conversion.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Any-Base Converter', 'base/'),
@@ -1827,7 +1827,7 @@ TOOLS_EN = {
             ('How is this different from Hex in the Encode tool?', 'Here hex is treated as a number for base conversion; the Encode tool turns text into hex byte strings - different purposes.'),
             ('Why are upper and lower case both fine?', 'Hex digits a-f are case-insensitive, so the tool accepts either.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Any-Base Converter', 'base/'),
@@ -1888,7 +1888,7 @@ TOOLS_EN = {
              'The page header shows the last update. Entries affected by a new language release (Go, Python, ...) '
              'are revised afterwards, and better approaches are folded in as they are found.'),
             ('Does this page collect my data?',
-             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site collects nothing about your visit.'),
+             'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
         ],
         'seealso': [
             ('Go toolchain cheatsheet', 'go-cheatsheet/'),
@@ -1942,7 +1942,7 @@ TOOLS_EN = {
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs '
              'locally in your browser, so your input is never sent to any server. Apart from the footer '
-             'traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site '
+             'traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site '
              'collects nothing about your visit.'),
             ('Does formatting change the meaning of my SQL?',
              'No. Only whitespace and line breaks change: keyword casing, indentation and clause breaks. '
@@ -2006,7 +2006,7 @@ TOOLS_EN = {
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs '
              'locally in your browser, so your input is never sent to any server. Apart from the footer '
-             'traffic counters (Baidu Analytics and busuanzi, see the privacy policy), this site '
+             'traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site '
              'collects nothing about your visit.'),
             ('Can I use the output on a production page?',
              'Yes. The output is standard semantic HTML (h1-h6, p, ul/ol/li, table, pre/code, '
@@ -2264,13 +2264,14 @@ PRIVACY_BODY_EN = """
 </p>
 
 <h2>2. Visit Analytics</h2>
-<p>This site uses two third-party analytics services to understand traffic, referrers and which tools are used:</p>
+<p>This site uses one third-party analytics service (Baidu Analytics) and one <strong>self-hosted</strong> visit counter to understand traffic, referrers and which tools are used:</p>
 <ul>
   <li>
-    <strong>busuanzi</strong> (busuanzi.ibruce.info) — counts page views and visitors for the counter
-    shown in the footer. When a page loads, it receives your browser identifier (User-Agent), the
-    referring page URL and an approximate geographic location derived from your IP address, which it
-    uses to distinguish visitors and de-duplicate the count.
+    <strong>Self-hosted visit counter</strong> (same-origin <code>/busuanzi</code>) — only powers the
+    page-view and visitor counts shown in the footer. Requests are handled by this site's own server
+    and never go to any third party; de-duplication relies solely on an anonymous cookie set by this
+    site, and no names, email addresses or other personal information are collected or used for
+    cross-site tracking.
   </li>
   <li>
     <strong>Baidu Analytics</strong> (hm.baidu.com) — analyses traffic sources, geographic
@@ -2283,15 +2284,13 @@ PRIVACY_BODY_EN = """
 <p>
   This site has no user accounts and does not collect personal information such as names, email
   addresses or phone numbers. If you would rather not be counted, you can block
-  <code>hm.baidu.com</code> and <code>busuanzi.ibruce.info</code> in your browser or with an
-  extension — every tool keeps working normally.
+  <code>hm.baidu.com</code> in your browser or with an extension — every tool keeps working normally.
 </p>
 
 <h2>3. Third-Party Resources</h2>
 <p>To keep the pages lightweight, this site loads the following third-party resources from public CDNs. Your browser communicates with those services when they load, and their own privacy policies apply:</p>
 <ul>
   <li><strong>cdn.jsdelivr.net</strong> — provides the YAML / TOML conversion libraries, loaded on demand (only on the relevant tool pages).</li>
-  <li><strong>busuanzi.ibruce.info</strong> — the visit counter in the footer.</li>
   <li><strong>hm.baidu.com</strong> — Baidu Analytics, used for site statistics.</li>
 </ul>
 <p>
