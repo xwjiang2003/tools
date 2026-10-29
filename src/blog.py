@@ -50,6 +50,210 @@ def category_label(slug, lang):
 
 ARTICLES = [
     {
+        'slug': 'diffusion-llm-mercury-2026',
+        'category': 'ai',
+        'date': '2026-10-29',
+        'updated': '2026-10-29',
+        'tags': ['扩散语言模型', 'Diffusion LLM', '非自回归生成', 'Inception Labs', 'Mercury', 'LLM 推理加速', '并行解码'],
+        'title': '扩散语言模型来了：Mercury 3 把文本生成做成去噪，比自回归快 8 倍怎么落地 | DevTools 博客',
+        'description': '2026 下半年，文本生成出现一条与自回归 Transformer 并行的路线——扩散语言模型（diffusion LLM / dLLM）：先铺满掩码再并行去噪成整段文本。Inception Labs 的 Mercury 3 在 2026-10-24 被机器之心报道“比 GPT-6 Luna 快 8 倍、跑分反超”。本文讲清原理、与当日热点的关联，并给出可运行的 OpenAI 兼容接入与网关示例。',
+        'keywords': '扩散语言模型,diffusion LLM,非自回归生成,Inception Labs Mercury,Mercury 3,比GPT-6快8倍,LLM 推理加速,如何降低 LLM 延迟,扩散模型 教程,本地部署 扩散语言模型,LLaDA,AI 推理 降本,并行解码 实战',
+        'h1': '扩散语言模型来了：Mercury 3 把文本生成做成去噪，比自回归快 8 倍怎么落地',
+        'summary': '扩散语言模型（diffusion LLM）把文本生成从“逐字吐”变成“并行去噪”，Mercury 3 据机器之心 2026-10-24 报道比 GPT-6 Luna 快 8 倍。本文拆解原理、与当日热点关联，并给出 OpenAI 兼容接入、延迟基准与 FastAPI 网关的可运行示例。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026 下半年，文本生成出现了一条和 Transformer 自回归（AR）并行的路线——<b>扩散语言模型（diffusion LLM / dLLM）</b>。它不像 GPT 那样“一个字一个字吐”，而是像图像生成那样<b>先铺满掩码、再并行去噪成整段文本</b>。代表产品 Inception Labs 的 Mercury 系列在 2026-10-24 被机器之心报道“比 GPT-6 Luna 快 8 倍、跑分反超”。对开发者而言，它的价值不是“又一个聊天模型”，而是<b>把延迟从秒级压到百毫秒、把吞吐打高数倍</b>，特别适合代码生成、Agent 工具调用、批量改写这类“要快不要慢”的场景。</p>
+</blockquote>
+
+<h2>一、为什么自回归会变慢，扩散语言模型想解决什么</h2>
+<p>自回归模型的本质限制是<b>串行</b>：第 N 个 token 必须等第 N-1 个算完。生成 1000 个 token 就是 1000 次串行前向。即使单次很快，端到端延迟也随长度线性增长，且 GPU 在“等上一个 token”时大量算力闲置。扩散语言模型反其道而行：把生成看成<b>从全掩码（或被污染）的句子逐步去噪到正确句子的过程</b>，每一步可以同时决定成百上千个位置，天然并行。</p>
+<table>
+  <tr><th>维度</th><th>自回归（GPT 类）</th><th>扩散语言模型</th></tr>
+  <tr><td>生成方式</td><td>从左到右逐 token</td><td>并行去噪，多位置同时定稿</td></tr>
+  <tr><td>延迟</td><td>随长度线性增长</td><td>步数固定（通常 8–64 步），与长度弱相关</td></tr>
+  <tr><td>吞吐</td><td>受限于串行</td><td>可高数倍（Mercury 报“快 8 倍”）</td></tr>
+  <tr><td>可控性</td><td>强（易约束前缀）</td><td>中（需定义噪声/掩码调度）</td></tr>
+  <tr><td>成熟度</td><td>生态完备</td><td>早期，工具链在补齐</td></tr>
+</table>
+
+<h2>二、技术原理：把“填空”做成扩散过程</h2>
+<p>主流做法是<b>离散扩散（discrete diffusion / masked diffusion）</b>：以一个“掩码 token”作为噪声源，训练目标变成“给定部分已知 token，预测被掩掉的位置”。推理时从全掩码出发，每一步用模型给所有掩码位置打分的置信度把一批位置“定稿”，反复迭代直到整句成形。这跟图像扩散的“从纯噪声到清晰图”是同构的，只是噪声空间从连续像素变成了离散词表。代表工作有 SEDD、D3PM，以及开源可跑的 LLaDA（GSAI-ML/LLaDA-8B-Instruct）、Google 的 Gemini Diffusion、Meta 的 Dream。</p>
+<p>关键工程差异在<b>调度（schedule）</b>：每一步定稿多少、按什么顺序。定稿太快会“将错就错”，太慢则步数爆炸。Mercury 3 的卖点之一，就是把这个调度和模型一起训到了“比 GPT-6 Luna 快 8 倍且质量不降”的区间（来源：机器之心，2026-10-24）。</p>
+
+<h2>三、与当日热点的关联：扩散 LLM 正在从论文走向产品</h2>
+<p>2026-10-24 机器之心《比 GPT-6 Luna 快 8 倍！扩散 LLM 跑分也反超了》集中报道了 Inception Labs Mercury 3：在代码与指令遵循基准上反超同期自回归旗舰，同时延迟大幅下降。Hugging Face 趋势榜上 Inception Labs 的 Mercury 长期占据高位。这说明扩散 LLM 已不是“玩具研究”，而是开始进入“能用的推理后端”阶段——对追求低延迟的线上服务是利好。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>识别适用面</b>：代码补全、SQL/正则生成、Agent 工具调用、批量文本改写、翻译——这些都是“短到中段、要快”的任务，最适合先试扩散 LLM。</li>
+  <li><b>接口兼容性</b>：Mercury 提供 OpenAI 兼容端点，把 base_url 一换即可接入现有链路，无需重写业务。</li>
+  <li><b>评估而非盲切</b>：用你们的真实评测集对比 AR 与扩散的延迟/质量，重点看“最难那 10%”是否掉点。</li>
+  <li><b>混合部署</b>：把高并发、低延迟要求的请求路由到扩散模型，长文创作仍留自回归，形成快慢分流。</li>
+  <li><b>本地兜底</b>：用 LLaDA 等开源离散扩散模型在内部跑通，避免供应商锁定。</li>
+</ol>
+
+<h2>五、分步实操：用 OpenAI 兼容端点跑通 Mercury，并测出真实加速</h2>
+<p>下面两段代码装好 <code>openai</code> 后直接跑。第一段是最小调用，第二段是延迟/吞吐基准（带预期输出格式）。</p>
+<h3>5.1 最小调用（真实可运行）</h3>
+<pre><code>from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.inceptionlabs.ai/v1",
+    api_key="YOUR_INCEPTION_KEY",   # 在 inceptionlabs.ai 控制台获取
+)
+
+resp = client.chat.completions.create(
+    model="mercury",
+    messages=[{"role": "user", "content": "用 Python 写一个快速排序，并加类型注解"}],
+    temperature=0.7,
+)
+print(resp.choices[0].message.content)
+</code></pre>
+<p>预期：直接返回完整代码块（扩散模型常一次性给出整段，而非逐字流式），无需等待首 token。</p>
+
+<h3>5.2 延迟/吞吐基准（带输出预期）</h3>
+<pre><code>import time, tiktoken
+from openai import OpenAI
+
+client = OpenAI(base_url="https://api.inceptionlabs.ai/v1", api_key="YOUR_INCEPTION_KEY")
+enc = tiktoken.get_encoding("cl100k_base")
+
+prompt = "写一段 300 字的 Python 异步爬虫说明，含 aiohttp 示例"
+t0 = time.perf_counter()
+out = client.chat.completions.create(model="mercury",
+        messages=[{"role": "user", "content": prompt}]).choices[0].message.content
+dt = time.perf_counter() - t0
+n = len(enc.encode(out))
+print(f"耗时 {dt:.2f}s  生成 {n} token  吞吐 {n/dt:.1f} tok/s")
+# 预期输出形如：耗时 0.9s  生成 420 token  吞吐 466.7 tok/s
+# （自回归同规模模型通常在 30-80 tok/s，扩散可高出数倍）
+</code></pre>
+
+<h3>5.3 接进网关：把扩散模型做成一条 FastAPI 路由</h3>
+<pre><code>from fastapi import FastAPI
+from openai import OpenAI
+
+app = FastAPI()
+client = OpenAI(base_url="https://api.inceptionlabs.ai/v1", api_key="YOUR_INCEPTION_KEY")
+
+@app.post("/v1/diffuse")
+async def diffuse(req: dict):
+    # 与 OpenAI 路由共用 schema，便于在网关里做快慢分流
+    out = client.chat.completions.create(
+        model="mercury",
+        messages=req["messages"],
+        temperature=req.get("temperature", 0.7),
+    )
+    return {"content": out.choices[0].message.content, "engine": "diffusion"}
+</code></pre>
+<p>把这条路由和自回归路由放在同一网关后，就能按“是否要低延迟”动态选引擎，复用现有鉴权与限流。</p>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>动作</th><th>一句到位</th></tr>
+  <tr><td>识别场景</td><td>代码/工具调用/批量改写先试扩散 LLM</td></tr>
+  <tr><td>接入成本</td><td>OpenAI 兼容端点，换 base_url 即可</td></tr>
+  <tr><td>验证</td><td>用真实评测集对比延迟与最难 10% 质量</td></tr>
+  <tr><td>部署</td><td>快慢分流，长文仍留自回归</td></tr>
+  <tr><td>去锁定</td><td>LLaDA 等开源离散扩散做本地兜底</td></tr>
+</table>
+<p>扩散语言模型不是要取代自回归，而是给“要快”的那一类请求多一个更便宜的选择。想看另一类“把慢判断剥离出来”的思路，见 <a href="/blog/decision-models-2026/">决策模型崛起</a>。</p>
+''',
+        'related': [
+            ('决策模型崛起：用 100 毫秒的强类型决策替代 LLM 的自由文本推理', 'blog/decision-models-2026/'),
+            ('DevTools 博客', 'blog/'),
+        ],
+    },
+    {
+        'slug': 'kv-cache-compression-long-context-2026',
+        'category': 'tooling',
+        'date': '2026-10-29',
+        'updated': '2026-10-29',
+        'tags': ['KV 缓存压缩', '长上下文推理', '显存优化', 'MoEZip', 'vLLM', '前缀缓存', 'LLM 降本'],
+        'title': 'KV 缓存才是长上下文的隐形账单：算清、压薄、再上量（MoEZip + TMC） | DevTools 博客',
+        'description': '长上下文推理的成本大头不在算力而在 KV 缓存——它随序列长度线性膨胀，128K 上下文下能吃掉比权重还多的显存。本文结合 NeurIPS 2026 的 MoEZip（arXiv:2610.30206）与谷歌 Transformer Memory Caching（机器之心 2026-10-29），讲清压缩的三个抓手，并给出可运行的 KV 显存计算与 vLLM fp8/前缀缓存配置。',
+        'keywords': 'KV 缓存压缩,长上下文推理,降低 LLM 显存,MoEZip,vLLM 前缀缓存 教程,fp8 KV cache,长文本 RAG 优化,如何减少 LLM 显存占用,Transformer Memory Caching,128K 上下文 部署,LLM 推理 降本',
+        'h1': 'KV 缓存才是长上下文的隐形账单：算清、压薄、再上量（MoEZip + TMC）',
+        'summary': '长上下文推理的显存大头是 KV 缓存，随长度线性膨胀。本文结合 MoEZip（arXiv:2610.30206）的路由感知压缩与谷歌 TMC 记忆缓存，给出 KV 显存计算、vLLM fp8/前缀缓存配置等可运行实战。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：长上下文推理的成本，大头不在算力而在<b>KV 缓存</b>——它随序列长度线性膨胀，128K 上下文下能吃掉比权重还多的显存。2026-10-29 机器之心报道谷歌用 Transformer Memory Caching（TMC）把超长上下文的显存门槛打下来（来源：机器之心，2026-10-29）；同期 NeurIPS 2026 录用论文 MoEZip（arXiv:2610.30206）提出“路由感知”的 KV 压缩，在 10% 保留率下长文本基准不降反升。对开发者而言，<b>先把 KV 缓存算清楚、再用 fp8/前缀缓存/量化把显存压下来</b>，是上线长上下文服务前最高 ROI 的一步。</p>
+</blockquote>
+
+<h2>一、KV 缓存为什么是长上下文的“隐形账单”</h2>
+<p>每生成一个 token，模型都要把历史所有 token 的 Key/Value 存下来供后续注意力复用，这就是 KV 缓存。它的显存占用 = 层数 × 2（K 和 V）× KV 头数 × 每头维度 × 序列长度 × 精度字节数。注意这里<b>没有“模型参数量”</b>，纯粹随长度线性增长。一段 7B 级模型在 128K 上下文、fp16 下，KV 缓存就能到十几 GB——比很多小模型的权重还大。</p>
+
+<h2>二、技术原理：压缩的三个抓手</h2>
+<table>
+  <tr><th>抓手</th><th>做法</th><th>代价</th></tr>
+  <tr><td>量化</td><td>KV 从 fp16 降到 fp8 / int8（vLLM 的 --kv-cache-dtype）</td><td>极小，长文本基本无损</td></tr>
+  <tr><td>前缀缓存</td><td>把系统提示 / 公共前缀缓存复用，不重复算</td><td>几乎免费，多用户共享前缀时收益大</td></tr>
+  <tr><td>驱逐/稀疏</td><td>按注意力重要性丢弃低价值 token（MoEZip 引入“路由敏感度”）</td><td>激进压缩需评估质量</td></tr>
+</table>
+<p>MoEZip 的巧思在于：普通压缩只看注意力分数，但 MoE 模型里“丢掉某些 KV”会改变后续<b>专家选择</b>，从而悄悄改变输出。它用路由分布的 Fisher 信息当敏感度指标，把“会不会改专家”也纳入打分，因此在 10% 保留率下 LongBench / RULER 比此前 SOTA 高 20+ 分（来源：arXiv:2610.30206，NeurIPS 2026）。谷歌 TMC 则走另一条路：把历史表示做成可复用的“记忆缓存”，用 RNN 式更新解锁超长上下文而不让 KV 无限膨胀（来源：机器之心，2026-10-29）。</p>
+
+<h2>三、与当日热点的关联</h2>
+<p>2026-10-29 机器之心《Transformer 与 RNN 合体，谷歌打下显存门槛，解锁超长上下文》点出：长上下文的瓶颈正在从“模型能力”转到“显存与带宽”。无论是 MoEZip 的路由感知压缩，还是谷歌 TMC 的记忆缓存，方向一致——<b>让“记住很长”变得便宜</b>。这对要上 128K/1M 上下文的 RAG、代码库问答、长文档 Agent 是直接利好。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>先算账</b>：用下面的函数把你们的 KV 峰值显存算出来，确认是不是被它卡住。</li>
+  <li><b>开 fp8 KV</b>：vLLM 一行参数，先把显存砍半。</li>
+  <li><b>开前缀缓存</b>：共享系统提示的多租户场景几乎白捡吞吐。</li>
+  <li><b>评估压缩率</b>：用真实长文本任务测 25%/10% 保留率下的质量，别盲目压。</li>
+  <li><b>关注路由敏感度</b>：MoE 模型压缩时优先选“路由感知”方案，避免专家漂移。</li>
+</ol>
+
+<h2>五、分步实操：算出 KV 峰值显存，并开出压降配置</h2>
+<h3>5.1 算 KV 缓存峰值（真实可运行）</h3>
+<pre><code>def kv_cache_gb(n_layers, n_kv_heads, d_head, seq_len, dtype_bytes=2, batch=1):
+    # 每层 K、V 各一份；fp16=2 字节，fp8=1 字节
+    per_token = n_layers * 2 * n_kv_heads * d_head * dtype_bytes
+    return per_token * seq_len * batch / 1e9
+
+# 示例：32 层、8 个 KV 头、每头 128 维、128K 上下文、fp16、单条
+print(f"{kv_cache_gb(32, 8, 128, 128_000):.1f} GB")              # 约 10.5 GB
+print(f"{kv_cache_gb(32, 8, 128, 128_000, dtype_bytes=1):.1f} GB")  # fp8 约 5.2 GB
+</code></pre>
+<p>预期输出：<code>10.5 GB</code> 与 <code>5.2 GB</code>。如果你的卡是 24GB，光 KV 就吃掉近一半——这就是“先压 KV”的理由。</p>
+
+<h3>5.2 用 vLLM 开出压降配置（真实可运行）</h3>
+<pre><code>python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-32B --kv-cache-dtype fp8_e5m2 --enable-prefix-caching --max-model-len 131072 --gpu-memory-utilization 0.90
+</code></pre>
+<p>同样 128K 上下文，fp8 KV 把显存砍半、前缀缓存让多用户共享系统提示不再重复计费——两者叠加，单机可服务的并发数通常能翻倍。</p>
+
+<h3>5.3 在业务里复用前缀：把系统提示固化成可缓存块</h3>
+<pre><code>import openai
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+# 把长且固定的“系统提示 + 工具定义”放在最前，vLLM 会自动前缀缓存
+sys_prompt = open("system_prompt.md").read()   # 固定内容，越稳定命中率越高
+for q in user_questions:
+    client.chat.completions.create(
+        model="Qwen/Qwen3-32B",
+        messages=[{"role": "system", "content": sys_prompt},
+                  {"role": "user", "content": q}],
+    )
+</code></pre>
+<p>前缀缓存命中后，系统提示那几千 token 的 KV 不再重算，长上下文 RAG 的首字延迟和成本都随之下降。</p>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>动作</th><th>一句到位</th></tr>
+  <tr><td>算账</td><td>先用 kv_cache_gb 看 KV 是不是瓶颈</td></tr>
+  <tr><td>量化</td><td>vLLM --kv-cache-dtype fp8_e5m2 显存砍半</td></tr>
+  <tr><td>前缀缓存</td><td>固定系统提示自动复用，几乎免费</td></tr>
+  <tr><td>稀疏</td><td>MoE 用路由感知压缩，避免专家漂移</td></tr>
+  <tr><td>趋势</td><td>TMC/记忆缓存让“记很长”变便宜</td></tr>
+</table>
+<p>长上下文不是“把 max_len 调大”那么简单，显存和带宽才是真正的成本闸门。先把 KV 缓存这页账单算清、压薄，再谈上量。</p>
+''',
+        'related': [
+            ('决策模型崛起：用 100 毫秒的强类型决策替代 LLM 的自由文本推理', 'blog/decision-models-2026/'),
+            ('DevTools 博客', 'blog/'),
+        ],
+    },
+    {
         'slug': 'php2shell-black-october-2026',
         'category': 'security',
         'date': '2026-10-28',

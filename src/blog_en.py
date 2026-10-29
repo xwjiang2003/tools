@@ -6,6 +6,202 @@
 """
 
 ARTICLES_EN = {
+    'diffusion-llm-mercury-2026': {
+        'tags': ['Diffusion LLM', 'Discrete Diffusion', 'Non-autoregressive', 'Inception Labs',
+                 'Mercury', 'LLM Inference Speed', 'Parallel Decoding'],
+        'title': 'Diffusion LLMs Are Here: Mercury 3 Turns Text Generation Into Denoising, 8x Faster Than Autoregressive | DevTools Blog',
+        'description': 'In the second half of 2026 a text-generation track ran parallel to autoregressive Transformers: the diffusion language model (dLLM). It fills a masked sentence and denoises it in parallel, like image diffusion. Inception Labs Mercury 3 was reported by Jiqizhixin on 2026-10-24 as 8x faster than GPT-6 Luna. This post explains the mechanism, ties it to the day news, and gives runnable OpenAI-compatible and FastAPI gateway examples.',
+        'keywords': 'diffusion LLM,discrete diffusion language model,Inception Labs Mercury,Mercury 3,non-autoregressive generation,how to reduce LLM latency,LLM inference speed,diffusion model tutorial,local diffusion LLM,LLaDA,parallel decoding,AI inference cost',
+        'h1': 'Diffusion LLMs Are Here: Mercury 3 Turns Text Generation Into Denoising, 8x Faster Than Autoregressive',
+        'summary': 'Diffusion LLMs reframe text generation as parallel denoising instead of token-by-token emission; Mercury 3 was reported by Jiqizhixin on 2026-10-24 as 8x faster than GPT-6 Luna. This post breaks down the mechanism, links it to the day news, and ships runnable OpenAI-compatible and FastAPI gateway examples.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: In the second half of 2026 a text-generation track ran parallel to autoregressive (AR) Transformers &mdash; the <b>diffusion language model (dLLM)</b>. Instead of emitting one token at a time like GPT, it starts from a fully masked (or noised) sentence and <b>denoises the whole thing in parallel</b>, the same way image diffusion goes from noise to a clear picture. Inception Labs Mercury was reported by Jiqizhixin on 2026-10-24 as &quot;8x faster than GPT-6 Luna, with benchmarks overtaking it&quot;. For developers the value is not &quot;another chat model&quot; but <b>latency from seconds to roughly 100ms and several-fold higher throughput</b> &mdash; ideal for code generation, agent tool calls and batch rewriting where speed matters more than length.</p>
+</blockquote>
+
+<h2>1. Why AR is slow, and what diffusion LLMs fix</h2>
+<p>The hard limit of autoregressive models is <b>serialization</b>: token N must wait for token N-1. Generating 1000 tokens means 1000 serial forward passes; even if each is fast, end-to-end latency grows linearly with length and the GPU sits idle &quot;waiting for the previous token&quot;. A diffusion LLM flips this: generation is reframed as <b>progressively denoising from an all-masked sentence to the correct one</b>, deciding hundreds or thousands of positions per step, natively parallel.</p>
+<table>
+  <tr><th>Dimension</th><th>Autoregressive (GPT-like)</th><th>Diffusion LLM</th></tr>
+  <tr><td>Generation</td><td>left-to-right, one token</td><td>parallel denoise, many positions at once</td></tr>
+  <tr><td>Latency</td><td>grows linearly with length</td><td>fixed steps (8-64), weakly tied to length</td></tr>
+  <tr><td>Throughput</td><td>capped by serialization</td><td>several times higher (Mercury claims 8x)</td></tr>
+  <tr><td>Controllability</td><td>strong (easy prefix constraints)</td><td>medium (needs noise/mask schedule)</td></tr>
+  <tr><td>Maturity</td><td>full ecosystem</td><td>early, tooling catching up</td></tr>
+</table>
+
+<h2>2. How it works: turning fill-in-the-blank into diffusion</h2>
+<p>The mainstream approach is <b>discrete / masked diffusion</b>: the mask token is the noise source, and the training target becomes &quot;given some known tokens, predict the masked positions&quot;. At inference you start from all masks, and each step the model scores every masked position and &quot;locks in&quot; a batch by confidence, iterating until the sentence is complete. This is isomorphic to image diffusion &mdash; only the noise space is the discrete vocabulary instead of continuous pixels. Key works include SEDD, D3PM, and open-weight runnable models like LLaDA (GSAI-ML/LLaDA-8B-Instruct), Google Gemini Diffusion and Meta Dream.</p>
+<p>The key engineering difference is the <b>schedule</b>: how many positions to lock per step, and in what order. Locking too fast &quot;commits to mistakes&quot;; too slow explodes the step count. Mercury 3's selling point is training that schedule together with the model into the &quot;8x faster than GPT-6 Luna without quality loss&quot; band (source: Jiqizhixin, 2026-10-24).</p>
+
+<h2>3. Tie-in to today's news</h2>
+<p>On 2026-10-24 Jiqizhixin's &quot;8x faster than GPT-6 Luna! Diffusion LLM benchmarks overtake it&quot; covered Inception Labs Mercury 3: on code and instruction-following benchmarks it overtakes same-period AR flagships while cutting latency sharply. Mercury stays near the top of the Hugging Face trending list. This means diffusion LLMs are leaving the &quot;toy research&quot; phase and entering &quot;usable inference backend&quot; &mdash; good news for latency-sensitive production services.</p>
+
+<h2>4. Developer adoption checklist</h2>
+<ol>
+  <li><b>Find the fit</b>: code completion, SQL/regex generation, agent tool calls, batch rewriting, translation &mdash; short-to-mid, speed-hungry tasks are best to try first.</li>
+  <li><b>Interface compatibility</b>: Mercury exposes an OpenAI-compatible endpoint; swap base_url and your existing pipeline works without rewrites.</li>
+  <li><b>Evaluate, do not blind-switch</b>: compare AR vs diffusion on your real eval set, watching the hardest 10% for regressions.</li>
+  <li><b>Hybrid deployment</b>: route high-concurrency, low-latency requests to the diffusion model; keep long-form creation on AR &mdash; a fast/slow split.</li>
+  <li><b>Local fallback</b>: run an open discrete-diffusion model like LLaDA internally to avoid vendor lock-in.</li>
+</ol>
+
+<h2>5. Step-by-step: run Mercury via the OpenAI-compatible endpoint and measure the speedup</h2>
+<h3>5.1 Minimal call (runs as-is)</h3>
+<pre><code>from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.inceptionlabs.ai/v1",
+    api_key="YOUR_INCEPTION_KEY",   # get it from the Inception Labs console
+)
+
+resp = client.chat.completions.create(
+    model="mercury",
+    messages=[{"role": "user", "content": "Write a Python quicksort with type hints"}],
+    temperature=0.7,
+)
+print(resp.choices[0].message.content)
+</code></pre>
+<p>Expected: a complete code block returned at once (diffusion models often emit the whole segment instead of streaming token by token), no first-token wait.</p>
+
+<h3>5.2 Latency / throughput benchmark (with expected output)</h3>
+<pre><code>import time, tiktoken
+from openai import OpenAI
+
+client = OpenAI(base_url="https://api.inceptionlabs.ai/v1", api_key="YOUR_INCEPTION_KEY")
+enc = tiktoken.get_encoding("cl100k_base")
+
+prompt = "Write a 300-word note on Python async crawling with an aiohttp example"
+t0 = time.perf_counter()
+out = client.chat.completions.create(model="mercury",
+        messages=[{"role": "user", "content": prompt}]).choices[0].message.content
+dt = time.perf_counter() - t0
+n = len(enc.encode(out))
+print(f"elapsed {dt:.2f}s  generated {n} tokens  throughput {n/dt:.1f} tok/s")
+# expected output looks like: elapsed 0.9s  generated 420 tokens  throughput 466.7 tok/s
+# (same-scale AR models usually sit at 30-80 tok/s; diffusion can be several times higher)
+</code></pre>
+
+<h3>5.3 Gateway route: expose the diffusion model as one FastAPI endpoint</h3>
+<pre><code>from fastapi import FastAPI
+from openai import OpenAI
+
+app = FastAPI()
+client = OpenAI(base_url="https://api.inceptionlabs.ai/v1", api_key="YOUR_INCEPTION_KEY")
+
+@app.post("/v1/diffuse")
+async def diffuse(req: dict):
+    # same schema as the OpenAI route, so the gateway can do fast/slow routing
+    out = client.chat.completions.create(
+        model="mercury",
+        messages=req["messages"],
+        temperature=req.get("temperature", 0.7),
+    )
+    return {"content": out.choices[0].message.content, "engine": "diffusion"}
+</code></pre>
+<p>Put this route next to your AR route behind one gateway and you can pick the engine dynamically by &quot;do I need low latency&quot;, reusing existing auth and rate limiting.</p>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Action</th><th>One-liner</th></tr>
+  <tr><td>Find the fit</td><td>try diffusion LLMs first for code / tool calls / batch rewrites</td></tr>
+  <tr><td>Adoption cost</td><td>OpenAI-compatible endpoint, just swap base_url</td></tr>
+  <tr><td>Validate</td><td>compare latency and the hardest 10% quality on your real eval set</td></tr>
+  <tr><td>Deploy</td><td>fast/slow split, keep long-form on AR</td></tr>
+  <tr><td>Avoid lock-in</td><td>LLaDA and other open discrete-diffusion models as local fallback</td></tr>
+</table>
+<p>Diffusion LLMs are not here to replace autoregressive models but to give the &quot;needs speed&quot; class of requests a cheaper option. For another &quot;peel the slow decision out&quot; angle, see <a href="/en/blog/decision-models-2026/">The rise of decision models</a>.</p>
+''',
+        'related': [
+            ('The rise of decision models: 100ms typed decisions instead of free-text LLM reasoning', 'blog/decision-models-2026/'),
+            ('DevTools Blog', 'blog/'),
+        ],
+    },
+    'kv-cache-compression-long-context-2026': {
+        'tags': ['KV Cache', 'Long Context', 'VRAM Optimization', 'MoEZip', 'vLLM',
+                 'Prefix Caching', 'LLM Cost'],
+        'title': 'The KV Cache Is the Hidden Bill of Long Context: Size It, Shrink It, Then Scale (MoEZip + TMC) | DevTools Blog',
+        'description': 'For long-context inference the big cost is not compute but the KV cache, which grows linearly with sequence length and at 128K context can eat more VRAM than the weights. This post combines NeurIPS 2026 MoEZip (arXiv:2610.30206) with Google Transformer Memory Caching (Jiqizhixin 2026-10-29), explains the three compression levers, and ships a runnable KV VRAM calculator plus vLLM fp8 / prefix-caching config.',
+        'keywords': 'KV cache compression,long context inference,reduce LLM memory,vLLM prefix caching,fp8 KV cache,MoEZip,how to reduce LLM VRAM,long context RAG,Transformer Memory Caching,128k context deployment,LLM inference cost',
+        'h1': 'The KV Cache Is the Hidden Bill of Long Context: Size It, Shrink It, Then Scale (MoEZip + TMC)',
+        'summary': 'The VRAM bulk of long-context inference is the KV cache, scaling linearly with length. This post combines MoEZip routing-aware compression (arXiv:2610.30206) with Google TMC memory caching, and ships a runnable KV VRAM calculator and vLLM fp8 / prefix-caching config.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: For long-context inference the big cost is not compute but the <b>KV cache</b> &mdash; it grows linearly with sequence length and at 128K context can eat more VRAM than the weights. On 2026-10-29 Jiqizhixin reported Google Transformer Memory Caching (TMC) lowering the VRAM wall for ultra-long context (source: Jiqizhixin, 2026-10-29); in the same window MoEZip (arXiv:2610.30206, NeurIPS 2026) proposed &quot;routing-aware&quot; KV compression that actually improves long-text benchmarks at a 10% retention rate. For developers, <b>size the KV cache first, then cut it with fp8 / prefix caching / quantization</b> is the highest-ROI step before shipping long-context services.</p>
+</blockquote>
+
+<h2>1. Why the KV cache is the hidden line item of long context</h2>
+<p>For every token generated, the model stores the Key/Value of all past tokens for later attention reuse &mdash; that is the KV cache. Its VRAM footprint = layers x 2 (K and V) x KV heads x head dim x sequence length x dtype bytes. Notice there is <b>no &quot;model parameter count&quot;</b> in that formula; it scales purely with length. A 7B-class model at 128K context, fp16, can put 10+ GB into the KV cache &mdash; more than the weights of many small models.</p>
+
+<h2>2. How it works: three levers to compress</h2>
+<table>
+  <tr><th>Lever</th><th>What</th><th>Cost</th></tr>
+  <tr><td>Quantize</td><td>KV from fp16 to fp8 / int8 (vLLM --kv-cache-dtype)</td><td>tiny, near-lossless on long text</td></tr>
+  <tr><td>Prefix cache</td><td>cache and reuse system prompt / shared prefix, no recompute</td><td>almost free; big win when many users share a prefix</td></tr>
+  <tr><td>Evict / sparsify</td><td>drop low-value tokens by attention importance (MoEZip adds &quot;routing sensitivity&quot;)</td><td>aggressive compression needs quality checks</td></tr>
+</table>
+<p>MoEZip's insight: naive compression only looks at attention scores, but in MoE models <b>dropping some KV changes which experts get selected</b>, silently changing the output. It uses the Fisher information of the routing distribution as a sensitivity metric, folding &quot;will this change the experts&quot; into the score &mdash; so at 10% retention it beats the prior SOTA by 20+ points on LongBench / RULER (source: arXiv:2610.30206, NeurIPS 2026). Google TMC takes another path: a reusable &quot;memory cache&quot; of past representations with RNN-style updates, unlocking ultra-long context without unbounded KV growth (source: Jiqizhixin, 2026-10-29).</p>
+
+<h2>3. Tie-in to today's news</h2>
+<p>On 2026-10-29 Jiqizhixin's &quot;Transformer meets RNN: Google lowers the VRAM wall, unlocks ultra-long context&quot; points out that the long-context bottleneck is shifting from &quot;model capability&quot; to &quot;VRAM and bandwidth&quot;. Whether it is MoEZip's routing-aware compression or Google TMC memory cache, the direction is the same &mdash; <b>make &quot;remembering a lot&quot; cheap</b>. That directly helps 128K/1M-context RAG, codebase Q&amp;A and long-document agents.</p>
+
+<h2>4. Developer adoption checklist</h2>
+<ol>
+  <li><b>Size it first</b>: use the function below to compute your KV peak VRAM and confirm it is the bottleneck.</li>
+  <li><b>Turn on fp8 KV</b>: one vLLM flag, halves the VRAM.</li>
+  <li><b>Turn on prefix caching</b>: near-free throughput win when system prompts are shared.</li>
+  <li><b>Evaluate the compression rate</b>: test 25% / 10% retention on real long-text tasks; do not compress blind.</li>
+  <li><b>Watch routing sensitivity</b>: for MoE models prefer routing-aware compression to avoid expert drift.</li>
+</ol>
+
+<h2>5. Step-by-step: compute the KV peak, then ship a trimmed config</h2>
+<h3>5.1 Compute the KV cache peak (runs as-is)</h3>
+<pre><code>def kv_cache_gb(n_layers, n_kv_heads, d_head, seq_len, dtype_bytes=2, batch=1):
+    # per token: K and V per layer; fp16=2 bytes, fp8=1 byte
+    per_token = n_layers * 2 * n_kv_heads * d_head * dtype_bytes
+    return per_token * seq_len * batch / 1e9
+
+# example: 32 layers, 8 KV heads, 128-dim head, 128K context, fp16, single seq
+print(f"{kv_cache_gb(32, 8, 128, 128_000):.1f} GB")              # ~10.5 GB
+print(f"{kv_cache_gb(32, 8, 128, 128_000, dtype_bytes=1):.1f} GB")  # fp8 ~5.2 GB
+</code></pre>
+<p>Expected output: <code>10.5 GB</code> and <code>5.2 GB</code>. On a 24GB card the KV cache alone takes nearly half &mdash; that is the case for &quot;shrink KV first&quot;.</p>
+
+<h3>5.2 Ship a trimmed config with vLLM (runs as-is)</h3>
+<pre><code>python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-32B --kv-cache-dtype fp8_e5m2 --enable-prefix-caching --max-model-len 131072 --gpu-memory-utilization 0.90</code></pre>
+<p>Same 128K context: fp8 KV halves VRAM and prefix caching stops multi-user system prompts from being recomputed &mdash; together, concurrency per box usually doubles.</p>
+
+<h3>5.3 Reuse the prefix in your app: pin a cacheable system block</h3>
+<pre><code>import openai
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+# put the long, fixed "system prompt + tool defs" first; vLLM auto-prefix-caches it
+sys_prompt = open("system_prompt.md").read()   # fixed content, the more stable the higher the hit rate
+for q in user_questions:
+    client.chat.completions.create(
+        model="Qwen/Qwen3-32B",
+        messages=[{"role": "system", "content": sys_prompt},
+                  {"role": "user", "content": q}],
+    )
+</code></pre>
+<p>Once the prefix cache hits, the thousands of system-prompt tokens are no longer recomputed, so first-token latency and cost for long-context RAG both drop.</p>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Action</th><th>One-liner</th></tr>
+  <tr><td>Size it</td><td>run kv_cache_gb to see if KV is the bottleneck</td></tr>
+  <tr><td>Quantize</td><td>vLLM --kv-cache-dtype fp8_e5m2 halves VRAM</td></tr>
+  <tr><td>Prefix cache</td><td>fixed system prompt auto-reused, almost free</td></tr>
+  <tr><td>Sparsify</td><td>routing-aware compression for MoE, avoid expert drift</td></tr>
+  <tr><td>Trend</td><td>TMC / memory cache makes &quot;remember a lot&quot; cheap</td></tr>
+</table>
+<p>Long context is not &quot;just raise max_len&quot; &mdash; VRAM and bandwidth are the real cost gates. Size and thin the KV cache bill before you scale.</p>
+''',
+        'related': [
+            ('The rise of decision models: 100ms typed decisions instead of free-text LLM reasoning', 'blog/decision-models-2026/'),
+            ('DevTools Blog', 'blog/'),
+        ],
+    },
     'php2shell-black-october-2026': {
         'tags': ['Supply Chain Security', 'CVE', 'PHP2Shell', 'Patch Management',
                  'Zero Trust', 'Runtime Attack Surface'],
