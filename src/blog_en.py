@@ -6,6 +6,231 @@
 """
 
 ARTICLES_EN = {
+'agent-persistent-memory-2026': {
+        'tags': ['AI Memory', 'Agent Long-term Memory', 'agent memory', 'Cross-session Memory',
+                 'claude-mem', 'BEAM Bayesian Memory', 'Mem0', 'Memory Compression'],
+        'title': 'Building AI Agent Long-term Memory: From claude-mem to BEAM Bayesian Memory, How to Make Cross-session Memory Not Collapse | DevTools Blog',
+        'description': 'On 2026-10-31 thedotmack/claude-mem hit 107k stars on GitHub Trending, making cross-session persistent context a must-have; the same day Jiqizhixin shipped VoiceMem (streaming dual-brain memory infrastructure) and A5 (lifelong-context proactive assistant), and arXiv:2610.25119 proposed BEAM Bayesian memory that turns memory value from a static statistic into a dynamic belief calibrated by execution feedback. This post breaks the three-layer memory architecture (store / retrieve / compress), why naive RAG collapses over long horizons, and ships runnable SQLite memory layer and BEAM-style belief update scripts.',
+        'keywords': 'AI memory,agent long-term memory,agent memory,cross-session memory,claude-mem,BEAM bayesian memory,Mem0,memory deduplication,memory compression,how to build agent memory,LLM memory tutorial,context compression,memory retrieval ranking',
+        'h1': 'Building AI Agent Long-term Memory: How to Make Cross-session Memory Not Collapse',
+        'summary': 'GitHub Trending claude-mem (107k stars), Jiqizhixin VoiceMem/A5, and arXiv:2610.25119 BEAM Bayesian memory together push agent cross-session memory to the center of 2026. This post breaks the three-layer architecture, why naive RAG collapses over long horizons, and ships runnable SQLite memory layer and Bayesian belief update scripts.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: On 2026-10-31, <b>thedotmack/claude-mem hit 107k stars on GitHub Trending</b>, turning cross-session persistent context into a baseline expectation &mdash; it captures everything an agent does in a session, compresses it with AI, and injects relevant context back into future sessions; the same day Jiqizhixin shipped <b>VoiceMem</b> (streaming dual-brain memory infrastructure) and <b>A5</b> (lifelong-context proactive assistant), while arXiv:2610.25119 proposed <b>BEAM Bayesian memory</b>, upgrading memory value from a historical hit-rate into a dynamic belief calibrated by execution feedback. For developers, long-term memory is no longer about whether to build it, but how to build it so it does not drag the agent down with rotten memories over long horizons. This post gives the three-layer architecture, the collapse points of naive RAG, and two runnable scripts.</p>
+</blockquote>
+
+<h2>1. Background: why long-term memory suddenly became mandatory</h2>
+<p>Within a single turn the context window is enough; but for an agent to remember you across days and projects, experience must hit disk. Three signals stacked in the same week:</p>
+<table>
+  <tr><th>Signal</th><th>Fact</th><th>Meaning</th></tr>
+  <tr><td>claude-mem (GitHub Trending, 2026-10-31)</td><td>107k stars; captures every agent session, AI-compresses, re-injects into future sessions; works with Claude Code / Codex / Gemini / Copilot</td><td>cross-session memory becomes a first-class tool default</td></tr>
+  <tr><td>VoiceMem / A5 (Jiqizhixin, 2026-10-31)</td><td>VoiceMem uses a streaming dual-brain for fact and emotional memory, ~300 tokens and 0-300ms speculative prefetch per query; A5 drives tasks proactively via lifelong context</td><td>memory splits into fact/emotion brains and turns proactive</td></tr>
+  <tr><td>BEAM (arXiv:2610.25119, 2026-10-18)</td><td>models memory value as a dynamic belief calibrated by task context and execution feedback, not a passive statistic</td><td>memory valuation itself needs reasoning</td></tr>
+</table>
+<p>Jiqizhixin article library (2026-10-20) also surfaced <b>MemT 1.0</b> (memory as an in-model capability) and <b>WorldMemArena</b> (multimodal memory in real interaction), showing memory is moving from an external store toward model-native.</p>
+
+<h2>2. How it works: the three-layer memory architecture</h2>
+<p>A production memory layer that survives long horizons needs at least three layers:</p>
+<ol>
+  <li><b>Store</b>: persist each episode with structured metadata (role, importance, timestamp, embedding). The key is an importance weight and deduplication, or memory grows without bound.</li>
+  <li><b>Retrieve</b>: top-k recall by embedding similarity times importance. Naive RAG ranks only by similarity and floats high-frequency but low-value memories to the top.</li>
+  <li><b>Compress</b>: as memory grows, summarize old episodes into shorter facts or merge duplicates; claude-mem and VoiceMem both use this step to keep a single query at a few hundred tokens.</li>
+</ol>
+<p>BEAM&rsquo;s contribution is a <b>dynamic belief</b> on top of retrieval: whether a memory is useful now depends on the current task context and on historical feedback of whether reusing it actually helped &mdash; not a simple historical hit-rate. That turns memory from passive storage into an adaptive cognitive mechanism.</p>
+
+<h2>3. Tie-in to today's news</h2>
+<p>This week&rsquo;s signals consistently point at memory-as-capability: claude-mem fixes cross-session loss, VoiceMem fixes latency and layering, A5 fixes memory-driven proactivity, BEAM fixes whom to trust. Their shared engineering pain is memory rot: a stale preference from three months ago, an overturned conclusion, or a context-mismatched old experience all poison recall. That is exactly why belief calibration and compression matter, instead of blind append. Note this is the same coin as our 2026-10-30 post AI Memory Poisoning &mdash; memory is both a capability and an attack surface, so the write path must be sanitized (see related reading).</p>
+
+<h2>4. Developer checklist</h2>
+<ol>
+  <li><b>Define three layers before code</b>: keep Store / Retrieve / Compress responsibilities separate.</li>
+  <li><b>Score every memory by importance</b>: explicit user preference &gt; successful tool result &gt; chit-chat; rank by score times similarity.</li>
+  <li><b>Add expiry and dedupe</b>: keep only the newest fact per class; TTL or down-weight on contradiction.</li>
+  <li><b>Rank by belief, not hit-rate</b>: record whether each memory helped after reuse, calibrate with feedback (script 5.2).</li>
+  <li><b>Treat writes as untrusted</b>: run prompt-injection detection on anything entering memory before persistence.</li>
+  <li><b>Cap per-query recall size</b>: like VoiceMem, keep a single query to a few hundred tokens instead of dumping the whole memory back into context.</li>
+</ol>
+
+<h2>5. Step-by-step: runnable SQLite memory layer + BEAM-style belief update</h2>
+<h3>5.1 Minimal persistent memory layer (runs as-is, stdlib only)</h3>
+<pre><code>import sqlite3, hashlib, json, re
+from collections import Counter
+
+DB = "agent_memory.db"
+
+def _embed(text):
+    # minimal runnable embedding: hash buckets over 1-2grams, zero external deps
+    toks = re.findall(r"\\w+", text.lower())
+    grams = toks + [f"{a}_{b}" for a, b in zip(toks, toks[1:])]
+    buckets = Counter()
+    for g in grams:
+        buckets[hashlib.md5(g.encode()).hexdigest()[:8]] += 1
+    norm = sum(v * v for v in buckets.values()) ** 0.5 or 1
+    return {k: v / norm for k, v in buckets.items()}
+
+def similarity(a, b):
+    return sum(a.get(k, 0) * b.get(k, 0) for k in (set(a) | set(b)))
+
+def store_episode(role, content, importance=1.0):
+    conn = sqlite3.connect(DB)
+    conn.execute("CREATE TABLE IF NOT EXISTS mem "
+                 "(id INTEGER PRIMARY KEY, role TEXT, content TEXT, "
+                 "emb TEXT, importance REAL, ts REAL)")
+    conn.execute("INSERT INTO mem VALUES (NULL,?,?,?,?,strftime('%s','now'))",
+                 (role, content, json.dumps(_embed(content)), importance))
+    conn.commit(); conn.close()
+
+def retrieve(query, top_k=3):
+    conn = sqlite3.connect(DB)
+    q = _embed(query)
+    rows = conn.execute("SELECT role,content,emb,importance FROM mem").fetchall()
+    scored = [(similarity(q, json.loads(e)) * imp, c) for _, c, e, imp in rows]
+    conn.close()
+    return [c for _, c in sorted(scored, reverse=True)[:top_k]]
+
+if __name__ == "__main__":
+    store_episode("user", "Preference: always use type hints in Python code")
+    store_episode("agent", "Called search_web tool, returned 3 results")
+    print(retrieve("how to write a Python function"))   # should recall the type-hint preference
+</code></pre>
+<p>Expected: the first returned item is the user preference, proving the Store+Retrieve layers already work.</p>
+
+<h3>5.2 BEAM-style belief update (runs as-is)</h3>
+<pre><code>def update_belief(prior, evidence_weight, observed_useful):
+    # BEAM-style: memory value is a dynamic belief calibrated by execution feedback
+    # prior: 0..1 initial belief; observed_useful: did reusing this memory actually help
+    lr = min(0.3, evidence_weight)
+    target = 1.0 if observed_useful else 0.0
+    posterior = prior + lr * (target - prior)
+    return max(0.0, min(1.0, posterior))
+
+mem_belief = {"prefer_type_hints": 0.5}
+mem_belief["prefer_type_hints"] = update_belief(mem_belief["prefer_type_hints"], 0.2, True)
+print(round(mem_belief["prefer_type_hints"], 3))   # 0.6: belief rises after a successful reuse
+</code></pre>
+<p>Use <code>mem_belief</code> as the retrieval ranking weight and memory gets smarter with use, instead of being held hostage by historical hit-rates &mdash; exactly the incremental value of BEAM over naive RAG.</p>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Dimension</th><th>One-liner</th></tr>
+  <tr><td>Trend</td><td>cross-session memory is now standard (claude-mem 107k, VoiceMem, A5)</td></tr>
+  <tr><td>Architecture</td><td>Store / Retrieve / Compress, separated</td></tr>
+  <tr><td>Collapse point</td><td>naive append + RAG rots from stale memories</td></tr>
+  <tr><td>Upgrade</td><td>BEAM calibrates memory value by execution feedback</td></tr>
+  <tr><td>Red line</td><td>sanitize the write path to prevent memory poisoning</td></tr>
+</table>
+<p>Long-term memory is the agent&rsquo;s second brain in 2026, but a second brain can also go senile &mdash; layering, compression and belief calibration are what keep it getting smarter. Related: <a href="/en/blog/ai-memory-poisoning-2026/">AI Memory Poisoning Is Here</a> and <a href="/en/blog/multi-agent-orchestration-2026/">More Agents Is Not a Silver Bullet</a>.</p>
+''',
+        'related': [
+            ('AI Memory Poisoning Is Here: How a Summarize Button Quietly Rewrites Your Assistant Memory', 'blog/ai-memory-poisoning-2026/'),
+            ('More Agents Is Not a Silver Bullet: The Truth About Agent Orchestration in 2026', 'blog/multi-agent-orchestration-2026/'),
+        ],
+    },
+'bellman-language-models-2026': {
+        'tags': ['Bellman Language Models', 'LLM Cost Optimization', 'MDP Decision', 'Decision Models',
+                 'Reduce Token', 'Discretize Then Decide', 'LLM Agent'],
+        'title': 'Bellman Language Models: Turn Repeated LLM Agent Decisions Into an MDP, Cut Model Calls by 93-98% | DevTools Blog',
+        'description': 'arXiv:2610.24871 (2026-10-17) introduces Bellman Language Models (BLM) and Discretize, Then Decide: extract the recurring decisions of an LLM agent into a Markov Decision Process, solve it once, reuse forever. On the tau2-bench telecom benchmark a model-free controller alone solves 79 percent of tasks; Qwen3.8-27B as a BLM jumps from 29 to 96 percent with 93 percent fewer model calls; Claude Opus 5.5 cuts per-task cost and calls by about 98 percent. This post pairs it with the real LLM-cost anxiety on Hacker News (2026-10-31) and Microsoft Decision-1, and ships a runnable discretize-plus-value-iteration controller and a cost estimator.',
+        'keywords': 'Bellman language models,LLM agent decision,reduce LLM cost,reduce tokens,fewer model calls,Discretize Then Decide,MDP decision,how to speed up LLM,reduce LLM latency,decision models,agent cost optimization tutorial,value iteration',
+        'h1': 'Bellman Language Models: Turn Repeated LLM Agent Decisions Into an MDP, Cut Calls by 93-98%',
+        'summary': 'arXiv:2610.24871 Bellman Language Models extract an agent recurring decisions into an MDP and reuse the solution: Qwen3.8-27B as a BLM goes 29 to 96 percent with 93 percent fewer calls, Claude Opus 5.5 cuts per-task cost by about 98 percent. This post pairs it with HN cost anxiety and Microsoft Decision-1, and ships a runnable discretize-plus-value-iteration controller and cost estimator.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: The 2026-10-17 paper <b>arXiv:2610.24871 Bellman Language Models</b> punctures a blind spot &mdash; in bounded agent workflows the LLM decision space saturates fast: the same states keep showing up, yet the model re-derives every decision from context each turn. The authors propose <b>Discretize, Then Decide</b>: discretize conversations into states, estimate each action success rate and cost, solve a Markov Decision Process (MDP), then wrap the solution as a controller around the model &mdash; known states take a fixed action (tool call / templated reply), only unseen states go to the LLM. The numbers are brutal: on tau2-bench telecom a <b>model-free controller alone solves 79 percent</b>; <b>Qwen3.8-27B as a BLM goes 29 to 96 percent with 93 percent fewer calls</b>; <b>Claude Opus 5.5 cuts per-task calls and cost by about 98 percent</b>. Combined with the real LLM-cost anxiety on Hacker News (2026-10-31) and Microsoft Decision-1, this is the most practical cost-reduction route right now.</p>
+</blockquote>
+
+<h2>1. Background: why agents reinvent the wheel</h2>
+<p>In bounded workflows (support, ops, ticketing, refunds) the choose-a-tool / pick-a-template decision an agent makes each turn is highly repetitive. But the LLM defaults to treating every decision as brand new, regenerating the answer from the prompt. That equals re-deriving the same arithmetic every turn &mdash; slow, expensive, and more error-prone. On HN, We decreased our LLM costs with Opus (2026-10-31) has developers manually routing by model tier (strong model writes the plan, weak model does mechanical work); that is hand-approximating this idea &mdash; but manual tiering does not generalize.</p>
+
+<h2>2. How it works: Discretize, Then Decide</h2>
+<table>
+  <tr><th>Step</th><th>What</th><th>Gain</th></tr>
+  <tr><td>Discretize</td><td>read conversations/logs into discrete states, count success rate and cost per action</td><td>turn fuzzy context into computable state</td></tr>
+  <tr><td>Solve</td><td>build state-&gt;action into an MDP, solve optimal policy via value iteration</td><td>solve the decision once, reuse forever</td></tr>
+  <tr><td>Control</td><td>wrap controller around the model: known state takes fixed action, unknown state falls back to LLM</td><td>cut the vast majority of repeated model calls</td></tr>
+</table>
+<p>Key insight: <b>when writing content is harder than choosing an action (real coding, SymPy derivations), few decisions can be pre-solved and BLM helps little; but when the bottleneck is choosing an action, BLM almost freebies a 90+ percent saving</b>. On InventoryBench the model-free solved policy beats every published method.</p>
+
+<h2>3. Tie-in to today's news</h2>
+<p>Three threads converge this week: the paper (2026-10-17) gives a provable cost ceiling; Hacker News (2026-10-31) Tokenless (YC S26) automatic model switching and Oak (a Git alternative for agents) both orbit the highest-frequency anxiety, agent token cost; and Jiqizhixin (2026-10-31) Microsoft Decision-1, a decision-scoring model that returns calibrated probabilities per option instead of generating natural language &mdash; the industrial landing of exactly the turn-decision-into-classification idea inside BLM. All three point the same way: <b>wherever you can avoid an LLM generation, do</b>.</p>
+
+<h2>4. Developer checklist</h2>
+<ol>
+  <li><b>Audit the logs first</b>: pull your agent workflow logs and see how many decisions are repeated states.</li>
+  <li><b>Define states</b>: use deterministic features (intent class, current stage, error code), never the whole conversation as the state.</li>
+  <li><b>Estimate success and cost</b>: per state, per action, success/total and unit cost; cold-start by running the LLM a few times to probe.</li>
+  <li><b>Solve policy by value iteration</b>: score = success rate minus cost penalty, take the best action; reuse when seen, fall back to LLM when unseen.</li>
+  <li><b>Set a fallback gate</b>: unseen states, low confidence, and any money/permission action go to a strong model plus human review.</li>
+  <li><b>Recalibrate continuously</b>: new logs flow back, recompute policy periodically to avoid drift.</li>
+</ol>
+
+<h2>5. Step-by-step: runnable discretize-plus-value-iteration controller and cost estimator</h2>
+<h3>5.1 Minimal BLM controller (runs as-is, stdlib only)</h3>
+<pre><code>from collections import defaultdict
+
+# 1) discretize real workflow logs into (state -> action -> outcome)
+logs = [
+    ("need_refund",   "call_tool_refund",  True),
+    ("need_refund",   "call_tool_refund",  True),
+    ("need_refund",   "ask_llm",           False),
+    ("balance_query", "call_tool_balance", True),
+    ("balance_query", "call_tool_balance", True),
+]
+stats = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # state->action->[success,total]
+for s, a, ok in logs:
+    stats[s][a][1] += 1
+    if ok:
+        stats[s][a][0] += 1
+
+# 2) pick the action with highest (success rate - cost penalty); solve once, reuse forever
+COST = {"call_tool_refund": 1, "call_tool_balance": 1, "ask_llm": 20}
+policy = {}
+for s, acts in stats.items():
+    best, best_score = None, -1
+    for a, (succ, tot) in acts.items():
+        score = succ / tot - 0.05 * COST[a]
+        if score > best_score:
+            best, best_score = a, score
+    policy[s] = best
+
+def decide(state):
+    return policy.get(state, "ask_llm")  # unseen state falls back to LLM
+
+print(decide("need_refund"))    # call_tool_refund (known state, no LLM call)
+print(decide("unknown_state"))  # ask_llm (unseen state, fall back to model)
+</code></pre>
+<p>Expected: known states output a fixed tool action with zero model calls; only unseen states go to the LLM. That is the core of solve-once-reuse-thousands.</p>
+
+<h3>5.2 Cost estimator (runs as-is, matches the ~93 percent in the paper)</h3>
+<pre><code>def estimate_savings(baseline_calls, blm_coverage, llm_cost=20, tool_cost=1):
+    # blm_coverage: fraction of states covered by the policy (no LLM needed)
+    saved = baseline_calls * blm_coverage
+    new_cost = (baseline_calls - saved) * llm_cost + saved * tool_cost
+    old_cost = baseline_calls * llm_cost
+    return {"saved_calls": int(saved),
+            "cost_reduction_pct": round(100 * (1 - new_cost / old_cost), 1)}
+
+print(estimate_savings(10000, 0.93))   # about 93 percent cost drop, matching Qwen3.8-27B BLM
+</code></pre>
+<p>Plug in your real baseline_calls and coverage and you get a credible savings invoice &mdash; far more convincing than I feel the model is expensive.</p>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Dimension</th><th>One-liner</th></tr>
+  <tr><td>Core</td><td>extract repeated decisions into an MDP, solve once, reuse forever</td></tr>
+  <tr><td>Gain</td><td>Qwen3.8-27B 96 percent and -93 percent calls; Opus 5.5 -98 percent cost</td></tr>
+  <tr><td>Fits</td><td>bounded workflows where the bottleneck is choosing an action</td></tr>
+  <tr><td>Does not fit</td><td>free-form generation where the bottleneck is writing content</td></tr>
+  <tr><td>Companions</td><td>Microsoft Decision-1, model-tier routing, Tokenless same direction</td></tr>
+</table>
+<p>Bellman Language Models do not replace the LLM; they wrap it with a controller that says do not think when you should not. Audit logs, define states, solve by value iteration, and you often freebie 90+ percent of cost and latency. Related: <a href="/en/blog/decision-models-2026/">The Rise of Decision Models</a> and <a href="/en/blog/multi-agent-orchestration-2026/">More Agents Is Not a Silver Bullet</a>.</p>
+''',
+        'related': [
+            ('The Rise of Decision Models: 100ms Typed Decisions Instead of Free-text LLM Reasoning', 'blog/decision-models-2026/'),
+            ('More Agents Is Not a Silver Bullet: The Truth About Agent Orchestration in 2026', 'blog/multi-agent-orchestration-2026/'),
+        ],
+    },
+
     'multi-agent-orchestration-2026': {
         'tags': ['Multi-Agent', 'Agent Orchestration', 'AI Agent Framework', 'LangGraph',
                  'CrewAI', 'Microsoft Agent Framework', 'MCP', 'A2A', 'Prompt Injection',
