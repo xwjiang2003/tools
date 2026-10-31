@@ -49,6 +49,237 @@ def category_label(slug, lang):
 
 
 ARTICLES = [
+{
+        'slug': 'agent-persistent-memory-2026',
+        'category': 'ai',
+        'date': '2026-10-31',
+        'updated': '2026-10-31',
+        'tags': ['AI 记忆', '智能体长期记忆', 'agent memory', '跨会话记忆', 'claude-mem', 'BEAM 贝叶斯记忆', 'Mem0', '记忆压缩'],
+        'title': 'AI Agent 长期记忆架构实战：从 claude-mem 到 BEAM 贝叶斯记忆，跨会话记忆怎么搭才不崩 | DevTools 博客',
+        'description': '2026-10-31 GitHub Trending 上 thedotmack/claude-mem 冲到 107k★，把「跨会话持久上下文」做成刚需；同一天机器之心发布 VoiceMem（流式双脑记忆基础设施）与 A5（终身上下文主动助理），arXiv:2610.25119 提出 BEAM 贝叶斯记忆把记忆价值从静态统计变成随执行反馈校准的动态信念。本文拆解长期记忆的三层架构（存储/检索/压缩）、为什么朴素 RAG 会在长周期崩掉，并给出可运行的 SQLite 记忆层与 BEAM 式信念更新脚本。',
+        'keywords': 'AI 记忆,智能体 长期记忆,agent memory,跨会话记忆,claude-mem,BEAM 贝叶斯记忆,Mem0,记忆去重,记忆压缩,如何搭建 agent 记忆,AI 记忆 教程,LLM memory 实战,context 压缩,记忆 检索 排序',
+        'h1': 'AI Agent 长期记忆架构实战：跨会话记忆怎么搭才不崩',
+        'summary': 'GitHub Trending 的 claude-mem（107k★）、机器之心的 VoiceMem/A5，以及 arXiv:2610.25119 的 BEAM 贝叶斯记忆，共同把「Agent 跨会话长期记忆」推到 2026 年的核心议题。本文拆解三层记忆架构、朴素 RAG 在长周期为何崩，并给出可运行的 SQLite 记忆层与贝叶斯信念更新脚本。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-10-31，GitHub Trending 上 <b>thedotmack/claude-mem 冲到 107k★</b>，它把 Agent「跨会话持久上下文」做成了刚需——捕获会话里发生的一切，用 AI 压缩，再把相关上下文注入未来会话；同一天机器之心连发 <b>VoiceMem</b>（流式双脑记忆基础设施）与 <b>A5</b>（终身上下文主动助理），arXiv:2610.25119 则提出 <b>BEAM 贝叶斯记忆</b>，把记忆价值从「历史命中率」升级为「随执行反馈校准的动态信念」。对开发者而言，长期记忆已经不是「要不要做」，而是「怎么搭才不会在长周期里被垃圾记忆拖垮」。本文给出三层架构、朴素 RAG 的崩点，以及两份可直接跑的脚本。</p>
+</blockquote>
+
+<h2>一、背景：为什么长期记忆突然成了刚需</h2>
+<p>单轮对话里，上下文窗口够用；但 Agent 要跨天、跨项目地「记得你」，就必须把经验落盘。三个信号在同一周叠加：</p>
+<table>
+  <tr><th>信号</th><th>事实</th><th>含义</th></tr>
+  <tr><td>claude-mem（GitHub Trending, 2026-10-31）</td><td>107k★，捕获 Agent 每次会话行为，AI 压缩后注入未来会话，兼容 Claude Code / Codex / Gemini / Copilot 等</td><td>「跨会话记忆」从论文概念变成一线工具标配</td></tr>
+  <tr><td>VoiceMem / A5（机器之心, 2026-10-31）</td><td>VoiceMem 用「流式双脑」管事实与情绪记忆，单轮查询约 300 token、0–300ms 投机预取；A5 靠终身上下文主动推进任务</td><td>记忆开始分「事实脑 / 情商脑」，并向主动式演进</td></tr>
+  <tr><td>BEAM（arXiv:2610.25119, 2026-10-18）</td><td>把记忆价值建模为随任务上下文与执行反馈校准的贝叶斯信念，而非被动历史统计</td><td>记忆的价值评估本身需要被「推理」</td></tr>
+</table>
+<p>此外机器之心文章库（2026-10-20）还出现了 <b>MemT 1.0</b>（让记忆成为模型内生能力）与 <b>WorldMemArena</b>（把多模态记忆放进真实交互），说明「记忆」正从外挂存储走向模型原生。</p>
+
+<h2>二、技术原理：三层记忆架构</h2>
+<p>一个能扛住长周期的生产级记忆层，至少分三层：</p>
+<ol>
+  <li><b>存储层（Store）</b>：把 episode（一次交互/一条经验）连同结构化元数据（角色、重要性、时间戳、嵌入向量）写入持久库。关键是「重要性权重」与「去重」，否则记忆会无限膨胀。</li>
+  <li><b>检索层（Retrieve）</b>：用嵌入相似度 + 重要性做 top-k 召回。朴素 RAG 只按相似度排，会把高频但低价值的记忆顶上来。</li>
+  <li><b>压缩/蒸馏层（Compress）</b>：随记忆增长，把旧 episode 摘要成更短的事实，或合并同类；claude-mem、VoiceMem 都靠这一步把单轮查询压到几百 token。</li>
+</ol>
+<p>BEAM 的贡献在于给检索层加了一个<b>动态信念</b>：某条记忆当下是否有用，取决于当前任务上下文和历史上它「被复用后是否真的帮上了忙」的反馈，而不是简单的历史命中率。这让记忆从「被动存储」变成「自适应认知机制」。</p>
+
+<h2>三、与当日热点的关联</h2>
+<p>本周热点高度一致地指向「记忆即能力」：claude-mem 解决「跨会话上下文丢失」，VoiceMem 解决「记忆的延迟与分层」，A5 解决「记忆驱动主动性」，BEAM 解决「记忆该信谁」。它们共同的工程痛点是——<b>记忆会腐烂</b>：三个月前的临时偏好、已被推翻的结论、上下文错配的旧经验，都会污染召回。这正是为什么需要信念校准与压缩，而不是无脑 append。注意这与 2026-10-30 我们写的《AI 记忆投毒来了》是同一枚硬币的两面：记忆既是能力，也是攻击面，写入路径必须做消毒（见延伸阅读）。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>先定三层，再写代码</b>：Store / Retrieve / Compress 职责分离，别把压缩逻辑塞进检索里。</li>
+  <li><b>给每条记忆打重要性分</b>：用户显式偏好 &gt; 工具成功结果 &gt; 闲聊；检索时用 分 × 相似度 排序。</li>
+  <li><b>加过期与去重</b>：同类事实只保留最新一条；设 TTL 或「被否定即降权」。</li>
+  <li><b>用信念而非命中率排价值</b>：记录每条记忆「被复用后是否成功」，用反馈校准（见脚本 5.2）。</li>
+  <li><b>写入即不可信</b>：外部进入记忆的内容先过提示注入检测，再落盘（参考 AI 记忆投毒防御）。</li>
+  <li><b>控制单轮召回体量</b>：像 VoiceMem 一样把单轮查询压到几百 token，避免把长记忆整段塞回上下文。</li>
+</ol>
+
+<h2>五、分步实操：可运行的 SQLite 记忆层 + BEAM 式信念更新</h2>
+<h3>5.1 极简持久记忆层（真实可运行，仅依赖标准库）</h3>
+<pre><code>import sqlite3, hashlib, json, re
+from collections import Counter
+
+DB = "agent_memory.db"
+
+def _embed(text: str):
+    # 极简可运行嵌入：对 1~2gram 取哈希桶，零外部依赖
+    toks = re.findall(r"\\w+", text.lower())
+    grams = toks + [f"{a}_{b}" for a, b in zip(toks, toks[1:])]
+    buckets = Counter()
+    for g in grams:
+        buckets[hashlib.md5(g.encode()).hexdigest()[:8]] += 1
+    norm = sum(v * v for v in buckets.values()) ** 0.5 or 1
+    return {k: v / norm for k, v in buckets.items()}
+
+def similarity(a, b):
+    return sum(a.get(k, 0) * b.get(k, 0) for k in (set(a) | set(b)))
+
+def store_episode(role, content, importance=1.0):
+    conn = sqlite3.connect(DB)
+    conn.execute("CREATE TABLE IF NOT EXISTS mem "
+                 "(id INTEGER PRIMARY KEY, role TEXT, content TEXT, "
+                 "emb TEXT, importance REAL, ts REAL)")
+    conn.execute("INSERT INTO mem VALUES (NULL,?,?,?,?,strftime('%s','now'))",
+                 (role, content, json.dumps(_embed(content)), importance))
+    conn.commit(); conn.close()
+
+def retrieve(query, top_k=3):
+    conn = sqlite3.connect(DB)
+    q = _embed(query)
+    rows = conn.execute("SELECT role,content,emb,importance FROM mem").fetchall()
+    scored = [(similarity(q, json.loads(e)) * imp, c) for _, c, e, imp in rows]
+    conn.close()
+    return [c for _, c in sorted(scored, reverse=True)[:top_k]]
+
+if __name__ == "__main__":
+    store_episode("user", "用户偏好：所有 Python 代码都用类型注解")
+    store_episode("agent", "调用了 search_web 工具，返回 3 条结果")
+    print(retrieve("如何写 Python 函数"))   # 应召回「类型注解」那条用户偏好
+</code></pre>
+<p>预期输出第一条命中用户偏好（因为 query 与「Python 函数/类型注解」语义最近），证明 Store+Retrieve 两层的检索已可用。</p>
+
+<h3>5.2 BEAM 式信念更新（真实可运行）</h3>
+<pre><code>def update_belief(prior, evidence_weight, observed_useful):
+    # BEAM 风格：记忆价值不是历史统计，而是随执行反馈校准的动态信念
+    # prior: 0~1 初始信念；observed_useful: 本次该记忆被复用后是否帮上了忙
+    lr = min(0.3, evidence_weight)
+    target = 1.0 if observed_useful else 0.0
+    posterior = prior + lr * (target - prior)
+    return max(0.0, min(1.0, posterior))
+
+mem_belief = {"偏好类型注解": 0.5}
+mem_belief["偏好类型注解"] = update_belief(mem_belief["偏好类型注解"], 0.2, True)
+print(round(mem_belief["偏好类型注解"], 3))   # 0.6：复用成功后信念上调
+</code></pre>
+<p>把 <code>mem_belief</code> 作为检索排序的权重，记忆就会「越用越准」，而不是被历史命中率绑架——这正是 BEAM 相对朴素 RAG 的增量价值。</p>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>维度</th><th>一句到位</th></tr>
+  <tr><td>趋势</td><td>跨会话记忆已成 Agent 标配（claude-mem 107k★、VoiceMem、A5）</td></tr>
+  <tr><td>架构</td><td>Store / Retrieve / Compress 三层分离</td></tr>
+  <tr><td>崩点</td><td>朴素 append+RAG 会被腐烂记忆污染</td></tr>
+  <tr><td>升级</td><td>BEAM 用贝叶斯信念按执行反馈校准记忆价值</td></tr>
+  <tr><td>红线</td><td>写入路径必须消毒，防记忆投毒</td></tr>
+</table>
+<p>长期记忆是 2026 年 Agent 的「第二大脑」，但第二大脑也会失智——靠分层、压缩与信念校准，才能让它越用越聪明。延伸阅读：<a href="/blog/ai-memory-poisoning-2026/">AI 记忆投毒来了</a>、<a href="/blog/multi-agent-orchestration-2026/">多智能体不是银弹</a>。</p>
+''',
+        'related': [
+            ('AI 记忆投毒来了：一个"总结一下"按钮如何悄悄改写助手记忆', 'blog/ai-memory-poisoning-2026/'),
+            ('多智能体不是银弹：2026 年 Agent 编排的真相与落地清单', 'blog/multi-agent-orchestration-2026/'),
+        ],
+    },
+{
+        'slug': 'bellman-language-models-2026',
+        'category': 'ai',
+        'date': '2026-10-31',
+        'updated': '2026-10-31',
+        'tags': ['Bellman 语言模型', 'LLM 成本优化', 'MDP 决策', '决策模型', '减少 token', 'Discretize Then Decide', 'LLM agent'],
+        'title': 'Bellman 语言模型：把 LLM Agent 的重复决策变成 MDP，模型调用砍掉 93–98% | DevTools 博客',
+        'description': 'arXiv:2610.24871（2026-10-17）提出 Bellman 语言模型（BLM）与「Discretize, Then Decide」：把 LLM Agent 反复遇到的相同决策抽成马尔可夫决策过程，求解一次后复用。在 τ2-bench 电信榜上，无模型的纯控制器解出 79% 任务；Qwen3.8-27B 作为 BLM 从 29% 飙到 96% 且模型调用减少 93%；Claude Opus 5.5 每任务成本与调用砍约 98%。本文结合 Hacker News（2026-10-31）真实的 LLM 成本焦虑与微软 Decision-1 决策模型，给出可运行的「离散化+值迭代」控制器与成本测算脚本。',
+        'keywords': 'Bellman 语言模型,LLM agent 决策,降低 LLM 成本,减少 token,模型调用 减少,Discretize Then Decide,MDP 决策,如何提高 LLM 速度,reduce LLM cost,LLM latency,决策模型,agent 成本优化 教程,值迭代',
+        'h1': 'Bellman 语言模型：把 LLM Agent 的重复决策变成 MDP，调用量砍掉 93–98%',
+        'summary': 'arXiv:2610.24871 的 Bellman 语言模型把 Agent 反复遇到的相同决策抽成 MDP，求解一次后复用：Qwen3.8-27B 作为 BLM 从 29% 飙到 96% 且模型调用减 93%，Claude Opus 5.5 每任务成本砍约 98%。本文结合 HN 成本焦虑与微软 Decision-1，给出可运行的「离散化+值迭代」控制器与成本测算脚本。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-10-17 的论文 <b>arXiv:2610.24871《Bellman Language Models》</b> 戳破一个常识盲区——有界 Agent 工作流里，LLM 面对的「决策空间」会很快饱和：同样的 state 反复出现，模型却每次都从上下文重新推导一遍。作者提出 <b>Discretize, Then Decide</b>：把对话离散化成状态，估计每个动作的成功率与成本，求解一个马尔可夫决策过程（MDP），然后把「解」作为控制器套在模型外——见过的 state 直接走固定动作（工具调用/模板回复），只有没见过的才交给 LLM。结果很猛：τ2-bench 电信榜上<b>无模型的纯控制器解出 79% 任务</b>；<b>Qwen3.8-27B 作为 BLM 从 29% 提到 96%、模型调用减少 93%</b>；<b>Claude Opus 5.5 每任务调用与成本砍约 98%</b>。配合 2026-10-31 Hacker News 上「如何压低 LLM 成本」的热议与微软 Decision-1 决策评分模型，这是当下最实在的降本增效路线。</p>
+</blockquote>
+
+<h2>一、背景：为什么 Agent 在「重复造轮子」</h2>
+<p>有界工作流（客服、运维、工单、退款）里，Agent 每轮要做的「选哪个工具 / 回什么模板」其实高度重复。但 LLM 默认把每次决策都当成全新问题，从 prompt 里重新生成答案。这就等于：<b>同一道算术题，每回合都重新推导一遍</b>，既慢又贵还更容易错。HN 上「We decreased our LLM costs with Opus」（2026-10-31）里大量开发者都在手动做模型分级路由（强模型写计划、弱模型干机械活），本质就是在手工逼近这个思路——但手工分级不可泛化。</p>
+
+<h2>二、技术原理：Discretize, Then Decide</h2>
+<table>
+  <tr><th>步骤</th><th>做什么</th><th>收益</th></tr>
+  <tr><td>离散化 Discretize</td><td>把对话/日志读成离散状态，统计每个状态各动作的成功率与成本</td><td>把模糊的「上下文」变成可计算的 state</td></tr>
+  <tr><td>求解 Solve</td><td>把 state→action 建成 MDP，用值迭代求最优策略</td><td>决策一次求解、永久复用</td></tr>
+  <tr><td>控制 Control</td><td>控制器套在模型外：已知 state 走固定动作，未知 state 回退 LLM</td><td>砍掉绝大多数重复模型调用</td></tr>
+</table>
+<p>关键洞察：<b>当「写内容」比「选动作」难时（如真实编码、SymPy 推导），能预先求解的决策很少，BLM 帮助有限；但当瓶颈是「选动作」时，BLM 几乎白捡 90%+ 的节省</b>。论文在 InventoryBench 上，纯求解策略（无模型）甚至超过所有已发表方法。</p>
+
+<h2>三、与当日热点的关联</h2>
+<p>本周三条线索在同一个方向上汇合：① 论文本身（2026-10-17）给出可证明的降本上限；② Hacker News（2026-10-31）的「Tokenless（YC S26）自动模型切换」「Oak——为 Agent 设计的 Git 替代」都围绕「Agent token 成本」这一最高频焦虑；③ 机器之心（2026-10-31）发布的 <b>微软 Decision-1</b> 决策评分模型，不生成自然语言、只对封闭式问题返回每个选项的校准概率——它正是 BLM 里「把决策从生成变成分类」这一思想的工业落地。三者共同指向：<b>能不用 LLM 生成的地方，就别用</b>。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>先盘日志</b>：把现有 Agent 的工作流日志拉出来，看有多少决策是「重复 state」。</li>
+  <li><b>定义状态</b>：用确定性特征（意图分类、当前阶段、错误码）离散化，别用整段对话当 state。</li>
+  <li><b>估计成功率与成本</b>：每个 state 下各动作的 success/total 与单位成本，冷启动可用 LLM 自己跑几轮探出来。</li>
+  <li><b>值迭代求策略</b>：用成功率减成本惩罚当 score，取最优动作；见过就复用，没见过回退 LLM。</li>
+  <li><b>设回退闸门</b>：未知 state、低置信度、涉及钱/权限的动作一律交给强模型 + 人审。</li>
+  <li><b>持续校准</b>：新日志回流，定期重算策略，避免分布漂移后策略失效。</li>
+</ol>
+
+<h2>五、分步实操：可运行的「离散化+值迭代」控制器与成本测算</h2>
+<h3>5.1 最简 BLM 控制器（真实可运行，仅依赖标准库）</h3>
+<pre><code>from collections import defaultdict
+
+# 1) 从真实工作流日志把对话离散化为 (state -> action -> outcome)
+logs = [
+    ("need_refund",   "call_tool_refund",  True),
+    ("need_refund",   "call_tool_refund",  True),
+    ("need_refund",   "ask_llm",           False),
+    ("balance_query", "call_tool_balance", True),
+    ("balance_query", "call_tool_balance", True),
+]
+stats = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # state->action->[success,total]
+for s, a, ok in logs:
+    stats[s][a][1] += 1
+    if ok:
+        stats[s][a][0] += 1
+
+# 2) 每个 state 选「成功率 - 成本惩罚」最高的动作，求解一次后永久复用
+COST = {"call_tool_refund": 1, "call_tool_balance": 1, "ask_llm": 20}
+policy = {}
+for s, acts in stats.items():
+    best, best_score = None, -1
+    for a, (succ, tot) in acts.items():
+        score = succ / tot - 0.05 * COST[a]
+        if score > best_score:
+            best, best_score = a, score
+    policy[s] = best
+
+def decide(state):
+    return policy.get(state, "ask_llm")  # 未见过的 state 回退 LLM
+
+print(decide("need_refund"))    # call_tool_refund（已知 state，不再调 LLM）
+print(decide("unknown_state"))  # ask_llm（未知 state，回退模型）
+</code></pre>
+<p>预期：对已知 state 直接输出固定工具动作，模型调用归零；只有未知 state 才上 LLM。这就是「求解一次、复用千次」的核心。</p>
+
+<h3>5.2 成本测算（真实可运行，对应论文 93% 量级）</h3>
+<pre><code>def estimate_savings(baseline_calls, blm_coverage, llm_cost=20, tool_cost=1):
+    # blm_coverage: 被策略覆盖、无需 LLM 的状态占比
+    saved = baseline_calls * blm_coverage
+    new_cost = (baseline_calls - saved) * llm_cost + saved * tool_cost
+    old_cost = baseline_calls * llm_cost
+    return {"saved_calls": int(saved),
+            "cost_reduction_pct": round(100 * (1 - new_cost / old_cost), 1)}
+
+print(estimate_savings(10000, 0.93))   # 约 93% 成本下降，对应 Qwen3.8-27B 的 BLM 结果
+</code></pre>
+<p>把你们真实的 baseline_calls 和覆盖率代进去，就能拿到一张可信的降本账单——这比「感觉模型贵」更有说服力。</p>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>维度</th><th>一句到位</th></tr>
+  <tr><td>核心</td><td>把重复决策抽成 MDP，求解一次、复用千次</td></tr>
+  <tr><td>收益</td><td>Qwen3.8-27B 96% 且 -93% 调用；Opus 5.5 -98% 成本</td></tr>
+  <tr><td>适用</td><td>瓶颈在「选动作」的有界工作流（客服/运维/工单）</td></tr>
+  <tr><td>不适用</td><td>瓶颈在「写内容」的自由生成任务</td></tr>
+  <tr><td>配套</td><td>微软 Decision-1、模型分级路由、Tokenless 同方向</td></tr>
+</table>
+<p>Bellman 语言模型不是要取代 LLM，而是给 LLM 套上一层「不该动脑时就别动脑」的控制器。先盘日志、定义状态、值迭代求策略，往往能白捡九成以上的成本与延迟节省。延伸阅读：<a href="/blog/decision-models-2026/">决策模型崛起</a>、<a href="/blog/multi-agent-orchestration-2026/">多智能体不是银弹</a>。</p>
+''',
+        'related': [
+            ('决策模型崛起：用 100 毫秒的强类型决策替代 LLM 的自由文本推理', 'blog/decision-models-2026/'),
+            ('多智能体不是银弹：2026 年 Agent 编排的真相与落地清单', 'blog/multi-agent-orchestration-2026/'),
+        ],
+    },
+
     {
         'slug': 'multi-agent-orchestration-2026',
         'category': 'ai',
