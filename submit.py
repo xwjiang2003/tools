@@ -12,8 +12,15 @@ Bing 的索引又直接供 ChatGPT Search 检索使用，所以这一步同时�
 换域名后 host 变了，必须带着新 host 重新提交一次。
 
 用法:
-  python3 submit.py            # 提交 sitemap 中的全部 URL
-  python3 submit.py --dry-run  # 只打印将要提交的内容
+  python3 submit.py                  # 提交 sitemap 中的全部 URL（全量，慎用）
+  python3 submit.py --changed DIR    # 只提交与 DIR（上一版发布目录）内容不同的 URL
+  python3 submit.py --dry-run        # 只打印将要提交的内容
+
+为什么默认全量要慎用（2026-10-31 实测）：Bing 后台 IndexNow 面板显示累计提交
+113.3K 次，而站点只有约 948 条 URL —— 相当于每条 URL 被反复推了 120 次。
+Bing 官方文档明确「只提交新增或更新的 URL」，高频全量重推会稀释该来源的信任度。
+deploy.sh 因此改成发布后跑 `--changed docs.old`：只推本次真正变动的页面，
+日常增量通常是个位数到几十条。
 
 注意：IndexNow 会回抓 https://devtools.help/<key>.txt 校验归属，
 所以必须先把这个 key 文件部署上线，再运行本脚本。
@@ -86,10 +93,65 @@ def all_urls():
     return out
 
 
+def _html_to_url(rel):
+    """发布目录内的相对路径 → 站点 URL。
+
+    规则与 build.py 的 out_path 完全对应：`index.html` 表示该目录，其余按文件名。
+      index.html            → https://devtools.help/
+      regex/index.html      → https://devtools.help/regex/
+      en/regex/index.html   → https://devtools.help/en/regex/
+      privacy.html          → https://devtools.help/privacy.html
+    """
+    rel = Path(rel)
+    if rel.name == 'index.html':
+        parent = rel.parent.as_posix()
+        return ROOT_SITE_URL if parent in ('', '.') else f'{ROOT_SITE_URL}{parent}/'
+    return f'{ROOT_SITE_URL}{rel.as_posix()}'
+
+
+def changed_urls(prev_dir):
+    """对比上一版发布目录，返回「新增或内容变化」的页面 URL（增量提交用）。
+
+    为什么按内容哈希而不是按 mtime：deploy.sh 每次都是全新构建目录，
+    mtime 全部相同，只有内容哈希能反映真实变化。
+
+    只比 .html：sitemap / robots / 静态资源变了不需要单独推 URL
+    （它们不是可被搜索的落地页），而页面自身的改动必然带动 HTML 变化。
+    """
+    prev_dir = Path(prev_dir)
+    if not prev_dir.is_dir():
+        print(f'⚠ 上一版目录不存在（{prev_dir}），回退为全量提交')
+        return all_urls()
+
+    import hashlib
+
+    cur = ROOT / 'docs'
+    urls = []
+    for f in sorted(cur.rglob('*.html')):
+        rel = f.relative_to(cur)
+        old = prev_dir / rel
+        if old.is_file():
+            if hashlib.sha256(old.read_bytes()).digest() == hashlib.sha256(f.read_bytes()).digest():
+                continue
+        urls.append(_html_to_url(rel))
+    print(f'   增量对比：当前 {len(list(cur.rglob("*.html")))} 个页面，'
+          f'变动 {len(urls)} 个')
+    return urls
+
+
 def main():
     host = ROOT_SITE_URL.split('//', 1)[1].rstrip('/').split('/')[0]
     key_location = KEY_LOCATION
-    urls = all_urls()
+    prev = None
+    for i, a in enumerate(sys.argv):
+        if a == '--changed' and i + 1 < len(sys.argv):
+            prev = sys.argv[i + 1]
+        elif a.startswith('--changed='):
+            prev = a.split('=', 1)[1]
+    urls = changed_urls(prev) if prev else all_urls()
+    if not urls:
+        print('✓ 没有页面变动，跳过 IndexNow 提交')
+        return 0
     payload = {
         'host': host,
         'key': INDEXNOW_KEY,

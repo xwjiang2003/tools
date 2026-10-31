@@ -61,6 +61,7 @@ from course import (COURSE_INDEX, COURSE_LANGS, COURSE_TEXT, MODULES, PUBLISHED,
                     LESSON_BODIES_EN, course_index_jsonld, lesson_jsonld, lesson_meta,
                     lesson_path, render_course_index, render_lesson)
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
+from home_text import HOME_TEXT                            # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
@@ -74,6 +75,17 @@ NEWS_PATH = next(t['path'] for t in TOOLS if t['slug'] == NEWS_SLUG)
 # Go 速查表页。与热榜同型：正文构建期从 cheatsheet.py 的数据渲染，
 # 页面只需要 core.js（不需要编辑器与 CodeMirror），见 build() 的 CHEAT_SLUG 分支。
 CHEAT_SLUG = 'go-cheatsheet'
+
+# 首页（工具导航门户）。
+#
+# 2026-10-31 改版：`/` 原来是 JSON 工具页（slug json + path ''），现在拆成两页——
+#   首页  path ''      → 门户：搜索 + 分类导航 + 全部工具静态链接
+#   JSON  path 'json/' → 原工具页原样保留
+# 动因是 Bing 后台数据：948 条 URL 里只有 16 条拿到过曝光，而首页（JSON 工具）
+# 只被当成"一个 JSON 工具站"，内页几乎没有入口权重。门户页把 57 个工具全部
+# 以真实 <a> 摊平在首屏以下，既符合 tool.lu / 菜鸟教程那类目录站的使用习惯，
+# 也给搜索引擎一条从强权页通往全部内页的路径。
+HOME_SLUG = 'home'
 
 # 常用代码片段库页。与速查表同型：构建期从 snippets.py 的数据渲染，
 # 复制按钮复用 core.js 的 copyTextById，同样只需要 core.js。
@@ -112,7 +124,7 @@ JS_MODULES = [
     'core.js', 'json-tools.js', 'text-diff.js', 'encode.js', 'regex.js',
     'timestamp.js', 'datetime-tools.js', 'id-tools.js', 'base-tools.js',
     'hash.js', 'formatter.js',
-    'string-tools.js', 'generator.js',
+    'string-tools.js', 'generator.js', 'home.js',
 ]
 
 # ---------------------------------------------------------------- 按页资产裁剪（2026-10-19）
@@ -160,11 +172,13 @@ PAGE_MODULES = {
     'markdown-to-html': ('core.js',),
     'string': ('core.js', 'string-tools.js'),
     'generator': ('core.js', 'generator.js'),
+    'home': ('core.js', 'home.js'),
     'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
     'blog': ('core.js',), 'go-course': ('core.js',),
     'privacy': (),
 }
 PAGE_CSS = {
+    'home': ('base', 'home'),
     'json': ('base', 'json'),
     'csv': ('base',),
     'yaml': ('base',), 'toml': ('base',), 'jwt': ('base',),
@@ -266,18 +280,8 @@ CONTENT_BY_LANG = {
     'ja': TOOLS_JA,
     'ko': TOOLS_KO,
 }
-NAV_LABELS_BY_LANG = {
-    'zh': {t['slug']: t['nav'] for t in TOOLS},
-    'en': {t['slug']: TOOLS_EN[t['slug']]['nav'] for t in TOOLS},
-    'es': {t['slug']: TOOLS_ES[t['slug']]['nav'] for t in TOOLS},
-    'fr': {t['slug']: TOOLS_FR[t['slug']]['nav'] for t in TOOLS},
-    'de': {t['slug']: TOOLS_DE[t['slug']]['nav'] for t in TOOLS},
-    'pt-BR': {t['slug']: TOOLS_PTBR[t['slug']]['nav'] for t in TOOLS},
-    'ru': {t['slug']: TOOLS_RU[t['slug']]['nav'] for t in TOOLS},
-    'id': {t['slug']: TOOLS_ID[t['slug']]['nav'] for t in TOOLS},
-    'ja': {t['slug']: TOOLS_JA[t['slug']]['nav'] for t in TOOLS},
-    'ko': {t['slug']: TOOLS_KO[t['slug']]['nav'] for t in TOOLS},
-}
+# （曾有一份 NAV_LABELS_BY_LANG，与下方 NAV_LABELS 重复且新语言缺键就 KeyError，
+#  2026-10-31 首页改版时删除；需要按语言的导航名请直接用 NAV_LABELS。）
 
 
 def lang_dir(lang):
@@ -750,6 +754,10 @@ def nav_html(active_slug, base, labels, lang='zh'):
     无需 JS，移动端点击触发词（按钮获得焦点）即可展开。
     """
     out = []
+    # 首页入口：logo 也指向首页，但导航里给一条显式链接——移动端抽屉展开后
+    # logo 常被滚动出视野，没有这一条就只能靠浏览器返回键。
+    home_cls = 'top-nav-link active' if active_slug == HOME_SLUG else 'top-nav-link'
+    out.append(f'    <a class="{home_cls}" href="{base or "./"}">{esc(labels["_home"])}</a>')
     # 工具板块 -> 下拉
     for g in NAV_GROUPS:
         items, group_active = [], False
@@ -980,43 +988,219 @@ def footer_links_html(base, labels):
     return ''.join(parts)
 
 
-def all_tools_section(c):
-    """首页末尾的「全部在线开发工具」板块（仅首页渲染）。
+# ---------------------------------------------------------------- 首页（导航门户）
+#
+# 首页正文不是「工具界面」而是「目录 + 搜索」：全部工具以静态 <a> 摊平在
+# 分类区块里，JS 只负责即时筛选与时间戳时钟。这样即使 JS 不执行（爬虫、
+# 禁用脚本的浏览器），页面依然是一份完整可用的导航页。
 
-    首页同时是 JSON 工具页，h1/功能/FAQ 必须继续围绕 JSON（那是搜索量最大的落地页），
-    所以这里不做替换，只在正文末尾按分类追加一份工具清单：每个工具一行
-    「名称 + 一句话说明」，链接都是真实 <a href>，爬虫不执行 JS 也能读到。
 
-    作用有两个：让首页覆盖其余工具的关键词（否则在搜索引擎眼里本站只是个 JSON 工具站），
-    并把首页的链接权重分发到全部内页（内页收录长期偏少的主因之一）。
+# 图标一律内联 SVG（stroke 取 currentColor），不引外部图标库：
+# 站点已有"第三方资源全部自托管"的约定，多一个 CDN 依赖就多一处失效点。
+_HOME_ICON_PATHS = {
+    'braces': '<path d="M9 4H8a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h1"/>'
+              '<path d="M15 4h1a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-1"/>',
+    'convert': '<path d="M4 8h13l-3.5-3.5"/><path d="M20 16H7l3.5 3.5"/>',
+    'hash': '<path d="M9.5 4 7.5 20"/><path d="M16.5 4l-2 16"/><path d="M4 9h16"/><path d="M3.5 15h16"/>',
+    'lock': '<rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/>'
+            '<path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.5v2"/>',
+    'text': '<path d="M4 6.5h16"/><path d="M4 12h11"/><path d="M4 17.5h7"/>',
+    'code': '<path d="M9 7 4 12l5 5"/><path d="M15 7l5 5-5 5"/>',
+    'clock': '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/>',
+    'tag': '<path d="M20.4 13.4 13 20.8a2 2 0 0 1-2.8 0L3.5 14.1V4.5h9.6l7.3 7.3a1.2 1.2 0 0 1 0 1.6z"/>'
+           '<circle cx="7.8" cy="8.8" r="1.2"/>',
+    'book': '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/>'
+            '<path d="M11 4h7.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H11"/>',
+    'news': '<rect x="3.5" y="5" width="13" height="14" rx="1.5"/>'
+            '<path d="M16.5 9H20v8.5a1.5 1.5 0 0 1-1.5 1.5h-2"/>'
+            '<path d="M6.5 8.5h7"/><path d="M6.5 12h7"/><path d="M6.5 15.5h4"/>',
+    'pen': '<path d="M4 20l4.2-1 9.3-9.3-3.2-3.2L5 15.8z"/><path d="M14.3 6.5 17.5 3.7l3.2 3.2-2.8 3.2z"/>',
+    'bookopen': '<path d="M12 6.5C10 4.9 6.5 4.6 4.5 5.6v12.6c2-1 5.5-.7 7.5.9 2-1.6 5.5-1.9 7.5-.9V5.6c-2-1-5.5-.7-7.5.9z"/>'
+                '<path d="M12 6.5v12.6"/>',
+    'search': '<circle cx="10.8" cy="10.8" r="6.8"/><path d="M16 16l4.5 4.5"/>',
+    'regex': '<path d="M12 4v9"/><path d="M8.2 6.5 15.8 12"/><path d="M15.8 6.5 8.2 12"/>'
+             '<circle cx="12" cy="17.6" r="1.1"/>',
+    'diff': '<path d="M7 4v10"/><path d="M4 11l3 3 3-3"/><path d="M17 20V10"/><path d="M14 13l3-3 3 3"/>',
+    'bolt': '<path d="M13 3 4.5 13.5H10L9 21l8.5-10.5H12z"/>',
+    'shield': '<path d="M12 3.2 19 6v6.2c0 4-3 7.1-7 8.6-4-1.5-7-4.6-7-8.6V6z"/>'
+              '<path d="M9 12l2.2 2.2L15.4 10"/>',
+    'globe': '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/>'
+             '<path d="M12 3.5c2.6 2.6 2.6 14.4 0 17"/><path d="M12 3.5c-2.6 2.6-2.6 14.4 0 17"/>',
+    'offline': '<path d="M3 3l18 18"/><path d="M8.5 15.6a5 5 0 0 1 6.4-.3"/>'
+               '<path d="M5.2 11.9a10.5 10.5 0 0 1 4-2.3"/><path d="M14.6 10a10.5 10.5 0 0 1 4.2 1.9"/>'
+               '<path d="M12 19h.01"/>',
+}
+# NAV_GROUPS 的顺序即分类图标的顺序（用位置而不是中文名索引，避免多语言漂移）
+_HOME_GROUP_ICONS = ['braces', 'convert', 'hash', 'lock', 'text', 'code', 'clock', 'tag', 'book']
+_HOME_CONTENT_ICONS = {'hotnews': 'news', 'blog': 'pen', 'go-course': 'bookopen'}
+# 「常用工具」按真实流量与使用频次排序：时间戳与正则是 Bing 后台曝光前二，
+# 其余是站内点击与直觉上最常被打开的几项。
+_HOME_QUICK = [
+    ('timestamp', 'clock'), ('regex', 'regex'), ('json', 'braces'), ('encode', 'lock'),
+    ('uuid', 'tag'), ('hash', 'hash'), ('diff', 'diff'), ('generator', 'bolt'),
+]
+
+
+def _home_icon(name, cls=''):
+    path = _HOME_ICON_PATHS.get(name) or _HOME_ICON_PATHS['braces']
+    return ('<svg' + (f' class="{cls}"' if cls else '') +
+            ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"'
+            ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + path + '</svg>')
+
+
+def render_home_body(lang):
+    """首页正文：hero + 常用工具 + 分类导航 + 卖点 + 站点说明。
+
+    与其它工具页不同，这一页不输出 seo_section（h1/简介/功能/步骤/FAQ 那套骨架
+    是为"单工具落地页"设计的，套到目录页上只会多出一堆无人阅读的样板文字）。
     """
-    lang = c.get('_lang', DEFAULT_LANG)
-    base = c.get('_base', '')
-    blurbs = TOOL_BLURBS.get(lang, TOOL_BLURBS['en'])
+    tx = HOME_TEXT.get(lang, HOME_TEXT['en'])
     labels = NAV_LABELS[lang]
-    p = [f'  <h2>{esc(c["_all_tools_heading"])}</h2>',
-         f'  <p>{esc(c["_all_tools_intro"])}</p>']
-    for g in NAV_GROUPS + [CONTENT_GROUP]:
-        # 当前工具（首页 = json）不再自链，其余按 TOOLS 里的顺序输出
-        items = []
-        for slug in g['slugs']:
-            if slug == 'blog':
-                href, label = base + BLOG_INDEX, labels['_blog']
-            else:
-                t = _TOOL_BY_SLUG.get(slug)
-                if not t or slug == 'json':
-                    continue
-                href = (base + t['path']) if t['path'] else (base or './')
-                label = labels[slug]
-            blurb = blurbs.get(slug, '')
-            tail = f' — {esc(blurb)}' if blurb else ''
-            items.append(f'    <li><a href="{esc(href)}">{esc(label)}</a>{tail}</li>')
-        if not items:
+    blurbs = TOOL_BLURBS.get(lang, TOOL_BLURBS['en'])
+    base = lang_prefix(lang, rel_root(lang, ''))
+    home_href = base or './'
+    n_pages = len([t for t in TOOLS if t['slug'] != HOME_SLUG])
+
+    def href_of(path):
+        return (base + path) if path else home_href
+
+    def label_of(slug):
+        if slug in ('blog', 'go-course'):
+            return labels['_blog'] if slug == 'blog' else labels['_course']
+        return labels.get(slug, slug)
+
+    def href_slug(slug):
+        if slug == 'blog':
+            return base + BLOG_INDEX
+        if slug == 'go-course':
+            return base + COURSE_INDEX
+        return href_of(_TOOL_BY_SLUG[slug]['path'])
+
+    def keywords_of(slug):
+        """筛选用的关键词串：工具标题 + keywords，按当前语言取（不混入中文）。"""
+        if slug == 'blog':
+            bt = BLOG_TEXT[lang]
+            return f'{bt["index_title"]} {bt["index_kw"]}'
+        if slug == 'go-course':
+            ct = COURSE_TEXT.get(lang) or COURSE_TEXT['en']
+            return f'{ct["index_title"]} {ct["index_kw"]}'
+        t = _TOOL_BY_SLUG[slug]
+        c = content_for(t, lang)
+        return f'{c.get("title", "")} {c.get("keywords", "")}'.strip()
+
+    p = ['<div class="home" id="homeRoot">']
+
+    # ---------------- hero ----------------
+    p.append('  <section class="home-hero">')
+    p.append('    <div class="home-hero-copy">')
+    p.append(f'      <p class="home-eyebrow">{esc(tx["eyebrow"])}</p>')
+    p.append('      <h1 class="home-title">' + esc(tx['h1']) +
+             f'<span>{esc(tx["h1_sub"].format(n=n_pages))}</span></h1>')
+    p.append(f'      <p class="home-lead">{esc(tx["lead"])}</p>')
+    p.append('      <div class="home-search">')
+    p.append('        ' + _home_icon('search', 'home-search-ico'))
+    p.append('        <input id="homeSearch" type="search" autocomplete="off" spellcheck="false"'
+             f' placeholder="{esc(tx["search_ph"])}" aria-label="{esc(tx["search_ph"])}">')
+    p.append('      </div>')
+    p.append(f'      <p class="home-search-hint">{esc(tx["search_hint"])}</p>')
+    p.append('      <div class="home-chips">')
+    for slug, _ in _HOME_QUICK[:5]:
+        p.append(f'        <a class="home-chip" href="{esc(href_slug(slug))}">{esc(label_of(slug))}</a>')
+    p.append('      </div>')
+    p.append('    </div>')
+
+    p.append(f'    <aside class="home-live" aria-label="{esc(tx["live_t"])}">')
+    p.append('      <div class="home-live-label"><span class="home-live-dot"></span>' +
+             esc(tx['live_t']) + '</div>')
+    p.append('      <div class="home-live-num" id="homeEpoch">&mdash;</div>')
+    p.append('      <div class="home-live-ms" id="homeEpochMs">&mdash;</div>')
+    p.append('      <div class="home-live-foot">')
+    p.append('        <div class="home-live-stats">')
+    p.append(f'          <div class="home-live-stat"><b>{n_pages}</b><span>{esc(tx["stat_tools"])}</span></div>')
+    p.append(f'          <div class="home-live-stat"><b>{len(LANGS)}</b><span>{esc(tx["stat_langs"])}</span></div>')
+    p.append('        </div>')
+    p.append(f'        <a class="home-live-cta" href="{esc(href_slug("timestamp"))}">'
+             + esc(tx['live_cta']) + ' &rarr;</a>')
+    p.append('      </div>')
+    p.append('    </aside>')
+    p.append('  </section>')
+
+    # ---------------- 常用工具 ----------------
+    p.append('  <section class="home-section">')
+    p.append('    <div class="home-section-head">')
+    p.append(f'      <h2>{esc(tx["quick"])}</h2><p>{esc(tx["quick_sub"])}</p>')
+    p.append('    </div>')
+    p.append('    <div class="home-quick">')
+    for slug, icon in _HOME_QUICK:
+        p.append(f'      <a class="home-quick-card" href="{esc(href_slug(slug))}">')
+        p.append(f'        <span class="home-quick-ico">{_home_icon(icon)}</span>')
+        p.append(f'        <span class="home-quick-name">{esc(label_of(slug))}</span>')
+        p.append(f'        <span class="home-quick-desc">{esc(blurbs.get(slug, ""))}</span>')
+        p.append('      </a>')
+    p.append('    </div>')
+    p.append('  </section>')
+
+    # ---------------- 分类导航 ----------------
+    p.append('  <section class="home-section">')
+    p.append('    <div class="home-section-head">')
+    p.append(f'      <h2>{esc(tx["browse"])}</h2><p>{esc(tx["browse_sub"])}</p>')
+    p.append('    </div>')
+    p.append(f'    <div class="home-empty">{esc(tx["no_result"])}</div>')
+    # 分类区块用两列瀑布（CSS column-count）：工具数少的分类（JSON 只有 1 个）
+    # 不再独占一整行的空白，也避免 1440px 下 5 列网格里出现成排的空洞。
+    p.append('    <div class="home-cats">')
+
+    groups = []
+    for i, g in enumerate(NAV_GROUPS):
+        groups.append((g, g[lang], _HOME_GROUP_ICONS[i] if i < len(_HOME_GROUP_ICONS) else 'braces'))
+    # 内容板块（热榜 / 博客 / 课程）合成一张卡：拆成三张同名"内容"卡会让人以为重复。
+    content_slugs = [s2 for s2 in CONTENT_GROUP['slugs']
+                     if not (s2 == 'go-course' and lang not in COURSE_LANGS)]
+    if content_slugs:
+        groups.append(({'slugs': content_slugs}, CONTENT_GROUP[lang], 'news'))
+
+    for g, gname, icon in groups:
+        # 博客与 Go 课程不是 TOOLS 条目（各有独立数据源），单独放行
+        slugs = [s for s in g['slugs'] if s in _TOOL_BY_SLUG or s in ('blog', 'go-course')]
+        if not slugs:
             continue
-        p.append(f'  <h3>{esc(g[lang])}</h3>')
-        p.append('  <ul class="seo-tools">')
-        p.extend(items)
-        p.append('  </ul>')
+        p.append(f'    <section class="home-cat" data-n="{len(slugs)}">')
+        p.append('      <div class="home-cat-head">')
+        p.append(f'        <span class="home-cat-ico">{_home_icon(icon)}</span>')
+        p.append(f'        <h2>{esc(gname)}</h2>')
+        p.append(f'        <span class="home-cat-count">{len(slugs)}</span>')
+        p.append('      </div>')
+        p.append('      <div class="home-tiles">')
+        for slug in slugs:
+            kw = keywords_of(slug)
+            p.append(f'        <a class="home-tile" href="{esc(href_slug(slug))}" data-k="{esc(kw)}">')
+            p.append(f'          <span class="home-tile-name">{esc(label_of(slug))}</span>')
+            p.append(f'          <span class="home-tile-desc">{esc(blurbs.get(slug, ""))}</span>')
+            p.append('        </a>')
+        p.append('      </div>')
+        p.append('    </section>')
+    p.append('    </div>')
+    p.append('  </section>')
+
+    # ---------------- 卖点 ----------------
+    p.append('  <section class="home-why">')
+    for i, (title, desc) in enumerate(tx['why']):
+        icon = ['shield', 'bolt', 'globe', 'offline'][i] if i < 4 else 'shield'
+        p.append('    <div class="home-why-item">')
+        p.append(f'      <span class="home-why-ico">{_home_icon(icon)}</span>')
+        p.append(f'      <h3>{esc(title)}</h3>')
+        p.append(f'      <p>{esc(desc)}</p>')
+        p.append('    </div>')
+    p.append('  </section>')
+
+    # ---------------- 站点说明 ----------------
+    p.append('  <section class="home-about">')
+    p.append(f'    <h2>{esc(tx["seo_h2"])}</h2>')
+    for para in tx['seo_p']:
+        p.append(f'    <p>{esc(para)}</p>')
+    p.append('  </section>')
+
+    p.append('</div>')
     return '\n'.join(p)
 
 
@@ -1050,16 +1234,43 @@ def seo_section(c):
         for text, href in c['seealso']:
             p.append(f'    <li><a href="{esc(c["_base"] + href)}">{esc(text)}</a></li>')
         p.append('  </ul>')
-    # 首页（slug=json）兼任站点门户：追加「全部工具」清单（其余工具页不需要，各自已有完整正文）
-    if c.get('slug') == 'json':
-        p.append(all_tools_section(c))
+    # 2026-10-31：这里原本为「首页 = JSON 工具页」追加一份全站工具清单。
+    # 首页拆成独立门户页后，工具清单归门户所有（见 render_home_body），
+    # JSON 页恢复成和其它工具页一样的结构（正文 + 相关工具），不再重复列 42 个链接。
     p.append('</section>')
     return '\n'.join(p)
 
 
 def jsonld(c, url, lang, news=None, slug=None, path=None):
     graph = []
-    if c.get('slug') == NEWS_SLUG:
+    if c.get('slug') == HOME_SLUG:
+        # 门户页：CollectionPage 描述"这是一份工具目录"，再用 ItemList 把每个工具页
+        # 显式列出来——搜索引擎读结构化数据比读 DOM 更确定，也让 42 个内页多一条
+        # 明确的关联边（内页收录不足正是当前最大的问题）。
+        graph.append({
+            '@type': 'CollectionPage',
+            'name': c['h1'],
+            'url': url,
+            'description': c['description'],
+            'inLanguage': HTML_LANG[lang],
+            'isAccessibleForFree': True,
+        })
+        items = []
+        for t in TOOLS:
+            if t['slug'] == HOME_SLUG:
+                continue
+            tgt = content_for(t, lang)
+            items.append({'@type': 'ListItem', 'position': len(items) + 1,
+                          'name': tgt.get('h1') or t.get('nav', t['slug']),
+                          'url': canonical_url(lang, t['path'])})
+        graph.append({
+            '@type': 'ItemList',
+            'name': c['h1'],
+            'numberOfItems': len(items),
+            'itemListOrder': 'https://schema.org/ItemListUnordered',
+            'itemListElement': items,
+        })
+    elif c.get('slug') == NEWS_SLUG:
         # 热榜页不是「应用」，而是一个每天更新的列表页：用 CollectionPage + ItemList
         # 描述更准确，也给了搜索引擎一个明确信号——这一页的条目会变、并且都指向外部原文。
         graph.append({
@@ -1140,7 +1351,7 @@ def _jsonld_raw(graph):
 # CSS 组文件的固定级联顺序：base 永远第一，其余组按此序追加，
 # 保证与原 style.css 单文件内的规则顺序一致（如 .tool-card 的 base 定义
 # 必须早于 time 组的覆盖定义）。
-CSS_GROUPS = ['base', 'json', 'diff', 'regex', 'generator', 'liveclock',
+CSS_GROUPS = ['base', 'home', 'json', 'diff', 'regex', 'generator', 'liveclock',
               'time', 'baseconv', 'worldclock', 'hotnews', 'cheatsheet',
               'snippets', 'blog', 'course', 'evergreen', 'legal']
 
@@ -1204,23 +1415,11 @@ HEADINGS = {
     'zh': {'_features_heading': '主要功能', '_steps_heading': '使用步骤',
            '_faq_heading': '常见问题', '_home': '首页', '_blog': '博客',
            '_course': 'Go 课程',
-           '_related_heading': '相关工具与阅读',
-           # 首页专用：JSON 之外的全部工具清单（见 TOOL_BLURBS 与 all_tools_section）
-           '_all_tools_heading': '全部在线开发工具',
-           '_all_tools_intro': (
-               '本站不止一个 JSON 工具。除 JSON 格式化与转换外，还有编码解码、哈希加密、'
-               '正则测试、时间戳与时区换算、各类 ID 解析、格式转换与代码格式化等工具，'
-               '全部在浏览器本地运行，粘贴的内容不会上传服务器。按分类列出如下：')},
+           '_related_heading': '相关工具与阅读'},
     'en': {'_features_heading': 'Features', '_steps_heading': 'How to use',
            '_faq_heading': 'FAQ', '_home': 'Home', '_blog': 'Blog',
            '_course': 'Go Course',
-           '_related_heading': 'Related tools & reading',
-           '_all_tools_heading': 'All developer tools on this site',
-           '_all_tools_intro': (
-               'This site is more than a JSON formatter. Besides JSON formatting and '
-               'conversion it covers encoding, hashing, regular expressions, timestamps and '
-               'time zones, identifier decoding, format conversion and code formatting — all '
-               'running locally in your browser, with nothing uploaded. Grouped by category:')},
+           '_related_heading': 'Related tools & reading'},
 }
 # 其余语言暂回退英文（未翻完的标题也用可读英文兜底）
 for _lang in LANGS:
@@ -1355,7 +1554,11 @@ def build(clean=True, outdirs=None):
     for lang in LANGS:
         for t in TOOLS:
             c = content_for(t, lang)
-            if t['slug'] == NEWS_SLUG:
+            if t['slug'] == HOME_SLUG:
+                # 门户页正文由 build.py 生成（需要按语言取工具名/说明/分类名），
+                # 不复用 seo_section 的"单工具落地页"骨架。
+                page_tpl, body = tpl_for(HOME_SLUG), render_home_body(lang)
+            elif t['slug'] == NEWS_SLUG:
                 page_tpl, body = tpl_for(NEWS_SLUG), render_news_body(lang, news)
             elif t['slug'] == CHEAT_SLUG:
                 # 速查表与热榜同型：只需要 core.js 的轻量模板 + 构建期渲染的正文
@@ -1369,8 +1572,9 @@ def build(clean=True, outdirs=None):
             base = lang_prefix(lang, rel_root(lang, t['path']))
             home = base or './'
             c['_base'] = base     # seo_section 的「相关工具与阅读」链接要用
+            seo_html = '' if t['slug'] == HOME_SLUG else seo_section(c)
             page = apply_common(page_tpl, lang, t['slug'], t['path'], c['title'],
-                                c['description'], c['keywords'], body, seo_section(c),
+                                c['description'], c['keywords'], body, seo_html,
                                 jsonld(c, canonical_url(lang, t['path']), lang, news,
                                       t['slug'], t['path']),
                                 base, home, wc_zones=wc_for(t['slug']))
