@@ -1059,7 +1059,11 @@ def render_home_body(lang):
     blurbs = TOOL_BLURBS.get(lang, TOOL_BLURBS['en'])
     base = lang_prefix(lang, rel_root(lang, ''))
     home_href = base or './'
-    n_pages = len([t for t in TOOLS if t['slug'] != HOME_SLUG])
+    # 首页上实际列出的入口数：全部工具页 + 博客索引 +（仅 zh/en）Go 课程。
+    # 与 llms.txt 的「工具数」口径不同是刻意的：首页说的是"这里有多少个入口"，
+    # 而 llms.txt 报的是"有多少个带输入框的工具"，两者不应互相迁就。
+    n_pages = (len([t for t in TOOLS if t['slug'] != HOME_SLUG]) + 1
+               + (1 if lang in COURSE_LANGS else 0))
 
     def href_of(path):
         return (base + path) if path else home_href
@@ -1964,7 +1968,9 @@ def llms_txt():
     但不要指望它是收录开关。
     """
     # 头部文案里的工具数必须动态算：写死数字，每加一个工具这份摘要就撒一次谎
-    tool_count = sum(1 for t in TOOLS if t['slug'] not in (NEWS_SLUG, CHEAT_SLUG, SNIP_SLUG))
+    # 首页（门户页）不是「工具」，热榜/速查表/片段库也不计入工具数
+    _NOT_TOOL = (HOME_SLUG, NEWS_SLUG, CHEAT_SLUG, SNIP_SLUG)
+    tool_count = sum(1 for t in TOOLS if t['slug'] not in _NOT_TOOL)
     out = [
         f'# {SITE["name"]} — 在线开发工具集 / Online Developer Tools',
         '',
@@ -1990,7 +1996,7 @@ def llms_txt():
     ]
     for t in TOOLS:
         # 热榜、速查表与片段库都不是「有输入框的工具」，各自单列一节
-        if t['slug'] in (NEWS_SLUG, CHEAT_SLUG, SNIP_SLUG):
+        if t['slug'] in _NOT_TOOL:
             continue
         en = TOOLS_EN[t['slug']]
         zh_url = SITE['base_url'] + t['path']

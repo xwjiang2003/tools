@@ -16,7 +16,7 @@ HOME_TEXT = {
     'zh': {
         'eyebrow': 'DEVTOOLS.HELP · 纯浏览器运行',
         'h1': '开发者在线工具箱',
-        'h1_sub': '{n} 个工具，打开即用',
+        'h1_sub': '{n} 个工具与专题，打开即用',
         'lead': (
             'JSON 格式化、正则在线测试、时间戳转换、Base64 编解码、哈希校验、进制转换……'
             '不用安装、不用注册。所有计算都在你的浏览器里完成，粘贴的内容不会上传服务器。'
@@ -53,7 +53,7 @@ HOME_TEXT = {
     'en': {
         'eyebrow': 'DEVTOOLS.HELP · RUNS IN YOUR BROWSER',
         'h1': 'Developer tools that open instantly',
-        'h1_sub': '{n} tools, no sign-up',
+        'h1_sub': '{n} tools and guides, no sign-up',
         'lead': (
             'JSON formatting, regex testing, Unix timestamps, Base64 and URL encoding, hashing, '
             'base conversion and more. Nothing to install, nothing to sign up for — every '
@@ -93,7 +93,7 @@ HOME_TEXT = {
     'ja': {
         'eyebrow': 'DEVTOOLS.HELP · ブラウザだけで動作',
         'h1': 'オンライン開発ツール',
-        'h1_sub': '{n} 個のツールをすぐに利用',
+        'h1_sub': '{n} 個のツールと特集',
         'lead': (
             'JSON 整形、正規表現テスト、Unix タイムスタンプ変換、Base64 エンコード、ハッシュ計算、'
             '基数変換などをまとめました。インストールも登録も不要で、計算はすべてブラウザ内で完結します。'
@@ -114,7 +114,7 @@ HOME_TEXT = {
     'ko': {
         'eyebrow': 'DEVTOOLS.HELP · 브라우저에서 실행',
         'h1': '온라인 개발자 도구',
-        'h1_sub': '{n}개 도구를 바로 사용',
+        'h1_sub': '{n}개 도구와 콘텐츠',
         'lead': (
             'JSON 정리, 정규식 테스트, Unix 타임스탬프 변환, Base64 인코딩, 해시 계산, 진법 변환 등을 '
             '한곳에 모았습니다. 설치도 가입도 필요 없고, 모든 계산은 브라우저 안에서 끝납니다.'
@@ -135,7 +135,7 @@ HOME_TEXT = {
     'es': {
         'eyebrow': 'DEVTOOLS.HELP · SE EJECUTA EN TU NAVEGADOR',
         'h1': 'Herramientas de desarrollo en línea',
-        'h1_sub': '{n} herramientas, sin registro',
+        'h1_sub': '{n} herramientas y guías',
         'lead': (
             'Formateo de JSON, pruebas de expresiones regulares, marcas de tiempo Unix, codificación '
             'Base64 y URL, hashing y conversión de bases. Sin instalar nada: todo se calcula en tu navegador.'
@@ -156,7 +156,7 @@ HOME_TEXT = {
     'pt-BR': {
         'eyebrow': 'DEVTOOLS.HELP · RODA NO SEU NAVEGADOR',
         'h1': 'Ferramentas de desenvolvimento online',
-        'h1_sub': '{n} ferramentas, sem cadastro',
+        'h1_sub': '{n} ferramentas e guias',
         'lead': (
             'Formatação de JSON, testes de expressões regulares, timestamps Unix, codificação Base64 e URL, '
             'hash e conversão de bases. Sem instalar nada: tudo é calculado no seu navegador.'
@@ -177,7 +177,7 @@ HOME_TEXT = {
     'fr': {
         'eyebrow': 'DEVTOOLS.HELP · DANS VOTRE NAVIGATEUR',
         'h1': 'Outils de développement en ligne',
-        'h1_sub': '{n} outils, sans inscription',
+        'h1_sub': '{n} outils et guides',
         'lead': (
             'Mise en forme JSON, test d’expressions régulières, horodatages Unix, encodage Base64 et URL, '
             'hachage, conversion de bases. Rien à installer : tout est calculé dans votre navigateur.'
@@ -198,7 +198,7 @@ HOME_TEXT = {
     'de': {
         'eyebrow': 'DEVTOOLS.HELP · LÄUFT IM BROWSER',
         'h1': 'Online-Werkzeuge für Entwickler',
-        'h1_sub': '{n} Tools, sofort einsatzbereit',
+        'h1_sub': '{n} Tools und Leitfäden',
         'lead': (
             'JSON formatieren, reguläre Ausdrücke testen, Unix-Zeitstempel umrechnen, Base64- und '
             'URL-Kodierung, Hashing, Basisumrechnung. Nichts zu installieren – alles läuft im Browser.'
@@ -219,7 +219,7 @@ HOME_TEXT = {
     'ru': {
         'eyebrow': 'DEVTOOLS.HELP · РАБОТАЕТ В БРАУЗЕРЕ',
         'h1': 'Онлайн-инструменты для разработчиков',
-        'h1_sub': '{n} инструментов без регистрации',
+        'h1_sub': '{n} инструментов и подборок',
         'lead': (
             'Форматирование JSON, проверка регулярных выражений, метки времени Unix, кодирование Base64 '
             'и URL, хеширование, перевод систем счисления. Ничего устанавливать не нужно — всё считается в браузере.'
@@ -240,7 +240,7 @@ HOME_TEXT = {
     'id': {
         'eyebrow': 'DEVTOOLS.HELP · BERJALAN DI BROWSER',
         'h1': 'Alat pengembang online',
-        'h1_sub': '{n} alat, langsung pakai',
+        'h1_sub': '{n} alat dan panduan',
         'lead': (
             'Format JSON, uji regex, konversi timestamp Unix, encode Base64 dan URL, hash, konversi basis '
             'angka. Tanpa instalasi dan tanpa daftar — semua perhitungan berjalan di browser Anda.'
