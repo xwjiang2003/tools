@@ -14,6 +14,22 @@ SITE_EN = {
 }
 
 TOOLS_EN = {
+    'home': {
+        'nav': 'Home',
+        'title': 'Developer Tools Online - JSON, Regex, Timestamp and 40+ Free Utilities | DevTools',
+        'description': (
+            'devtools.help collects 40+ browser-based tools for developers: JSON formatting and conversion, '
+            'regex testing, Unix timestamp conversion, Base64 and URL encoding, MD5/SHA hashing, base '
+            'conversion from 2 to 36, UUID and Snowflake decoding, cron expressions, code formatters and '
+            'time zone reference pages. No sign-up, no ads, nothing uploaded, ten languages.'
+        ),
+        'keywords': (
+            'online tools,developer tools,web tools,json formatter,regex tester,timestamp converter,'
+            'base64 encoder,hash generator,base converter,devtools'
+        ),
+        'h1': 'Developer tools that open instantly',
+        'faq': [],
+    },
     'json': {
         'nav': 'JSON',
         'title': 'JSON Formatter & Validator — Free, In-Browser | DevTools',
@@ -210,10 +226,11 @@ TOOLS_EN = {
     },
     'regex': {
         'nav': 'Regex',
-        'title': 'Regex Tester Online — Live Highlight & Replace | DevTools',
+        'title': 'Regex Tester Online - Live Match Highlight, Groups and Replace Preview | DevTools',
         'description': (
-            'Test regular expressions with live match highlighting, g/i/m/s/u flags, capture group '
-            'details and a replacement preview, plus common patterns. Runs locally.'
+            'Test a regular expression right in the browser: matches highlight as you type, every capture '
+            'group is listed, and the replacement template previews $1 references instantly. Toggle g/i/m/s/u '
+            'independently and drop in built-in patterns for email, phone, URL and dates. No sign-up, no ads.'
         ),
         'keywords': (
             'regex tester,regex online,regular expression tester,regex match,regex replace,'
@@ -283,16 +300,17 @@ TOOLS_EN = {
     },
     'timestamp': {
         'nav': 'Timestamp',
-        'title': 'Unix Timestamp to Date Converter — Seconds & ms | DevTools',
+        'title': 'Unix Timestamp Converter - Live Epoch Clock, 10/13-Digit Auto-Detect | DevTools',
         'description': (
-            'Convert Unix timestamps to dates and back, reading 10-digit values as seconds and 13-digit '
-            'values as milliseconds, with ISO 8601, RFC 2822 and timezone output.'
+            'The current Unix timestamp is shown the moment the page loads - seconds and milliseconds, '
+            'refreshing every second. Paste a 10- or 13-digit value and the unit is detected for you; '
+            'convert dates both ways with UTC, local time, ISO 8601 and RFC 2822 output. Runs entirely in your browser.'
         ),
         'keywords': (
             'unix timestamp,timestamp converter,epoch converter,timestamp to date,date to timestamp,'
             'milliseconds timestamp,iso 8601,rfc 2822,utc time'
         ),
-        'h1': 'Unix Timestamp & Date Converter',
+        'h1': 'Unix Timestamp Converter (Live Epoch Clock)',
         'intro': [
             'The top of the page shows the current timestamp ticking in both seconds and milliseconds; '
             'below it you can convert in either direction — enter a timestamp to get a readable date, or '

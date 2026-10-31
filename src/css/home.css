@@ -1,0 +1,179 @@
+/* home.css — 首页（工具导航门户）专用样式。2026-10-31 改版新增。
+   只被 home 页加载（build.py PAGE_CSS['home']），不会增加其它页面的体积。
+
+   设计取向：深色 hero 做视觉锚点（浅色/深色主题下都用深蓝渐变，保证品牌感一致），
+   下面回到站内常规卡片体系，避免整页变成"另一个站点"。
+   所有颜色都成对给出浅色/深色值，暗色主题下不出现白底黑字的突兀块。 */
+
+.home{--h-radius:16px;--h-hero:linear-gradient(135deg,#0a1628 0%,#112744 46%,#1b3f68 100%);
+  --h-ink:#f2f6fc;--h-ink-dim:rgba(233,241,252,.72);--h-line:var(--border)}
+
+/* ---------------------------------------------------------------- hero */
+.home-hero{position:relative;overflow:hidden;border-radius:20px;background:var(--h-hero);
+  color:var(--h-ink);padding:52px 48px 46px;display:grid;grid-template-columns:1.15fr .85fr;gap:44px;
+  align-items:center;box-shadow:0 18px 48px -24px rgba(10,22,40,.55)}
+.home-hero::before{content:'';position:absolute;inset:-40% 30% 40% -20%;
+  background:radial-gradient(circle at 30% 30%,rgba(90,169,255,.28),transparent 62%);pointer-events:none}
+.home-hero::after{content:'';position:absolute;right:-80px;bottom:-120px;width:340px;height:340px;
+  background:radial-gradient(circle,rgba(120,90,255,.22),transparent 68%);pointer-events:none}
+.home-hero-copy{position:relative;z-index:1;min-width:0}
+.home-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;
+  letter-spacing:.14em;color:#8fc0ff;text-transform:uppercase;margin-bottom:16px}
+.home-eyebrow::before{content:'';width:22px;height:1px;background:currentColor;opacity:.6}
+.home-title{font-size:clamp(28px,3.4vw,44px);line-height:1.16;font-weight:800;letter-spacing:-.02em;color:#fff}
+.home-title span{display:block;font-size:clamp(15px,1.4vw,19px);font-weight:600;letter-spacing:0;
+  color:#a8c8f0;margin-top:10px}
+.home-lead{margin-top:16px;max-width:640px;font-size:14.5px;line-height:1.8;color:var(--h-ink-dim)}
+
+.home-search{position:relative;margin-top:26px;max-width:560px}
+.home-search-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;
+  color:#7fa6d6;pointer-events:none}
+.home-search input{width:100%;height:52px;padding:0 16px 0 46px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;font-size:14.5px;
+  font-family:inherit;outline:none;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.home-search input::placeholder{color:rgba(226,238,255,.5)}
+.home-search input:focus{border-color:#5aa9ff;background:rgba(255,255,255,.14);box-shadow:0 0 0 3px rgba(90,169,255,.22)}
+.home-search-hint{margin-top:9px;font-size:12px;color:rgba(214,230,250,.55)}
+.home-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.home-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#dbe9fb;
+  font-size:12.5px;text-decoration:none;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.home-chip:hover{background:rgba(90,169,255,.2);border-color:rgba(90,169,255,.55);transform:translateY(-1px)}
+
+/* hero 右侧：实时时间戳卡片（同时充当视觉重量与功能演示） */
+.home-live{position:relative;z-index:1;min-width:0;border-radius:14px;padding:22px 22px 18px;
+  background:rgba(9,20,36,.62);border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 12px 30px -18px rgba(0,0,0,.6)}
+.home-live-label{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:#8fb6e2}
+.home-live-dot{width:7px;height:7px;border-radius:50%;background:#3ddc97;box-shadow:0 0 0 4px rgba(61,220,151,.16)}
+.home-live-num{margin-top:12px;font-family:"JetBrains Mono","Fira Code",Consolas,monospace;
+  font-size:clamp(22px,2.4vw,31px);font-weight:600;color:#fff;letter-spacing:.02em;
+  font-variant-numeric:tabular-nums;word-break:break-all}
+.home-live-ms{margin-top:6px;font-family:"JetBrains Mono","Fira Code",Consolas,monospace;
+  font-size:12.5px;color:#7fa6d6;font-variant-numeric:tabular-nums}
+.home-live-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.home-live-stats{display:flex;gap:18px}
+.home-live-stat b{display:block;font-size:17px;font-weight:700;color:#fff;line-height:1.2}
+.home-live-stat span{font-size:11px;color:#8fb6e2}
+.home-live-cta{font-size:12.5px;color:#9ecbff;text-decoration:none;white-space:nowrap;
+  border-bottom:1px solid rgba(158,203,255,.35);padding-bottom:2px}
+.home-live-cta:hover{color:#fff;border-color:#fff}
+
+/* ---------------------------------------------------------------- 分区 */
+.home-section{margin-top:34px}
+.home-section-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.home-section-head h2{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.home-section-head p{font-size:12.5px;color:var(--text-muted)}
+.home-section-head .home-count{margin-left:auto;font-size:12px;color:var(--text-muted)}
+
+/* 常用工具：大卡片 */
+.home-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-quick-card{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;
+  padding:18px 18px 16px;border-radius:var(--h-radius);background:var(--card-bg);
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);text-decoration:none;color:inherit;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.home-quick-card:hover{transform:translateY(-2px);border-color:var(--primary);
+  box-shadow:0 12px 26px -16px rgba(74,144,217,.55)}
+.home-quick-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:var(--primary-light);color:var(--primary)}
+.home-quick-ico svg{width:18px;height:18px}
+.home-quick-name{font-size:14.5px;font-weight:650;color:var(--text)}
+.home-quick-desc{font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+
+/* 分类区块 */
+.home-cats{column-count:2;column-gap:14px}
+.home-cat{break-inside:avoid;padding:18px 20px 20px;border-radius:var(--h-radius);background:var(--card-bg);
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);margin:0 0 14px}
+.home-cat-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.home-cat-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--primary-light);color:var(--primary);flex:0 0 auto}
+.home-cat-ico svg{width:15px;height:15px}
+.home-cat-head h2{font-size:15px;font-weight:700;color:var(--text)}
+.home-cat-count{font-size:11.5px;color:var(--text-muted);padding:2px 8px;border-radius:999px;
+  border:1px solid var(--border);background:var(--bg)}
+.home-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:8px}
+/* 只有一个工具的分类（JSON / 速查表）：铺满整行，避免右侧留出三个空格子的空洞 */
+.home-cat[data-n="1"] .home-tiles{grid-template-columns:1fr}
+.home-tile{display:flex;flex-direction:column;gap:3px;min-width:0;padding:11px 13px;border-radius:10px;
+  border:1px solid transparent;background:var(--bg);text-decoration:none;color:inherit;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease}
+.home-tile:hover{background:var(--primary-light);border-color:rgba(74,144,217,.4);transform:translateX(2px)}
+.home-tile-name{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--text)}
+.home-tile-name::after{content:'→';font-size:11px;color:var(--primary);opacity:0;transition:opacity .16s ease}
+.home-tile:hover .home-tile-name::after{opacity:1}
+.home-tile-desc{font-size:11.8px;line-height:1.55;color:var(--text-secondary);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-empty{display:none;padding:26px;text-align:center;font-size:13.5px;color:var(--text-muted);
+  border:1px dashed var(--border);border-radius:var(--h-radius);background:var(--card-bg)}
+.home.no-hit .home-empty{display:block}
+.home.is-filtering .home-quick,
+.home.is-filtering .home-section-head{display:none}
+/* 筛选时只剩少数分类，两列瀑布会留出大片空白，直接改单列 */
+.home.is-filtering .home-cats{column-count:1}
+/* 注意：.home-tile 自己声明了 display:flex，会盖掉 [hidden] 的 display:none，
+   必须显式加 !important，否则筛选后元素仍可见（实测踩过）。 */
+.home-tile[hidden],.home-cat[hidden]{display:none!important}
+
+/* 卖点 */
+.home-why{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}
+.home-why-item{padding:18px;border-radius:var(--h-radius);background:var(--card-bg);
+  border:1px solid var(--border);min-width:0}
+.home-why-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:rgba(39,174,96,.12);color:var(--success);margin-bottom:10px}
+.home-why-ico svg{width:16px;height:16px}
+.home-why-item h3{font-size:13.5px;font-weight:650;color:var(--text);margin-bottom:6px}
+.home-why-item p{font-size:12.3px;line-height:1.7;color:var(--text-secondary)}
+
+/* 说明段（给搜索引擎与第一次来的读者） */
+.home-about{margin-top:34px;padding:26px 30px;border-radius:var(--h-radius);background:var(--card-bg);
+  border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.home-about h2{font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px}
+.home-about p{font-size:13.5px;line-height:1.9;color:var(--text-secondary);margin-bottom:10px}
+.home-about p:last-child{margin-bottom:0}
+.home-about a{color:var(--primary);text-decoration:none}
+.home-about a:hover{text-decoration:underline}
+
+/* ---------------------------------------------------------------- 响应式 */
+@media(max-width:1180px){
+  .home-cats{column-count:1}
+  .home-hero{grid-template-columns:1fr;gap:30px;padding:40px 32px}
+  .home-live{max-width:520px}
+  .home-quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-why{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .home-hero{padding:30px 20px;border-radius:16px}
+  .home-lead{font-size:13.5px}
+  .home-quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .home-quick-card{padding:14px}
+  .home-cat{padding:16px 14px}
+  .home-tiles{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .home-about{padding:20px 18px}
+}
+@media(max-width:430px){
+  /* 手机首屏要尽快露出工具：hero 的间距、字号、卡片内边距整体收紧一档，
+     第 5 个快捷入口在窄屏隐藏（分类区本来就有全部入口）。 */
+  .home-hero{padding:22px 16px 20px;gap:16px}
+  .home-title{font-size:26px}
+  .home-lead{margin-top:12px;font-size:13px;line-height:1.72}
+  .home-search{margin-top:16px}
+  .home-search input{height:46px;font-size:13.5px}
+  .home-search-hint{margin-top:7px;font-size:11.5px}
+  .home-chips{margin-top:14px;gap:6px}
+  .home-chip:nth-child(n+5){display:none}
+  .home-live{padding:16px}
+  .home-live-num{font-size:24px}
+  .home-chip{font-size:12px;padding:6px 11px}
+  /* 手机宽度下保留两列：8 张"常用工具"卡如果各占一整行，要滚很久才到分类区 */
+  .home-quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .home-quick-card{padding:12px}
+  .home-quick-desc{font-size:11.5px}
+  .home-tiles{grid-template-columns:1fr 1fr}
+  .home-why{grid-template-columns:1fr}
+  .home-live-foot{flex-direction:column;align-items:flex-start;gap:10px}
+}
+@media(max-width:359px){
+  .home-tiles,.home-quick{grid-template-columns:1fr}
+}
