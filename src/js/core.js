@@ -103,6 +103,12 @@ function downloadText(filename, text, mime) {
   }
 }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+// 属性值转义：escHtml 走 textContent→innerHTML，不会转义引号，塞进 value="..." 会把属性截断。
+// 2026-11-01 新增的 URL 参数表/UA 预设需要把任意用户输入写回属性，统一用这个。
+function escAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 function formatBytes(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
 function safeParse(str) { try { return { success:true, data:JSON.parse(str) }; } catch(e) { return { success:false, error:e.message }; } }
 

@@ -133,7 +133,10 @@ input.format-select{padding:6px 8px;border:1px solid var(--border);border-radius
 .faq details[open] summary::before{content:'－'}
 .faq details p{margin:10px 0 0}
 @media(max-width:900px){.seo-content{padding:20px 16px}.seo-content h1{font-size:19px}}
-@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}}
+/* 移动端：flex 子项默认 min-width:auto，会被内部长表格/二进制串撑到视口之外，
+   整页出现横向滚动（2026-11 cidr 结果表实测）。显式清零后由表格自己横向滚动。 */
+@media(max-width:900px){.tool-layout{flex-direction:column}.ops-panel{width:100%}
+  .input-panel,.ops-panel,.result-panel{min-width:0}}
 /* 反馈弹窗（原生 <dialog>，无第三方依赖）
    注意 margin:auto 必须显式写：站内的 `*{margin:0}` 重置会覆盖浏览器给 dialog 的
    默认居中（UA 的 dialog{margin:auto} 属于 UA 样式，始终输给作者样式）。 */
@@ -258,6 +261,35 @@ body.nav-open .nav-toggle span:nth-child(3){transform:translateY(-6px) rotate(-4
 .dt-batch-table th{text-align:left;padding:7px 10px;background:var(--tab-hover);color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border)}
 .dt-batch-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);white-space:pre-wrap;word-break:break-all}
 .dt-batch-table .dt-bad td{color:#e57373}
+
+/* ------------------------------------------------------------------
+   2026-11-01 新增工具簇（tool.labels 注入式页面）共用的小件。
+   这些页面把界面文案放在 src/tool_labels.py 里按语言注入，
+   HTML 只写 TL 占位符（双花括号 + TL 前缀），所以这里只补结构性样式，不含任何文案。
+   ------------------------------------------------------------------ */
+.tl-sec{margin-top:26px}
+.tl-sec-title{font-size:15px;font-weight:600;margin:0 0 6px}
+.tl-note{margin:0 0 10px;font-size:12.5px;line-height:1.72;color:var(--text-secondary)}
+.tl-hint{padding:16px;font-size:13px;color:var(--text-muted)}
+.tl-err{padding:16px;font-size:13px;color:var(--danger)}
+.tl-ok{padding:16px;font-size:13px;color:var(--success)}
+.tl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tl-chip{padding:5px 10px;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--text-secondary);font-size:12px;font-family:inherit;cursor:pointer;transition:all var(--transition)}
+.tl-chip:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.tl-chip.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.tl-field{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tl-field label{font-size:12.5px;color:var(--text-secondary);min-width:72px}
+.tl-input{flex:1;min-width:0;height:34px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-bg);color:var(--text);font-family:"JetBrains Mono","Consolas",monospace;font-size:13px}
+.tl-input:focus{outline:none;border-color:var(--primary)}
+.tl-sel{height:34px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-bg);color:var(--text);font-family:inherit;font-size:13px}
+.tl-copyline{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.tl-copyline:last-child{border-bottom:none}
+.tl-copyline code{flex:1;min-width:0;overflow-x:auto;white-space:pre;font-size:12.5px}
+.tl-copyline .btn{flex:none}
+/* 表格里允许换行的列（说明、描述一类），其余保持 nowrap 便于对齐数值 */
+.dt-table td.tl-wrap{white-space:normal;font-family:inherit;line-height:1.65}
+.tl-scroll{overflow-x:auto}
+
 @media(max-width:900px){
   .dt-table{display:block;overflow-x:auto;white-space:nowrap}
   .dt-table td{white-space:nowrap}

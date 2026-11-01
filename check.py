@@ -32,6 +32,7 @@ ROOT = Path(__file__).parent
 # build() 在 `if __name__ == '__main__'` 内，导入不会触发构建。
 try:
     from build import LANGS, EN, MSGS, DEFAULT_LANG, LANG_DIRS  # noqa: F401
+    from build import TOOLS, tool_langs, SITE  # 单语言工具判定用
     from course import COURSE_LANGS                        # noqa: F401
     _HAS_BUILD = True
 except Exception:                                   # noqa: BLE001
@@ -213,7 +214,21 @@ def main():
                 errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
             # Go 课程板块只发布 zh/en，hreflang 备用链接按 COURSE_LANGS 数校验；
             # 其余页面全站 8 语言 + x-default。
+            # 路径 → 该路径可用的语言数；单语言工具（中文限定）页面本身没有
+            # hreflang，sitemap 条目也不该有，否则「多语言」是假承诺。
+            _mono_paths = {t['path'] for t in TOOLS
+                           if len(tool_langs(t['slug'])) == 1 and t['path']}
+            _base = SITE['base_url']
+
             def _expected_alts(loc):
+                rel = loc[len(_base):] if loc.startswith(_base) else loc
+                # 去掉语言前缀（/en/、/ja/ …）后比对工具路径
+                for L, d in LANG_DIRS.items():
+                    if d and rel.startswith('/' + d):
+                        rel = '/' + rel[len(d) + 1:]
+                        break
+                if rel in _mono_paths:
+                    return 0
                 return len(COURSE_LANGS) + 1 if '/go-course/' in loc else len(LANGS) + 1
 
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data

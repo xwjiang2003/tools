@@ -62,6 +62,7 @@ from course import (COURSE_INDEX, COURSE_LANGS, COURSE_TEXT, MODULES, PUBLISHED,
                     lesson_path, render_course_index, render_lesson)
 from site_config import INDEXNOW_KEY, CUSTOM_DOMAIN       # noqa: E402
 from home_text import HOME_TEXT                            # noqa: E402
+from tool_labels import labels_for                         # noqa: E402
 
 SRC = ROOT / 'src'
 DIST = ROOT / 'dist'
@@ -125,6 +126,8 @@ JS_MODULES = [
     'timestamp.js', 'datetime-tools.js', 'id-tools.js', 'base-tools.js',
     'hash.js', 'formatter.js',
     'string-tools.js', 'generator.js', 'home.js',
+    'cidr.js', 'user-agent.js', 'punycode.js', 'url-parser.js', 'coordinate.js',
+    'number-to-chinese.js', 'markdown-table.js', 'unit-converter.js', 'htpasswd.js',
 ]
 
 # ---------------------------------------------------------------- 按页资产裁剪（2026-10-19）
@@ -173,6 +176,16 @@ PAGE_MODULES = {
     'string': ('core.js', 'string-tools.js'),
     'generator': ('core.js', 'generator.js'),
     'home': ('core.js', 'home.js'),
+    # 2026-11-01 新增工具簇：逻辑都在各自的 js 模块里（纯函数 + 页面渲染）
+    'cidr': ('core.js', 'cidr.js'),
+    'user-agent': ('core.js', 'user-agent.js'),
+    'punycode': ('core.js', 'punycode.js'),
+    'url-parser': ('core.js', 'url-parser.js'),
+    'coordinate': ('core.js', 'coordinate.js'),
+    'number-to-chinese': ('core.js', 'number-to-chinese.js'),
+    'markdown-table': ('core.js', 'markdown-table.js'),
+    'unit-converter': ('core.js', 'unit-converter.js'),
+    'htpasswd': ('core.js', 'htpasswd.js'),
     'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
     'blog': ('core.js',), 'go-course': ('core.js',),
     'privacy': (),
@@ -617,17 +630,35 @@ def autodetect_html(lang, path, langs=None):
 
 # 顶部导航分组（工具在前、内容在后）。展示顺序即列表顺序；
 # slugs 必须覆盖 TOOLS 的全部条目（含首页 JSON 工具），否则该条目不会出现在导航里。
+# 只在部分语言上线的工具。
+#
+# 为什么需要：有些工具的价值本身绑死中文（人民币大写、中文数字读法），
+# 硬翻成 9 种语言既没有用户，也会把汉字塞进英文页触发 check.py 的中文残留检查。
+# 这里声明的语言集合会同时约束：页面生成、导航、首页分类、搜索索引、hreflang。
+# （sitemap 由页面集合自动推出，无需单独处理。）
+TOOL_LANGS = {
+    'number-to-chinese': ('zh',),
+}
+
+
+def tool_langs(slug):
+    """该工具可用的语言元组；未声明即全站语言。"""
+    return TOOL_LANGS.get(slug, LANGS)
+
+
 NAV_GROUPS = [
     {'zh': 'JSON', 'en': 'JSON', 'slugs': ['json']},
-    {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'gofmt-online', 'sql-formatter', 'markdown-to-html', 'yaml', 'toml', 'csv', 'csv-to-sql-insert', 'color']},
+    {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'gofmt-online', 'sql-formatter', 'markdown-to-html', 'markdown-table', 'yaml', 'toml', 'csv', 'csv-to-sql-insert', 'color']},
     {'zh': '进制转换', 'en': 'Base Convert', 'slugs': ['base', 'binary', 'hex']},
-    {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt']},
+    {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt', 'htpasswd']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
     {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['generator', 'snippets']},
     {'zh': '时间 / 日期', 'en': 'Time / Date', 'slugs': [
         'timestamp', 'batch', 'timestamp-list', 'cron-generator', 'timezones', 'weeknumbers', 'daynumbers',
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
     {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
+    {'zh': '网络 / 域名', 'en': 'Network / Domain', 'slugs': ['cidr', 'url-parser', 'punycode', 'user-agent']},
+    {'zh': '换算 / 坐标', 'en': 'Convert / Geo', 'slugs': ['unit-converter', 'coordinate', 'number-to-chinese']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog', 'go-course']}
@@ -683,6 +714,15 @@ TOOL_BLURBS = {
         'binary': '二进制、十进制、十六进制换算',
         'hex': '十六进制与文本、十进制互转',
         'snippets': '常用语言的代码片段速查',
+        'cidr': 'IPv4 子网与 CIDR 计算：网络地址、广播地址、可用主机数',
+        'user-agent': '解析 UA 字符串，识别浏览器、内核、系统与爬虫',
+        'punycode': '中文等国际化域名与 xn-- Punycode 双向转换',
+        'url-parser': '拆解 URL 各段，查询参数可改可删并即时重组',
+        'coordinate': 'WGS-84 / GCJ-02 / BD-09 坐标互转，含偏移距离',
+        'number-to-chinese': '数字转中文读法与人民币大写，支持千万亿级',
+        'markdown-table': '表格文本与 Markdown 表格互转，按显示宽度对齐',
+        'unit-converter': '长度、质量、温度、数据量等 12 类单位换算',
+        'htpasswd': '生成 Nginx / Apache Basic 认证的 htpasswd 行',
         'blog': 'Go、前端与建站实践的技术长文',
     },
     'en': {
@@ -728,6 +768,14 @@ TOOL_BLURBS = {
         'binary': 'Binary, decimal and hexadecimal conversion',
         'hex': 'Hex to text and decimal conversion',
         'snippets': 'Copy-ready code snippets for common languages',
+        'cidr': 'IPv4 subnet and CIDR maths: network, broadcast, usable hosts',
+        'user-agent': 'Parse UA strings into browser, engine, OS and crawler',
+        'punycode': 'Convert internationalised domains to and from xn-- Punycode',
+        'url-parser': 'Break a URL into parts and edit its query parameters live',
+        'coordinate': 'WGS-84 / GCJ-02 / BD-09 coordinate conversion with offset distance',
+        'markdown-table': 'Tabular text to Markdown tables, aligned by display width',
+        'unit-converter': 'Length, mass, temperature, data size and 8 more categories',
+        'htpasswd': 'Generate htpasswd lines for Nginx / Apache basic auth',
         'blog': 'Long-form posts on Go, the web and building this site',
     },
 }
@@ -765,6 +813,8 @@ def nav_html(active_slug, base, labels, lang='zh'):
             t = _TOOL_BY_SLUG.get(slug)
             if not t:
                 continue
+            if lang not in tool_langs(slug):
+                continue                 # 未在该语言上线：不显示入口，避免死链
             href = base + t['path'] if t['path'] else (base or './')
             if t['slug'] == active_slug:
                 group_active = True
@@ -841,6 +891,8 @@ def tool_index_json(base, lang):
     entries = []
     for t in TOOLS:
         slug = t['slug']
+        if lang not in tool_langs(slug):
+            continue                     # 搜索结果不能指向该语言下不存在的页面
         te = TOOLS_EN.get(slug, t)
         zh_l, zh_t, zh_k = t.get('nav', ''), t.get('title', ''), t.get('keywords', '')
         en_l, en_t, en_k = te.get('nav', ''), te.get('title', ''), te.get('keywords', '')
@@ -976,11 +1028,15 @@ EVERGREEN_NAV_LABELS = {
 }
 
 
-def footer_links_html(base, labels):
+def footer_links_html(base, labels, lang):
     home = base or './'
     parts = [f'<a href="{home}">{esc(labels["_home"])}</a>']
     for t in TOOLS:
         if not t['path']:
+            continue
+        # 与顶部导航同一口径：该语言下没有的页面不进页脚，否则就是死链 +
+        # 中文标签在英文页被 i18n 整词替换成半中半英的怪串。
+        if lang not in tool_langs(t['slug']):
             continue
         parts.append(f'<a href="{base}{t["path"]}">{esc(labels[t["slug"]])}</a>')
     # 博客不是工具、不进 TOOLS，但需要一个站点级入口（正文交叉链接之外的保底）。
@@ -1165,7 +1221,9 @@ def render_home_body(lang):
 
     for g, gname, icon in groups:
         # 博客与 Go 课程不是 TOOLS 条目（各有独立数据源），单独放行
-        slugs = [s for s in g['slugs'] if s in _TOOL_BY_SLUG or s in ('blog', 'go-course')]
+        slugs = [s for s in g['slugs']
+                 if (s in _TOOL_BY_SLUG and lang in tool_langs(s)) or s in ('blog', 'go-course')
+                 or (s == 'go-course' and lang in COURSE_LANGS)]
         if not slugs:
             continue
         p.append(f'    <section class="home-cat" data-n="{len(slugs)}">')
@@ -1263,6 +1321,8 @@ def jsonld(c, url, lang, news=None, slug=None, path=None):
         for t in TOOLS:
             if t['slug'] == HOME_SLUG:
                 continue
+            if lang not in tool_langs(t['slug']):
+                continue          # 该语言下不存在的页面不能进结构化数据（会指向 404）
             tgt = content_for(t, lang)
             items.append({'@type': 'ListItem', 'position': len(items) + 1,
                           'name': tgt.get('h1') or t.get('nav', t['slug']),
@@ -1436,9 +1496,11 @@ for _lang in LANGS:
     if _lang == DEFAULT_LANG:
         nv = {t['slug']: t['nav'] for t in TOOLS}
     else:
-        # 优先用该语言已翻的 nav，缺失回退英文（绝不回退中文）
+        # 优先用该语言已翻的 nav，缺失回退英文（绝不回退中文）。
+        # 仅中文存在的工具（TOOL_LANGS 限定）在 TOOLS_EN 里没有条目，
+        # 它的英文 nav 永远不会被渲染，用自身文本兜底即可，避免构建期 KeyError。
         nv = {t['slug']: CONTENT_BY_LANG.get(_lang, {}).get(t['slug'], {})
-              .get('nav', TOOLS_EN[t['slug']]['nav']) for t in TOOLS}
+              .get('nav', TOOLS_EN.get(t['slug'], t)['nav']) for t in TOOLS}
     nv = dict(nv)
     nv.update(HEADINGS[_lang])
     NAV_LABELS[_lang] = nv
@@ -1491,9 +1553,10 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     if slug and str(slug).startswith('go-course'):
         active = 'go-course'
     page = page.replace('{{NAV}}', nav_html(active, base, NAV_LABELS[lang], lang))
-    page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang]))
+    page = page.replace('{{FOOTER_LINKS}}', footer_links_html(base, NAV_LABELS[lang], lang))
     page = page.replace('{{JSONLD}}', ld)
     page = page.replace('{{TOOL}}', body)
+    page = fill_tool_labels(page, slug, lang)
     page = page.replace('{{SEO}}', seo)
     page = page.replace('{{TOOL_INDEX}}', tool_index_json(base, lang))
     if wc_zones:
@@ -1505,6 +1568,32 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{PRIVACY_BODY}}', seo)
     page = page.replace('{{HOME}}', home)
     page = page.replace('{{BASE}}', base)
+    return page
+
+
+_TL_RE = re.compile(r'\{\{TL:(\w+)\}\}')
+
+
+def fill_tool_labels(page, slug, lang):
+    """把 {{TL:key}} 占位与 {{TL_JSON}} 换成当前语言的文案。
+
+    这批新工具的界面文案放在 src/tool_labels.py，按语言注入而不走 i18n 整词替换：
+    表格行标签、单位名、UA 示例属于「数据」而非「文案」，放进 i18n 字典要为 9 种语言
+    各维护一份，成本远大于收益；整段回落英文反而更干净（绝不出现中英混排）。
+    """
+    labels = labels_for(slug, lang)
+
+    def sub(m):
+        key = m.group(1)
+        if key not in labels:
+            # 宁可构建失败也不要产出「{{TL:xxx}} 露在页面上」的残页
+            raise KeyError(f'{slug}: tool_labels 缺少键 {key}')
+        return html.escape(str(labels[key]), quote=False)
+
+    page = _TL_RE.sub(sub, page)
+    if '{{TL_JSON}}' in page:
+        blob = json.dumps(labels, ensure_ascii=False).replace('<', '\\u003c')
+        page = page.replace('{{TL_JSON}}', blob)
     return page
 
 
@@ -1557,6 +1646,8 @@ def build(clean=True, outdirs=None):
     pages = {}
     for lang in LANGS:
         for t in TOOLS:
+            if lang not in tool_langs(t['slug']):
+                continue                     # 该工具未在此语言上线（见 TOOL_LANGS）
             c = content_for(t, lang)
             if t['slug'] == HOME_SLUG:
                 # 门户页正文由 build.py 生成（需要按语言取工具名/说明/分类名），
@@ -1581,7 +1672,11 @@ def build(clean=True, outdirs=None):
                                 c['description'], c['keywords'], body, seo_html,
                                 jsonld(c, canonical_url(lang, t['path']), lang, news,
                                       t['slug'], t['path']),
-                                base, home, wc_zones=wc_for(t['slug']))
+                                base, home, wc_zones=wc_for(t['slug']),
+                                langs=tool_langs(t['slug']),
+                                # 单语言工具（目前只有中文数字转大写）不出 hreflang、
+                                # 不出语言切换器：只有一个选项的下拉框对用户是噪音。
+                                mono=(len(tool_langs(t['slug'])) == 1))
             if lang != DEFAULT_LANG:
                 page = localize(page, lang)
             pages[out_path(lang, t['path'])] = page
@@ -1852,15 +1947,21 @@ def _sitemap_sections(news=None):
 
     for p, pri, freq, lastmod_day in entries:
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
-        alternates = ''.join(
-            f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
-            f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
-            for L in LANGS)
-        alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
-                       f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
+        # 单语言工具（TOOL_LANGS 限定，如中文数字转大写）只有一版页面：
+        # 既不生成 hreflang 备用链接，也只出 1 条 url，与页面数严格对齐。
+        plangs = _PATH_LANGS.get(p, LANGS)
+        if len(plangs) > 1:
+            alternates = ''.join(
+                f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
+                f'href="{SITE["base_url"] + lang_dir(L) + p}"/>\n'
+                for L in plangs)
+            alternates += (f'    <xhtml:link rel="alternate" hreflang="x-default" '
+                           f'href="{SITE["base_url"] + lang_dir(XDEFAULT_LANG) + p}"/>\n')
+        else:
+            alternates = ''
         meta = f'    <changefreq>{freq}</changefreq><priority>{pri}</priority>\n'
         # 各语言各自独立成条：每语言页有自己的 canonical、是独立的可索引 URL。
-        for L in LANGS:
+        for L in plangs:
             loc = SITE['base_url'] + lang_dir(L) + p
             add(section_of(p), _url_block(loc, alternates, meta, lastmod), lastmod_day)
 
@@ -1883,6 +1984,10 @@ def _sitemap_sections(news=None):
             loc = SITE['base_url'] + lang_dir(L) + p
             add('course', _url_block(loc, alternates, meta))
     return sections
+
+
+# 路径 → 可用语言元组；单语言工具在 sitemap 里只能出 1 条（否则条数与页面数不等）。
+_PATH_LANGS = {t['path']: tool_langs(t['slug']) for t in TOOLS if t['path']}
 
 
 def sitemap_files(news=None):
@@ -1998,8 +2103,13 @@ def llms_txt():
         # 热榜、速查表与片段库都不是「有输入框的工具」，各自单列一节
         if t['slug'] in _NOT_TOOL:
             continue
-        en = TOOLS_EN[t['slug']]
+        # 只存在于中文的工具（TOOL_LANGS 限定）没有英文页，就不要在摘要里
+        # 写出一个 404 链接；llms.txt 是给模型读的，死链比缺行更有害。
         zh_url = SITE['base_url'] + t['path']
+        if 'en' not in tool_langs(t['slug']):
+            out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]} (Chinese only)')
+            continue
+        en = TOOLS_EN[t['slug']]
         en_url = SITE['base_url'] + EN_DIR + t['path']
         out.append(f'- [{t["h1"]}]({zh_url}): {t["description"]}')
         out.append(f'  - English: [{en["h1"]}]({en_url}) — {en["description"]}')

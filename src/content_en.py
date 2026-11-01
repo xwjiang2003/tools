@@ -2260,6 +2260,449 @@ TOOLS_EN = {
             ('Code snippets (Go / Python / JS / SQL / Git)', 'snippets/'),
         ],
     },
+    # ------------------------------------------------ added 2026-11-01
+    'cidr': {
+        'path': 'cidr/',
+        'nav': 'Subnet Calc',
+        'title': 'IPv4 Subnet Calculator - CIDR, Usable Hosts & Wildcard Mask | DevTools',
+        'description': (
+            'Enter an IP or a CIDR block such as 192.168.1.130/26 and get the network address, '
+            'broadcast address, subnet mask, wildcard mask, usable host range and host count, '
+            'plus the address as an integer, in hex and in binary. Dotted masks are accepted, '
+            'and the mask is validated for contiguity.'
+        ),
+        'keywords': (
+            'subnet calculator,subnet mask calculator,cidr calculator,ip subnet,wildcard mask,'
+            'usable hosts,network address,broadcast address,ipv4 subnetting'
+        ),
+        'h1': 'IPv4 Subnet & CIDR Calculator',
+        'intro': [
+            'Drop in something like 192.168.1.130/26 and you immediately see which block it belongs to, '
+            'where the broadcast address sits and how many hosts are left. Subnet planning, firewall '
+            'allow-lists and "why can these two machines on the same switch not reach each other" all '
+            'start from these numbers.',
+            'Dotted masks work too (10.0.0.0/255.255.0.0) and are checked for contiguity: a mask whose '
+            'bits read 1, then 0, then 1 again will be rejected by routers and operating systems alike.',
+        ],
+        'features': [
+            ('Everything in one pass',
+             'Network, broadcast, mask, wildcard, usable range, host count and address type in one table.'),
+            ('Masks both ways',
+             'Type a prefix length or a dotted mask; they convert both ways and are validated for contiguity.'),
+            ('Integer and binary',
+             'The address as a decimal integer, in hex and in dotted binary, ready for ACL and bitwise work.'),
+            ('Mask reference',
+             'A /1 to /32 table of mask, wildcard and usable hosts, so you stop guessing.'),
+        ],
+        'steps': [
+            'Enter an IP or a block on the left, for example 192.168.1.130/26.',
+            'The result table updates on every keystroke.',
+            'Use the mask reference below to look up any other prefix.',
+        ],
+        'faq': [
+            ('Why does a /24 only have 254 usable hosts?',
+             'A /24 holds 256 addresses. The first has all host bits zero (network address) and the last has '
+             'all host bits one (broadcast address); neither can be assigned. That leaves 254. '
+             '/31 is the exception: RFC 3021 lets both addresses be used on point-to-point links.'),
+            ('What is a wildcard mask for?',
+             'It is the subnet mask inverted bit by bit. Cisco ACLs, the OSPF network command and many '
+             'firewall rules expect it: for a /24 the mask is 255.255.255.0 and the wildcard is 0.0.0.255.'),
+            ('Why classify the address type?',
+             'It tells you at a glance whether an address is private, loopback, link-local (169.254.x.x) or '
+             'carrier-grade NAT. When a service is unreachable, checking which range the address falls into '
+             'often saves half the debugging.'),
+        ],
+        'seealso': [
+            ('URL parser & query editor', 'url-parser/'),
+            ('Punycode / IDN converter', 'punycode/'),
+            ('User-Agent parser', 'user-agent/'),
+            ('Base converter', 'base/'),
+        ],
+    },
+    'user-agent': {
+        'path': 'user-agent/',
+        'nav': 'UA Parser',
+        'title': 'User-Agent Parser - Browser, Engine, OS and Device Detection | DevTools',
+        'description': (
+            'Paste any User-Agent string and read back the browser and version, rendering engine, '
+            'operating system, device type (phone, tablet, desktop) and CPU architecture, with '
+            'crawlers and CLI tools such as Googlebot, bingbot and curl flagged separately. '
+            'One click loads your own browser UA.'
+        ),
+        'keywords': (
+            'user agent parser,useragent lookup,ua parser,browser detection,user agent string,'
+            'detect device from user agent,crawler detection'
+        ),
+        'h1': 'User-Agent Parser',
+        'intro': [
+            'A User-Agent is the string a browser writes about itself: browser, version, engine, OS and '
+            'sometimes the device model. Compatibility debugging, log analysis and bot filtering all start '
+            'by taking it apart.',
+            'Common browsers, in-app browsers (WeChat, QQ, UC), search engine crawlers and command line '
+            'tools are all covered, and the fields that are really guesses are called out — Windows NT 10.0 '
+            'covers both Windows 10 and 11, for example.',
+        ],
+        'features': [
+            ('Order-sensitive matching',
+             'Edge, WeChat and UC all claim to be Chrome. The most specific token wins, so they are not mislabelled.'),
+            ('Crawlers separated',
+             'Googlebot, bingbot, PetalBot, Bytespider, curl and python-requests are labelled as what they are.'),
+            ('Engine and architecture',
+             'Blink, Gecko, WebKit or Trident, plus x86-64 or ARM64.'),
+            ('Read your own UA',
+             'One click fills in your browser UA so you can tweak it and watch the parse change.'),
+        ],
+        'steps': [
+            'The page pre-fills your current browser UA.',
+            'Or paste a UA from a log file on the left.',
+            'Use the chips to load Chrome, Edge, Safari, WeChat, Googlebot and other common strings.',
+        ],
+        'faq': [
+            ('Can a User-Agent be faked?',
+             'Trivially. It is a string the client writes about itself, so curl or a Python script can claim '
+             'anything. Treat it as a statistics and compatibility signal, never as authentication.'),
+            ('Why does Windows 11 show up as Windows 10?',
+             'Microsoft kept the Windows NT 10.0 token on Windows 11 for compatibility with old sites, so the '
+             'UA cannot tell them apart. Only Client Hints platformVersion can, which is why this page shows both.'),
+            ('Why is Chrome on iOS detected as Safari?',
+             'Apple requires every iOS browser to use WebKit. Chrome is a shell around it and its UA carries both '
+             'CriOS and Safari tokens. This page reports browser Chrome and engine WebKit, which is accurate.'),
+        ],
+        'seealso': [
+            ('URL parser & query editor', 'url-parser/'),
+            ('IPv4 subnet calculator', 'cidr/'),
+            ('JSON formatter', 'json/'),
+            ('Regex tester', 'regex/'),
+        ],
+    },
+    'punycode': {
+        'path': 'punycode/',
+        'nav': 'Punycode',
+        'title': 'Punycode Converter - Unicode Domains to and from xn-- (IDN) | DevTools',
+        'description': (
+            'Convert Unicode domains to Punycode and back: münchen.de becomes xn--mnchen-3ya.de, '
+            'and an xn-- host decodes to the readable form. Lengths are shown per label, with a warning '
+            'past 63 bytes, matching the rules registrars and DNS actually enforce.'
+        ),
+        'keywords': (
+            'punycode converter,punycode,idn converter,internationalized domain,xn--,'
+            'unicode domain,domain encoder'
+        ),
+        'h1': 'Punycode / IDN Converter',
+        'intro': [
+            'Non-ASCII domains (German umlauts, Cyrillic, Greek) have to be encoded into the xn-- form '
+            'before DNS can resolve them. That encoding is Punycode. Registering a domain, requesting a '
+            'certificate or writing a hostname regex usually means converting between the two spellings.',
+            'Encoding uses the browser built-in IDNA handling (UTS#46 normalisation), which matches other '
+            'mainstream tools; decoding implements RFC 3492 directly and needs no network call.',
+        ],
+        'features': [
+            ('Both directions',
+             'Unicode to Punycode and Punycode back to a readable domain.'),
+            ('Per-label detail',
+             'The name is split on dots and each label is measured, so you can see which one exceeds 63 bytes.'),
+            ('Validity warnings',
+             'Total length over 253 bytes, empty labels and illegal characters are reported explicitly.'),
+            ('Full URLs accepted',
+             'Paste a URL with scheme and path; only the host gets converted.'),
+        ],
+        'steps': [
+            'Enter a Unicode domain on the left, e.g. münchen.de or пример.рф.',
+            'The right side shows both forms with per-label lengths.',
+            'Paste an xn-- host instead and it decodes back.',
+        ],
+        'faq': [
+            ('Why does one domain have two spellings?',
+             'DNS only carries ASCII, so an internationalised domain is Punycode-encoded first. What you see '
+             'in the address bar is the readable form; what goes on the wire starts with xn--.'),
+            ('How long can a single label be?',
+             'Measured on the encoded ASCII form: 63 bytes per label, 253 for the whole name. A CJK character '
+             'costs four to six characters once encoded, so a Chinese label only fits a dozen characters.'),
+            ('Are xn-- domains phishing?',
+             'Not inherently — xn-- is just an encoding. But homoglyphs (Cyrillic а versus Latin a, say) can '
+             'build look-alike names, so decoding an xn-- host before trusting it is a reasonable habit.'),
+        ],
+        'seealso': [
+            ('URL parser & query editor', 'url-parser/'),
+            ('IPv4 subnet calculator', 'cidr/'),
+            ('Base64 / URL encoder', 'encode/'),
+            ('JSON formatter', 'json/'),
+        ],
+    },
+    'url-parser': {
+        'path': 'url-parser/',
+        'nav': 'URL Parser',
+        'title': 'URL Parser - Break a URL into Scheme, Host, Path and Query | DevTools',
+        'description': (
+            'Split a URL into scheme, host, port, path, fragment and query parameters. Parameters are '
+            'listed with both the raw value and the decoded, readable one, and the table is editable: '
+            'add, rename or delete a row and the rebuilt URL updates instantly.'
+        ),
+        'keywords': (
+            'url parser,url analyzer,query string parser,url parameters,url decoder,'
+            'break down url,parse query params'
+        ),
+        'h1': 'URL Parser & Query Editor',
+        'intro': [
+            'What parameters does this long link actually carry, which of them are trackers, and what does '
+            '%E4%B8%AD decode to? Paste it here and the answer is on one screen. Components sit on top, '
+            'the editable parameter table below.',
+            'Edit a name or a value and the rebuilt URL at the bottom follows immediately — faster than '
+            'counting ampersands by hand when you are stripping utm_ parameters from a share link.',
+        ],
+        'features': [
+            ('Structured breakdown',
+             'Scheme, host, port, path, fragment and credentials listed separately, with defaults marked.'),
+            ('Tabular parameters',
+             'One row per parameter, raw and decoded values side by side, duplicates preserved.'),
+            ('Edits write back',
+             'Change a key or value, add or delete rows, and the URL below rebuilds itself.'),
+            ('Forgiving parsing',
+             'A URL without a scheme is read as http:// instead of failing outright.'),
+        ],
+        'steps': [
+            'Paste a URL into the field on the left.',
+            'Read the components on the right; the table below lists every query parameter.',
+            'Edit or delete parameters, then copy the rebuilt URL.',
+        ],
+        'faq': [
+            ('Why do values contain things like %5B and %22?',
+             'That is percent-encoding. Brackets, quotes and non-ASCII characters must be escaped in a URL. '
+             'The decoded column shows the readable form.'),
+            ('What happens with repeated parameter names?',
+             'Each occurrence gets its own row, in original order. How the server treats duplicates depends on '
+             'the stack: PHP keeps the last one, most frameworks keep the first or build an array — a common '
+             'source of API bugs.'),
+            ('Does editing change the original link?',
+             'No. The page only reads the text you pasted; copy the rebuilt URL when you need it.'),
+        ],
+        'seealso': [
+            ('Punycode / IDN converter', 'punycode/'),
+            ('Base64 / URL encoder', 'encode/'),
+            ('IPv4 subnet calculator', 'cidr/'),
+            ('JWT decoder', 'jwt/'),
+        ],
+    },
+    'coordinate': {
+        'path': 'coordinate/',
+        'nav': 'Geo Convert',
+        'title': 'Map Coordinate Converter - WGS-84, GCJ-02 and BD-09 | DevTools',
+        'description': (
+            'Convert between raw GPS coordinates (WGS-84), the Chinese GCJ-02 datum used by AMap and '
+            'Tencent, and Baidu BD-09. All three come back at once together with the offset distance. '
+            'Coordinates outside China are returned unchanged, as the algorithm requires.'
+        ),
+        'keywords': (
+            'coordinate converter,wgs84 to gcj02,gcj02 to wgs84,bd09,china map offset,'
+            'gps coordinate conversion,amap baidu coordinate'
+        ),
+        'h1': 'WGS-84 / GCJ-02 / BD-09 Converter',
+        'intro': [
+            'Coordinates from a GPS module, a drone or an open dataset are WGS-84. Plot them on AMap or '
+            'Baidu and they land a few hundred metres away. Coordinates picked off those maps, in turn, '
+            'will not go into a system that only accepts WGS-84. This page handles the round trip.',
+            'Enter any one datum and all three come back, along with the offset distance — typically 300 to '
+            '800 metres inside China, far too large to call a precision issue.',
+        ],
+        'features': [
+            ('All three datums',
+             'WGS-84, GCJ-02 and BD-09 in a single table, no page switching.'),
+            ('Offsets quantified',
+             'The straight-line distance from WGS-84 to GCJ-02, and from GCJ-02 to BD-09.'),
+            ('No shift abroad',
+             'Outside China (longitude 73.66-135.05, latitude 3.86-53.55) values are returned as given.'),
+            ('Copy-ready strings',
+             'Output in "longitude,latitude" form, ready to paste into a map picker.'),
+        ],
+        'steps': [
+            'Choose which datum your input uses on the left.',
+            'Enter longitude and latitude, e.g. 116.391283 and 39.907441.',
+            'Read all three results on the right and copy the one you need.',
+        ],
+        'faq': [
+            ('Why does GCJ-02 exist?',
+             'Chinese regulations require every published map of the country to use GCJ-02, which applies a '
+             'non-linear offset to real coordinates so public maps cannot be used for precise positioning.'),
+            ('Why is the GCJ-02 to WGS-84 result approximate?',
+             'The forward formula has no closed-form inverse, so it is solved by iteration. This page iterates '
+             'to better than 1e-9 degrees (about 0.1 mm), which is indistinguishable from exact in practice.'),
+            ('Are coordinates outside China shifted?',
+             'No. Outside the covered range the algorithm returns the input unchanged — which is why AMap and '
+             'a GPS agree when you are abroad.'),
+        ],
+        'seealso': [
+            ('IPv4 subnet calculator', 'cidr/'),
+            ('Unit converter', 'unit-converter/'),
+            ('JSON formatter', 'json/'),
+            ('Timestamp converter', 'timestamp/'),
+        ],
+    },
+    'markdown-table': {
+        'path': 'markdown-table/',
+        'nav': 'MD Table',
+        'title': 'Markdown Table Generator - Paste from Excel, CJK-Safe Alignment | DevTools',
+        'description': (
+            'Paste a range copied from Excel, WPS or Google Sheets and get a cleanly aligned Markdown '
+            'table. Column padding is computed by display width, so CJK characters no longer break '
+            'alignment in GitHub, Typora or Obsidian. It also converts an existing Markdown table back '
+            'to tab-separated text.'
+        ),
+        'keywords': (
+            'markdown table,markdown table generator,excel to markdown,csv to markdown,'
+            'markdown table formatter,table alignment'
+        ),
+        'h1': 'Markdown Table Generator',
+        'intro': [
+            'Lay the table out in a spreadsheet, copy, paste here, and the Markdown version appears on the '
+            'right. No more typing pipes and dashes by hand.',
+            'Padding is measured in display width: a CJK character takes two columns, so mixed Chinese and '
+            'English tables stay aligned in a monospace font. That is exactly where hand-written tables and '
+            'naive formatters fall apart.',
+        ],
+        'features': [
+            ('Paste and done',
+             'Tab, comma, semicolon or pipe delimiters are detected automatically.'),
+            ('CJK-aware padding',
+             'Columns are padded by display width, so they line up in GitHub, Typora and Obsidian.'),
+            ('Alignment control',
+             'Left, centre, right, or automatic right alignment for numeric columns.'),
+            ('Reverse export',
+             'Paste an existing Markdown table to get tab-separated text back for Excel.'),
+        ],
+        'steps': [
+            'Select and copy a range in Excel, WPS or Google Sheets.',
+            'Paste into the left pane; the Markdown table appears on the right.',
+            'Copy it into your README or docs.',
+        ],
+        'faq': [
+            ('Excel gave me tab characters instead of a table. Is that expected?',
+             'Yes. Excel puts tab-separated plain text on the clipboard; this page detects that and uses it '
+             'as the delimiter.'),
+            ('What about cells that contain a pipe?',
+             'It is escaped to \\| so the table keeps its shape. Line breaks inside a cell are flattened to '
+             'spaces, because Markdown tables have no in-cell newline.'),
+            ('Why does CJK width matter?',
+             'CJK characters occupy two columns in a monospace font. Padding them as single-width makes those '
+             'columns narrower than the ASCII ones — the table still renders, but the source looks ragged and '
+             'is painful to maintain.'),
+        ],
+        'seealso': [
+            ('Markdown to HTML', 'markdown-to-html/'),
+            ('JSON to CSV', 'csv/'),
+            ('SQL formatter', 'sql-formatter/'),
+            ('Text diff', 'diff/'),
+        ],
+    },
+    'unit-converter': {
+        'path': 'unit-converter/',
+        'nav': 'Units',
+        'title': 'Unit Converter - Length, Area, Weight, Temperature, Data Size | DevTools',
+        'description': (
+            'Convert across twelve categories: length, area, volume, mass, temperature, data size, speed, '
+            'time, pressure, energy, power and angle. Enter one value and every unit in the category is '
+            'listed at once, including both the KB and KiB conventions for data size.'
+        ),
+        'keywords': (
+            'unit converter,unit conversion,length converter,weight converter,temperature converter,'
+            'data size converter,kg to lb,psi to bar,celsius to fahrenheit'
+        ),
+        'h1': 'Unit Converter',
+        'intro': [
+            'Type one value and the whole category is listed at once — considerably faster than bouncing '
+            'between two dropdowns.',
+            'Data size keeps both conventions on purpose: KB = 1000 bytes is what drive manufacturers print, '
+            'KiB = 1024 bytes is what your operating system shows. That gap is the entire "1TB drive shows '
+            '931GB" story.',
+        ],
+        'features': [
+            ('Twelve categories',
+             'Length, area, volume, mass, temperature, data size, speed, time, pressure, energy, power, angle.'),
+            ('Whole category at once',
+             'Every unit in the category is listed, so you stop switching the target unit back and forth.'),
+            ('Both data conventions',
+             'SI (powers of 1000) and binary (powers of 1024) side by side.'),
+            ('Sane formatting',
+             'Up to ten significant digits, floating point tails trimmed, scientific notation at extremes.'),
+        ],
+        'steps': [
+            'Pick a category, e.g. length.',
+            'Enter a value and choose the source unit.',
+            'The whole category is listed below, with the source unit highlighted.',
+        ],
+        'faq': [
+            ('Why does a 1TB drive show 931GB in the OS?',
+             'Manufacturers count 1TB as 1000^4 bytes; the operating system divides by 1024, so the same drive '
+             'reads as 931GiB. Nothing is missing, the two use different bases.'),
+            ('Why can temperature not use a simple factor?',
+             'Celsius and Fahrenheit have different zero points, so the relation is F = C x 9/5 + 32, not a '
+             'scale factor. Temperature is handled with formulas; everything else uses factors.'),
+            ('Is the precision sufficient?',
+             'Conversions use double precision and print up to ten significant digits, which covers engineering '
+             'and bookkeeping work. For anything stricter, compute from the definition directly.'),
+        ],
+        'seealso': [
+            ('Map coordinate converter', 'coordinate/'),
+            ('Duration converter', 'duration/'),
+            ('Base converter', 'base/'),
+            ('JSON formatter', 'json/'),
+        ],
+    },
+    'htpasswd': {
+        'path': 'htpasswd/',
+        'nav': 'htpasswd',
+        'title': 'htpasswd Generator - Nginx / Apache Basic Auth (apr1, SHA-1) | DevTools',
+        'description': (
+            'Generate htpasswd lines in the browser: apr1 (the $apr1$ format understood by both Nginx and '
+            'Apache), SHA-1 ({SHA}) or plain. The output can be appended straight to a .htpasswd file and '
+            'comes with the matching Nginx auth_basic snippet. Nothing is uploaded.'
+        ),
+        'keywords': (
+            'htpasswd generator,htpasswd online,nginx basic auth,apache htpasswd,apr1,'
+            'basic authentication password,nginx password'
+        ),
+        'h1': 'htpasswd Generator',
+        'intro': [
+            'Protecting a directory behind a username and password takes one line of user:$apr1$... in a '
+            '.htpasswd file. But plenty of machines have no httpd-tools installed, and pulling in all of '
+            'Apache for one password is a poor trade. This page does the arithmetic in your browser.',
+            'The apr1 implementation follows Apache and produces byte-identical results to htpasswd -m, so '
+            'it can be swapped in directly. Passwords never leave the page.',
+        ],
+        'features': [
+            ('Three formats',
+             'apr1 (the $apr1$ form, the most portable), SHA-1 ({SHA}) and plain.'),
+            ('Matches the official tool',
+             'The apr1 output was verified byte for byte against htpasswd -m and openssl passwd -apr1.'),
+            ('Salt visible',
+             'The current salt is shown and can be regenerated, which explains why one password yields many strings.'),
+            ('Config included',
+             'The two-line Nginx auth_basic snippet and the command to regenerate with the official tool.'),
+        ],
+        'steps': [
+            'Enter a username and password. Usernames allow letters, digits and . _ @ - only.',
+            'Pick an algorithm; apr1 is the usual choice.',
+            'Copy the generated line into your .htpasswd file.',
+        ],
+        'faq': [
+            ('apr1 or SHA-1?',
+             'Prefer apr1. It is the default of Apache htpasswd -m, works with both Nginx and Apache, and is '
+             'salted with 1000 iterations, so it resists cracking far better than SHA-1. Fall back to {SHA} '
+             'only when the other end supports nothing else.'),
+            ('Why does the same password produce a different string every time?',
+             'Because of the salt. apr1 picks eight random characters per hash and stores them in the result '
+             '($apr1$salt$hash), so verification recomputes with that salt and any of those strings will match.'),
+            ('Is the password sent anywhere?',
+             'No. Everything runs locally and the page contains no upload path; it works offline. Clearing the '
+             'field afterwards is still good hygiene.'),
+        ],
+        'seealso': [
+            ('Hash calculator (MD5 / SHA)', 'hash/'),
+            ('Base64 / URL encoder', 'encode/'),
+            ('JWT decoder', 'jwt/'),
+            ('UUID generator', 'uuid/'),
+        ],
+    },
+
 }
 
 # Inner HTML of <section class="seo-content legal">...</section>, in English.
