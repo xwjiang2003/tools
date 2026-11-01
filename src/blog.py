@@ -50,6 +50,229 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'mistral-large4-open-weight-2026',
+        'category': 'ai',
+        'date': '2026-11-01',
+        'updated': '2026-11-01',
+        'tags': ['Mistral Large 4', '开源权重', 'Le Chonk', '自部署大模型', '安全代码审查', '网络安全防御', 'MOE 模型', '1T 参数', 'vLLM 部署', 'llama.cpp GGUF', 'Terminal-Bench 41%', 'AI 代码审查'],
+        'title': 'Mistral Large 4 开源权重落地：1T 参数旗舰如何自部署、做安全代码审查 | DevTools 博客',
+        'description': '2026-10-29 Mistral AI 把旗舰 Mistral Large 4（昵称 Le Chonk，约 1T 总参数 / 52B 激活，MoE 架构）的权重开源到 Hugging Face，成为欧洲有史以来最大的开放权重发布。它以"为开发者（代码智能体）与防御者（网络安全）而建"为定位，Terminal-Bench 4.0 达 41%、AA Cyber Index 51%、B3 智能体安全 97.1%、对恶意网络请求拒绝率 96.6%。本文拆解开源权重与开源的许可差异、MoE 与 1M 上下文的技术要点，并给出三种自部署方式（vLLM / llama.cpp GGUF / transformers）与一份可直接跑的安全代码审查 Agent（OpenAI 兼容端点 + 结构化输出 + Token 效率自测）。',
+        'keywords': 'Mistral Large 4,开源权重,自部署大模型,安全代码审查,网络安全防御,Le Chonk,1T 参数,MOE 模型,Terminal-Bench 41%,vLLM 部署,llama.cpp GGUF,如何本地部署大模型,大模型安全审查 教程,开源权重和开源区别,AI 代码审查 实操,主权 AI',
+        'h1': 'Mistral Large 4 开源权重落地：1T 参数旗舰如何自部署、做安全代码审查',
+        'summary': '2026-10-29 Mistral Large 4（Le Chonk，约 1T/52B MoE）权重开源，主打"开发者 + 防御者"：Terminal-Bench 4.0 41%、AA Cyber Index 51%、B3 安全 97.1%。本文讲清开源权重与开源的许可边界，给出 vLLM / llama.cpp / transformers 三种自部署，以及一份可跑的安全代码审查 Agent 与 Token 效率测算。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-10-29，Mistral AI 把旗舰 <b>Mistral Large 4（昵称 Le Chonk，约 1 万亿总参数、52B 激活，MoE 架构）</b>的权重开源到了 Hugging Face（源：Mistral 官方博客 / Hugging Face blog，2026-10-29；多家二次报道 luwai.fr、lycoristechnologies.com、tenbrief.com、singularitylogs.com、aimodeling.com 同日）。这是欧洲有史以来最大的开放权重发布，定位"为开发者（代码智能体）与防御者（网络安全）而建"。它的卖点不是又大了一点，而是<b>把前沿能力塞进"你可以自己跑、数据不出域"的形态</b>：Terminal-Bench 4.0 从预览版 28% 涨到 <b>41%</b>、AA Coding Agent Index <b>48%</b>（与 GLM-5.3 持平却少 47% 输出 token）、AA Cyber Index <b>51%</b>、B3 智能体安全 <b>97.1%</b>、对恶意网络请求拒绝率 <b>96.6%</b>。对开发者来说，真正的价值是：一份可本地部署、可做"安全代码审查"的前哨模型。本文先拆许可与架构，再给三套自部署命令和一份能直接跑的审查 Agent。</p>
+</blockquote>
+
+<h2>一、背景：为什么"开源权重旗舰"是 2026 的分水岭</h2>
+<p>过去一年"开源权重"和"开源"被混用，但 2026 年的旗舰发布把这条线画得很清楚。Mistral Large 4 走的是 <b>Mistral Ecosystem Open-Weight License（MEOW，修改版 MIT）</b>：内部使用、研究、微调、把模型打进自有产品售卖都允许；唯独<b>把模型当作 API 服务卖给第三方（MaaS）</b>需要单独商业授权。这意味着对绝大多数企业和开发者它是"真能自己跑"的，只对云厂商 / API 转售商设限。对比同周 Google 把 Gemini 4 Carbon 先只开放给"受信任的防御者"（trusted access），Mistral 的"权重公开即无人能断供"反而成了主权 AI 的核心论点（Pierre Stock 对 TechCrunch 的原话）。</p>
+<p>所以 2026 年的分水岭不是"模型更大"，而是：<b>前沿能力第一次以"可自托管、数据不出域"的形态到达开发者手里</b>。对安全团队尤其关键——你可以用它做漏洞复现与打补丁，而不把敏感代码发给任何第三方（Orange Cyberdefense、Cisco、CrowdStrike、ENISA 都参与了评估）。</p>
+
+<h2>二、技术原理：MoE 1T/52B、1M 上下文、多模态与推理档位</h2>
+<table>
+  <tr><th>维度</th><th>Mistral Large 4 事实（源：模型卡 / 官方博客，2026-10-29）</th></tr>
+  <tr><td>架构</td><td>稀疏 MoE，每 token 路由到 128 个专家中的 4 个 + 1 个共享专家；MLA 注意力 + DeepSeek 式稀疏注意力索引</td></tr>
+  <tr><td>规模</td><td>约 1T 总参数，52B 激活（含嵌入/输出层）；推理成本接近中量级稠密模型</td></tr>
+  <tr><td>上下文</td><td>最长 1M token；多模态（1.6B Pixtral 视觉编码器）文本 + 图像输入</td></tr>
+  <tr><td>语言</td><td>160+ 语言；欧洲基础设施从零训练（主权叙事）</td></tr>
+  <tr><td>推理档</td><td>low / medium / high 三档，默认 high；high 无法关闭（reasoning_effort: none 仍走 high）</td></tr>
+  <tr><td>权重格式</td><td>FP8（54 个文件）+ 面向 Blackwell 的 NVFP4 检查点；Unsloth / llama.cpp 同日放出 GGUF 量化</td></tr>
+</table>
+<p>关键工程含义：因为只激活 52B，<b>显存占用接近中量级模型，但权重要整包装进内存</b>。Mistral 官方说 NVFP4 检查点可在 4 张 B200/B300 上跑；Hugging Face 自测 2-bit GGUF 能塞进 512GB 统一内存的 M3 Ultra（Q2_K 预填约 90 tok/s、生成约 15 tok/s）。换句话说：<b>数据中心级能全精度跑，消费级能靠量化跑——这是它能"落地"的物理前提</b>。</p>
+
+<h2>三、与当日热点的关联：主权 AI、开源权重 vs 开源、安全防御</h2>
+<p>同一周几条线高度呼应：① 开源权重成为"抗断供"的代名词，与美国/中国大模型形成三足；② 网络安全从"模型能写攻击"转向"模型帮防御者复现+打补丁且不误伤"（Large 4 对合法复现补丁几乎不触发安全过滤，对恶意请求仍拒 96.6%）；③ 推理成本焦虑持续发酵——它用"同分少 47% token"直接回应。注意它的诚实边界：AA Intelligence Index v5 总分 26，在 150B+ 开源权重里排第五，前面是中国模型；Cyber Index 51% 也落后于 DeepSeek V4.1 Flash（57%）与 MiMo-V2.6-Pro（56%）。<b>它的差异化是"不被拒绝的防御" + 主权部署，而非总分第一</b>。另一处暗线：同期 Hugging Face 上的 Seb Labs 把"决策模型"做成 API/MCP（见延伸），说明 2026 年模型正在从"生成文本"裂变成"生成判断 / 生成动作"的多形态——这正是下一篇 LFM3 的主轴。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>先定部署形态</b>：有数据中心 GPU 用 FP8 vLLM；消费级/笔记本用 Unsloth 或 llama.cpp 的 Q2_K/Q4_K GGUF；Apple 芯片优先 MLX。</li>
+  <li><b>搞清楚许可</b>：内部用、产品内置都免费；只有做 MaaS 转售要单独商业授权。</li>
+  <li><b>推理档位按需调</b>：代码审查这类确定性任务用 medium 足够，省 token；复杂推理才上 high。</li>
+  <li><b>把"安全代码审查"当首位落地场景</b>：数据不出域、可审计、能结构化输出，ROI 最高。</li>
+  <li><b>设人工闸门</b>：凡是涉及"是否真去打补丁/是否越权"的动作，保留人审，别让模型自动改生产。</li>
+  <li><b>用 Token 效率算账</b>：同分少 47% 输出，等于同样预算多审近一倍代码。</li>
+</ol>
+
+<h2>五、分步实操：自部署 Mistral Large 4 + 安全代码审查 Agent</h2>
+<h3>5.1 三种自部署方式（真实命令，按硬件选）</h3>
+<pre><code># 方式 A：数据中心 GPU，vLLM 全精度 FP8（需 8 卡 B200/B300 级）
+pip install vllm
+vllm serve mistralai/Mistral-Large-4-1T-A52B --tensor-parallel-size 8 --dtype fp8
+
+# 方式 B：消费级 / 笔记本，llama.cpp 跑 2-bit GGUF（可塞进 512GB 统一内存）
+llama-server -m Mistral-Large-4-1T-A52B-Q2_K.gguf -ngl 99 -c 65536
+
+# 方式 C：单卡 transformers 快速验证（Hugging Face 首日支持）
+pip install --upgrade transformers
+from transformers import AutoProcessor, AutoModelForMultimodalLM
+mid = "mistralai/Mistral-Large-4-1T-A52B"
+# 文本/图像混输；reasoning_effort 取 low/medium/high
+</code></pre>
+<p>启动后 vLLM 暴露 OpenAI 兼容端点 <code>http://localhost:8000/v1</code>，下面 Agent 直接复用。</p>
+
+<h3>5.2 安全代码审查 Agent（OpenAI 兼容端点 + 结构化输出，真实可跑）</h3>
+<pre><code>from openai import OpenAI
+import subprocess, json
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+# 取本次分支相对 main 的 diff（也可换成待审 PR 的 patch）
+diff = subprocess.check_output(["git", "diff", "origin/main...HEAD"]).decode()
+
+resp = client.chat.completions.create(
+    model="mistralai/Mistral-Large-4-1T-A52B",
+    messages=[
+        {"role": "system", "content": (
+            "你是资深安全工程师。只输出 JSON，格式："
+            "{\"findings\":[{\"file\":str,\"line\":int,\"severity\":\"high|medium|low\","
+            "\"type\":str,\"fix\":str}]}。不要解释，不要 markdown 代码块。")},
+        {"role": "user", "content": f"审查以下 git diff，只列真实安全缺陷：\n{diff[:12000]}"},
+    ],
+    response_format={"type": "json_object"},
+    extra_body={"reasoning_effort": "medium"},   # Mistral 推理档位
+    temperature=0.0,
+)
+report = json.loads(resp.choices[0].message.content)
+for f in report["findings"]:
+    print(f"[{f['severity']}] {f['file']}:{f['line']} {f['type']} -> {f['fix']}")
+</code></pre>
+<p>预期：返回结构化漏洞清单（SQL 注入 / 命令注入 / 越权 / 硬编码密钥等），可接 CI 门禁或 Slack 告警。先 <code>pip install openai</code> 并保证 5.1 的 vLLM 已起。</p>
+
+<h3>5.3 Token 效率自测（同分少 47% 输出，算单任务成本）</h3>
+<pre><code># Mistral 官方口径：Coding Agent Index 48%，与 GLM-5.3 持平但每任务少 47% 输出 token
+# API 价：输入 $0.70/M、输出 $2.10/M（官方文档）
+def task_cost(out_tokens, in_tokens=4000, p_out=2.10, p_in=0.70):
+    return out_tokens / 1e6 * p_out + in_tokens / 1e6 * p_in
+
+glm_out = 1000
+mistral_out = int(glm_out * (1 - 0.47))    # 同分少 47% token
+print(round(task_cost(glm_out), 4), round(task_cost(mistral_out), 4))
+# 0.0046 0.0025 -> 同等质量下 Mistral 单任务约省 46%
+</code></pre>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>维度</th><th>一句到位</th></tr>
+  <tr><td>事件</td><td>2026-10-29 Le Chonk 权重开源，欧洲最大开放权重发布</td></tr>
+  <tr><td>许可</td><td>MEOW（改 MIT）：内部/产品免费，MaaS 转售需商业授权</td></tr>
+  <tr><td>架构</td><td>~1T/52B MoE，1M 上下文，多模态，三档推理</td></tr>
+  <tr><td>差异化</td><td>不被拒绝的防御 + 主权自托管，而非总分第一</td></tr>
+  <tr><td>落地</td><td>vLLM/llama.cpp/transformers 三选一 + 安全代码审查 Agent</td></tr>
+  <tr><td>红线</td><td>打补丁/越权动作必须人审，别自动改生产</td></tr>
+</table>
+<p>Mistral Large 4 的意义不在"又大了一点"，而在把前沿能力交到你自己的服务器上——对安全团队，这是第一份能"数据不出域做漏洞复现与打补丁"的开放权重旗舰。延伸阅读：<a href="/blog/bellman-language-models-2026/">Bellman 语言模型把 Agent 决策变成 MDP</a>、<a href="/blog/ai-memory-poisoning-2026/">AI 记忆投毒来了</a>。</p>
+''',
+        'related': [
+            ('Bellman 语言模型：把 LLM Agent 的重复决策变成 MDP，调用量砍掉 93–98%', 'blog/bellman-language-models-2026/'),
+            ('AI 记忆投毒来了：一个"总结一下"按钮如何悄悄改写助手记忆', 'blog/ai-memory-poisoning-2026/'),
+        ],
+    },
+{
+        'slug': 'lfm3-edge-specialized-models-2026',
+        'category': 'tooling',
+        'date': '2026-11-01',
+        'updated': '2026-11-01',
+        'tags': ['LFM3', '端侧模型', '2B 小模型', '单 GPU 微调', '决策模型', '本地推理', '三混合架构', 'Liquid AI', '4-bit 量化', 'Apple M4', '边缘 AI', '如何本地运行小模型'],
+        'title': 'LFM3 端侧实战：一个 1.7B 骨干长出六种 2B 模型，小模型怎么跑起来并微调 | DevTools 博客',
+        'description': '2026-10-27 Liquid AI 发布 LFM3：用同一个 LFM3-1.7B-Base 在 22T token 上预训练，一次性放出文本、视觉、音频、全模态和两类"决策"共六种约 2B 的开放权重模型。它用 13 层门控短卷积 + 5 层滑窗注意力 + 6 层全局注意力的三混合架构，把 KV 缓存压到同深标准 Transformer 的约 27%，使 1.7B 文本模型在 4-bit 下约 1GB、256K 上下文，能在手机/笔记本/树莓派 5 本地跑。本文拆解三混合架构与"专用小模型"为何优于一个通用大模型，并给出 transformers / llama.cpp / MLX 三种本地运行命令与单 GPU LoRA 微调、决策模型（d1-2B / Seb Labs API）的可运行示例。',
+        'keywords': 'LFM3,端侧模型,2B 小模型,单 GPU 微调,决策模型,本地推理,三混合架构,Liquid AI,4-bit 量化,Apple M4,边缘 AI,如何本地运行小模型,小模型微调 教程,边缘 AI 部署,GPU 微调 实战,开源多模态模型',
+        'h1': 'LFM3 端侧实战：一个 1.7B 骨干长出六种 2B 模型，小模型怎么跑起来并微调',
+        'summary': '2026-10-27 Liquid AI 发布 LFM3：同一 1.7B 骨干放出文本/视觉/音频/全模态/决策六种约 2B 开放权重模型，三混合架构把 KV 缓存压到标准 Transformer 的 27%，4-bit 下文本模型约 1GB、256K 上下文可端侧跑。本文给 transformers/llama.cpp/MLX 本地运行命令与单 GPU LoRA 微调、决策模型可运行示例。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-10-27，MIT 孵化的 Liquid AI 发布 <b>LFM3</b>——用同一个 <b>LFM3-1.7B-Base</b>（在 22T token 上预训练）一次性放出文本、视觉、音频、全模态和两类"决策"共 <b>六种约 2B 的开放权重模型</b>（源：Liquid AI 官方博客 LiquidAI/lfm3，2026-10-27；techtimes.com、datosabiertos.com、艾瑞网 news.iresearch.cn 同日报道）。它不是"又一个更大的模型"，而是一个工程主张：<b>与其跑一个通用大模型，不如为每个模态/任务挑一个 2B 专用模型，在单张 GPU 微调、在端侧本地跑</b>。其关键在"三混合（tri-hybrid）"架构——13 层门控短卷积 + 5 层滑窗注意力 + 6 层全局注意力，把 KV 缓存压到同深标准 Transformer 的约 <b>27%</b>，让 1.7B 文本模型在 4-bit 下约 <b>1GB</b>、256K 上下文，能塞进手机/笔记本/树莓派 5。本文拆架构、讲清"专用小模型"为何是 2026 的端侧主线，并给三套本地运行命令 + 单 GPU 微调 + 决策模型的可运行示例。</p>
+</blockquote>
+
+<h2>一、背景：为什么 2026 是"专用小模型"年</h2>
+<p>大模型竞赛一度唯参数论，但落到真实部署有两个硬约束：<b>隐私</b>（数据不能出设备）和<b>延迟/成本</b>（云端往返 + 按 token 计费）。LFM3 直接把这两点当成设计目标——Liquid AI 的硬件在环架构搜索覆盖了手机、树莓派 5、笔记本、云 CPU/GPU、高通 Hexagon NPU 共 14 种设备/后端组合。结果：LFM3-1.7B 在短 prompt 上持平上一代 LFM2-1.2B，8K 上下文下快约 25%，而 256K 上下文又让智能体长任务有得用。<b>一个 backbone 长六种模型</b>的意义是：你不用为"要不要上多模态"纠结，按输入选模型、在自己数据上微调、在自己的设备/服务器上跑——这正是"端侧优先"的产品哲学。</p>
+
+<h2>二、技术原理：三混合架构为什么省显存又快</h2>
+<table>
+  <tr><th>层类型</th><th>数量</th><th>作用</th><th>KV 缓存</th></tr>
+  <tr><td>门控短卷积（gated short conv）</td><td>13</td><td>局部模式、最快、无 KV</td><td>无（最省）</td></tr>
+  <tr><td>滑窗注意力（SWA）</td><td>5</td><td>中程依赖，256-token 窗口</td><td>有界（小）</td></tr>
+  <tr><td>全局注意力（global attn）</td><td>6</td><td>长程依赖，Partial RoPE</td><td>完整（长）</td></tr>
+</table>
+<p>三者的配比把总 KV 缓存压到同深标准 Transformer 的约 27%，这是"1.7B ≈ 1GB @4-bit、256K 上下文还能端侧跑"的物理原因。另外两个设计点：<b>Head-wise 门控注意力</b>（每个头一个 sigmoid 门，可整体关掉没贡献的头，抑制量化敏感的激活异常值）和 <b>Sandwich norm</b>（块输入/输出都归一化，长上下文下激活更稳定）。后训练的 3.5T token 专门加了智能体轨迹与工具调用，所以 WebArena-Verified 上 LFM3-1.7B 拿到 38.42（上一代 3.02），长任务甚至超过 Qwen3.5-9B。</p>
+
+<h2>三、与当日热点关联：决策模型成为独立模态</h2>
+<p>LFM3 里最值得玩味的是 <b>d1-2B / d1-Omni-2B 决策模型</b>：它们不生成自由文本，而是给定"一段情境 + 一组问题"，在<b>单次前向</b>里同时返回带校准概率的结构化判断（choice / 概率 / 区间估计 / 多选）。这与 2026-10-28 我们写的"决策模型崛起"和 2026-10-29 Hugging Face 上 Seb Labs 把 NVFP4 决策模型做成 API/MCP（返回 choice / noul / score，$0.021/M 输入）是同一股潮流：<b>模型正在从"生成文字"裂变成"生成判断/动作"</b>。LFM3 把它做进端侧（毫秒级、无云端往返），Seb Labs 把它做成托管服务——两条路都证明：很多场景不需要 1T 模型写一段话，只需要一个小模型给一个可信的概率。</p>
+
+<h2>四、开发者落地清单</h2>
+<ol>
+  <li><b>先选模态</b>：纯文本用 LFM3-1.7B；图文/视频用 LFM3-VL-2B；语音用 LFM3-Audio-2B（首 token 低至 50ms）；要"判断"用 d1-2B。</li>
+  <li><b>端侧优先</b>：4-bit 约 1GB，Apple M4 / 树莓派 5 都可本地跑，隐私与延迟双赢。</li>
+  <li><b>单 GPU 微调</b>：全家族支持 SFT/DPO/GRPO，官方给了 10 个 Colab（JSON 抽取、新语言学、智能家居指令映射等）。</li>
+  <li><b>注意许可</b>：LFM Open License v1.0 虽开放权重，但商用仅限年营收低于 1000 万美元的组织，大型企业属"源码可得"而非标准开源。</li>
+  <li><b>决策任务用 d1 而非通用模型</b>：分类/路由/相关性筛选，单次前向拿概率，又快又便宜又可控。</li>
+  <li><b>别盲目追大</b>：长任务里 1.7B 专项模型已能超 9B 通用模型，先测再决定要不要上云。</li>
+</ol>
+
+<h2>五、分步实操：本地运行 LFM3 + 单 GPU 微调 + 决策模型</h2>
+<h3>5.1 transformers 直接跑 LFM3-1.7B（首日支持，真实可跑）</h3>
+<pre><code>pip install -U transformers
+from transformers import pipeline
+
+gen = pipeline("text-generation", model="LiquidAI/LFM3-1.7B", trust_remote_code=True)
+out = gen("用一句话解释什么是边缘计算。", max_new_tokens=128)
+print(out[0]["generated_text"])
+</code></pre>
+<p>预期：返回一句关于边缘计算的定义。LFM3-1.7B 针对智能体工具链后训练，也适合做本地 agent 基座。</p>
+
+<h3>5.2 端侧量化运行（llama.cpp / MLX，4-bit 约 1GB）</h3>
+<pre><code># 4-bit 下文本模型约 1GB，手机/笔记本/树莓派 5 都能跑
+llama-server -m LFM3-1.7B-Q4_K_M.gguf -c 262144          # 256K 上下文
+# Apple 芯片用 MLX 更快
+pip install mlx-lm && mlx_lm generate --model LiquidAI/LFM3-1.7B-MLX --max-tokens 128
+</code></pre>
+<p>把模型放进设备后，语音/视觉模型可在本地做实时转写与 GUI 理解，无需任何云端往返。</p>
+
+<h3>5.3 单 GPU LoRA 微调（真实命令，消费级显卡即可）</h3>
+<pre><code>pip install -U transformers peft datasets
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model
+
+tok = AutoTokenizer.from_pretrained("LiquidAI/LFM3-1.7B", trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained("LiquidAI/LFM3-1.7B", trust_remote_code=True)
+model = get_peft_model(model, LoraConfig(r=16, lora_alpha=32, target_modules="all-linear"))
+# 之后用 Trainer 跑你的数据；1.7B + LoRA 单张消费级 GPU 即可，无需云规模
+</code></pre>
+<p>官方 Colab 还覆盖了"把 LFM3-VL-2B 改造成机器人抓取/导航/操作"的 GRPO 流程，单 GPU 即可复现。</p>
+
+<h3>5.4 决策模型：本地 d1-2B 思路 + 托管 Seb Labs API（真实可跑）</h3>
+<pre><code># 不想自己跑 d1-2B，可用同期 Hugging Face 热点 Seb Labs 的 NVFP4 决策模型 API
+# 返回结构化判断（choice / noul / score）而非文本，单价 $0.021/M 输入 token
+curl https://mcp.seblabs.dev/api/v1/systemone \
+  -H "Authorization: Bearer $SEB_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"state":"The parcel arrived damaged. Please replace it.",
+       "questions":{"team":{"type":"choice",
+       "instructions":"Choose the team to handle this request",
+       "criteria":{"returns":"Damaged products and replacements",
+       "billing":"Payments and invoices","escalate":"Unclear or outside these teams"}}}}'
+</code></pre>
+<p>预期：返回各团队的概率分布，可直接用于工单路由/相关性筛选，比让大模型"写一段话再解析"稳得多。</p>
+
+<h2>六、小结</h2>
+<table>
+  <tr><th>维度</th><th>一句到位</th></tr>
+  <tr><td>事件</td><td>2026-10-27 LFM3：1 个 1.7B 骨干长 6 种 2B 模型</td></tr>
+  <tr><td>架构</td><td>三混合 13+5+6，KV 缓存压到 27%，4-bit 约 1GB</td></tr>
+  <tr><td>端侧</td><td>256K 上下文，手机/笔记本/树莓派 5 本地跑</td></tr>
+  <tr><td>新模态</td><td>决策模型 d1-2B：单次前向返回校准概率</td></tr>
+  <tr><td>微调</td><td>单 GPU LoRA/GRPO，官方 10 个 Colab</td></tr>
+  <tr><td>红线</td><td>LFM Open License 商用限年营收 &lt;1000 万美元</td></tr>
+</table>
+<p>LFM3 的启示是：2026 年的端侧主线不是"把大模型塞进手机"，而是"为每种任务养一个 2B 专用小模型，单 GPU 微调、端侧本地跑"。延伸阅读：<a href="/blog/kv-cache-compression-long-context-2026/">长上下文 KV 缓存压缩实战</a>、<a href="/blog/decision-models-2026/">决策模型崛起：用强类型判断替代 LLM 自由文本</a>。</p>
+''',
+        'related': [
+            ('长上下文 KV 缓存压缩实战：MoEZip 与谷歌 TMC 把显存砍下来', 'blog/kv-cache-compression-long-context-2026/'),
+            ('决策模型崛起：用强类型判断替代 LLM 自由文本', 'blog/decision-models-2026/'),
+        ],
+    },
+
+{
         'slug': 'agent-persistent-memory-2026',
         'category': 'ai',
         'date': '2026-10-31',

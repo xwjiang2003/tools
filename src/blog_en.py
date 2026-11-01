@@ -6,6 +6,225 @@
 """
 
 ARTICLES_EN = {
+'mistral-large4-open-weight-2026': {
+        'tags': ['Mistral Large 4', 'Open Weight', 'Le Chonk', 'Self-host LLM', 'Secure Code Review',
+                 'Cyber Defense', 'MoE Model', '1T Parameters', 'vLLM Deploy', 'llama.cpp GGUF',
+                 'Terminal-Bench 41%', 'AI Code Review'],
+        'title': 'Deploying Mistral Large 4 Open Weights: A 1T-Parameter Flagship You Can Self-Host and Use for Secure Code Review | DevTools Blog',
+        'description': 'On 2026-10-29 Mistral AI open-weighted its flagship Mistral Large 4 (nickname Le Chonk, ~1T total / 52B active, MoE), the largest open-weight release out of Europe to date, posted to Hugging Face. Positioned for developers (coding agents) and defenders (cybersecurity): Terminal-Bench 4.0 hits 41 percent, AA Cyber Index 51 percent, B3 agent-security 97.1 percent, and 96.6 percent refusal on malicious cyber prompts. This post breaks the open-weight vs open-source license line, the MoE plus 1M-context architecture, and ships three self-hosting paths (vLLM / llama.cpp GGUF / transformers) plus a runnable secure-code-review agent (OpenAI-compatible endpoint, structured output, token-efficiency check).',
+        'keywords': 'Mistral Large 4,open weight,self-host LLM,secure code review,cyber defense,Le Chonk,1T parameters,MoE model,Terminal-Bench 41%,vLLM deploy,llama.cpp GGUF,how to deploy LLM locally,AI code review tutorial,open weight vs open source,sovereign AI',
+        'h1': 'Deploying Mistral Large 4 Open Weights: A 1T-Parameter Flagship You Can Self-Host and Use for Secure Code Review',
+        'summary': 'On 2026-10-29 Mistral Large 4 (Le Chonk, ~1T/52B MoE) open weights landed, built for developers and defenders: Terminal-Bench 4.0 41 percent, AA Cyber Index 51 percent, B3 security 97.1 percent. This post clarifies the license line, gives vLLM / llama.cpp / transformers self-hosting, and a runnable secure-code-review agent with a token-efficiency check.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: On 2026-10-29, Mistral AI open-weighted its flagship <b>Mistral Large 4 (nickname Le Chonk, ~1 trillion total parameters, 52B active, MoE)</b> to Hugging Face (source: Mistral official blog / Hugging Face blog, 2026-10-29; same-day coverage at luwai.fr, lycoristechnologies.com, tenbrief.com, singularitylogs.com, aimodeling.com). It is the largest open-weight release out of Europe ever, pitched as "Built for Coders, Trusted by Defenders." The point is not that it is bigger, but that <b>frontier capability now ships in a form you can run yourself with data never leaving your domain</b>: Terminal-Bench 4.0 climbed from 28 percent at preview to <b>41 percent</b>, AA Coding Agent Index <b>48 percent</b> (tied with GLM-5.3 while using 47 percent fewer output tokens), AA Cyber Index <b>51 percent</b>, B3 agent-security <b>97.1 percent</b>, and <b>96.6 percent</b> refusal on malicious cyber prompts. For developers the real win is a self-hostable front-line model you can point at secure code review. This post explains the license and architecture, then gives three deploy commands and a runnable review agent.</p>
+</blockquote>
+
+<h2>1. Background: why an open-weight flagship is the 2026 watershed</h2>
+<p>Through 2026 "open weight" and "open source" got conflated, then the flagship releases drew the line clearly. Mistral Large 4 ships under the <b>Mistral Ecosystem Open-Weight License (MEOW, a modified MIT)</b>: internal use, research, fine-tuning, and shipping the model inside your own product are all allowed; only <b>reselling it as a hosted API service (MaaS)</b> needs a separate commercial license. For most companies and developers that means "you can genuinely run it," with the restriction aimed only at cloud vendors and API resellers. Contrast Google opening Gemini 4 Carbon the same week to "trusted defenders" only (trusted access): Mistral's "publish the weights and no one can cut you off" became the core sovereignty argument (Pierre Stock to TechCrunch).</p>
+<p>So the 2026 watershed is not "bigger model," it is: <b>frontier capability finally reaches developers in a self-hostable, data-never-leaves form</b>. For security teams this is decisive: you can use it for vulnerability reproduction and patching without sending sensitive code to any third party (Orange Cyberdefense, Cisco, CrowdStrike, and ENISA all took part in evaluation).</p>
+
+<h2>2. How it works: MoE 1T/52B, 1M context, multimodal, reasoning tiers</h2>
+<table>
+  <tr><th>Dimension</th><th>Mistral Large 4 fact (source: model card / official blog, 2026-10-29)</th></tr>
+  <tr><td>Architecture</td><td>sparse MoE, each token routes to 4 of 128 experts plus 1 shared; MLA attention with a DeepSeek-style sparse-attention indexer</td></tr>
+  <tr><td>Scale</td><td>~1T total, 52B active (with embeddings/output); inference cost close to a mid-size dense model</td></tr>
+  <tr><td>Context</td><td>up to 1M tokens; multimodal (1.6B Pixtral vision encoder) text + image input</td></tr>
+  <tr><td>Languages</td><td>160+; trained from scratch on European infrastructure (sovereignty narrative)</td></tr>
+  <tr><td>Reasoning</td><td>low / medium / high tiers, default high; high cannot be disabled (reasoning_effort: none still runs high)</td></tr>
+  <tr><td>Formats</td><td>FP8 (54 files) plus a Blackwell-only NVFP4 checkpoint; Unsloth / llama.cpp shipped GGUF quants day one</td></tr>
+</table>
+<p>Key engineering implication: because only 52B activate, <b>memory footprint resembles a mid-size model, but the full weights must still fit in RAM</b>. Mistral says the NVFP4 checkpoint runs on 4 B200/B300 GPUs; Hugging Face measured the 2-bit GGUF fitting a 512GB-unified-memory M3 Ultra (Q2_K prefill ~90 tok/s, decode ~15 tok/s). In other words: <b>datacenter GPUs run it at full precision, consumer devices run it quantized</b> &mdash; that is the physical premise for it actually shipping.</p>
+
+<h2>3. Tie-in to today's news: sovereignty, open-weight vs open-source, cyber defense</h2>
+<p>Three threads converge this week: (1) open weights become shorthand for "no vendor can cut you off," forming a three-way race with US and Chinese models; (2) cybersecurity shifts from "the model can write attacks" to "the model helps defenders reproduce and patch without tripping filters" (Large 4 barely blocks legitimate reproduce-and-patch work yet still refuses 96.6 percent of malicious requests); (3) the inference-cost anxiety keeps boiling &mdash; it answers directly with "same score, 47 percent fewer tokens." Its honest boundary: on the AA Intelligence Index v5 it scores 26, fifth among 150B+ open weights, behind Chinese models; its Cyber Index 51 percent also trails DeepSeek V4.1 Flash (57 percent) and MiMo-V2.6-Pro (56 percent). <b>Its differentiation is refusal-free defense plus sovereign deployment, not the top aggregate score.</b> A parallel thread: the same week Seb Labs put a "decision model" on API/MCP on Hugging Face (see related), signaling that in 2026 models are splitting from "generate text" into "generate judgments / generate actions" &mdash; exactly the spine of the LFM3 post below.</p>
+
+<h2>4. Developer checklist</h2>
+<ol>
+  <li><b>Pick the deploy shape first</b>: datacenter GPU uses FP8 vLLM; consumer/laptop uses Unsloth or llama.cpp Q2_K/Q4_K GGUF; Apple Silicon prefers MLX.</li>
+  <li><b>Know the license</b>: internal use and embedding in your product are free; only MaaS resale needs a commercial license.</li>
+  <li><b>Tune the reasoning tier</b>: deterministic tasks like code review are fine on medium and save tokens; reserve high for hard reasoning.</li>
+  <li><b>Make secure code review your first use case</b>: data stays in domain, it is auditable, and it returns structured output &mdash; highest ROI.</li>
+  <li><b>Keep a human gate</b>: anything about actually applying a patch or exceeding authority stays human-reviewed; do not let the model edit production automatically.</li>
+  <li><b>Account in token efficiency</b>: 47 percent fewer output tokens at the same score means roughly twice the code reviewed per budget.</li>
+</ol>
+
+<h2>5. Step-by-step: self-host Mistral Large 4 + a secure code review agent</h2>
+<h3>5.1 Three self-hosting paths (real commands, pick by hardware)</h3>
+<pre><code># Path A: datacenter GPU, vLLM full-precision FP8 (needs ~8x B200/B300 class)
+pip install vllm
+vllm serve mistralai/Mistral-Large-4-1T-A52B --tensor-parallel-size 8 --dtype fp8
+
+# Path B: consumer / laptop, llama.cpp 2-bit GGUF (fits 512GB unified memory)
+llama-server -m Mistral-Large-4-1T-A52B-Q2_K.gguf -ngl 99 -c 65536
+
+# Path C: single-card transformers quick check (Hugging Face day-one support)
+pip install --upgrade transformers
+from transformers import AutoProcessor, AutoModelForMultimodalLM
+mid = "mistralai/Mistral-Large-4-1T-A52B"
+# text/image mix; reasoning_effort takes low/medium/high
+</code></pre>
+<p>After launch vLLM exposes an OpenAI-compatible endpoint at <code>http://localhost:8000/v1</code>, reused directly below.</p>
+
+<h3>5.2 Secure code review agent (OpenAI-compatible endpoint + structured output, runs as-is)</h3>
+<pre><code>from openai import OpenAI
+import subprocess, json
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+
+# diff of this branch against main (swap for a PR patch)
+diff = subprocess.check_output(["git", "diff", "origin/main...HEAD"]).decode()
+
+resp = client.chat.completions.create(
+    model="mistralai/Mistral-Large-4-1T-A52B",
+    messages=[
+        {"role": "system", "content": (
+            "You are a senior security engineer. Output only JSON of the form "
+            "{\"findings\":[{\"file\":str,\"line\":int,\"severity\":\"high|medium|low\","
+            "\"type\":str,\"fix\":str}]}. No explanation, no markdown code block.")},
+        {"role": "user", "content": f"Review this git diff, list only real security bugs:\n{diff[:12000]}"},
+    ],
+    response_format={"type": "json_object"},
+    extra_body={"reasoning_effort": "medium"},   # Mistral reasoning tier
+    temperature=0.0,
+)
+report = json.loads(resp.choices[0].message.content)
+for f in report["findings"]:
+    print(f"[{f['severity']}] {f['file']}:{f['line']} {f['type']} -> {f['fix']}")
+</code></pre>
+<p>Expected: a structured list of vulnerabilities (SQLi / command injection / broken access control / hardcoded secrets). Wire it into a CI gate or a Slack alert. Install with <code>pip install openai</code> and keep the 5.1 vLLM server up.</p>
+
+<h3>5.3 Token-efficiency check (same score, 47 percent fewer tokens, per-task cost)</h3>
+<pre><code># Mistral framing: Coding Agent Index 48 percent, tied with GLM-5.3 but 47 percent fewer output tokens
+# API price: input $0.70/M, output $2.10/M (official docs)
+def task_cost(out_tokens, in_tokens=4000, p_out=2.10, p_in=0.70):
+    return out_tokens / 1e6 * p_out + in_tokens / 1e6 * p_in
+
+glm_out = 1000
+mistral_out = int(glm_out * (1 - 0.47))    # same score, 47 percent fewer tokens
+print(round(task_cost(glm_out), 4), round(task_cost(mistral_out), 4))
+# 0.0046 0.0025 -> at equal quality Mistral saves ~46 percent per task
+</code></pre>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Dimension</th><th>One-liner</th></tr>
+  <tr><td>Event</td><td>2026-10-29 Le Chonk weights open, largest European open-weight release</td></tr>
+  <tr><td>License</td><td>MEOW (modified MIT): free internally/product, MaaS resale needs a license</td></tr>
+  <tr><td>Architecture</td><td>~1T/52B MoE, 1M context, multimodal, three reasoning tiers</td></tr>
+  <tr><td>Differentiator</td><td>refusal-free defense plus sovereign self-hosting, not top aggregate</td></tr>
+  <tr><td>Landing</td><td>vLLM / llama.cpp / transformers, plus a secure code-review agent</td></tr>
+  <tr><td>Red line</td><td>patch/over-privilege actions must be human-reviewed, never auto-edit prod</td></tr>
+</table>
+<p>The significance of Mistral Large 4 is not "a bit bigger," but frontier capability landing on your own servers &mdash; for security teams, it is the first open-weight flagship you can use for vulnerability reproduction and patching with data never leaving domain. Related: <a href="/en/blog/bellman-language-models-2026/">Bellman Language Models Turn Agent Decisions Into an MDP</a> and <a href="/en/blog/ai-memory-poisoning-2026/">AI Memory Poisoning Is Here</a>.</p>
+''',
+        'related': [
+            ('Bellman Language Models: Turn Repeated LLM Agent Decisions Into an MDP, Cut Calls by 93-98%', 'blog/bellman-language-models-2026/'),
+            ('AI Memory Poisoning Is Here: How a Summarize Button Quietly Rewrites Your Assistant Memory', 'blog/ai-memory-poisoning-2026/'),
+        ],
+    },
+'lfm3-edge-specialized-models-2026': {
+        'tags': ['LFM3', 'Edge Model', '2B Small Model', 'Single-GPU Fine-tune', 'Decision Model',
+                 'Local Inference', 'Tri-hybrid', 'Liquid AI', '4-bit Quantization', 'Apple M4',
+                 'Edge AI', 'Run Small Models Locally'],
+        'title': 'Running LFM3 on the Edge: One 1.7B Backbone, Six 2B Models, How to Run and Fine-tune Small Models | DevTools Blog',
+        'description': 'On 2026-10-27 Liquid AI released LFM3: one LFM3-1.7B-Base pretrained on 22T tokens spawns six ~2B open-weight models covering text, vision, audio, omni, and two decision variants. Its tri-hybrid stack (13 gated short conv + 5 sliding-window attention + 6 global attention) cuts KV cache to about 27 percent of a same-depth standard transformer, so the 1.7B text model fits about 1GB at 4-bit with a 256K context and runs on phones, laptops, and a Raspberry Pi 5. This post breaks the tri-hybrid architecture and why specialized small models beat one general large model in 2026, and ships runnable transformers / llama.cpp / MLX local-run commands plus single-GPU LoRA fine-tune and decision-model (d1-2B / Seb Labs API) examples.',
+        'keywords': 'LFM3,edge model,2B small model,single-GPU fine-tune,decision model,local inference,tri-hybrid,Liquid AI,4-bit quantization,Apple M4,edge AI,how to run small models locally,fine-tune small model tutorial,edge AI deployment,run LLM on device',
+        'h1': 'Running LFM3 on the Edge: One 1.7B Backbone, Six 2B Models, How to Run and Fine-tune Small Models',
+        'summary': 'On 2026-10-27 Liquid AI released LFM3: one 1.7B backbone spawns six ~2B open-weight models (text/vision/audio/omni/decision). The tri-hybrid stack cuts KV cache to 27 percent, so the 1.7B text model is ~1GB at 4-bit with 256K context and runs on-device. This post gives transformers / llama.cpp / MLX run commands and single-GPU LoRA plus decision-model runnable examples.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: On 2026-10-27, MIT-spinoff Liquid AI released <b>LFM3</b> &mdash; one <b>LFM3-1.7B-Base</b> pretrained on 22T tokens spawns six ~2B open-weight models covering text, vision, audio, omni, and two "decision" variants (source: Liquid AI official blog LiquidAI/lfm3, 2026-10-27; same-day at techtimes.com, datosabiertos.com, and China's iresearch news.iresearch.cn). It is not "another bigger model," it is an engineering thesis: <b>instead of one general large model, pick a ~2B specialized model per modality, fine-tune it on a single GPU, and run it on your own device or server</b>. The key is the <b>tri-hybrid</b> architecture &mdash; 13 gated short conv + 5 sliding-window attention + 6 global attention &mdash; which cuts KV cache to about <b>27 percent</b> of a same-depth standard transformer, letting the 1.7B text model fit about <b>1GB at 4-bit</b> with a 256K context and run on phones, laptops, and a Raspberry Pi 5. This post breaks the architecture, explains why specialized small models are the 2026 edge mainline, and ships three local-run commands plus single-GPU fine-tune and decision-model runnable examples.</p>
+</blockquote>
+
+<h2>1. Background: why 2026 is the year of specialized small models</h2>
+<p>The big-model race once optimized only for parameters, but real deployment has two hard constraints: <b>privacy</b> (data cannot leave the device) and <b>latency/cost</b> (cloud round-trip plus per-token billing). LFM3 treats both as design goals &mdash; Liquid AI's hardware-in-the-loop architecture search covered 14 device/backend combos from phones and a Raspberry Pi 5 to laptops, cloud CPUs/GPUs, and the Qualcomm Hexagon NPU. Result: LFM3-1.7B matches the previous LFM2-1.2B on short prompts and is about 25 percent faster at 8K context, while the 256K context makes long agent tasks usable. The point of <b>one backbone, six models</b> is: you stop debating "should I go multimodal," you pick the model by input, fine-tune on your data, and run on your own hardware &mdash; that is the edge-first product philosophy.</p>
+
+<h2>2. How it works: why the tri-hybrid saves memory and is fast</h2>
+<table>
+  <tr><th>Layer type</th><th>Count</th><th>Role</th><th>KV cache</th></tr>
+  <tr><td>gated short conv</td><td>13</td><td>local patterns, fastest, no KV</td><td>none (cheapest)</td></tr>
+  <tr><td>sliding-window attention (SWA)</td><td>5</td><td>mid-range deps, 256-token window</td><td>bounded (small)</td></tr>
+  <tr><td>global attention</td><td>6</td><td>long-range deps, Partial RoPE</td><td>full (long)</td></tr>
+</table>
+<p>The ratio cuts total KV cache to about 27 percent of a same-depth standard transformer &mdash; the physical reason a 1.7B model is ~1GB at 4-bit with a 256K context and still runs on-device. Two more design points: <b>head-wise gated attention</b> (a sigmoid gate per head can switch a head off entirely, suppressing quantization-sensitive activation outliers) and <b>sandwich norm</b> (normalize both block input and output, keeping activations well-scaled at long context). The final 3.5T tokens of post-training add agentic traces and tool calls, so on WebArena-Verified LFM3-1.7B scores 38.42 (vs 3.02 before) and even beats Qwen3.5-9B on long browser tasks.</p>
+
+<h2>3. Tie-in to today's news: decision models become a standalone modality</h2>
+<p>The most interesting part of LFM3 is the <b>d1-2B / d1-Omni-2B decision models</b>: instead of generating free text, given a situation and a set of questions they return calibrated structured judgments (choice / probability / interval estimate / multi-select) in a <b>single forward pass</b>. This is the same wave as the "rise of decision models" we wrote on 2026-10-28 and the Seb Labs NVFP4 decision model shipped as API/MCP on Hugging Face on 2026-10-29 (returns choice / noul / score, $0.021/M input tokens): <b>models are splitting from "generate words" into "generate judgments/actions."</b> LFM3 puts it on-device (millisecond, no cloud round-trip); Seb Labs puts it as a hosted service &mdash; both prove many scenarios need a small model returning a trustworthy probability, not a 1T model writing a paragraph.</p>
+
+<h2>4. Developer checklist</h2>
+<ol>
+  <li><b>Pick the modality first</b>: pure text uses LFM3-1.7B; image/video uses LFM3-VL-2B; speech uses LFM3-Audio-2B (first token as low as 50ms); "judgment" uses d1-2B.</li>
+  <li><b>Edge first</b>: ~1GB at 4-bit, runs locally on Apple M4 / Raspberry Pi 5 &mdash; privacy and latency win together.</li>
+  <li><b>Single-GPU fine-tune</b>: the whole family supports SFT/DPO/GRPO; Liquid AI ships 10 Colab notebooks (JSON extraction, new-language learning, smart-home command mapping).</li>
+  <li><b>Watch the license</b>: LFM Open License v1.0 is open-weight but commercial use is limited to organizations under $10M annual revenue; larger enterprises get "source-available," not standard open source.</li>
+  <li><b>Use d1 for decision tasks, not a general model</b>: classification/routing/relevance screening in one forward pass is faster, cheaper, and more controllable.</li>
+  <li><b>Do not blindly chase size</b>: a 1.7B specialized model already beats a 9B general model on long tasks &mdash; benchmark before going to the cloud.</li>
+</ol>
+
+<h2>5. Step-by-step: run LFM3 locally + single-GPU fine-tune + decision model</h2>
+<h3>5.1 Run LFM3-1.7B with transformers (day-one support, runs as-is)</h3>
+<pre><code>pip install -U transformers
+from transformers import pipeline
+
+gen = pipeline("text-generation", model="LiquidAI/LFM3-1.7B", trust_remote_code=True)
+out = gen("Explain edge computing in one sentence.", max_new_tokens=128)
+print(out[0]["generated_text"])
+</code></pre>
+<p>Expected: one sentence defining edge computing. LFM3-1.7B is post-trained for agentic toolchains and also works as a local agent base.</p>
+
+<h3>5.2 Edge quantized run (llama.cpp / MLX, ~1GB at 4-bit)</h3>
+<pre><code># ~1GB at 4-bit, runs on phone / laptop / Raspberry Pi 5
+llama-server -m LFM3-1.7B-Q4_K_M.gguf -c 262144          # 256K context
+# Apple Silicon is faster with MLX
+pip install mlx-lm && mlx_lm generate --model LiquidAI/LFM3-1.7B-MLX --max-tokens 128
+</code></pre>
+<p>With the model on-device, the speech/vision models do real-time transcription and GUI understanding with zero cloud round-trip.</p>
+
+<h3>5.3 Single-GPU LoRA fine-tune (real commands, consumer GPU is enough)</h3>
+<pre><code>pip install -U transformers peft datasets
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model
+
+tok = AutoTokenizer.from_pretrained("LiquidAI/LFM3-1.7B", trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained("LiquidAI/LFM3-1.7B", trust_remote_code=True)
+model = get_peft_model(model, LoraConfig(r=16, lora_alpha=32, target_modules="all-linear"))
+# then Trainer on your data; 1.7B + LoRA fits a single consumer GPU, no cloud scale
+</code></pre>
+<p>The official Colab also covers turning LFM3-VL-2B into robot grasp/navigation/manipulation via GRPO, reproducible on a single GPU.</p>
+
+<h3>5.4 Decision model: local d1-2B idea + hosted Seb Labs API (runs as-is)</h3>
+<pre><code># If you do not want to run d1-2B yourself, use the same-week Seb Labs NVFP4 decision API
+# Returns structured judgments (choice / noul / score) not text, $0.021/M input tokens
+curl https://mcp.seblabs.dev/api/v1/systemone \
+  -H "Authorization: Bearer $SEB_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"state":"The parcel arrived damaged. Please replace it.",
+       "questions":{"team":{"type":"choice",
+       "instructions":"Choose the team to handle this request",
+       "criteria":{"returns":"Damaged products and replacements",
+       "billing":"Payments and invoices","escalate":"Unclear or outside these teams"}}}}'
+</code></pre>
+<p>Expected: a probability distribution over teams, directly usable for ticket routing / relevance screening &mdash; far more stable than asking a large model to write a paragraph and then parse it.</p>
+
+<h2>6. Recap</h2>
+<table>
+  <tr><th>Dimension</th><th>One-liner</th></tr>
+  <tr><td>Event</td><td>2026-10-27 LFM3: one 1.7B backbone, six ~2B models</td></tr>
+  <tr><td>Architecture</td><td>tri-hybrid 13+5+6, KV cache 27 percent, ~1GB at 4-bit</td></tr>
+  <tr><td>Edge</td><td>256K context, runs on phone / laptop / Raspberry Pi 5</td></tr>
+  <tr><td>New modality</td><td>decision model d1-2B: calibrated probability in one forward pass</td></tr>
+  <tr><td>Fine-tune</td><td>single-GPU LoRA/GRPO, 10 official Colab notebooks</td></tr>
+  <tr><td>Red line</td><td>LFM Open License limits commercial use to under $10M revenue</td></tr>
+</table>
+<p>The lesson of LFM3: the 2026 edge mainline is not "shove a large model into a phone," but "raise a ~2B specialized model per task, fine-tune on a single GPU, run it on-device." Related: <a href="/en/blog/kv-cache-compression-long-context-2026/">Long-Context KV Cache Compression in Practice</a> and <a href="/en/blog/decision-models-2026/">The Rise of Decision Models: Strongly-Typed Judgments Over Free-Text LLMs</a>.</p>
+''',
+        'related': [
+            ('Long-Context KV Cache Compression in Practice: MoEZip and Google TMC Cut VRAM', 'blog/kv-cache-compression-long-context-2026/'),
+            ('The Rise of Decision Models: Strongly-Typed Judgments Over Free-Text LLMs', 'blog/decision-models-2026/'),
+        ],
+    },
+
 'agent-persistent-memory-2026': {
         'tags': ['AI Memory', 'Agent Long-term Memory', 'agent memory', 'Cross-session Memory',
                  'claude-mem', 'BEAM Bayesian Memory', 'Mem0', 'Memory Compression'],
