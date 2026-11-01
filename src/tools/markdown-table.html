@@ -1,0 +1,30 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="mdClear()">{{TL:clear}}</button><button class="btn btn-sm" onclick="mdSample()">{{TL:sample}}</button></div></div>
+    <textarea class="ta-input" id="mdInput" spellcheck="false" placeholder="{{TL:ph}}"></textarea>
+    <div class="info-stats" id="mdStat" style="display:flex">{{TL:hint}}</div>
+  </div>
+  <div class="ops-panel">
+    <div class="op-options" style="flex-wrap:wrap;gap:10px">
+      <div class="tl-chips" id="mdMode" style="margin:0">
+        <button class="tl-chip active" type="button" data-mode="toMd">{{TL:mode_to_md}}</button>
+        <button class="tl-chip" type="button" data-mode="toText">{{TL:mode_to_text}}</button>
+      </div>
+      <div class="tl-chips" id="mdAlign" style="margin:0">
+        <button class="tl-chip active" type="button" data-align="">{{TL:align_auto}}</button>
+        <button class="tl-chip" type="button" data-align="l">{{TL:align_l}}</button>
+        <button class="tl-chip" type="button" data-align="c">{{TL:align_c}}</button>
+        <button class="tl-chip" type="button" data-align="r">{{TL:align_r}}</button>
+      </div>
+    </div>
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:result_title}}</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="mdCopyOut()">{{TL:copy}}</button></div></div>
+      <div style="padding:12px"><textarea class="ta-input" id="mdOut" readonly spellcheck="false" style="min-height:240px;width:100%"></textarea></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:how_title}}</h3>
+  <p class="tl-note">{{TL:how_note}}</p>
+</div>

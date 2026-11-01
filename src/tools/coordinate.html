@@ -1,0 +1,50 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="coordClear()">{{TL:clear}}</button><button class="btn btn-sm" onclick="coordSample()">{{TL:sample}}</button></div></div>
+    <div style="padding:16px 16px 0">
+      <div class="tl-chips" id="coordSys">
+        <button class="tl-chip active" type="button" data-sys="wgs">WGS-84</button>
+        <button class="tl-chip" type="button" data-sys="gcj">GCJ-02</button>
+        <button class="tl-chip" type="button" data-sys="bd">BD-09</button>
+      </div>
+      <div class="tl-field"><label>{{TL:f_lng}}</label><input class="tl-input" id="coordLng" inputmode="decimal" autocomplete="off" spellcheck="false"></div>
+      <div class="tl-field"><label>{{TL:f_lat}}</label><input class="tl-input" id="coordLat" inputmode="decimal" autocomplete="off" spellcheck="false"></div>
+    </div>
+    <div class="info-stats" style="display:flex">{{TL:tip}}</div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:result_title}}</span></div>
+      <div class="result-content" id="coordResult" style="padding:0"></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:sys_title}}</h3>
+  <p class="tl-note">{{TL:sys_note}}</p>
+  <div class="dt-scroll">
+    <table class="dt-table">
+      <thead><tr><th>{{TL:sys_col}}</th><th>{{TL:sys_where}}</th><th>{{TL:sys_gap}}</th></tr></thead>
+      <tbody id="coordSysTable"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+(function () {
+  function fill() {
+    var L = window.__TL__ || {};
+    var rows = L.sys_rows || [];
+    var box = document.getElementById('coordSysTable');
+    if (!box) return;
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      html += '<tr><td>' + escHtml(rows[i][0]) + '</td><td class="tl-wrap">' +
+        escHtml(rows[i][1]) + '</td><td class="tl-wrap">' + escHtml(rows[i][2]) + '</td></tr>';
+    }
+    box.innerHTML = html;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

@@ -1,0 +1,26 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="urlClear()">{{TL:clear}}</button><button class="btn btn-sm" onclick="urlSample()">{{TL:sample}}</button></div></div>
+    <textarea class="ta-input" id="urlInput" spellcheck="false" autocomplete="off" placeholder="{{TL:ph}}" style="min-height:90px"></textarea>
+    <div class="info-stats" style="display:flex">{{TL:tip}}</div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:fields_title}}</span></div>
+      <div class="result-content" style="padding:0"><table class="dt-table"><tbody id="urlFields"></tbody></table></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:params_title}}</h3>
+  <p class="tl-note">{{TL:params_note}}</p>
+  <div id="urlParams"></div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:out_title}}</h3>
+  <div class="tl-copyline">
+    <code id="urlOut"></code>
+    <button class="btn btn-sm" onclick="copyTextById('urlOut')">{{TL:copy}}</button>
+  </div>
+</div>

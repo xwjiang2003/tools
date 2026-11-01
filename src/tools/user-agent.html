@@ -1,0 +1,44 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="uaCurrent()">{{TL:mine}}</button><button class="btn btn-sm" onclick="uaClear()">{{TL:clear}}</button></div></div>
+    <textarea class="ta-input" id="uaInput" spellcheck="false" autocomplete="off" placeholder="{{TL:ph}}"></textarea>
+    <div class="tl-chips" id="uaPresets" style="padding:10px 16px 0"></div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:result_title}}</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('uaResult')">{{TL:copy}}</button></div></div>
+      <div class="result-content" id="uaResult" style="padding:0"></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:fields_title}}</h3>
+  <p class="tl-note">{{TL:fields_note}}</p>
+  <div class="dt-scroll">
+    <table class="dt-table">
+      <thead><tr><th>{{TL:f_field}}</th><th>{{TL:f_mean}}</th><th>{{TL:f_example}}</th></tr></thead>
+      <tbody id="uaFieldTable"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+(function () {
+  // 字段说明表的内容也放在标签表里（data 段），避免在 JS 里写死任何中文，
+  // 否则英文/其他语言页会随构建污染出中文，且无法按语言替换。
+  function fill() {
+    var L = window.__TL__ || {};
+    var rows = L.field_rows || [];
+    var box = document.getElementById('uaFieldTable');
+    if (!box) return;
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      html += '<tr><td>' + escHtml(rows[i][0]) + '</td><td class="tl-wrap">' +
+        escHtml(rows[i][1]) + '</td><td class="tl-wrap">' + escHtml(rows[i][2]) + '</td></tr>';
+    }
+    box.innerHTML = html;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

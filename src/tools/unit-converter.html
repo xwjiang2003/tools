@@ -1,0 +1,41 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div></div>
+    <div style="padding:16px 16px 0">
+      <div class="tl-chips" id="unitCats"></div>
+      <div class="tl-field"><label>{{TL:f_value}}</label><input class="tl-input" id="unitValue" inputmode="decimal" autocomplete="off" spellcheck="false"></div>
+      <div class="tl-field"><label>{{TL:f_from}}</label><select class="tl-sel" id="unitFrom" style="flex:1"></select></div>
+      <div class="tl-field"><label>{{TL:f_to}}</label><select class="tl-sel" id="unitTo" style="flex:1"></select></div>
+    </div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:result_title}}</span></div>
+      <div class="result-content" id="unitResult" style="padding:0"></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:note_title}}</h3>
+  <p class="tl-note">{{TL:note_body}}</p>
+</div>
+<script>
+(function () {
+  // 类别标签按语言注入（data 段），避免在 JS 里写中文导致其他语言页残留
+  function fill() {
+    var L = window.__TL__ || {};
+    var cats = L.cats || [];
+    var box = document.getElementById('unitCats');
+    if (!box) return;
+    var html = '';
+    for (var i = 0; i < cats.length; i++) {
+      html += '<button class="tl-chip' + (i === 0 ? ' active' : '') +
+        '" type="button" data-cat="' + escAttr(cats[i][0]) + '">' + escHtml(cats[i][1]) + '</button>';
+    }
+    box.innerHTML = html;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

@@ -24,10 +24,16 @@ JS = SRC / 'js'
 
 # core.js + 全部 js 模块的顶层 function 声明与 window. 挂载 = 全局可用函数
 GLOBAL_FUNCS = set()
+# 2026-11 起新工具模块为兼容 Node 单测，顶部写 `var G = (typeof window !== 'undefined') ? window : {};`
+# 并把对外函数挂到 G 上。浏览器里 G 就是 window，所以 G.foo = 等价于 window.foo =，
+# 这里把这类文件里的 `G.foo =` 一并算作全局函数（否则 onclick 检查会全线误报）。
+G_IS_WINDOW = re.compile(r'var\s+G\s*=\s*\(\s*typeof\s+window\s*!==?\s*.undefined.')
 for f in [JS / 'core.js'] + sorted(JS.glob('*.js')):
     t = f.read_text('utf-8')
     GLOBAL_FUNCS |= set(re.findall(r'^function\s+(\w+)\s*\(', t, re.M))
     GLOBAL_FUNCS |= set(re.findall(r'window\.(\w+)\s*=', t))
+    if G_IS_WINDOW.search(t):
+        GLOBAL_FUNCS |= set(re.findall(r'^G\.(\w+)\s*=', t, re.M))
 
 PASS = FAIL = 0
 

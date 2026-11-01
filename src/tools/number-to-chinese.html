@@ -1,0 +1,22 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tool-layout">
+  <div class="input-panel">
+    <div class="input-panel-header"><div class="input-panel-title"><span class="dot"></span> {{TL:input_title}}</div><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="numClear()">{{TL:clear}}</button><button class="btn btn-sm" onclick="numSample()">{{TL:sample}}</button></div></div>
+    <textarea class="ta-input" id="numInput" spellcheck="false" placeholder="{{TL:ph}}"></textarea>
+    <div class="info-stats" id="numStat" style="display:none"></div>
+  </div>
+  <div class="ops-panel">
+    <div class="result-panel" style="flex:1">
+      <div class="result-panel-header"><span class="result-panel-title">{{TL:result_title}}</span><div class="row" style="gap:4px"><button class="btn btn-sm" onclick="copyTextById('numResult')">{{TL:copy}}</button></div></div>
+      <div class="result-content" id="numResult" style="padding:0"></div>
+    </div>
+  </div>
+</div>
+<div class="tl-sec">
+  <h3 class="tl-sec-title">{{TL:notes_title}}</h3>
+  <ul class="tl-list">
+    <li>{{TL:note1}}</li>
+    <li>{{TL:note2}}</li>
+    <li>{{TL:note3}}</li>
+  </ul>
+</div>
