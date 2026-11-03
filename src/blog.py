@@ -50,6 +50,257 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'zero-token-judge-2026',
+        'category': 'ai',
+        'date': '2026-11-03',
+        'updated': '2026-11-03',
+        'tags': ['决策模型', '零生成 token', 'LLM-as-a-Judge', 'Unsloth', 'typed-decisions', 'System One', '模型路由', '推理成本控制', 'Darwin ZTC', 'JEV', '确定性分类', '安全门控'],
+        'title': '零生成 token 判官：用一次前向传播替代 LLM-as-a-Judge（Unsloth 训练教程 + 排行榜）| DevTools 博客',
+        'description': '把批量回答交给生成式 LLM 当裁判，账单和延迟都会炸。FINAL-Bench 的 Darwin-27B-ZTC 在 typed-decisions 榜单拿到 0.743 零样本准确率、且一次前向传播、零生成 token——它不写文字，直接吐每个选项的概率。2026-11 初，零 token 判官突然成气候：Unsloth 让你在 4GB 显存上把自己的小模型训成判官（Qwen3.5-0.8B 准确率 36%→73%），JEV、PurpleMIST、OneDecision 各占山头，S1MB 排行榜把 102 个模型按决策质量排了座次（Darwin ZTC-v2 Borda 89.58 居首）。本文讲清原理、生态，并给一份能直接跑的训练 + FastAPI 服务代码。',
+        'keywords': '决策模型 教程,零生成 token 判官,single forward pass judge,LLM-as-a-Judge 替代,如何训练自己的决策模型,typed-decisions 排行榜,System One Mosaic Benchmark,Unsloth 决策模型 训练,模型路由 推理成本控制,zero-token judge,JEV 决策模型,Darwin ZTC,安全门控 分类器,确定性 分类 推理部署,批量评测 打分 降本',
+        'h1': '零生成 token 判官：用一次前向传播替代 LLM-as-a-Judge',
+        'summary': '生成式 LLM 当裁判又贵又飘：生成是顺序的、抽置信度也不可靠。Darwin-27B-ZTC 在 typed-decisions 榜 0.743 零样本、零生成 token——一次前向传播直接吐概率分布。2026-11 初这类判官成气候：Unsloth 让你在 4GB 显存训自己的判官，JEV/PurpleMIST/OneDecision 各占山头，S1MB 榜把 102 个模型排了座次。本文给原理、生态与可直接跑的训练+服务代码。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：把 2 万条模型回答交给生成式 LLM 当裁判，账单和延迟都会炸；而 FINAL-Bench 的 <b>Darwin-27B-ZTC</b> 在 typed-decisions 榜单上拿到 <b>0.743 零样本准确率、且一次前向传播、零生成 token</b>——它不写任何文字，直接吐每个选项的概率。2026-11 初，这类"判官"突然成气候：Unsloth 让你在 4GB 显存上把自己的小模型训成判官（Qwen3.5-0.8B 准确率 36%→73%），JEV、PurpleMIST、OneDecision 各占山头，S1MB 排行榜把 102 个模型按决策质量排了座次（Darwin ZTC-v2 Borda 89.58 居首）。下面是原理、生态，和一份能直接跑的训练 + 服务代码（源：Hugging Face 帖子 2026-11-01/02、FINAL-Bench Darwin 卡、UndercoverNews 解析、Unsloth 官方文档）。</p>
+</blockquote>
+
+<h2>1. 生成式 Judge 的两个老毛病</h2>
+<p>用 LLM 给别的模型当裁判（LLM-as-a-Judge）听起来简单：丢一段回答进去，让它给结论。一旦规模上去，两个问题就藏不住。</p>
+<p>第一，<b>生成是顺序的、且昂贵</b>。哪怕最终只要一个"正确/错误"，模型也可能先吐一大段理由、格式、反思，再落到结论。判分延迟和算力随生成长度线性增长。UndercoverNews 在解析 Darwin ZTC 时算过一笔账：千万次评测里，每多一个 token 都是真金白银（源：UndercoverNews，Darwin-27B-ZTC 解析，2026-11）。</p>
+<p>第二，<b>抽置信度根本不可靠</b>。生产环境通常需要"这模型有多大把握"。从生成 token 的 logits 读概率，不等于"判断本身正确的概率"；反复采样估频率又加算力、引入方差。结果就是：裁判本身成了一件测量不准的仪器。</p>
+
+<h2>2. 零 token 判官怎么决策</h2>
+<p>Darwin-27B-ZTC 这类模型把"评判"重写成"条件概率估计"。它读入一段状态（state）和一篮子带类型的问题，<b>一次前向传播</b>后，直接对每个选项返回一个校准过的概率，全程不写一个 token。S1MB 技术方（VIDRAFT）把核心写成了三行：</p>
+<pre><code># 一次前向传播，零生成 token
+h = model(text).last_hidden_state[last_non_pad_token]
+score = ((h - mu) / sd) @ w        # 校准过的探针 -> 类型化决策
+# softmax 得到分布，拟合的标量温度做校准
+</code></pre>
+<p>因为没有任何采样，同一个输入永远得到同一份分布——<b>确定性成了特性，而不是 bug</b>。这在基准评测里尤其值钱：生成式裁判会因温度、top-p、种子、采样次数不同给出略不同的分；确定性分类器把这些方差来源全砍了。Darwin-27B-ZTC 在 typed-decisions 通用拆分上拿到 0.743 准确率、KL 0.204、Brier 0.097，2000 个决策零错误（源：FINAL-Bench Darwin 卡，2026-11；ModelScope 镜像同步）。它底座是 Darwin-27B-RSI，约 54GB BF16 权重，需要一张装得下的 GPU。</p>
+
+<h2>3. 一个正在成形的生态</h2>
+<p>单靠一个模型火不了。真正让"判官"从玩具变基建的，是 2026-11 初冒出来的一整片山头：</p>
+<ul>
+  <li><b>Darwin ZTC / ZTC-v2（FINAL-Bench）</b>：ZTC-v2 在 System One Mosaic Benchmark（S1MB）102 个模型里 Borda 89.58 居首，任务均分 66.46；同时是 typed-decisions 官方榜 #1（0.743 零样本）。方法 ZTC 与权重 Apache-2.0 开源（源：Hugging Face 帖子 2026-11-02、VIDRAFT S1MB 技术文）。</li>
+  <li><b>JEV 家族（TypeSafe AI，前 OpenAI 研究员）</b>：S1MB 第 2–5 名全是 JEV 系——OpenJev-27B 87.50、AutoJev-27B 87.07、Jev 1.13 85.05。主打"System One"式强类型决策（源：Hugging Face SeaWolf 帖子 2026-11-02）。</li>
+  <li><b>Unsloth 训练你自己的判官</b>：把 Qwen3.5-0.8B 的聚合准确率从 20.7% 拉到 74.3%，只吃 4GB 显存。下面是能直接跑的部分。</li>
+  <li><b>PurpleMIST（Olaverse，非洲语言优先）</b>：Flash 版在英语和八种非洲语言上追平 DeepSeek-V4-Pro，体量约其 1/200（源：Hugging Face olaverse 主页，2026-10）。</li>
+  <li><b>OneDecision-VisionGuard（prithivMLmods）</b>：27B/9B/4B 多模态分类，检测 NSFW 与敏感视觉内容，带结构化 JSON 推理（源：Hugging Face Spaces 2026-10-31）。</li>
+</ul>
+
+<h2>4. 动手：4GB 显存训一个判官</h2>
+<p>Unsloth 的 <code>FastDecisionModel</code> 把"读一次输入、一个小头给每个选项打分、不写文字"做成了训练接口。下面这段直接来自官方文档，Qwen3.5-4B + LoRA(r=16) 在 4-bit 下即可：</p>
+<pre><code># pip install --upgrade unsloth datasets transformers
+from unsloth import FastDecisionModel, DecisionTrainer, is_bfloat16_supported
+from datasets import load_dataset
+from transformers import TrainingArguments
+
+model, tokenizer = FastDecisionModel.from_pretrained(
+    model_name="unsloth/Qwen3.5-4B",
+    max_seq_length=2048,
+    load_in_4bit=True,
+)
+model = FastDecisionModel.get_peft_model(
+    model, r=16, lora_alpha=16, lora_dropout=0,
+    use_gradient_checkpointing="unsloth", random_state=3407,
+)
+
+dataset = load_dataset("LocalLLaMA/typed-decisions", "all", split="train")
+items, report = FastDecisionModel.build_dataset(dataset, tokenizer, model)
+print(f"skipped {report['skipped']} of {report['total']}")
+train_items, eval_items = FastDecisionModel.split_holdout(items, seed=3407)
+
+trainer = DecisionTrainer(
+    model=model, processing_class=tokenizer,
+    train_dataset=train_items, eval_dataset=eval_items,
+    args=TrainingArguments(
+        per_device_train_batch_size=2, gradient_accumulation_steps=4,
+        warmup_steps=10, max_steps=240, learning_rate=2e-5,
+        lr_scheduler_type="cosine", weight_decay=0.01,
+        bf16=is_bfloat16_supported(), fp16=not is_bfloat16_supported(),
+        eval_strategy="epoch", logging_steps=1,
+        output_dir="outputs", report_to="none", seed=3407,
+    ),
+)
+trainer_stats = trainer.train()
+metrics = FastDecisionModel.calibrate(model, tokenizer, eval_items)
+print(metrics)  # held-out accuracy, ECE, loss
+model.save_pretrained_merged("qwen-decisions-merged")
+</code></pre>
+<p>实测数字（源：Unsloth 文档 2026-11）：Qwen3.5-0.8B 78% / 4GB / 42 分钟；Qwen3.5-2B 81% / 8GB；Llama 3.2 3B 79% / 4.1GB；Gemma 4 E4B 77% / 14.4GB。LoRA rank 16、学习率 2e-4 是文档推荐的起点。</p>
+
+<h3>4.1 数据集格式：state + questions + gold</h3>
+<p>每一行给一个输入（state）、关于它的若干问题（questions）、和标准答案（gold）。问题分三类：<code>choice</code>（从 criteria 里选键）、<code>noul</code>（是/否）、<code>score</code>（从有序列表里选下标，从 0 起）。</p>
+<pre><code>questions = {
+    "team": {"type": "choice",
+             "instructions": "Which team should handle this?",
+             "criteria": {"billing": "invoices, payments, refunds",
+                          "technical": "bugs, outages, errors",
+                          "sales": "pricing, new plans"}},
+    "refund": {"type": "noul", "instructions": "Does the customer ask for a refund?"},
+    "urgency": {"type": "score", "instructions": "How urgent is this?",
+                "criteria": ["not urgent", "soon", "today"]},
+}
+rows = [
+    {"state": "Hi, I was charged twice for invoice #4411. Please refund the duplicate today.",
+     "questions": questions,
+     "gold": {"team": "billing", "refund": True, "urgency": 2}},
+    {"state": "The dashboard shows an error when I export a report. Please help in the next few days.",
+     "questions": questions,
+     "gold": {"team": "technical", "refund": False, "urgency": 1}},
+]
+</code></pre>
+
+<h3>4.2 推理与评测</h3>
+<pre><code>FastDecisionModel.for_inference(model)
+ans = FastDecisionModel.predict(model, tokenizer, state_text, questions)
+for name, r in ans.items():
+    print(name, r["answer"], {k: round(v, 3) for k, v in r["probabilities"].items()})
+
+# 在带标签测试集上算准确率
+test = load_dataset("LocalLLaMA/typed-decisions", "all", split="test")
+test_items, _ = FastDecisionModel.build_dataset(test, tokenizer, model)
+print(FastDecisionModel.evaluate(model, tokenizer, test_items))
+</code></pre>
+
+<h2>5. 把它挂成服务</h2>
+<p>训练完 <code>qwen-decisions-merged</code> 后，用 FastAPI 包一层 OpenAI 风格的 <code>/v1/systemone</code> 端点，批处理、路由、安全门控都能直接调：</p>
+<pre><code>from fastapi import FastAPI, BaseModel
+from unsloth import FastDecisionModel
+
+app = FastAPI()
+model, tokenizer = FastDecisionModel.from_pretrained(
+    "qwen-decisions-merged", load_in_4bit=True)
+FastDecisionModel.for_inference(model)
+
+class Req(BaseModel):
+    state: str
+    questions: dict
+
+@app.post("/v1/systemone")
+def decide(req: Req):
+    ans = FastDecisionModel.predict(model, tokenizer, req.state, req.questions)
+    return {k: {"answer": v["answer"],
+                "probabilities": {kk: round(vv, 4) for kk, vv in v["probabilities"].items()}}
+            for k, v in ans.items()}
+</code></pre>
+<p>调用方传一段 state 和同样结构的 questions，拿回每个选项的 answer 与校准概率。路由策略可以很简单：<code>if prob &gt;= tau: 自动采纳; else: 升级人工</code>——这正是生成式裁判很难稳定给出的判断。</p>
+
+<h2>6. 什么时候用 ZTC，什么时候别</h2>
+<p>零 token 判官最适合三类场景：<b>规模化打分</b>（评测、数据清洗、RLHF 偏好标注）、<b>模型路由</b>（按置信度把请求分给不同档位模型）、<b>安全门控</b>（敏感内容、越狱检测的分类器）。前提是你的问题能被写成"带选项的类型化决策"——choice / 是或否 / 量表。</p>
+<p>它不擅长开放式的"写一段批评、给改进建议"。那种活儿仍然该交给生成式模型，或者 ZTC 做第一道门、生成模型做深度。值得记住的一点：确定性来自"不采样"，所以同一份输入永远同结果，这让审计和回归测试变简单——生成式裁判给不了的保证。</p>
+<p>相关阅读：<a href="/blog/decision-models-2026/">决策模型崛起：用强类型决策替代自由文本推理</a>、<a href="/blog/multi-agent-orchestration-2026/">多智能体编排的真相：别被 Demo 骗了</a>。</p>
+''',
+        'related': [
+            ('决策模型崛起：用强类型决策替代自由文本推理', 'blog/decision-models-2026/'),
+            ('多智能体编排的真相：别被 Demo 骗了', 'blog/multi-agent-orchestration-2026/'),
+        ],
+},
+{
+        'slug': 'nemotron-3-super-2026',
+        'category': 'tooling',
+        'date': '2026-11-03',
+        'updated': '2026-11-03',
+        'tags': ['NVIDIA Nemotron 3 Super', '开源大模型', 'NVFP4', 'LatentMoE', 'MTP 投机解码', 'vLLM 部署', '长上下文', 'agentic 模型', 'Blackwell', '模型部署'],
+        'title': 'NVIDIA Nemotron 3 Super 部署教程：120B 模型单卡 B200 跑 1M 上下文（vLLM/SGLang + MTP 投机解码）| DevTools 博客',
+        'description': 'NVIDIA 在 2026-11-03 于 Hugging Face 放出 Nemotron 3 Super 120B-A12B：120B 总参、12B 激活、原生 1M 上下文、NVFP4 预训练。它不是又一个更大的稠密模型，而是把"agentic 长上下文 + 低成本"第一次做成开源可部署：混合 Mamba2-Transformer 骨架 + LatentMoE + 内置 MTP 投机解码。本文给架构速读、硬件矩阵，以及能直接跑的 vLLM / SGLang 部署命令和 Python 客户端，并点清 NVFP4 只认 Blackwell、长上下文要裁枝等坑。',
+        'keywords': 'NVIDIA Nemotron 3 Super 部署,Nemotron 3 Super 120B 推理教程,如何部署 Nemotron 3 Super,单卡 B200 推理大模型,NVFP4 推理,LatentMoE,MTP 投机解码,vLLM 部署 Nemotron 3 Super,SGLang 部署,Blackwell FP4,长上下文 1M token 部署,agentic 模型 部署,开源大模型 部署 教程',
+        'h1': 'Nemotron 3 Super 上手：120B 总参 / 12B 激活，单卡 B200 跑满 1M 上下文',
+        'summary': 'NVIDIA 2026-11-03 放出 Nemotron 3 Super 120B-A12B：120B 总参、12B 激活、原生 1M 上下文、NVFP4 预训练。混合 Mamba2-Transformer + LatentMoE + 内置 MTP 投机解码，把 agentic 长上下文和低成本第一次做成开源可部署。本文给架构速读、硬件矩阵、能直接跑的 vLLM/SGLang 命令与 Python 客户端，并点清 NVFP4 只认 Blackwell 等坑。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：NVIDIA 在 <b>2026-11-03</b> 于 Hugging Face 放出 <b>Nemotron 3 Super 120B-A12B</b>——120B 总参、<b>12B 激活</b>、原生 1M 上下文、NVFP4 预训练。重点不是参数，是它把"agentic 长上下文 + 低成本"这件事第一次做成开源可部署：混合 Mamba2-Transformer 骨架 + LatentMoE + 内置 MTP 投机解码（源：NVIDIA 开发者博客 2026-11-03、DeepWiki Nemotron-3-Super、allclaw 基准分析）。下面给架构速读、硬件矩阵，和一份能直接跑的 vLLM / SGLang 部署命令。</p>
+</blockquote>
+
+<h2>1. 架构：三样东西各买一个能力</h2>
+<p>Super 不是把 Nano 简单放大，而是把三件事拆开计价：</p>
+<ul>
+  <li><b>LatentMoE</b>：token 先投影到更小的潜空间（d=4096→ℓ=1024）再做专家路由，all-to-all 通信量比标准 MoE 砍约 4×（源：NVIDIA 进阶部署指南）。同样推理成本能调 4 倍多的专家——这是它"12B 激活却像 120B 在思考"的根。</li>
+  <li><b>MTP（多 token 预测）</b>：checkpoint 里 baked-in 一层 MTP 头，当作天然的投机解码草稿模型。不像外部草稿模型要额外 KV 和延迟，每个预测 token 只多调一层，接受长度在 SPEED-Bench 上约 3.45（源：NVIDIA 部署指南、DGX Station 实测 2026-10-15）。</li>
+  <li><b>混合 Mamba2-Transformer</b>：Mamba-2 层做序列处理（线性复杂度，1M 上下文才现实），Transformer 注意力层穿插在关键深度保住"大海捞针"式的精确召回。NVFP4 预训练让它在 B200 上比 H100 上的 FP8 快约 4×，且精度不掉。</li>
+</ul>
+<p>它针对的是 agentic 场景的两个痛点：多智能体每轮重发历史、工具输出、推理步骤，token 量能到普通聊天的 <b>15×</b>（"上下文爆炸"）；给每个子任务都上大模型是"思考税"。Super 用 1M 上下文当长期记忆、用 MoE 把单次成本压下来。NVIDIA 给的旗标：PinchBench（OpenClaw agent 基准）85.6%，同档开源第一（源：NVIDIA 开发者博客）。</p>
+
+<h2>2. 硬件矩阵：先算显存再下单</h2>
+<p>120B 总参、12B 激活。权重体积大致：BF16 ≈ 240GB，FP8 ≈ 120GB，NVFP4 ≈ 60GB（加 fp8 KV 缓存）。所以能跑的硬件分界很硬：</p>
+<table>
+  <thead><tr><th>精度</th><th>最低硬件</th><th>框架</th></tr></thead>
+  <tbody>
+    <tr><td>BF16</td><td>8× H100 / 8× A100 80G（张量并行）</td><td>vLLM / TRT-LLM / SGLang</td></tr>
+    <tr><td>FP8</td><td>8× H100（Hopper）</td><td>vLLM / TRT-LLM</td></tr>
+    <tr><td>NVFP4</td><td>1× B200（128G 统一显存）或 8× B200</td><td>vLLM(nightly) / TRT-LLM</td></tr>
+  </tbody>
+</table>
+<p>关键点：<b>NVFP4 只在 Blackwell（B200/GB200）上生效</b>。在 Hopper 或消费级卡上，老老实实用 FP8——据 allclaw 的社区与独立复跑，FP8 仍比 BF16 基线快约 4×，精度也稳（源：allclaw 基准分析 2026-11）。单卡 B200 上 NVFP4 + fp8 KV 才能把 1M 上下文塞进 128G。</p>
+
+<h2>3. Nemotron 3 Super 部署：vLLM 实战</h2>
+<p>Blackwell 单卡 / 多卡跑 NVFP4 的基线命令（来自 NVIDIA local-ai-inference-recipes，DGX Station 配方，vLLM 0.31.0）：</p>
+<pre><code>VLLM_FLOAT32_MATMUL_PRECISION="high" \
+VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 \
+vllm serve nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4 \
+  --host 0.0.0.0 --port 8000 \
+  --max-model-len 262144 \
+  --gpu-memory-utilization 0.92 \
+  --load-format fastsafetensors \
+  --attention-backend flashinfer \
+  --max-num-batched-tokens 16384 \
+  --kv-cache-dtype fp8 \
+  --mamba-cache-mode align \
+  --mamba_ssm_cache_dtype float32 \
+  --speculative-config '{"method":"mtp","num_speculative_tokens":3}' \
+  --enable-prefix-caching \
+  --reasoning-parser nemotron_v3 \
+  --enable-auto-tool-choice --tool-call-parser qwen3_xml
+</code></pre>
+<p>注意 <code>--mamba_ssm_cache_dtype float32</code>：无论哪种 checkpoint 精度，SSM 状态缓存都用 float32 保数值；MTP 投机解码就靠那一层 baked-in 头。Hopper 上跑 FP8 用官方钉死的 vLLM 0.17.1，方法名是 <code>nemotron_h_mtp</code>、草稿 5 个 token：</p>
+<pre><code>VLLM_FLASHINFER_MOE_BACKEND=latency VLLM_USE_FLASHINFER_MOE_FP4=1 VLLM_USE_FLASHINFER_MOE_FP8=1 \
+vllm serve nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8 \
+  --tensor-parallel-size 4 --trust-remote-code \
+  --gpu-memory-utilization 0.9 --enable-expert-parallel \
+  --speculative-config '{"method":"nemotron_h_mtp","num_speculative_tokens":5}' \
+  --mamba-ssm-cache-dtype float32 --max-model-len 65536
+</code></pre>
+
+<h3>3.1 SGLang 路线</h3>
+<p>多智能体工具调用编排用 SGLang 更顺（MTP 投机 + 工具解析）。官方钉像 v0.5.9：</p>
+<pre><code>docker pull lmsysorg/sglang:v0.5.9
+python3 -m sglang.launch_server \
+  --model nvidia/NVIDIA-Nemotron-3-Super --trust-remote-code \
+  --tp 4 --ep 4 --tool-call-parser qwen3_coder \
+  --reasoning-parser nano_v3 --chunked-prefill-size 8192
+</code></pre>
+<p>坑：v0.5.9 的 NVFP4 + MTP 不工作，修复已合入 SGLang main，要用 nightly（<code>--disable-radix-cache</code>）。</p>
+
+<h2>4. Python 客户端：OpenAI 兼容</h2>
+<p>vLLM / SGLang 都暴露 OpenAI 风格端点，直接换 base_url：</p>
+<pre><code>from openai import OpenAI
+c = OpenAI(base_url="http://localhost:8000/v1", api_key="EMPTY")
+r = c.chat.completions.create(
+    model="nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4",
+    messages=[{"role": "user",
+               "content": "用 Python 实现带尾递归优化的快速排序"}],
+    max_tokens=1024,
+)
+print(r.choices[0].message.content)
+</code></pre>
+
+<h2>5. 三个坑，提前说</h2>
+<ul>
+  <li><b>NVFP4 只认 Blackwell</b>。在 H100 / 消费级卡上强行 NVFP4 要么跑不了要么掉点；直接走 FP8，仍有约 4× 于 BF16 的收益。</li>
+  <li><b>模型话多</b>。Artificial Analysis 统计它产出 token 明显多于同侪。解决：加显式"简洁模式"指令，或用更小的摘要模型后处理。</li>
+  <li><b>长上下文会拖慢</b>。1M 窗口适合整库代码 / 多文档研究，但 prompt 不裁会涨延迟。建议超过 128K 活跃 token 前先做滑动窗口摘要或 agentic 记忆裁剪。</li>
+</ul>
+<p>一句话选型：agentic 编程、安全事件分诊、深度研究、10+ 智能体协调这类"高 stake 长记忆"任务交给 Super；简单聊天和琐碎子任务丢给更小的模型（Nemotron 3 Nano 之类），别交"思考税"。</p>
+<p>相关阅读：<a href="/blog/local-moe-serving-freetoken-colibri-2026/">游戏 PC 跑 284B：FreeToken 与 colibri 把前沿 MoE 搬上桌面</a>、<a href="/blog/kv-cache-compression-long-context-2026/">长上下文 KV 缓存压缩：让 1M token 不再撑爆显存</a>。</p>
+''',
+        'related': [
+            ('游戏 PC 跑 284B：FreeToken 与 colibri 把前沿 MoE 搬上桌面', 'blog/local-moe-serving-freetoken-colibri-2026/'),
+            ('长上下文 KV 缓存压缩：让 1M token 不再撑爆显存', 'blog/kv-cache-compression-long-context-2026/'),
+        ],
+},
+
+{
         'slug': 'ai-agent-sandbox-escape-2026',
         'category': 'security',
         'date': '2026-11-02',
