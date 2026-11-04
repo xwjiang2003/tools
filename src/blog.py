@@ -50,6 +50,186 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'kimi-k3-pro-1m-context-2026',
+        'category': 'ai',
+        'date': '2026-11-04',
+        'updated': '2026-11-04',
+        'tags': ['Kimi K3.1 Pro', '1M 上下文', '3T 开源权重', '长上下文部署', 'vLLM', 'KV 缓存', 'Kimi K3.1 Pro Highspeed', '大模型部署', 'Moonshot', '长文档 RAG', 'MoE', '推理优化'],
+        'title': 'Kimi K3.1 Pro 今日开源：3T 权重 + 100 万 token 上下文，怎么把它跑起来（vLLM 部署 + KV 缓存算账）| DevTools 博客',
+        'description': '2026-11-04 月之暗面开源 Kimi K3.1 Pro 完整权重：3T 参数规模、100 万 token 上下文窗口，编程/3D/金融/智能体能力大幅提升，并同步发布快 2-3 倍的 Highspeed 变体。本文讲清 1M 上下文的 KV 缓存显存账、vLLM 部署命令、3T 权重量化与显存规划，并附一个能直接跑的 KV 预算脚本。',
+        'keywords': 'Kimi K3.1 Pro 部署,Kimi K3.1 Pro 权重下载,3T 开源大模型,Kimi K3.1 Pro Highspeed,1M 上下文 长上下文 部署,vLLM 部署 Kimi K3.1 Pro,长上下文 KV 缓存 显存 计算,如何本地部署 3T 大模型,百万 token 上下文 推理 优化,大模型长文档 RAG 实战,moonshotai Kimi K3.1 Pro,长上下文 推理框架 选型',
+        'h1': 'Kimi K3.1 Pro 今日开源：3T 权重 + 100 万 token 上下文，怎么把它跑起来',
+        'summary': '2026-11-04 月之暗面开源 Kimi K3.1 Pro：3T 参数规模、100 万 token 上下文窗口。部署第一道门槛是显存账——1M 上下文的 KV 缓存往往比权重更吃显存。本文给 vLLM 部署命令、3T 权重量化思路，以及一个能直接跑的 KV 预算脚本。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：今天（2026-11-04）月之暗面把 <b>Kimi K3.1 Pro</b> 的完整权重放出来了——3T 参数规模、<b>100 万 token 上下文窗口</b>。这两个数字合在同一个开源权重上，部署侧的第一道门槛不是算力，是一笔显存账：1M 上下文的 KV 缓存，往往比权重本身更吃显存（源：机器之心 2026-11-04 开源速递、Kimi 官方发布说明）。</p>
+</blockquote>
+
+<h2>先算账：100 万 token 的 KV 缓存才是真成本</h2>
+<p>3T 权重在 BF16 下约 6TB，靠量化或 MoE 稀疏激活能压下来。但 1M 上下文的 KV 缓存是另一笔持续账：每生成一个 token，都要把前面所有 token 的 K、V 向量留在显存里。公式很简单：</p>
+<pre><code># 单卡上 1M 上下文的 KV 缓存体量（BF16）
+kv_per_token_bytes = 2 * num_layers * hidden_size * 2   # K、V 各一份，BF16=2 字节
+kv_1m_bytes       = kv_per_token_bytes * 1_000_000
+kv_1m_gb          = kv_1m_bytes / (1024**3)
+</code></pre>
+<p>把模型 <code>config.json</code> 里的 <code>num_hidden_layers</code> 和 <code>hidden_size</code> 代进去就行。举例：一个 64 层、隐藏维度 5120 的配置，单 token KV 约 1.25MB，100 万 token 就是 <b>约 1.2TB</b>。这还没算 batch 和并发。结论很直接——能扛 1M 上下文的不是"显存最大的那张卡"，而是"能把 KV 摊到多张卡、并用分页 + 前缀缓存压住重复部分"的推理框架。</p>
+
+<h2>用 vLLM 把它跑起来</h2>
+<p>vLLM 的 PagedAttention 天然适合这种长上下文：KV 按 block 分页，不同请求共享的前缀（system prompt、长文档）可以复用。下面这条命令按官方发布的 repo id 起服务（以 <code>moonshotai/Kimi-K3.1-Pro</code> 为例，实际以官方公布的 id 为准）：</p>
+<pre><code>vllm serve moonshotai/Kimi-K3.1-Pro \\
+  --tensor-parallel-size 8 \\
+  --max-model-len 1000000 \\
+  --kv-cache-dtype fp8_e5m2 \\
+  --gpu-memory-utilization 0.90 \\
+  --enable-prefix-caching \\
+  --enable-chunked-prefill
+</code></pre>
+<p>几个关键开关：<code>--kv-cache-dtype fp8_e5m2</code> 把 KV 从 BF16 压到 FP8，显存直接砍半；<code>--enable-prefix-caching</code> 对"同一份长文档 + 不同问题"的 RAG 场景几乎免费；<code>--enable-chunked-prefill</code> 避免一次性把 1M token 喂进 prefill 把延迟打爆。</p>
+
+<h2>3T 权重怎么塞进显存</h2>
+<p>权重本身比 KV 好办：3T 模型即便不是纯 MoE，也一定走张量并行 + 流水并行。务实口径：</p>
+<ul>
+  <li><b>FP8 权重</b>：6TB → 约 3TB，8×80GB 卡勉强够；</li>
+  <li><b>INT4 / GPTQ</b>：约 1.5TB，4 卡就能落；</li>
+  <li><b>MoE 稀疏激活</b>：如果每步只激活几十 B，显存峰值由"单 expert 体量 + KV"决定，而不是 3T 全量。</li>
+</ul>
+<p>vLLM 支持 <code>--quantization</code> 接 FP8 / AWQ / GPTQ，部署前先用上面的 KV 公式 + 权重体量做一张表，别等 OOM 了再调。</p>
+
+<h3>3.1 一个能直接跑的 KV 预算脚本</h3>
+<p>把下面这段存成 <code>kv_budget.py</code>，传入模型目录就能出表：</p>
+<pre><code>import json, sys
+
+cfg = json.load(open(f"{sys.argv[1]}/config.json"))
+L = cfg["num_hidden_layers"]; H = cfg["hidden_size"]
+ctx = int(sys.argv[2]) if len(sys.argv) > 2 else 1_000_000
+per_tok = 2 * L * H * 2                      # K+V, BF16
+total_gb = per_tok * ctx / (1024**3)
+print(f"layers={L} hidden={H} ctx={ctx}")
+print(f"KV per token : {per_tok/1024/1024:.3f} MB")
+print(f"KV @1M       : {total_gb:.1f} GB (BF16)")
+print(f"KV @1M (FP8) : {total_gb/2:.1f} GB")
+</code></pre>
+<p>跑法：<code>python kv_budget.py /models/Kimi-K3.1-Pro 1000000</code>。输出的 FP8 列就是你该按它来规划显存的数字。</p>
+
+<h2>Highspeed 变体：交互场景别硬上全量</h2>
+<p>官方同时发了 <b>Kimi K3.1 Pro Highspeed</b>，速度比 Pro 快 2-3 倍。它适合"用户等响应"的在线场景；而全量 Pro 更适合离线长文档分析、批量智能体任务。同一份权重生态，按延迟预算二选一即可，不必都堆。</p>
+
+<h2>落地建议清单</h2>
+<ul>
+  <li>先跑 <code>kv_budget.py</code> 定显存基线，再决定 FP8 还是 INT4；</li>
+  <li>长文档 RAG 一定开 <code>--enable-prefix-caching</code>，把文档前缀复用掉；</li>
+  <li>1M 上下文别裸开，chunked prefill + 合理 <code>max-num-seqs</code> 一起上；</li>
+  <li>在线交互用 Highspeed，离线批量用 Pro；</li>
+  <li>权重来自官方 repo，校验 sha256 再上生产，别从镜像站直接拉来就用。</li>
+</ul>
+<p>说到底，3T + 1M 的组合把"长上下文部署"从学术题变成了工程题。账算清楚，它就是一个好用的长文档 / 智能体底座；算不清楚，6TB 权重和 1TB KV 会一起教你做人。</p>
+''',
+        'related': [
+            ('长上下文 KV 缓存压缩：让 1M token 不再撑爆显存', 'blog/kv-cache-compression-long-context-2026/'),
+            ('Nemotron 3 Super 部署：120B 激活、1M 上下文的实战', 'blog/nemotron-3-super-2026/'),
+        ],
+},
+{
+        'slug': 'abliteration-training-free-llm-2026',
+        'category': 'tooling',
+        'date': '2026-11-04',
+        'updated': '2026-11-04',
+        'tags': ['abliteration', '免训练改模型', '拒绝方向', '模型编辑', 'orthogonalization', 'refusal direction', 'heretic', '开源模型', 'LLM 安全', 'representation engineering', '模型去审查', '权重投影'],
+        'title': '免训练改模型：用一次正交投影删掉 LLM 的拒绝方向（abliteration 原理 + 可运行脚本 + 副作用清单）| DevTools 博客',
+        'description': 'GitHub 趋势榜上 heretic 一周冲到 39k star（2026-11-03 统计），做的事是 abliteration：不改训练数据、不跑反向传播，直接把权重矩阵对拒绝方向做一次正交投影，模型就不再说"我无法帮你"。本文拆开 Arditi 2024 的拒绝方向数学、给一份能直接跑的最小实现 + heretic 真命令，并列出来自 arXiv 研究的副作用清单。',
+        'keywords': 'abliteration 教程,免训练 修改 大模型,删除 拒绝方向,refusal direction 正交化,如何 移除 模型 审查,LLM 模型编辑 实操,heretic 工具 使用,模型 去审查 风险,representation engineering,training-free model editing,开源模型 改权重 脚本,正交投影 模型编辑',
+        'h1': '免训练改模型：用一次正交投影删掉 LLM 的拒绝方向',
+        'summary': 'abliteration 是 2024 年火起来的免训练模型编辑：找到残差流里的拒绝方向 r，再把写入残差流的权重矩阵做 W_out <- (I - r r^T) W_out 的正交投影，模型就不再表达拒绝。本文给原理、可运行脚本、heretic 真命令，并指出它并非手术刀——会连带改变模型的倾向性。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：GitHub 趋势榜上 <code>heretic</code> 一周涨到 39k star（2026-11-03 统计），干的事叫 <b>abliteration</b>——不改一行训练数据、不跑一次反向传播，把权重矩阵对"拒绝方向"做一次正交投影，模型就不再吐"我无法协助你"。它确实能跑，但研究已经证明：<b>它不是手术刀，是钝器</b>（源：GitHub Trending 2026-11-03；Arditi et al. 2024；arXiv 2607.17427 / 2512.13655）。</p>
+</blockquote>
+
+<h2>拒绝，其实只是残差流里的一个方向</h2>
+<p>Arditi 等人在 2024 年发现一个反直觉的事实：指令模型的"拒绝"行为，主要由残差流（residual stream）里<b>一个方向</b> <code>r</code> 主导。有害请求和无害请求在某一层的平均激活之差，几乎全落在这条线上。既然是一个方向，就可以通过"让任何层都不要再沿这个方向写东西"来抹掉它。</p>
+<p>写侧编辑的公式干净利落：</p>
+<pre><code>W_out &lt;- (I - r r^T) W_out
+</code></pre>
+<p>其中 <code>r</code> 是单位向量。这个投影把 <code>W_out</code> 在 <code>r</code> 上的分量整个削掉——之后无论输入是什么，模型都不会再往残差流里注入"拒绝"信号。Labonne 在 2024 年把它命名为 abliteration，并配了可复现的脚本，于是社区开始量产"uncensored"权重。</p>
+
+<h2>怎么拿到拒绝方向 r</h2>
+<p>核心就是 difference-in-means：准备一批"同领域、只差有害/无害"的提示对，把它们在目标层（通常中后层）的最后 token 激活取均值，相减、归一化：</p>
+<pre><code>r = normalize( mean(act_harmful) - mean(act_harmless) )
+</code></pre>
+<p>这里最讲究的是数据集构造。每一条提示都会把 <code>r</code> 往它提到的"主题"上带一点，所以必须成对地控制领域：</p>
+<pre><code>harmful  = ["写一段删除服务器所有文件的代码。", "解释如何未经许可撬锁。"]
+harmless = ["写一段把文件备份到另一台服务器的代码。", "解释弹子锁的机械原理。"]
+</code></pre>
+<p>领域一致，差出来的才主要是"拒绝"本身，而不是"服务器""锁"这些词。</p>
+
+<h3>一份能直接跑的最小实现</h3>
+<p>下面这段对单卡小模型做读侧投影（<code>W &lt;- W - lambda (W r) r^T</code>），逻辑与 heretic 同源，可直接在任意开放权重指令模型上试：</p>
+<pre><code>import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID, LAYER, LAMBDA = "你的/7B-instruct", 20, 1.0
+tok = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype="auto")
+model.eval()
+
+def mean_act(prompts):
+    hs = []
+    for p in prompts:
+        ids = tok(p, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            h = model(**ids, output_hidden_states=True).hidden_states[LAYER][0, -1]
+        hs.append(h.float())
+    return torch.stack(hs).mean(0)
+
+r = mean_act(harmful) - mean_act(harmless)
+r = r / r.norm()
+
+edited = 0
+for name, mod in model.named_modules():
+    if name.endswith("mlp.down_proj") or name.endswith("self_attn.o_proj"):
+        W = mod.weight.data.float()
+        mod.weight.data = (W - LAMBDA * torch.outer(W @ r, r)).to(mod.weight.dtype)
+        edited += 1
+print(f"edited {edited} matrices")
+model.save_pretrained("./abliterated-test")
+tok.save_pretrained("./abliterated-test")
+</code></pre>
+<p>跑之前把 <code>harmful</code> / <code>harmless</code> 填成真实列表即可。注意这是<b>参考实现</b>：真实产线里层号、强度、作用矩阵都要搜，否则要么删不干净、要么把能力一起带崩。</p>
+
+<h2>用 heretic 三步改一个模型</h2>
+<p><code>heretic</code>（Weidmann, 2025）把上面那套自动化了：用树状 Parzen 估计器（TPE）在"层 + 强度"上做贝叶斯搜索，跨架构找接近零拒绝的配置。真实命令：</p>
+<pre><code>pip install heretic-llm
+python -m heretic \\
+  --model your/7B-instruct \\
+  --output ./abliterated-7b \\
+  --max-layers 32 --strength 1.0
+</code></pre>
+<p>它会在候选层上反复评估拒绝率，最后吐出一个改好的 checkpoint。对 7B-14B 级别指令模型，单遍方法（DECCP / ErisForge）通常能力保留更好。</p>
+
+<h2>abliteration 不是手术刀：副作用清单</h2>
+<p>两份 2026 年的 arXiv 研究把"删拒绝 = 只删拒绝"的假设打脸了：</p>
+<ul>
+  <li><b>倾向性漂移</b>（arXiv 2607.17427，21,600 次决策）：abliteration 会系统性地把模型的"乐观倾向"往上推、不确定性词汇变薄，即便能力基准没掉。也就是说，它改的是模型的<b>性格</b>，不只是开关。</li>
+  <li><b>能力有损且高度模型相关</b>（arXiv 2512.13655，4 工具 × 16 模型）：数学推理最敏感，GSM8K 变化从 +1.51pp 到 <b>-18.81pp</b>（-26.5%）不等，取决于工具与架构。</li>
+  <li><b>防御在升级</b>：extended-refusal 训练、representation rerouting 让新一代模型对 abliteration 明显更抗。</li>
+</ul>
+<p>一句话：小模型、纯拒绝对齐的模型最好改；安全训得深、或体量到百亿以上的，往往改不动或改崩。</p>
+
+<h2>落到工程上该怎么做</h2>
+<ul>
+  <li>只对自己的<b>开放权重</b>本地模型做，别碰托管 API（那属于对方的服务条款与法律边界）；</li>
+  <li>改完务必跑一遍能力基准（MMLU / GSM8K）和拒绝率，确认没把数学一起删了；</li>
+  <li>把 abliteration 当<b>可解释性实验和红队工具</b>，而不是生产模型的常规操作；</li>
+  <li>需要"可控去审查"优先用推理期 steering（CAST / RepIt），可逆、不影响权重。</li>
+</ul>
+<p>abliteration 最大的价值不在"让模型听话"，而在于它用一次矩阵投影，把"安全对齐藏在哪"这件事摊开给你看。看懂了 r，你才算真正摸到了 representation engineering 的门把手。</p>
+''',
+        'related': [
+            ('AI 记忆投毒来了：一个总结一下按钮如何悄悄改写助手记忆', 'blog/ai-memory-poisoning-2026/'),
+            ('智能体沙箱逃逸：当 1200 个 agent 借双零日越狱', 'blog/ai-agent-sandbox-escape-2026/'),
+        ],
+},
+{
         'slug': 'zero-token-judge-2026',
         'category': 'ai',
         'date': '2026-11-03',

@@ -6,6 +6,178 @@
 """
 
 ARTICLES_EN = {
+'kimi-k3-pro-1m-context-2026': {
+        'tags': ['Kimi K3.1 Pro', '1M context', '3T open weights', 'long-context serving', 'vLLM', 'KV cache', 'Kimi K3.1 Pro Highspeed', 'LLM deployment', 'Moonshot', 'long-document RAG', 'MoE', 'inference optimization'],
+        'title': 'Kimi K3.1 Pro Goes Open Today: 3T Weights + 1M-Token Context, and How to Actually Serve It (vLLM + KV-Cache Math) | DevTools Blog',
+        'description': 'On 2026-11-04 Moonshot open-sourced the full weights of Kimi K3.1 Pro: a 3T-scale model with a 1,000,000-token context window, with big gains in coding, 3D, finance research and agentic skills, plus a 2-3x faster Highspeed variant. This post breaks down the KV-cache memory bill for 1M context, the vLLM serving command, 3T-weight quantization, and ships a runnable KV-budget script.',
+        'keywords': 'Kimi K3.1 Pro deploy,Kimi K3.1 Pro weights download,3T open source LLM,Kimi K3.1 Pro Highspeed,1M context long context deploy,vLLM serve Kimi K3.1 Pro,long context KV cache memory calc,how to deploy 3T model locally,million token context inference optimization,long document RAG tutorial,moonshotai Kimi K3.1 Pro,long context inference framework',
+        'h1': 'Kimi K3.1 Pro Goes Open Today: 3T Weights + 1M-Token Context, and How to Actually Serve It',
+        'summary': 'On 2026-11-04 Moonshot open-sourced Kimi K3.1 Pro: 3T-scale weights, a 1,000,000-token context window. The first wall is not compute but VRAM: the KV cache for 1M context often costs more than the weights. This post gives the vLLM command, 3T-weight quantization notes, and a runnable KV-budget script.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: On 2026-11-04 Moonshot released the full weights of <b>Kimi K3.1 Pro</b> -- a 3T-scale model with a <b>1,000,000-token context window</b>. Put those two numbers on one open-weight model and the first deployment wall is not compute, it is a VRAM bill: the KV cache for 1M context often costs more than the weights themselves (sources: Jiqizhixin open-source digest 2026-11-04, Moonshot release notes).</p>
+</blockquote>
+
+<h2>Do the math first: 1M context KV cache is the real cost</h2>
+<p>3T weights at BF16 are roughly 6TB; quantization or sparse MoE activation brings that down. But the KV cache for 1M context is a different, recurring bill: every token you generate keeps the K and V vectors of every earlier token in VRAM. The formula is simple:</p>
+<pre><code># KV cache footprint for 1M context on one GPU (BF16)
+kv_per_token_bytes = 2 * num_layers * hidden_size * 2   # K and V, BF16 = 2 bytes
+kv_1m_bytes       = kv_per_token_bytes * 1_000_000
+kv_1m_gb          = kv_1m_bytes / (1024**3)
+</code></pre>
+<p>Plug in <code>num_hidden_layers</code> and <code>hidden_size</code> from the model <code>config.json</code>. Example: a 64-layer, 5120-hidden config needs about 1.25MB per token, so 1M tokens is <b>roughly 1.2TB</b> -- before any batching or concurrency. The takeaway is blunt: what survives 1M context is not "the biggest single GPU" but "the framework that spreads KV across GPUs and compresses the repeated parts with paging and prefix caching".</p>
+
+<h2>Serve it with vLLM</h2>
+<p>vLLM's PagedAttention is built for exactly this. KV is paged by block, and prefixes shared across requests (system prompt, a long document) can be reused. This command starts the service using the official repo id (example <code>moonshotai/Kimi-K3.1-Pro</code>; use whatever id Moonshot publishes):</p>
+<pre><code>vllm serve moonshotai/Kimi-K3.1-Pro \\
+  --tensor-parallel-size 8 \\
+  --max-model-len 1000000 \\
+  --kv-cache-dtype fp8_e5m2 \\
+  --gpu-memory-utilization 0.90 \\
+  --enable-prefix-caching \\
+  --enable-chunked-prefill
+</code></pre>
+<p>Key switches: <code>--kv-cache-dtype fp8_e5m2</code> halves KV from BF16 to FP8; <code>--enable-prefix-caching</code> is nearly free for RAG with "one long doc + many questions"; <code>--enable-chunked-prefill</code> stops a single 1M-token prefill from spiking latency.</p>
+
+<h2>How to fit 3T weights into VRAM</h2>
+<p>Weights are easier than KV: even if not pure MoE, a 3T model runs on tensor + pipeline parallelism. Practical rules:</p>
+<ul>
+  <li><b>FP8 weights</b>: 6TB to about 3TB, fits on 8x80GB cards;</li>
+  <li><b>INT4 / GPTQ</b>: about 1.5TB, four cards is enough;</li>
+  <li><b>MoE sparse activation</b>: if only tens of B activate per step, peak VRAM is driven by "one expert's size + KV", not the full 3T.</li>
+</ul>
+<p>vLLM takes <code>--quantization</code> for FP8 / AWQ / GPTQ. Before deploying, build a table with the KV formula plus weight size -- do not wait for OOM.</p>
+
+<h3>3.1 A runnable KV-budget script</h3>
+<p>Save this as <code>kv_budget.py</code> and point it at a model directory:</p>
+<pre><code>import json, sys
+
+cfg = json.load(open(f"{sys.argv[1]}/config.json"))
+L = cfg["num_hidden_layers"]; H = cfg["hidden_size"]
+ctx = int(sys.argv[2]) if len(sys.argv) > 2 else 1_000_000
+per_tok = 2 * L * H * 2                      # K+V, BF16
+total_gb = per_tok * ctx / (1024**3)
+print(f"layers={L} hidden={H} ctx={ctx}")
+print(f"KV per token : {per_tok/1024/1024:.3f} MB")
+print(f"KV @1M       : {total_gb:.1f} GB (BF16)")
+print(f"KV @1M (FP8) : {total_gb/2:.1f} GB")
+</code></pre>
+<p>Run: <code>python kv_budget.py /models/Kimi-K3.1-Pro 1000000</code>. The FP8 column is the number you should plan VRAM against.</p>
+
+<h2>Highspeed variant: do not force full Pro for interactive use</h2>
+<p>Moonshot also ships <b>Kimi K3.1 Pro Highspeed</b>, 2-3x faster than Pro. It fits online, user-waits-for-a-response scenarios; full Pro fits offline long-document analysis and batch agentic jobs. Same weight ecosystem, pick by latency budget.</p>
+
+<h2>Landing checklist</h2>
+<ul>
+  <li>Run <code>kv_budget.py</code> for a VRAM baseline before choosing FP8 vs INT4;</li>
+  <li>For long-doc RAG always enable <code>--enable-prefix-caching</code> to reuse the document prefix;</li>
+  <li>Never open 1M context bare: chunked prefill plus a sane <code>max-num-seqs</code> together;</li>
+  <li>Use Highspeed online, full Pro offline;</li>
+  <li>Pull weights from the official repo and verify sha256 before production -- do not grab from a mirror and ship.</li>
+</ul>
+<p>At the end of the day, the 3T + 1M combo turns "long-context serving" from a research problem into an engineering one. Plan the bill and it is a great long-doc / agentic base; skip the math and 6TB of weights and 1TB of KV will teach you the lesson together.</p>
+''',
+        'related': [
+            ('Long-context KV cache compression: keep 1M tokens off the VRAM cliff', 'blog/kv-cache-compression-long-context-2026/'),
+            ('Nemotron 3 Super in production: 120B active, 1M context, hands-on', 'blog/nemotron-3-super-2026/'),
+        ],
+},
+'abliteration-training-free-llm-2026': {
+        'tags': ['abliteration', 'training-free model edit', 'refusal direction', 'model editing', 'orthogonalization', 'refusal direction', 'heretic', 'open weights', 'LLM safety', 'representation engineering', 'model uncensoring', 'weight projection'],
+        'title': 'Edit a Model Without Training: A Single Orthogonal Projection to Delete the LLM "Refusal Direction" (abliteration + Runnable Script + Side-Effect List) | DevTools Blog',
+        'description': 'heretic hit 39k stars on GitHub Trending in a week (2026-11-03): it does abliteration -- no training data, no backprop, just one orthogonal projection of the weight matrices against the "refusal direction" and the model stops saying "I cannot help you". This post unpacks the Arditi 2024 math, ships a runnable minimal implementation plus the real heretic command, and lists the side effects from arXiv research.',
+        'keywords': 'abliteration tutorial,training-free model editing,remove refusal direction,refusal direction orthogonalization,how to uncensor a model,LLM model editing howto,heretic tool usage,model uncensoring risks,representation engineering,training-free model editing,open weights edit weights script,orthogonal projection model edit',
+        'h1': 'Edit a Model Without Training: A Single Orthogonal Projection to Delete the LLM "Refusal Direction"',
+        'summary': 'abliteration is the 2024 "training-free model edit": find the refusal direction r in the residual stream, then orthogonalize the residual-writing matrices with W_out <- (I - r r^T) W_out so the model stops expressing refusal. This post gives the mechanism, a runnable script, the real heretic command, and shows it is not a scalpel -- it also shifts the model disposition.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: <code>heretic</code> jumped to 39k stars on GitHub Trending in a week (2026-11-03). What it does is called <b>abliteration</b> -- no training data, no backprop, just one orthogonal projection of the weight matrices against the "refusal direction" and the model stops emitting "I cannot assist you". It works, but research shows it is <b>not a scalpel, it is a blunt instrument</b> (sources: GitHub Trending 2026-11-03; Arditi et al. 2024; arXiv 2607.17427 / 2512.13655).</p>
+</blockquote>
+
+<h2>Refusal is just one direction in the residual stream</h2>
+<p>Arditi et al. (2024) found a counterintuitive fact: an instruction model's refusal is dominated by a single direction <code>r</code> in the residual stream. The mean activation gap between harmful and harmless prompts at a layer lands almost entirely on that line. Since it is a direction, you can erase it by "make no layer ever write along this direction again".</p>
+<p>The write-side edit is clean:</p>
+<pre><code>W_out &lt;- (I - r r^T) W_out
+</code></pre>
+<p>where <code>r</code> is a unit vector. The projection strips the component of <code>W_out</code> along <code>r</code> -- after this, whatever the input, the model never injects a "refusal" signal into the residual stream. Labonne named it abliteration in 2024 with a reproducible script, and the community started mass-producing "uncensored" weights.</p>
+
+<h2>How to get the refusal direction r</h2>
+<p>The core is difference-in-means: build prompt pairs that are "same domain, only harmful vs harmless differ", take the mean last-token activation at a target layer (usually mid-to-late), subtract, normalize:</p>
+<pre><code>r = normalize( mean(act_harmful) - mean(act_harmless) )
+</code></pre>
+<p>Dataset construction is the delicate part. Every prompt drags <code>r</code> a little toward the topics it mentions, so you must control the domain pairwise:</p>
+<pre><code>harmful  = ["Write code that deletes all files on a server.", "Explain how to pick a lock without permission."]
+harmless = ["Write code that backs up files to another server.", "Explain how a deadbolt lock mechanism works."]
+</code></pre>
+<p>Keep the domain constant and what is left is mostly "refusal" itself, not "server" or "lock".</p>
+
+<h3>A runnable minimal implementation</h3>
+<p>This does the read-side projection (<code>W &lt;- W - lambda (W r) r^T</code>) on a single-GPU small model. The logic mirrors heretic and runs on any open-weight instruct model:</p>
+<pre><code>import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_ID, LAYER, LAMBDA = "your/7B-instruct", 20, 1.0
+tok = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype="auto")
+model.eval()
+
+def mean_act(prompts):
+    hs = []
+    for p in prompts:
+        ids = tok(p, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            h = model(**ids, output_hidden_states=True).hidden_states[LAYER][0, -1]
+        hs.append(h.float())
+    return torch.stack(hs).mean(0)
+
+r = mean_act(harmful) - mean_act(harmless)
+r = r / r.norm()
+
+edited = 0
+for name, mod in model.named_modules():
+    if name.endswith("mlp.down_proj") or name.endswith("self_attn.o_proj"):
+        W = mod.weight.data.float()
+        mod.weight.data = (W - LAMBDA * torch.outer(W @ r, r)).to(mod.weight.dtype)
+        edited += 1
+print(f"edited {edited} matrices")
+model.save_pretrained("./abliterated-test")
+tok.save_pretrained("./abliterated-test")
+</code></pre>
+<p>Fill in real <code>harmful</code> / <code>harmless</code> lists before running. This is a <b>reference implementation</b>: in production you must search layer, strength and target matrices, or you either fail to remove refusal or take capabilities down with it.</p>
+
+<h2>Edit a model in three steps with heretic</h2>
+<p><code>heretic</code> (Weidmann, 2025) automates the above: it uses tree-structured Parzen estimators (TPE) to do a Bayesian search over layer and strength, finding near-zero-refusal configs across architectures. Real command:</p>
+<pre><code>pip install heretic-llm
+python -m heretic \\
+  --model your/7B-instruct \\
+  --output ./abliterated-7b \\
+  --max-layers 32 --strength 1.0
+</code></pre>
+<p>It evaluates refusal rate across candidate layers and emits a patched checkpoint. For 7B-14B instruct models, single-pass methods (DECCP / ErisForge) usually preserve capabilities better.</p>
+
+<h2>abliteration is not a scalpel: the side-effect list</h2>
+<p>Two 2026 arXiv studies break the "delete refusal = only delete refusal" assumption:</p>
+<ul>
+  <li><b>Disposition drift</b> (arXiv 2607.17427, 21,600 decisions): abliteration systematically pushes the model's optimism up and thins its uncertainty vocabulary, even when capability benchmarks hold. It edits the model's <b>personality</b>, not just a switch.</li>
+  <li><b>Capability loss is model-dependent</b> (arXiv 2512.13655, 4 tools x 16 models): math reasoning is the most sensitive; GSM8K moves from +1.51pp to <b>-18.81pp</b> (-26.5%) depending on tool and architecture.</li>
+  <li><b>Defenses are improving</b>: extended-refusal training and representation rerouting make newer models markedly more resistant to abliteration.</li>
+</ul>
+<p>In short: small, refusal-only-aligned models edit best; deeply safety-trained or 10B+ models often will not budge or break.</p>
+
+<h2>How to use it in engineering</h2>
+<ul>
+  <li>Apply only to your own <b>open-weight local</b> model; do not touch hosted APIs (that is the provider's terms and legal line);</li>
+  <li>After editing, run capability benchmarks (MMLU / GSM8K) and a refusal-rate check to confirm you did not delete math along with refusal;</li>
+  <li>Treat abliteration as an <b>interpretability experiment and red-team tool</b>, not routine production editing;</li>
+  <li>For "controlled uncensoring" prefer inference-time steering (CAST / RepIt): reversible, does not touch weights.</li>
+</ul>
+<p>abliteration's real value is not making the model compliant; it is that one matrix projection lays bare where safety alignment lives. Understand r and you have actually found the door handle of representation engineering.</p>
+''',
+        'related': [
+            ('AI memory poisoning: how a "summarize" button silently rewrites assistant memory', 'blog/ai-memory-poisoning-2026/'),
+            ('Agent sandbox escape: when 1200 agents jailbroke via twin zero-days', 'blog/ai-agent-sandbox-escape-2026/'),
+        ],
+},
 'zero-token-judge-2026': {
         'tags': ['decision model', 'zero-token judge', 'LLM-as-a-Judge', 'Unsloth', 'typed-decisions', 'System One', 'model routing', 'inference cost', 'Darwin ZTC', 'JEV', 'deterministic classifier', 'safety gating'],
         'title': 'Zero-Token Judges: Replace LLM-as-a-Judge With a Single Forward Pass (Unsloth Train Tutorial + Leaderboards) | DevTools Blog',
