@@ -220,8 +220,7 @@ TOOLS_EN = {
         'seealso': [
             ('Hex to Decimal / Binary', 'hex/'),
             ('Any-Base Converter', 'base/'),
-            ('Is the content I encode uploaded?',
-             'No. Base64, URL, Unicode, HTML entity and hex encoding/decoding all run in JavaScript in your browser. Your input never leaves the device and the tool works offline.'),
+            ('URL parser & query breakdown', 'url-parser/'),
         ],
     },
     'regex': {
@@ -289,12 +288,6 @@ TOOLS_EN = {
             ('Text diff tool', 'diff/'),
             ('Case converter (camel/snake/kebab)', 'case/'),
             ('UUID & random data generator', 'generator/'),
-            ('Are the pattern and text I test saved?',
-             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
-            ('Are the pattern and text I test saved?',
-             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
-            ('Are the pattern and text I test saved?',
-             'No. Matching runs locally in your browser; the page has no code that sends your pattern or test text to a server. You can keep testing offline (the first load needs the network for page resources).'),
         ],
 
     },
@@ -581,12 +574,6 @@ TOOLS_EN = {
             ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
             ('Blog: gofmt vs goimports, and how to wire them into CI', 'blog/gofmt-vs-goimports/'),
             ('JSON formatter & validator', './'),
-            ('Is my lookup recorded when I use the cheatsheet?',
-             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
-            ('Is my lookup recorded when I use the cheatsheet?',
-             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
-            ('Is my lookup recorded when I use the cheatsheet?',
-             'No. The cheatsheet is a fully static page — every command, variable and note is baked into the HTML at build time. There are no search logs, no query records and no accounts.'),
         ],
     },
     'string': {
@@ -722,12 +709,6 @@ TOOLS_EN = {
             ('Snowflake ID decoder & builder', 'snowflake/'),
             ('MD5 / SHA / HMAC hashing', 'hash/'),
             ('Text case & style converter', 'string/'),
-            ('Are generated passwords and random data recorded?',
-             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
-            ('Are generated passwords and random data recorded?',
-             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
-            ('Are generated passwords and random data recorded?',
-             'No. UUIDs, random passwords and QR codes are all generated locally in your browser. The page records nothing, sends no requests and has no accounts — it works offline.'),
         ],
 
     },
@@ -850,8 +831,7 @@ TOOLS_EN = {
         'seealso': [
             ('Hex to Binary / Decimal', 'hex/'),
             ('Any-Base Converter', 'base/'),
-            ('Are the color values I pick uploaded?',
-             'No. HEX / RGB / HSL parsing and conversion run entirely in your browser; the page has no code that sends color values anywhere. The picker only reads values you paste or type — it never touches your photo library.'),
+            ('Binary / decimal / octal converter', 'binary/'),
         ],
     },
     'case': {
@@ -897,8 +877,6 @@ TOOLS_EN = {
             ('Regex tester', 'regex/'),
             ('Go formatter online (gofmt)', 'gofmt-online/'),
             ('JSON formatter & validator', './'),
-            ('Is the text I convert uploaded?',
-             'No. Name-style detection and conversion run entirely in your browser; the page contains no code that sends your text anywhere. It works offline.'),
         ],
 
     },
@@ -949,8 +927,6 @@ TOOLS_EN = {
             ('Base64 / URL / Unicode codec', 'encode/'),
             ('Unix timestamp converter', 'timestamp/'),
             ('JSON formatter & validator', './'),
-            ('Is the token I parse uploaded?',
-             'No. JWT decoding and HS256 / 384 / 512 signature verification all run in your browser — the token never leaves your device. That matters most for production tokens with sensitive claims.'),
         ],
 
     },
@@ -1084,8 +1060,6 @@ TOOLS_EN = {
             ('JSON ↔ CSV / XML / YAML converter (JSON toolbox)', './'),
             ('JSON ↔ YAML converter', 'yaml/'),
             ('JSON ↔ TOML converter', 'toml/'),
-            ('Is my CSV data uploaded?',
-             'No. CSV parsing, viewing and JSON conversion all run in your browser — the data never leaves your device. Feel free to use it offline with exports that contain business data.'),
         ],
     },
     'batch': {
@@ -1127,8 +1101,6 @@ TOOLS_EN = {
             ('Unix Timestamp & Date Converter (single)', 'timestamp/'),
             ('Timestamp cheat sheet', 'timestamp-list/'),
             ('World time zones & current time', 'timezones/'),
-            ('Are the timestamps I batch-convert uploaded?',
-             'No. Batch parsing and date conversion run entirely in your browser; the page has no code that sends your timestamps anywhere. It works offline.'),
         ],
     },
     'timestamp-list': {
@@ -1168,12 +1140,7 @@ TOOLS_EN = {
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Batch timestamp conversion', 'batch/'),
-            ('Does this cheat sheet record my lookups?',
-             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
-            ('Does this cheat sheet record my lookups?',
-             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
-            ('Does this cheat sheet record my lookups?',
-             'No. The page is static HTML — today, this week, this month and other common timestamps are computed at build time and baked in. There are no lookup records and no accounts.'),
+            ('Cron expression generator', 'cron-generator/'),
         ],
     },
     'timezones': {
@@ -1215,8 +1182,7 @@ TOOLS_EN = {
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('World clock', 'world-clock/'),
-            ('Are the time zones I select uploaded?',
-             "No. Conversions use the browser's built-in time zone database locally; the page has no code that sends your city or time selections anywhere. It works offline."),
+            ('Countdown to a date', 'countdown/'),
         ],
     },
     'weeknumbers': {
@@ -1256,12 +1222,7 @@ TOOLS_EN = {
         'seealso': [
             ('Current day of the year', 'daynumbers/'),
             ('Leap years & days per year', 'years/'),
-            ('Are the dates I look up recorded?',
-             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
-            ('Are the dates I look up recorded?',
-             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
-            ('Are the dates I look up recorded?',
-             'No. Week-number calculation runs locally in your browser; the page has no code that sends your dates anywhere and keeps no lookup records.'),
+            ('Date add / subtract', 'date-calculator/'),
         ],
     },
     'daynumbers': {
@@ -1296,12 +1257,7 @@ TOOLS_EN = {
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
             ('Leap years & days per year', 'years/'),
-            ('Are the dates I look up recorded?',
-             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
-            ('Are the dates I look up recorded?',
-             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
-            ('Are the dates I look up recorded?',
-             'No. Day-of-year and day-remaining calculations run locally in your browser; the page has no code that sends your dates anywhere.'),
+            ('Date add / subtract', 'date-calculator/'),
         ],
     },
     'years': {
@@ -1338,12 +1294,7 @@ TOOLS_EN = {
         'seealso': [
             ('ISO 8601 week number', 'weeknumbers/'),
             ('Current day of the year', 'daynumbers/'),
-            ('Are the years I view recorded?',
-             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
-            ('Are the years I view recorded?',
-             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
-            ('Are the years I view recorded?',
-             'No. Calendar data is baked into the page at build time; paging and viewing happen locally, with no lookup records.'),
+            ('Date difference calculator', 'date-difference/'),
         ],
     },
     'world-clock': {
@@ -1387,8 +1338,7 @@ TOOLS_EN = {
         'seealso': [
             ('World time zones & current time', 'timezones/'),
             ('Unix Timestamp & Date Converter', 'timestamp/'),
-            ('Are the cities I add uploaded?',
-             'No. The world clock uses local system time and built-in time zone data. Your city list is kept only in browser localStorage — never synced to any server — and disappears when you clear your browser data.'),
+            ('Date add / subtract', 'date-calculator/'),
         ],
     },
     'countdown': {
@@ -1428,8 +1378,7 @@ TOOLS_EN = {
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Date difference', 'date-difference/'),
-            ('Are the countdowns I set uploaded?',
-             'No. Countdowns are computed locally in your browser and events are kept only in browser localStorage — never synced to any server.'),
+            ('Duration converter', 'duration/'),
         ],
     },
     'date-difference': {
@@ -1465,8 +1414,7 @@ TOOLS_EN = {
         'seealso': [
             ('Date add / subtract', 'date-calculator/'),
             ('Countdown', 'countdown/'),
-            ('Are the dates I calculate with uploaded?',
-             'No. Date-difference calculation runs locally in your browser; the page has no code that sends your dates anywhere. It works offline.'),
+            ('ISO week numbers', 'weeknumbers/'),
         ],
     },
     'date-calculator': {
@@ -1505,8 +1453,7 @@ TOOLS_EN = {
         'seealso': [
             ('Date difference', 'date-difference/'),
             ('Leap years & days per year', 'years/'),
-            ('Are the dates I calculate with uploaded?',
-             'No. Date arithmetic runs locally in your browser; the page has no code that sends your dates anywhere. It works offline.'),
+            ('Day of the year', 'daynumbers/'),
         ],
     },
     'duration': {
@@ -1548,8 +1495,7 @@ TOOLS_EN = {
         'seealso': [
             ('Unix Timestamp & Date Converter', 'timestamp/'),
             ('Date difference', 'date-difference/'),
-            ('Are the durations I calculate with uploaded?',
-             'No. ISO 8601 duration and seconds conversion runs locally in your browser; the page has no code that sends your durations anywhere.'),
+            ('Date add / subtract', 'date-calculator/'),
         ],
     },
     'uuid': {
@@ -1587,12 +1533,6 @@ TOOLS_EN = {
             ('Unix Timestamp and Date Converter', 'timestamp/'),
             ('Snowflake ID parser', 'snowflake/'),
             ('MongoDB ObjectId parser', 'objectid/'),
-            ('Are generated UUIDs recorded?',
-             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
-            ('Are generated UUIDs recorded?',
-             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
-            ('Are generated UUIDs recorded?',
-             'No. UUIDs are generated locally in your browser with cryptographically secure randomness. The page records nothing and sends no requests — it works offline.'),
         ],
     },
     'snowflake': {
@@ -1630,8 +1570,6 @@ TOOLS_EN = {
             ('Twitter and X ID decoder', 'tid/'),
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
-            ('Is the Snowflake ID I parse uploaded?',
-             'No. Decoding and building Snowflake IDs run entirely in your browser; the page has no code that sends your IDs anywhere. It works offline.'),
         ],
     },
     'tid': {
@@ -1666,8 +1604,7 @@ TOOLS_EN = {
         'seealso': [
             ('Snowflake ID decoder', 'snowflake/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
-            ('Is the ID I parse uploaded?',
-             'No. ID-to-creation-time conversion runs locally in your browser; the page has no code that sends your IDs anywhere.'),
+            ('MongoDB ObjectId parser', 'objectid/'),
         ],
     },
     'objectid': {
@@ -1702,8 +1639,7 @@ TOOLS_EN = {
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
-            ('Is the ObjectId I parse uploaded?',
-             'No. Decoding and generating ObjectIds run entirely in your browser; the page has no code that sends your IDs anywhere. It works offline.'),
+            ('Snowflake ID decoder', 'snowflake/'),
         ],
     },
     'firebase': {
@@ -1739,6 +1675,7 @@ TOOLS_EN = {
         'seealso': [
             ('UUID parser and generator', 'uuid/'),
             ('Unix Timestamp and Date Converter', 'timestamp/'),
+            ('Twitter / X ID decoder', 'tid/'),
         ],
     },
     'base': {
@@ -1777,8 +1714,6 @@ TOOLS_EN = {
             ('Hexadecimal Converter', 'hex/'),
             ('Text and Hex encoder', 'encode/'),
             ('Hex to RGB color', 'color/'),
-            ('Are the numbers I convert uploaded?',
-             'No. Any-base parsing and conversion run locally in your browser; the page has no code that sends your numbers anywhere. It works offline.'),
         ],
     },
     'binary': {
@@ -1814,8 +1749,6 @@ TOOLS_EN = {
             ('Any-Base Converter', 'base/'),
             ('Hexadecimal Converter', 'hex/'),
             ('Text and Hex encoder', 'encode/'),
-            ('Are the numbers I convert uploaded?',
-             'No. Binary/decimal conversion runs locally in your browser; the page has no code that sends your numbers anywhere.'),
         ],
     },
     'hex': {
@@ -1852,8 +1785,6 @@ TOOLS_EN = {
             ('Binary Converter', 'binary/'),
             ('Text and Hex encoder', 'encode/'),
             ('Hex to RGB color', 'color/'),
-            ('Is the hex I convert uploaded?',
-             'No. Hex to decimal/binary conversion runs locally in your browser; the page has no code that sends your values anywhere.'),
         ],
     },
     'snippets': {
@@ -1913,12 +1844,6 @@ TOOLS_EN = {
             ('Code formatter (HTML / CSS / JS / SQL)', 'formatter/'),
             ('JSON formatter & validator', './'),
             ('Any-Base Converter', 'base/'),
-            ('Does using the snippet library record my actions?',
-             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
-            ('Does using the snippet library record my actions?',
-             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
-            ('Does using the snippet library record my actions?',
-             'No. Snippets are baked into the page at build time, and copying only writes to your clipboard — the page records no copy actions and sends no requests.'),
         ],
     },
     'sql-formatter': {
