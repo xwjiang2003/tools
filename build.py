@@ -252,7 +252,8 @@ HTML_LANG = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
 
 # ---- 多语言通用配置（消除所有 `if lang=='en'` 硬编码）----
 DEFAULT_LANG = 'zh'                  # 根语言：URL 无前缀
-XDEFAULT_LANG = 'zh'                 # hreflang x-default 指向
+XDEFAULT_LANG = 'en'                 # hreflang x-default 指向：非中文地区用户默认落到英文版，
+                                     # 避免把全球流量导向中文页（中文版仍由 hreflang="zh-CN" 明确声明）
 LANG_DIRS = {L: ('' if L == DEFAULT_LANG else L + '/') for L in LANGS}  # 每语言目录前缀
 HREFLANG_CODE = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
                  'pt-BR': 'pt-BR', 'fr': 'fr', 'de': 'de', 'ru': 'ru', 'id': 'id'}

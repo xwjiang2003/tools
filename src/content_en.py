@@ -282,6 +282,30 @@ TOOLS_EN = {
              'a server.'),
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
+            ('What is a regex that matches an email address?',
+             '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$ covers the '
+             'practical cases. The full RFC 5322 pattern is several times '
+             'longer and still cannot tell you whether the mailbox exists, '
+             'so most production systems validate with the short form and '
+             'confirm ownership by sending a mail.'),
+            ('How do I use capture groups in the replacement?',
+             'Wrap the part you want with parentheses, then reference it in '
+             'the replacement as $1, $2 in JavaScript and PHP, or \\1, \\2 in '
+             'Python and sed. Named groups (?<year>...) are referenced as '
+             '$<year> in JavaScript and \\g<year> in Python, which stays '
+             'readable once a pattern grows.'),
+            ('Why does my pattern work in one language but not another?',
+             'Dialects differ. JavaScript supports lookbehind only in recent '
+             'engines, Python needs (?P<name>...) instead of (?<name>...), '
+             "and \\d matches non-ASCII digits under Python's Unicode mode "
+             'but not in JavaScript without the u flag. Test in the target '
+             'flavour, not just in a generic tester.'),
+            ('Can I test a regex without sending my pattern and text to a server?',
+             'Yes - every match on this page runs in your browser through '
+             'the built-in engine, so the pattern and the test text never '
+             'leave the device. The page has no endpoint that receives them, '
+             'and it keeps working with the network disconnected after the '
+             'first load.'),
         ],
         'seealso': [
             ('Text case & style converter', 'string/'),
@@ -352,6 +376,29 @@ TOOLS_EN = {
              'timezone switcher to confirm.'),
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
+            ('How do I convert a 13-digit timestamp to a date?',
+             'A 13-digit value counts milliseconds, not seconds. Divide by '
+             '1000 first, or paste it straight into the box above - the unit '
+             'is detected from the digit count, so 1700000000000 becomes '
+             '2023-11-14 22:13:20 UTC rather than a date in the year 55840.'),
+            ('How do I get the current Unix timestamp in JavaScript, Python or Bash?',
+             'JavaScript: Math.floor(Date.now() / 1000), or Date.now() alone '
+             'for milliseconds. Python: int(time.time()). Bash: date +%s, '
+             'and date +%s%3N for milliseconds. All three return UTC '
+             'seconds, so they agree with the live clock at the top of this '
+             'page.'),
+            ('Why does my timestamp turn into 1970 or a year far in the future?',
+             'The unit is mismatched. Reading a seconds value as '
+             'milliseconds lands you in January 1970; reading a milliseconds '
+             'value as seconds pushes the year tens of thousands ahead. A '
+             'raw 0 means the field was never set - a very common cause of '
+             '1970-01-01 in database rows.'),
+            ('Can I convert a timestamp in Excel or Google Sheets?',
+             'For seconds use =(A1/86400)+DATE(1970,1,1) and format the cell '
+             'as date-time; for milliseconds divide by 86400000 instead. '
+             "Excel's own serial dates start in 1900, which is why a bare "
+             'number pasted from an API never displays as a readable date on '
+             'its own.'),
         ],
         'seealso': [
             ('Cron expression generator', 'cron-generator/'),
@@ -921,6 +968,30 @@ TOOLS_EN = {
              'displays; whether a token is accepted is always up to your server.'),
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
+            ('How do I decode a JWT without the secret?',
+             'The header and payload are only base64url-encoded, not '
+             'encrypted, so anyone holding the token can read them - that is '
+             'why secrets must never be stored in claims. Decoding proves '
+             'nothing about authenticity; only verifying the signature with '
+             'the key (or public key) does.'),
+            ('What is the difference between HS256 and RS256?',
+             'HS256 is symmetric: the same secret signs and verifies, so '
+             'every party that can verify can also forge. RS256 is '
+             'asymmetric: a private key signs and the matching public key '
+             'verifies, so a resource server can check tokens without being '
+             'able to mint them.'),
+            ('Why does my JWT fail signature verification?',
+             'Usual causes: the token was URL-decoded and lost its base64url '
+             'alphabet, the secret was entered as text but the issuer used '
+             'its hex or base64 bytes, the alg in the header does not match '
+             'the key type, or the token was truncated by a proxy header '
+             'limit.'),
+            ('How do I check whether a JWT has expired?',
+             'Compare the exp claim, which is a Unix timestamp in seconds, '
+             'against the current time. Leave a minute of clock skew, and '
+             'treat nbf (not before) and iat (issued at) the same way. An '
+             'expired token still decodes fine - expiry is a validation '
+             'rule, not part of the encoding.'),
         ],
         'seealso': [
             ('MD5 / SHA / HMAC hashing', 'hash/'),
@@ -1708,6 +1779,29 @@ TOOLS_EN = {
             ('Are fractions supported?', 'Only integers for now; fractional base conversion is error-prone and rarely needed.'),
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
+            ('How do I convert decimal to binary by hand?',
+             'Divide repeatedly by 2 and read the remainders bottom-up: 156 '
+             'gives 0, 0, 1, 1, 1, 0, 0, 1, so the answer is 10011100. The '
+             'reverse direction is quicker with place values - 128 + 16 + 8 '
+             '+ 4 lands on the same byte without any division.'),
+            ('What is the difference between base 2, 8, 10 and 16?',
+             'Only the size of the digit set changes. Base 2 uses two '
+             'digits, base 8 eight, base 10 ten and base 16 sixteen (0-9 '
+             'plus A-F). One hex digit maps exactly to four binary bits and '
+             'one octal digit to three, which is why those two are used as '
+             'shorthand for binary.'),
+            ('Why does base64 look like a number base but is not one?',
+             'Base64 is not positional notation - it groups bytes into '
+             'six-bit chunks and maps each chunk to one of 64 printable '
+             'characters so binary data can travel through text channels. '
+             'The value does not grow or shrink by a factor of 64, it only '
+             'grows by about a third through padding.'),
+            ('How do I convert a negative number or a fraction?',
+             "Negative integers are stored in two's complement, so -1 in a "
+             '32-bit word is all ones, not a minus sign. Fractions use '
+             'negative powers of the base after the point, and many decimal '
+             'fractions - 0.1 for instance - repeat forever in binary, which '
+             'is why float comparisons need a tolerance.'),
         ],
         'seealso': [
             ('Binary Converter', 'binary/'),
@@ -1779,6 +1873,26 @@ TOOLS_EN = {
             ('Why are upper and lower case both fine?', 'Hex digits a-f are case-insensitive, so the tool accepts either.'),
             ('Does this page collect my data?',
              'No. The content is either baked into the HTML at build time or every calculation runs locally in your browser, so your input is never sent to any server. Apart from the footer traffic counters (Baidu Analytics and our self-hosted visitor counter, see the privacy policy), this site collects nothing about your visit.'),
+            ('How do I convert hex to RGB?',
+             'Split #A1B2C3 into pairs and read each pair as a decimal byte: '
+             'A1 is 161, B2 is 178 and C3 is 195, so the colour is rgb(161, '
+             '178, 195). Three-digit shorthand like #ABC expands to #AABBCC '
+             'before the same conversion.'),
+            ('What does the 0x prefix mean?',
+             'It marks a hexadecimal literal in C, JavaScript, Python and '
+             'most other languages: 0x1F is 31 and 0xFF is 255. The prefix '
+             'exists so the compiler does not confuse 0x10 (sixteen) with '
+             'the decimal number 10.'),
+            ('Why is hex used for colours and memory addresses?',
+             'Because one byte is exactly two hex digits, addresses and '
+             'colour channels line up on clean boundaries - 0xFF0000 is a '
+             'full red channel with nothing in the other two. Decimal would '
+             'need three digits per byte and leave the alignment unreadable.'),
+            ('How do I read a negative hex value?',
+             "As two's complement: within a 32-bit field 0xFFFFFFFF is -1 "
+             'and 0xFFFFFFFE is -2, because the top bit carries the sign. '
+             'Whether a value is negative therefore depends on the declared '
+             'width, not on the digits alone.'),
         ],
         'seealso': [
             ('Any-Base Converter', 'base/'),
