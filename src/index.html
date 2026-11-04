@@ -11,7 +11,9 @@
 <title>{{TITLE}}</title>
 <meta name="description" content="{{DESCRIPTION}}">
 <meta name="keywords" content="{{KEYWORDS}}">
-<meta name="robots" content="index, follow">
+<!-- 收录策略：合规页 index；ko / id / pt-BR / ru 四语种页面仍可访问但标 noindex
+     （见 build.py 的 INDEX_LANGS 注释，2026-11-04 收敛） -->
+<meta name="robots" content="{{ROBOTS}}">
 <meta name="author" content="DevTools">
 <link rel="canonical" href="{{CANONICAL}}">
 <meta property="og:title" content="{{TITLE}}">
