@@ -33,6 +33,7 @@ ROOT = Path(__file__).parent
 try:
     from build import LANGS, EN, MSGS, DEFAULT_LANG, LANG_DIRS  # noqa: F401
     from build import TOOLS, tool_langs, SITE  # 单语言工具判定用
+    from build import INDEX_LANGS, NOINDEX_LANGS           # 收录语种白名单（收敛）
     from course import COURSE_LANGS                        # noqa: F401
     _HAS_BUILD = True
 except Exception:                                   # noqa: BLE001
@@ -41,6 +42,7 @@ except Exception:                                   # noqa: BLE001
     LANGS = ('zh', 'en')
     LANG_DIRS = {'zh': '', 'en': 'en/'}
     COURSE_LANGS = ('zh', 'en')
+    INDEX_LANGS, NOINDEX_LANGS = LANGS, ()
     EN, MSGS = {}, {'en': {}}
 
 CJK = re.compile(r'[\u4e00-\u9fff]')
@@ -98,6 +100,18 @@ def main():
 
     pages = [f for f in sorted(target.rglob('*.html')) if is_page_file(f, target)]
     errors = []
+
+    # 0) 收录/不收录分流（2026-11-04 语种收敛：ko / id / pt-BR / ru 标 noindex）
+    #    noindex 页不进 sitemap、不计入「sitemap 条数 == 页面数」，否则天天误报。
+    _ROBOTS_RE = re.compile(
+        r'<meta[^>]*name=["\']robots["\'][^>]*content=["\']([^"\']*)["\']', re.I)
+
+    def _indexable(f):
+        m = _ROBOTS_RE.search(f.read_text('utf-8'))
+        return not (m and 'noindex' in m.group(1).lower())
+
+    indexable = [f for f in pages if _indexable(f)]
+    noindexed = [f for f in pages if not _indexable(f)]
 
     # 1) 内联脚本语法
     # 单进程复用：当页面数很大（N 语言全量 ~755 页、上万段内联脚本）时，逐段 spawn
@@ -197,21 +211,31 @@ def main():
             canon_re = re.compile(
                 r'<link[^>]*rel=["\']canonical["\'][^>]*href=["\']([^"\']+)["\']', re.I)
             missing = []
-            for f in pages:
+            for f in indexable:
                 m = canon_re.search(f.read_text('utf-8'))
                 if not m:
                     missing.append(f'{f.relative_to(target)}(无canonical)')
                 elif m.group(1) not in loc_set:
                     missing.append(f'{f.relative_to(target)}({m.group(1)})')
-            ok = (n == len(pages)) and not missing
+            # 反向断言：noindex 页绝不能出现在 sitemap 里（矛盾信号）。
+            leaked = []
+            for f in noindexed:
+                m = canon_re.search(f.read_text('utf-8'))
+                if m and m.group(1) in loc_set:
+                    leaked.append(f'{f.relative_to(target)}')
+            ok = (n == len(indexable)) and not missing and not leaked
             print(f'  {"✅" if ok else "❌"} sitemap.xml 合法（索引 + {len(child_names)} 个子文件），'
-                  f'共 {n} 条 url（内容页面 {len(pages)} 个，中英各自成条）')
-            if n != len(pages):
-                errors.append(f'sitemap url 数 {n} != 页面数 {len(pages)}')
+                  f'共 {n} 条 url（可索引页 {len(indexable)} 个，noindex 页 {len(noindexed)} 个已排除）')
+            if n != len(indexable):
+                errors.append(f'sitemap url 数 {n} != 可索引页数 {len(indexable)}')
             if missing:
                 shown = '、'.join(missing[:5])
                 more = f' …等 {len(missing)} 个' if len(missing) > 5 else ''
                 errors.append(f'{len(missing)} 个页面 canonical 不在 sitemap: {shown}{more}')
+            if leaked:
+                shown = '、'.join(leaked[:5])
+                more = f' …等 {len(leaked)} 个' if len(leaked) > 5 else ''
+                errors.append(f'{len(leaked)} 个 noindex 页混进了 sitemap: {shown}{more}')
             # Go 课程板块只发布 zh/en，hreflang 备用链接按 COURSE_LANGS 数校验；
             # 其余页面全站 8 语言 + x-default。
             # 路径 → 该路径可用的语言数；单语言工具（中文限定）页面本身没有
@@ -229,7 +253,9 @@ def main():
                         break
                 if rel in _mono_paths:
                     return 0
-                return len(COURSE_LANGS) + 1 if '/go-course/' in loc else len(LANGS) + 1
+                # 收敛后只数进索引的语种 + x-default
+                return (len(COURSE_LANGS) + 1 if '/go-course/' in loc
+                        else len(INDEX_LANGS) + 1)
 
             no_alt = [u.getElementsByTagName('loc')[0].firstChild.data
                       for u in urls
@@ -239,7 +265,7 @@ def main():
                 shown = '、'.join(no_alt[:3])
                 more = f' …等 {len(no_alt)} 个' if len(no_alt) > 3 else ''
                 errors.append(f'{len(no_alt)} 条 url 的 hreflang 备用链接数不符预期 '
-                              f'（课程页应 {len(COURSE_LANGS) + 1}，其余页应 {len(LANGS) + 1}）: {shown}{more}')
+                              f'（课程页应 {len(COURSE_LANGS) + 1}，其余页应 {len(INDEX_LANGS) + 1}）: {shown}{more}')
         except Exception as e:                                   # noqa: BLE001
             print(f'  ❌ sitemap.xml 解析失败: {e}')
             errors.append('sitemap.xml 非法')

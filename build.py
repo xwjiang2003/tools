@@ -247,6 +247,18 @@ ISSUES_URL = REPO_URL + '/issues'
 DISCUSSIONS_URL = REPO_URL + '/discussions'
 FEEDBACK_EMAIL = '278975598@qq.com'
 LANGS = ('zh', 'en', 'ja', 'ko', 'es', 'pt-BR', 'fr', 'de', 'ru', 'id')  # 阶段2 新增 8 语
+# ---- 收录语种白名单（2026-11-04 收敛）----
+# 10 个语种都会构建、都能访问、语言切换器里也都能选，但只有 INDEX_LANGS 进索引：
+#   * Bing 42 天数据里 ko / pt-BR / ru / id 合计曝光长期为 0，却吃掉了 Googlebot
+#     约 32% 的深页抓取预算（ko 84、ru 77、id 39、pt-BR 44，单位＝不同 URL 数）；
+#   * 这些语种对「时间戳 / 正则 / 进制」这类工具词几乎没有本地搜索需求，
+#     继续留在索引里只会稀释站点整体的语言相关性信号。
+# 处理方式（保守，不做 404/301，避免用户手上的链接失效）：
+#   noindex, follow 的 meta + 移出 sitemap + 移出 hreflang 集群（noindex 页不应出现在
+#   别人页面的 alternate 里，否则等于给搜索引擎一个矛盾信号）。
+# 想恢复某语种：把它加回 INDEX_LANGS 即可，其余逻辑全是派生的。
+INDEX_LANGS = ('zh', 'en', 'ja', 'es', 'fr', 'de')
+NOINDEX_LANGS = tuple(L for L in LANGS if L not in INDEX_LANGS)
 HTML_LANG = {'zh': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'es': 'es',
              'pt-BR': 'pt-BR', 'fr': 'fr', 'de': 'de', 'ru': 'ru', 'id': 'id'}
 
@@ -438,7 +450,8 @@ def canonical_url(lang, path):
 # ---------------------------------------------------------------- 页面片段
 
 def hreflang_html(path, langs=None):
-    langs = langs or LANGS
+    # 默认只列「进索引」的语种：noindex 页出现在 alternate 里等于自相矛盾
+    langs = langs or INDEX_LANGS
     links = []
     for L in langs:
         links.append('<link rel="alternate" hreflang="%s" href="%s">'
@@ -1114,8 +1127,11 @@ def render_home_body(lang):
     tx = HOME_TEXT.get(lang, HOME_TEXT['en'])
     labels = NAV_LABELS[lang]
     blurbs = TOOL_BLURBS.get(lang, TOOL_BLURBS['en'])
-    base = lang_prefix(lang, rel_root(lang, ''))
-    home_href = base or './'
+    # 门户页就位于 /<lang>/ 根目录，站内链接直接写相对路径（`json/`、`blog/`）即可。
+    # 用通用的 lang_prefix 会拼出 `../en/json/`：解析结果相同，但 sitemap/日志里
+    # 全是这种绕一圈的形态，排查死链时纯噪音。
+    base = ''
+    home_href = './'
     # 首页上实际列出的入口数：全部工具页 + 博客索引 +（仅 zh/en）Go 课程。
     # 与 llms.txt 的「工具数」口径不同是刻意的：首页说的是"这里有多少个入口"，
     # 而 llms.txt 报的是"有多少个带输入框的工具"，两者不应互相迁就。
@@ -1195,8 +1211,12 @@ def render_home_body(lang):
     for slug, icon in _HOME_QUICK:
         p.append(f'      <a class="home-quick-card" href="{esc(href_slug(slug))}">')
         p.append(f'        <span class="home-quick-ico">{_home_icon(icon)}</span>')
-        p.append(f'        <span class="home-quick-name">{esc(label_of(slug))}</span>')
-        p.append(f'        <span class="home-quick-desc">{esc(blurbs.get(slug, ""))}</span>')
+        # icon 与文案横向并排（icon 左、文字右），比原先"图标在上、文字在下"的
+        # 竖排更像应用目录，且同样高度能塞进更多信息。
+        p.append('        <span class="home-quick-body">')
+        p.append(f'          <span class="home-quick-name">{esc(label_of(slug))}</span>')
+        p.append(f'          <span class="home-quick-desc">{esc(blurbs.get(slug, ""))}</span>')
+        p.append('        </span>')
         p.append('      </a>')
     p.append('    </div>')
     p.append('  </section>')
@@ -1540,7 +1560,15 @@ def apply_common(page, lang, slug, path, title, description, keywords, body, seo
     page = page.replace('{{CANONICAL}}', canonical_url(lang, path))
     # mono=True：单语言页，不生成 hreflang 备用链接、语言切换器与浏览器语言自动跳转；
     # langs 限定该页可用的语言列表（默认全站语言）；课程板块传 COURSE_LANGS（仅 zh/en）。
-    page = page.replace('{{HREFLANG}}', '' if mono else hreflang_html(path, langs))
+    # index_langs：hreflang 集群里只保留进索引的语种（见 INDEX_LANGS 注释）；
+    # noindex 页自己也不出 hreflang，避免「noindex + alternate」这种矛盾指令。
+    index_langs = tuple(L for L in (langs or LANGS) if L in INDEX_LANGS)
+    if mono or lang in NOINDEX_LANGS or len(index_langs) < 2:
+        page = page.replace('{{HREFLANG}}', '')
+    else:
+        page = page.replace('{{HREFLANG}}', hreflang_html(path, index_langs))
+    page = page.replace('{{ROBOTS}}',
+                        'index, follow' if lang in INDEX_LANGS else 'noindex, follow')
     page = page.replace('{{AUTODETECT}}', '' if mono else autodetect_html(lang, path, langs))
     page = page.replace('{{LANGSWITCH}}', '' if mono else lang_switch_html(lang, path, langs))
     page = page.replace('{{ANALYTICS}}', analytics_html())
@@ -1665,7 +1693,13 @@ def build(clean=True, outdirs=None):
             else:
                 page_tpl = tpl_for(t['slug'])
                 body = (SRC / 'tools' / f'{t["slug"]}.html').read_text('utf-8').strip()
-            base = lang_prefix(lang, rel_root(lang, t['path']))
+            if t['slug'] == HOME_SLUG:
+                # 门户页就落在 /<lang>/ 根上，base 留空即可：链接直接写成 `json/`。
+                # 走通用公式会得到 `../en/json/`（解析结果一样，但多绕一圈，
+                # 爬虫日志里全是这种形态，排查死链时噪音很大）。
+                base = ''
+            else:
+                base = lang_prefix(lang, rel_root(lang, t['path']))
             home = base or './'
             c['_base'] = base     # seo_section 的「相关工具与阅读」链接要用
             seo_html = '' if t['slug'] == HOME_SLUG else seo_section(c)
@@ -1950,7 +1984,7 @@ def _sitemap_sections(news=None):
         lastmod = f'\n    <lastmod>{lastmod_day}</lastmod>' if lastmod_day else ''
         # 单语言工具（TOOL_LANGS 限定，如中文数字转大写）只有一版页面：
         # 既不生成 hreflang 备用链接，也只出 1 条 url，与页面数严格对齐。
-        plangs = _PATH_LANGS.get(p, LANGS)
+        plangs = _PATH_LANGS.get(p, INDEX_LANGS)
         if len(plangs) > 1:
             alternates = ''.join(
                 f'    <xhtml:link rel="alternate" hreflang="{HREFLANG_CODE[L]}" '
@@ -1988,7 +2022,9 @@ def _sitemap_sections(news=None):
 
 
 # 路径 → 可用语言元组；单语言工具在 sitemap 里只能出 1 条（否则条数与页面数不等）。
-_PATH_LANGS = {t['path']: tool_langs(t['slug']) for t in TOOLS if t['path']}
+# 2026-11-04 收敛后只列进索引的语种：noindex 页留在 sitemap 里是最典型的矛盾信号。
+_PATH_LANGS = {t['path']: tuple(L for L in tool_langs(t['slug']) if L in INDEX_LANGS)
+               for t in TOOLS if t['path']}
 
 
 def sitemap_files(news=None):
