@@ -50,6 +50,187 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'qwen-3-8-27b-laptop-judge-2026',
+        'category': 'ai',
+        'date': '2026-11-05',
+        'updated': '2026-11-05',
+        'tags': ['Qwen 3.8 27B', 'Qwen3.8-27B-fp8', '本地部署', 'LLM-as-judge', '模型评测', '量化', 'llama.cpp', 'vLLM', '开源模型', '裁判模型', '自偏好偏置', '消费级显卡'],
+        'title': 'Qwen 3.8 27B 上了笔记本：27B 模型能本地跑，还能当裁判审别的模型 | DevTools 博客',
+        'description': '2026-11-04 Hacker News 头条出现 "Qwen 3.8 27B on my laptop can interpret model weights, too"；更值得关注的是，在 Reflection Beam-1.0-501B 的安全基准里（Hugging Face 讨论 2026-11-04/05），作者专门用 Qwen3.8-27B-fp8 当独立裁判，让 5 个模型互不自己打分。本文拆开 27B 的量化账、本地部署命令，并给一份能直接跑的 "小开源模型当裁判" 脚本，把 LLM-as-judge 的自偏好偏置切断。',
+        'keywords': 'Qwen 3.8 27B 部署,Qwen 3.8 本地运行,Qwen3.8-27B-fp8 量化,27B 模型 笔记本 跑,llama.cpp 部署 Qwen 3.8,vLLM 部署 Qwen 3.8,LLM-as-judge 裁判 教程,小模型 当裁判 避免 自偏好,开源模型 评测 脚本,如何 用 开源模型 审 模型,AI 模型 基准 评测 实战,Qwen 3.8 推理 优化,消费级 显卡 跑 大模型',
+        'h1': 'Qwen 3.8 27B 上了笔记本：27B 模型能本地跑，还能当裁判审别的模型',
+        'summary': '2026-11-04 Hacker News 头条一条 "Qwen 3.8 27B on my laptop..." 不算新鲜，真正有意思的是另一处：Reflection Beam-1.0-501B 的安全基准专门用 Qwen3.8-27B-fp8 当独立裁判。一个能本地跑的 27B 模型，正在变成评测其它模型的尺子。本文给量化账、本地部署命令与可运行裁判脚本。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-11-04 Hacker News 头条出现一条 <b>"Qwen 3.8 27B on my laptop can interpret model weights, too"</b>——27B 模型在笔记本上跑本不稀奇，但更有用的信号在另一处：在 Reflection Beam-1.0-501B 的安全基准里（Hugging Face 讨论 2026-11-04/05），作者专门用 <b>Qwen3.8-27B-fp8</b> 当独立裁判，让 Beam、Gemma-4、Qwen3.8、GLM-4.7、Nemotron-3-Nano 这 5 个模型互不自己打分。一个能本地跑的 27B 模型，正在变成评测其它模型的"尺子"（源：Hacker News 2026-11-04 头条；Hugging Face Beam-1.0-501B 讨论区 2026-11-04/05）。</p>
+</blockquote>
+
+<h2>27B 为什么能塞进笔记本</h2>
+<p>参数量不是显存的唯一变量，精度才是。每个参数在 BF16 下占 2 字节，在 FP8 下占 1 字节，在 INT4/GGUF 下约 0.5 字节。所以同样是 27B：</p>
+<ul>
+  <li><b>BF16</b>：约 54GB，需要多卡或高显存；</li>
+  <li><b>FP8</b>：约 27GB，单张 24GB 卡（RTX 4090/5090）配 CPU 卸载即可；</li>
+  <li><b>INT4 / GGUF</b>：约 14GB，32GB 统一内存的 Mac 或 APU 直接跑。</li>
+</ul>
+<p>也就是说，今天一个普通开发者手里的消费级设备，已经能托管一个"够格当裁判"的中型开源模型。这跟半年前还要排队等 API 的局面完全不同。</p>
+
+<h2>拿来当裁判，比拿来聊天更有价值</h2>
+<p>LLM-as-judge 有个经典坑叫 <b>self-preference bias</b>：你让 GPT-4 评 GPT-4 的输出，它会偷偷偏爱自己的文风和句式。论文里反复验证过这一点。破解方法很简单——让一个<b>中立、且与被测模型不同族</b>的模型来打分。</p>
+<p>Beam 基准就是这么干的：5 个模型都交给同一个 <code>Qwen3.8-27B-fp8</code> 裁判，36 个挪威安全场景、180 个评分案例全部由它独立判，分数才有横向可比性（Beam 82.6、Gemma-4 72.2、Qwen3.8 自己 54.9）。注意一个细节：裁判模型自己也参与了被评，但因为它是"被别人请来打分"，不会给自己的输出额外加分——这正说明选一个不同族的第三方裁判有多关键。</p>
+
+<h2>本地把它跑起来</h2>
+<p>两种方式，任选。GGUF 量化版对笔记本最友好：</p>
+<pre><code># 方式一：llama.cpp 起 OpenAI 兼容服务（GGUF 量化版，单卡/统一内存可跑）
+llama-server -m ./qwen3.8-27b-fp8.gguf -ngl 99 -c 32768 -fa
+
+# 方式二：vLLM（HuggingFace 权重，需要较多显存或张量并行）
+vllm serve Qwen/Qwen3.8-27B-FP8 --tensor-parallel-size 4 --max-model-len 32768
+</code></pre>
+<p>起好之后就是一个标准 OpenAI 兼容端点，后面所有评测代码都能直接复用，不用改一行。</p>
+
+<h3>一个能直接跑的裁判脚本</h3>
+<p>把下面这段存成 <code>judge.py</code>，<code>base_url</code> 指向你本地起的服务。它对 A/B 两个回答各问 5 次取多数票，过滤单次 token 抖动：</p>
+<pre><code>import openai
+from collections import Counter
+
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+def judge(question, answer_a, answer_b):
+    prompt = (
+        "You are a strict evaluator. Given the question and two candidate answers, "
+        "reply with a single letter A or B for the better answer, then one short line of reason.\\n"
+        f"Question: {question}\\n"
+        f"Answer A: {answer_a}\\n"
+        f"Answer B: {answer_b}\\n"
+    )
+    r = client.chat.completions.create(
+        model="qwen3.8-27b",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0, max_tokens=200,
+    )
+    return r.choices[0].message.content.strip()[0]
+
+def vote(question, a, b, n=5):
+    counts = Counter(judge(question, a, b) for _ in range(n))
+    return counts.most_common(1)[0][0]
+
+if __name__ == "__main__":
+    print(vote("解释一下 TCP 三次握手。",
+               "客户端先发 SYN，服务端回 SYN-ACK，客户端再发 ACK。",
+               "它们握了三次手就建立了连接。"))
+</code></pre>
+<p>跑法：<code>pip install openai &amp;&amp; python judge.py</code>。把 <code>model</code> 换成你本地的实际模型名即可。<code>temperature=0</code> 保证可复现，<code>n=5</code> 多数票抵消偶发 hallucination。</p>
+
+<h2>几个落地取舍</h2>
+<ul>
+  <li>当裁判用 FP8 量化版足够，不必上 BF16——评测看的是相对排序，不是绝对精度；</li>
+  <li>裁判模型要和被测模型<b>不同族</b>，否则仍有隐性偏置（这也是 Beam 选 Qwen 当裁判而不是自家模型的原因）；</li>
+  <li>多跑几轮取多数票，单次 token 抖动会误导结论；</li>
+  <li>敏感代码别进云端裁判，本地起一个 27B 比把私有仓库发给厂商安全得多。</li>
+</ul>
+<p>大模型竞赛里，"谁更大"已经卷到没意思。一个能在你笔记本上跑、还能帮你审别的模型的 27B，才是普通开发者真正用得上的那把尺子。</p>
+''',
+        'related': [
+            ('长上下文 KV 缓存压缩：让 1M token 不再撑爆显存', 'blog/kv-cache-compression-long-context-2026/'),
+            ('Nemotron 3 Super 部署：120B 激活、1M 上下文的实战', 'blog/nemotron-3-super-2026/'),
+        ],
+},
+{
+        'slug': 'ai-coding-tools-data-training-privacy-2026',
+        'category': 'security',
+        'date': '2026-11-05',
+        'updated': '2026-11-05',
+        'tags': ['AI 编码工具', '数据隐私', 'Postman API 数据', 'Codex 训练开关', '遥测', '出站审计', 'API 密钥', '本地模型', '数据治理', '开发者安全', 'LLM 隐私', 'agent 安全'],
+        'title': '你的 AI 编码工具在拿什么训练？Postman 共享 API 数据、Codex 重开训练开关之后的自查清单 | DevTools 博客',
+        'description': '2026-11-04 Hacker News 两条头条叠在一起看才吓人：Postman 被指静默安装 AI 插件并试图共享用户全部 API 数据（1352 赞），另有用户指出 OpenAI 似乎在 Codex 对话上重新启用了训练开关（493 赞）。本文把"AI 工具的数据流向"当成一个工程问题，给一份可运行的自查清单：出站域名审计、遥测关闭、密钥红黑线、敏感代码走本地模型。',
+        'keywords': 'AI 编码工具 隐私,Postman API 数据 共享,Codex 训练 对话 开关,AI 工具 数据治理 自查,如何 检查 IDE 外联 域名,AI 助手 泄露 密钥 防范,本地 大模型 敏感代码,关闭 AI 工具 遥测 教程,开发者 数据 安全 清单,AI 编码 工具 数据 流向 审计,开源 模型 本地 部署 隐私,API 密钥 防泄漏',
+        'h1': '你的 AI 编码工具在拿什么训练？Postman 共享 API 数据、Codex 重开训练开关之后的自查清单',
+        'summary': '2026-11-04 Hacker News 两条头条：Postman 被指静默共享用户全部 API 数据（1352 赞）、OpenAI 似乎在 Codex 对话上重开训练开关（493 赞）。你交给 AI 编码工具的代码、密钥、对话，从来不是只存在本地。本文给一份能直接跑的自查清单。',
+        'body': '''
+<blockquote>
+  <p><b>一句话结论</b>：2026-11-04 Hacker News 两条头条叠在一起看才吓人——Postman 被指静默安装 AI 插件并试图共享用户<b>全部 API 数据</b>（1352 赞），另有用户指出 OpenAI 似乎在 Codex 对话上<b>重新启用了训练开关</b>（493 赞）。你交给 AI 编码工具的代码、密钥、对话，从来不是"只存在本地"（源：Hacker News 2026-11-04 当日头条榜；相关讨论为社区用户指认，非厂商官宣，下文按"被指称/据报道"措辞）。</p>
+</blockquote>
+
+<h2>数据到底流向哪</h2>
+<p>先把链路拆开，才知道该防哪一段：</p>
+<ul>
+  <li><b>遥测上报</b>：IDE / agent 默认把使用统计、崩溃栈、甚至编辑器内容摘要发回厂商；</li>
+  <li><b>云端模型调用</b>：你发给 Copilot / Codex / 各类云端 agent 的整个上下文——含 <code>.env</code>、密钥、私有仓库——都会离开本机；</li>
+  <li><b>训练开关</b>：厂商是否用你的对话去微调模型。云端 API 永远有这一层风险，本地模型没有。</li>
+</ul>
+<p>一句话区分：跑 Ollama / llama.cpp 的本地模型，数据不出机；走任何云端 API 的 agent，上下文都出了机。这不是 paranoia，是数据流向的物理事实。</p>
+
+<h2>第一步：先搞清楚你的工具在连谁</h2>
+<p>别信设置面板的"已禁用云"。直接看进程的真实出站连接。下面这段用 <code>psutil</code> 列出某个进程名的所有已建立 TCP 连接和反查域名，跑一次就知道你的 IDE 到底在跟哪些服务器说话：</p>
+<pre><code>import psutil, socket
+
+def outbound_of(proc_name):
+    out = []
+    for c in psutil.net_connections(kind="tcp"):
+        if c.status != "ESTABLISHED" or c.raddr is None:
+            continue
+        try:
+            p = psutil.Process(c.pid)
+        except psutil.NoSuchProcess:
+            continue
+        if proc_name.lower() in p.name().lower():
+            try:
+                host = socket.gethostbyaddr(c.raddr.ip)[0]
+            except Exception:
+                host = "(resolve failed)"
+            out.append((p.name(), c.raddr.ip, host, c.raddr.port))
+    return out
+
+# 监控你的 IDE / agent 进程名，例如 "code" / "cursor" / "jetbrains"
+for row in outbound_of("code"):
+    print(row)
+</code></pre>
+<p>跑法：<code>pip install psutil &amp;&amp; python audit_egress.py</code>。如果列表里出现一堆你不认识的境外域名，而你以为自己在"纯本地写代码"，那就该警惕了。</p>
+
+<h2>第二步：关掉能关的遥测</h2>
+<p>用 grep 把配置里的遥测 / 数据共享字段翻出来，逐项确认：</p>
+<pre><code># 在你的配置目录里搜常见遥测 / 数据共享键
+grep -rniE "telemetry|shareData|training|dataCollection|usageStats" \\
+  ~/.config/Code ~/.cursor ~/.config 2&gt;/dev/null
+
+# 常见硬开关示例（写入设置，按产品文档为准）
+# VS Code:    "telemetry.telemetryLevel": "off"
+# GitHub Copilot: 在设置里关闭 "GitHub Copilot: Enable", 并审查 "editor.agent"
+</code></pre>
+<p>注意：很多工具的"关闭云"只是关了补全，agent / 命令模式仍可能外联。审查要覆盖你实际使用的每个模式，而不是只看默认补全开关。</p>
+
+<h2>第三步：密钥与敏感代码的红线</h2>
+<p>agent 最常见的越权，是顺着工作区把密钥文件一起读走。先扫一遍有没有把密钥写进会被它读到的地方：</p>
+<pre><code># 扫工作区，看有没有把密钥落进会被 agent 读取的明文文件
+grep -rniE "sk-[a-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[a-z0-9]{20,}|xox[bap]-[0-9A-Za-z-]{10,}" \\
+  . --include=*.md --include=*.txt --include=*.json --include=*.env -l
+</code></pre>
+<p>三条硬规矩：密钥走环境变量（<code>export</code> 或 <code>.env</code> 且进 <code>.gitignore</code>），绝不写进 prompt 模板或会被读的文本；私有仓库跑 agent 前先确认出站域名；被 agent 碰过的密钥，定期轮换。</p>
+
+<h2>第四步：敏感代码走本地模型</h2>
+<p>涉及核心算法、密钥、未公开业务的代码，别让云端 agent 碰。本地起一个代码模型即可：</p>
+<pre><code># 本地代码模型（数据不出机）
+ollama run qwen2.5-coder:32b
+# 或 llama.cpp 起服务，当 OpenAI 兼容端点喂给本地 agent
+llama-server -m ./qwen2.5-coder-32b-q4.gguf -ngl 99 -c 32768
+</code></pre>
+
+<h2>取舍清单</h2>
+<ul>
+  <li>能用本地模型的不上云——这是唯一彻底的数据不出机方案；</li>
+  <li>云端 agent 跑之前先审出站域名，别只信 UI 上的"已禁用"；</li>
+  <li>密钥走环境变量，绝不进 prompt 文件或工作区明文；</li>
+  <li>定期轮换被 agent 碰过的密钥，把泄露窗口压到最小；</li>
+  <li>对"AI 帮你写代码"和"AI 有权拿走你的代码"两件事分开看——前者是生产力，后者要你自己管。</li>
+</ul>
+<p>工具帮你写代码，但不等于它有权拿走你的代码。把"数据流向"当成一个工程问题来管，比事后删账号省心得多。</p>
+''',
+        'related': [
+            ('AI 智能体沙箱逃逸与加固：从越狱到最小权限', 'blog/ai-agent-sandbox-escape-2026/'),
+            ('本地 MoE 服务：把 284B 模型搬上消费级硬件', 'blog/local-moe-serving-freetoken-colibri-2026/'),
+        ],
+},
+{
         'slug': 'kimi-k3-pro-1m-context-2026',
         'category': 'ai',
         'date': '2026-11-04',
