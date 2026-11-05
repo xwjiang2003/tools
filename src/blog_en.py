@@ -6,6 +6,179 @@
 """
 
 ARTICLES_EN = {
+'qwen-3-8-27b-laptop-judge-2026': {
+        'tags': ['Qwen 3.8 27B', 'Qwen3.8-27B-fp8', 'local deploy', 'LLM-as-judge', 'model eval', 'quantization', 'llama.cpp', 'vLLM', 'open model', 'judge model', 'self-preference bias', 'consumer GPU'],
+        'title': 'Qwen 3.8 27B Lands on the Laptop: Run a 27B Model Locally, Then Use It to Judge Other Models | DevTools Blog',
+        'description': 'On 2026-11-04 a Hacker News front-page item read "Qwen 3.8 27B on my laptop can interpret model weights, too". The more useful signal is elsewhere: in the Reflection Beam-1.0-501B safety benchmark (Hugging Face discussion 2026-11-04/05) the author used Qwen3.8-27B-fp8 as the sole impartial judge so five models never score themselves. This post breaks the 27B quantization math, the local serving commands, and ships a runnable small-open-model-as-judge script that kills LLM-as-judge self-preference bias.',
+        'keywords': 'Qwen 3.8 27B deploy,run Qwen 3.8 locally,Qwen3.8-27B-fp8 quantization,27B model on laptop,llama.cpp Qwen 3.8,vLLM deploy Qwen 3.8,LLM-as-judge tutorial,small model as judge self-preference,open model eval script,how to evaluate models with open model,AI benchmark eval hands-on,Qwen 3.8 inference optimization,consumer GPU run large model',
+        'h1': 'Qwen 3.8 27B Lands on the Laptop: Run a 27B Model Locally, Then Use It to Judge Other Models',
+        'summary': 'On 2026-11-04 a Hacker News headline "Qwen 3.8 27B on my laptop..." was not the interesting part. The interesting part: the Reflection Beam-1.0-501B safety benchmark used Qwen3.8-27B-fp8 as the sole impartial judge. A 27B model you can run locally is becoming the ruler you measure other models with. This post gives the quantization math, local serving commands, and a runnable judge script.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: On 2026-11-04 a Hacker News front-page item read <b>"Qwen 3.8 27B on my laptop can interpret model weights, too"</b> -- running a 27B model on a laptop is no longer news. The real signal is elsewhere: in the Reflection Beam-1.0-501B safety benchmark (Hugging Face discussion 2026-11-04/05) the author used <b>Qwen3.8-27B-fp8</b> as the sole impartial judge, so the five models (Beam, Gemma-4, Qwen3.8, GLM-4.7, Nemotron-3-Nano) never scored themselves. A 27B model you can host locally is turning into the ruler you measure other models with (sources: Hacker News front page 2026-11-04; Hugging Face Beam-1.0-501B discussion 2026-11-04/05).</p>
+</blockquote>
+
+<h2>Why 27B fits in a laptop</h2>
+<p>Parameter count is not the only driver of VRAM; precision is. At BF16 each parameter takes 2 bytes, at FP8 it takes 1 byte, at INT4/GGUF about 0.5 bytes. Same 27B model:</p>
+<ul>
+  <li><b>BF16</b>: about 54GB, needs multiple GPUs or high VRAM;</li>
+  <li><b>FP8</b>: about 27GB, a single 24GB card (RTX 4090/5090) with CPU offload is enough;</li>
+  <li><b>INT4 / GGUF</b>: about 14GB, a 32GB unified-memory Mac or APU runs it directly.</li>
+</ul>
+<p>So a normal developer's consumer hardware today can host a mid-size open model that is good enough to act as a judge. That is a different world from queuing for an API six months ago.</p>
+
+<h2>Using it as a judge beats using it to chat</h2>
+<p>LLM-as-judge has a classic trap called <b>self-preference bias</b>: ask GPT-4 to grade GPT-4's output and it quietly favors its own phrasing. Papers keep confirming this. The fix is simple -- let a <b>neutral model from a different family</b> do the scoring.</p>
+<p>That is exactly what the Beam benchmark did: all five models were graded by the same <code>Qwen3.8-27B-fp8</code> judge across 36 Norwegian safety scenarios and 180 graded cases, which is what makes the scores comparable (Beam 82.6, Gemma-4 72.2, Qwen3.8 itself 54.9). Note the detail: the judge model was also one of the evaluated models, but because it was brought in to score others, it did not add points to its own output -- which is the whole point of picking a third-party judge.</p>
+
+<h2>Run it locally</h2>
+<p>Two options. The GGUF quantized build is the friendliest for a laptop:</p>
+<pre><code># Option 1: llama.cpp as an OpenAI-compatible server (GGUF build, single card / unified memory)
+llama-server -m ./qwen3.8-27b-fp8.gguf -ngl 99 -c 32768 -fa
+
+# Option 2: vLLM (HuggingFace weights, needs more VRAM or tensor parallelism)
+vllm serve Qwen/Qwen3.8-27B-FP8 --tensor-parallel-size 4 --max-model-len 32768
+</code></pre>
+<p>Either way you get a standard OpenAI-compatible endpoint, so every evaluation snippet below reuses it without a change.</p>
+
+<h3>A runnable judge script</h3>
+<p>Save this as <code>judge.py</code> with <code>base_url</code> pointing at your local server. It asks A-vs-B five times and takes the majority vote to filter single-token jitter:</p>
+<pre><code>import openai
+from collections import Counter
+
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+def judge(question, answer_a, answer_b):
+    prompt = (
+        "You are a strict evaluator. Given the question and two candidate answers, "
+        "reply with a single letter A or B for the better answer, then one short line of reason.\\n"
+        f"Question: {question}\\n"
+        f"Answer A: {answer_a}\\n"
+        f"Answer B: {answer_b}\\n"
+    )
+    r = client.chat.completions.create(
+        model="qwen3.8-27b",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0, max_tokens=200,
+    )
+    return r.choices[0].message.content.strip()[0]
+
+def vote(question, a, b, n=5):
+    counts = Counter(judge(question, a, b) for _ in range(n))
+    return counts.most_common(1)[0][0]
+
+if __name__ == "__main__":
+    print(vote("Explain the TCP three-way handshake.",
+               "Client sends SYN, server replies SYN-ACK, client sends ACK.",
+               "They shook hands three times and the connection was up."))
+</code></pre>
+<p>Run: <code>pip install openai &amp;&amp; python judge.py</code>. Swap <code>model</code> for whatever your local model is actually named. <code>temperature=0</code> keeps it reproducible; <code>n=5</code> majority vote absorbs the occasional hallucination.</p>
+
+<h2>Practical trade-offs</h2>
+<ul>
+  <li>For judging, FP8 quantized is enough -- you care about relative ranking, not absolute precision;</li>
+  <li>The judge must be from a <b>different family</b> than the models under test, or the bias creeps back (that is also why Beam picked Qwen rather than its own model);</li>
+  <li>Run several rounds and take the majority vote; single-token jitter will mislead you;</li>
+  <li>Do not send sensitive code to a cloud judge -- spin up a local 27B, it is far safer than shipping a private repo to a vendor.</li>
+</ul>
+<p>In the race for "who is bigger" the novelty has worn off. A 27B model you can run on your laptop and that can grade other models is the ruler an ordinary developer actually reaches for.</p>
+''',
+        'related': [
+            ('Long-context KV cache compression: keep 1M tokens off the VRAM cliff', 'blog/kv-cache-compression-long-context-2026/'),
+            ('Nemotron 3 Super in production: 120B active, 1M context, hands-on', 'blog/nemotron-3-super-2026/'),
+        ],
+},
+'ai-coding-tools-data-training-privacy-2026': {
+        'tags': ['AI coding tool', 'data privacy', 'Postman API data', 'Codex training switch', 'telemetry', 'egress audit', 'API key', 'local model', 'data governance', 'developer security', 'LLM privacy', 'agent security'],
+        'title': 'What Are Your AI Coding Tools Training On? A Self-Audit Checklist After Postman Shared API Data and Codex Flipped Its Training Switch | DevTools Blog',
+        'description': 'Two 2026-11-04 Hacker News front-page items read together are alarming: Postman was accused of silently installing AI plugins and trying to share users\' entire API data (1352 points), and a user reported OpenAI appears to have re-enabled the training switch on Codex chats (493 points). This post treats "where your AI tool\'s data flows" as an engineering problem and ships a runnable self-audit: egress domain audit, telemetry opt-out, secret red lines, and a local-model fallback.',
+        'keywords': 'AI coding tool privacy,Postman API data sharing,Codex training switch,AI tool data governance audit,how to check IDE outbound domains,AI assistant leak API key prevent,local LLM sensitive code,disable AI tool telemetry tutorial,developer data security checklist,AI coding tool data flow audit,open model local deploy privacy,API key leak prevention',
+        'h1': 'What Are Your AI Coding Tools Training On? A Self-Audit Checklist After Postman Shared API Data and Codex Flipped Its Training Switch',
+        'summary': 'Two 2026-11-04 Hacker News headlines: Postman accused of silently sharing users\' entire API data (1352 points) and OpenAI reportedly re-enabling the training switch on Codex chats (493 points). The code, keys, and chats you hand to AI coding tools were never local-only. This post ships a runnable self-audit checklist.',
+        'body': '''
+<blockquote>
+  <p><b>TL;DR</b>: Two 2026-11-04 Hacker News front-page items read together are alarming -- Postman was accused of silently installing AI plugins and trying to share users' <b>entire API data</b> (1352 points), and a user reported OpenAI appears to have <b>re-enabled the training switch</b> on Codex chats (493 points). The code, keys, and chats you hand to AI coding tools were never "local only" (sources: Hacker News front page 2026-11-04; these are community-reported accusations, not vendor announcements, so the post phrases them as "was reported / accused").</p>
+</blockquote>
+
+<h2>Where does the data actually flow</h2>
+<p>Split the chain before you decide what to defend:</p>
+<ul>
+  <li><b>Telemetry</b>: IDEs and agents by default ship usage stats, crash stacks, even editor-content snippets back to the vendor;</li>
+  <li><b>Cloud model calls</b>: the entire context you send to Copilot, Codex, or any cloud agent -- including <code>.env</code>, keys, and private repos -- leaves the machine;</li>
+  <li><b>Training switch</b>: whether the vendor fine-tunes on your chats. Cloud APIs always carry this risk; local models do not.</li>
+</ul>
+<p>One-line rule: a local model on Ollama or llama.cpp keeps data on the machine; any cloud API agent ships the context off the machine. That is not paranoia, it is the physics of the data path.</p>
+
+<h2>Step 1: find out who your tool is actually talking to</h2>
+<p>Do not trust the settings panel that says "cloud disabled". Look at the process real outbound connections. This <code>psutil</code> snippet lists every established TCP connection for a process name and reverse-resolves the host, so one run shows which servers your IDE really reaches:</p>
+<pre><code>import psutil, socket
+
+def outbound_of(proc_name):
+    out = []
+    for c in psutil.net_connections(kind="tcp"):
+        if c.status != "ESTABLISHED" or c.raddr is None:
+            continue
+        try:
+            p = psutil.Process(c.pid)
+        except psutil.NoSuchProcess:
+            continue
+        if proc_name.lower() in p.name().lower():
+            try:
+                host = socket.gethostbyaddr(c.raddr.ip)[0]
+            except Exception:
+                host = "(resolve failed)"
+            out.append((p.name(), c.raddr.ip, host, c.raddr.port))
+    return out
+
+# Monitor your IDE / agent process name, e.g. "code" / "cursor" / "jetbrains"
+for row in outbound_of("code"):
+    print(row)
+</code></pre>
+<p>Run: <code>pip install psutil &amp;&amp; python audit_egress.py</code>. If the list shows foreign domains you did not expect while you thought you were "coding locally", that is your cue to worry.</p>
+
+<h2>Step 2: turn off the telemetry you can</h2>
+<p>Grep your config for telemetry and data-sharing keys, then confirm each one:</p>
+<pre><code># Search common telemetry / data-sharing keys in your config dirs
+grep -rniE "telemetry|shareData|training|dataCollection|usageStats" \\
+  ~/.config/Code ~/.cursor ~/.config 2&gt;/dev/null
+
+# Common hard switches (verify against each product docs)
+# VS Code:   "telemetry.telemetryLevel": "off"
+# GitHub Copilot: disable "GitHub Copilot: Enable" in settings, and review "editor.agent"
+</code></pre>
+<p>Watch out: in many tools "disable cloud" only turns off completion; the agent or command mode may still reach out. Audit every mode you actually use, not just the default completion toggle.</p>
+
+<h2>Step 3: red lines for keys and sensitive code</h2>
+<p>The most common agent over-reach is reading a key file along with the workspace. First scan for keys left in plaintext files an agent would read:</p>
+<pre><code># Scan the workspace for keys that may have landed in agent-readable plaintext
+grep -rniE "sk-[a-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[a-z0-9]{20,}|xox[bap]-[0-9A-Za-z-]{10,}" \\
+  . --include=*.md --include=*.txt --include=*.json --include=*.env -l
+</code></pre>
+<p>Three hard rules: keys go in environment variables (<code>export</code> or <code>.env</code> that is in <code>.gitignore</code>), never in prompt templates or readable text; review outbound domains before running a cloud agent on a private repo; rotate any key an agent has touched.</p>
+
+<h2>Step 4: keep sensitive code on a local model</h2>
+<p>For core algorithms, keys, and unreleased business code, do not let a cloud agent touch it. Spin up a local code model:</p>
+<pre><code># Local code model -- data never leaves the machine
+ollama run qwen2.5-coder:32b
+# Or serve via llama.cpp as an OpenAI-compatible endpoint for a local agent
+llama-server -m ./qwen2.5-coder-32b-q4.gguf -ngl 99 -c 32768
+</code></pre>
+
+<h2>Trade-off checklist</h2>
+<ul>
+  <li>Use a local model when you can -- it is the only way to keep data fully on the machine;</li>
+  <li>Audit outbound domains before running a cloud agent; do not trust the "disabled" UI label;</li>
+  <li>Keys go in env vars, never in prompt files or workspace plaintext;</li>
+  <li>Rotate keys an agent has touched, to shrink the leak window;</li>
+  <li>Treat "AI helps you write code" and "AI is allowed to take your code" as two separate things: one is productivity, the other you must manage yourself.</li>
+</ul>
+<p>Tools help you write code, but that does not grant them the right to take it. Managing the data path as an engineering problem beats deleting accounts after the fact.</p>
+''',
+        'related': [
+            ('AI agent sandbox escape and hardening: from jailbreak to least privilege', 'blog/ai-agent-sandbox-escape-2026/'),
+            ('Local MoE serving: putting a 284B model on consumer hardware', 'blog/local-moe-serving-freetoken-colibri-2026/'),
+        ],
+},
 'kimi-k3-pro-1m-context-2026': {
         'tags': ['Kimi K3.1 Pro', '1M context', '3T open weights', 'long-context serving', 'vLLM', 'KV cache', 'Kimi K3.1 Pro Highspeed', 'LLM deployment', 'Moonshot', 'long-document RAG', 'MoE', 'inference optimization'],
         'title': 'Kimi K3.1 Pro Goes Open Today: 3T Weights + 1M-Token Context, and How to Actually Serve It (vLLM + KV-Cache Math) | DevTools Blog',
