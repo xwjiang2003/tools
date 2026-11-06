@@ -6,6 +6,215 @@
 """
 
 ARTICLES_EN = {
+'openai-autonomous-vuln-discovery-2026': {
+        'tags': ['OpenAI', 'Linux kernel', 'LPE', 'autonomous vuln discovery', 'exploit generation', 'fuzzing', 'kernel security', 'patch generation', 'Cyber Model', 'Patch the Planet'],
+        'title': 'OpenAI Autonomous Vulnerability Pipeline Found 948 Linux LPE Exploits: Developer Self-Audit and Hardening Guide | DevTools Blog',
+        'description': 'On 2026-11-04 OpenAI published "A thousand fewer paths to root": an autonomous pipeline reproduced 1,724 Linux kernel vulnerabilities and produced 948 working local privilege-escalation exploits in one run, at a $1.21M API bill. This post breaks the discover-reproduce-exploit-patch funnel numbers and economics, then gives developers three things to ship today: a local LPE audit script, a syzkaller kernel-fuzz config, and a patch-window monitor.',
+        'keywords': 'OpenAI autonomous vulnerability discovery,Linux kernel LPE exploit,local privilege escalation detection,Linux privilege escalation fix,kernel fuzzing tutorial,autonomous pentest pipeline,syzkaller quickstart,how to audit Linux for privilege escalation,OpenAI Cyber Model,Patch the Planet vulnerability disclosure,CI runner privilege escalation defense,kernel hardening hands-on',
+        'h1': 'OpenAI Spent $1.2M to Produce 948 Linux Privilege-Escalation Exploits: Vulnerability Hunting Is Now a Pipeline',
+        'summary': 'OpenAI ran an autonomous pipeline that reproduced 1,724 Linux kernel vulnerabilities and produced 948 working local privilege-escalation exploits in one run, at a $1.21M API bill. This post breaks the funnel and economics, then gives developers three ship-today items: a local LPE audit script, a syzkaller kernel-fuzz config, and a patch-window monitor.',
+        'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On 2026-11-04 OpenAI published an engineering report titled "A thousand fewer paths to root". They ran an autonomous pipeline -- discover, reproduce, exploit, patch -- powered by an unreleased cyber model. In one mid-October run it reproduced 1,724 Linux kernel vulnerabilities and produced <b>948 working local privilege escalation (LPE) exploits</b>, at an API bill of $1,213,430, about $1,279 per working exploit (sources: OpenAI Engineering 2026-11-04; QbitAI "Linux kernel hit by 948 vulnerabilities" 2026-11-05).</p>
+</blockquote>
+
+<h2>Vulnerability hunting became a pipeline</h2>
+<p>Finding one kernel LPE used to mean a researcher staring at a subsystem for days. OpenAI turned it into a funnel: scout agents picked 5,034 audit targets (~2.8M lines, ~7% of the kernel); analyst agents produced 2,308 candidate bugs in ~12 hours; validation reproduced 1,724 in ~30 hours; the system then emitted 291 info-leak PoCs and 1,169 root exploits that variant analysis collapsed into 948 distinct patches. Candidate false-positive rate was only 3.1%.</p>
+
+<p>A few numbers worth keeping: the target VMs ran a <b>stock desktop distro with KASAN, SMEP/SMAP/KASLR and hardened usercopy all on</b> -- not a weakened lab box. Across the run the agents used at least 10 Linux exploitation techniques that outside kernel experts called new. An earlier run on GPT-5.6 Sol found 166 privilege escalations; three months and a hardening cycle later, the new model found more than five times as many novel ones.</p>
+
+<table>
+<thead><tr><th>Stage</th><th>Output</th><th>Time</th></tr></thead>
+<tbody>
+<tr><td>Scope</td><td>5,034 targets / ~2.8M LoC</td><td>--</td></tr>
+<tr><td>Discover</td><td>2,308 candidate bugs</td><td>~12h</td></tr>
+<tr><td>Reproduce</td><td>1,724 reproduced (74.7%)</td><td>~30h</td></tr>
+<tr><td>Exploit</td><td>291 leak PoCs + 1,169 root exploits -> 948 distinct patches</td><td>~10 days</td></tr>
+</tbody>
+</table>
+
+<h2>948 exploits is not 948 intrusions</h2>
+<p>Strip the hype first: these are <b>local privilege escalations, not remote code execution</b>. The exploit assumes you already hold an unprivileged account on the box. They do not get anyone in from the internet; they only cover the second half of every intrusion -- foothold to root. That half is what hurts most for multi-tenant hosts, CI/CD runners, shared bastions, container platforms and developer fleets, because grabbing a low-priv account is far easier than grabbing root.</p>
+
+<p>The more important number sits below the headline: the unit cost. Of the $1.21M, $775,929 went to the exploitation stage; a successful exploit averaged about $360, with the long tail burned on hard-to-trigger race conditions. OpenAI mapped historical bounty prices (Pwn2Own $20k, TyphoonPWN $70k) onto the 948 exploits for a hypothetical $18.9M-$66.3M valuation -- 16x to 55x the run cost. The dollar figures are self-reported and hypothetical; the direction is not. Vulnerability discovery and weaponization moved from craft to a line item you can put in a budget.</p>
+
+<h2>The human-in-the-loop failure is the most useful sentence</h2>
+<p>In an early run the pipeline claimed 200 working exploits; human review found 20 of them had reached root through <b>a different zero-day</b> than the one assigned. OpenAI fix was an independent check that each exploit actually uses its assigned vulnerability. That sentence holds for any team buying autonomous security tools: being able to reproduce a result and being able to explain correctly how you reproduced it are two different things. Demand reproducible exploits, accurate root cause, and independent re-validation -- not a pretty number.</p>
+
+<h2>The real risk is the patch window</h2>
+<p>IDC read cuts closer to the bone than the 948 count: the risk is not the 948, it is the window between discovery and the fix reaching production. During the 10 days the scan ran, OpenAI counted 100+ LPEs already patched or staged by other contributors, plus ~300 in public discussion. But an upstream patch is not the patch installed on your distro kernel. Multi-tenant hosts, CI runners, shared bastions, container platforms and developer machines are where you should be watching that window.</p>
+
+<h2>Three things you can do today</h2>
+<p>The model is not released, and you do not need to wait for it. All three below land today.</p>
+
+<h3>1) Audit local LPE footholds</h3>
+<p>This script does nothing but enumerate the common stepping stones on the box you run it on (as root). The output is your hardening checklist:</p>
+<pre><code># lpe_quick_audit.sh -- enumerate common local LPE footholds (audit only)
+set -u
+echo "== SUID/SGID binaries (classic privilege-escalation pivots) =="
+find / -type f -perm -4000 -exec ls -ld {} + 2>/dev/null | head -20
+find / -type f -perm -2000 -exec ls -ld {} + 2>/dev/null | head -20
+
+echo "== world-writable files owned by root =="
+find / -type f -perm -0002 -uid 0 2>/dev/null | head -20
+
+echo "== cron jobs writable by non-root but owned by root =="
+ls -l /etc/cron.d/ /etc/cron.daily/ 2>/dev/null | grep -v root
+
+echo "== running kernel vs available distro security update =="
+uname -r
+if command -v apt >/dev/null; then
+  apt list --upgradable 2>/dev/null | grep -i linux-image || echo "no pending kernel upgrade"
+fi
+</code></pre>
+<p>In the expected output, any SUID binary showing "-rwsr-xr-x root" on an old version, and any "-rw-rw-rw- root" world-writable file, are your top priorities. If the SUID list is long, triage by package name -- a lot of historical CVEs hide in old suid binaries.</p>
+
+<h3>2) Fuzz the kernel with syzkaller (research / security teams)</h3>
+<p>OpenAI used an internal pipeline; the public standard for kernel fuzzing is syzkaller. Minimal runnable config:</p>
+<pre><code>{
+  "target": "linux/amd64",
+  "http": "127.0.0.1:56741",
+  "workdir": "/tmp/syz-work",
+  "kernel_obj": "/path/to/linux-built",
+  "image": "/path/to/stretch.img",
+  "sshkey": "/path/to/stretch.id_rsa",
+  "syzkaller": "/path/to/syzkaller",
+  "procs": 8,
+  "type": "qemu"
+}
+</code></pre>
+<p>Build the kernel with KASAN, then <code>syz-manager -config my.cfg</code>. Crashes land in <code>/tmp/syz-work/crashes</code>. You need a symbolised kernel build and a qemu image -- half a day to stand up, but it is the cheapest way to answer "is this syscall path actually safe".</p>
+
+<h3>3) Watch the patch window</h3>
+<p>Scanning without patching is pointless. A minimal check of how far behind upstream you are:</p>
+<pre><code>import subprocess
+
+installed = subprocess.check_output(["uname", "-r"]).decode().strip()
+print("installed kernel:", installed)
+out = subprocess.run(["apt", "list", "--upgradable"],
+                     capture_output=True, text=True).stdout
+for line in out.splitlines():
+    if "linux-image" in line:
+        print("available upgrade:", line)
+</code></pre>
+<p>On Debian/Ubuntu, if "available upgrade" shows a <code>linux-image</code> while <code>uname -r</code> is still old, your patch window is open -- schedule the reboot and upgrade now. For multi-tenant and CI nodes, put this in cron and report daily.</p>
+
+<h2>Buy time with defense in depth</h2>
+<p>OpenAI own named defenses are isolation layers like Firecracker and gVisor: they shrink the blast radius of "unprivileged user to root" inside a small VM. For most teams the highest-leverage move is not chasing 948 CVEs, it is least privilege plus timely patching plus isolated execution -- and especially not running untrusted code on your CI runners. Vulnerabilities will be found by machines, faster and cheaper; the race is now about who patches first.</p>
+''',
+        'related': [
+            ('Autonomous agent sandbox escape: the OpenAI-Hugging Face jailbreak postmortem', 'blog/ai-agent-sandbox-escape-2026/'),
+            ('AI coding tools, data and training privacy: a developer self-check', 'blog/ai-coding-tools-data-training-privacy-2026/'),
+        ],
+},
+'ripple-65b-agentic-coding-2026': {
+        'tags': ['Ripple-65B', 'Ricursive', 'open-weight code model', 'agentic coding', 'Terminal-Bench', 'SWE-bench', 'dense Transformer', '65B model', 'local deploy'],
+        'title': 'Ripple-65B Preview: A 65B Dense Model Beats 8x-Larger Rivals on Agentic Coding at One-Tenth the Cost | DevTools Blog',
+        'description': 'On 2026-11-04 Ricursive released Ripple-65B Preview, a from-scratch 65B dense open-weight model that scored 80.52 on the agentic-coding benchmark Terminal-Bench 2.1, beating Reflection Beam 501B (80.1) and Muse Spark Open 816B (76.4) -- models 8-15x larger and Mixture-of-Experts -- at a reported $32M R&D cost, about one-tenth of the previous open-weight coding SOTA. This post breaks the dense-vs-MoE efficiency case and hardware math, then ships runnable vLLM serve commands and a minimal agentic-coding eval loop (sources: Ricursive 2026-11-04; Hacker News Day 317, 308 points; QbitAI/Jiqizhixin same-day on Tencent Hy4 and Baidu ERNIE 5.5 Flash Base).',
+        'keywords': 'Ripple-65B deploy,Ripple-65B Preview tutorial,Ricursive open-weight code model,65B model local deploy,vLLM serve Ripple-65B,SGLang Ripple-65B,agentic coding benchmark,Terminal-Bench 2.1,open source coding model eval,how to run coding agent loop,SWE-bench evaluation tutorial,dense Transformer code model',
+        'h1': 'Ripple-65B: How a 65B Dense Model Beat 500B+ MoEs on Coding Benchmarks',
+        'summary': 'Ripple-65B Preview from Ricursive uses a 65B dense architecture to beat 500B+ MoE rivals on agentic coding at roughly $32M R&D. This post ships vLLM serve commands and a runnable minimal coding-eval loop.',
+        'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On 2026-11-04 Ricursive released <b>Ripple-65B Preview</b> -- a from-scratch, 65B dense open-weight model that scored 80.52 on the agentic-coding benchmark Terminal-Bench 2.1, beating Reflection Beam 501B (80.1) and Muse Spark Open 816B (76.4), models 8-15x larger and Mixture-of-Experts. Total R&D was about $32M, which Ricursive claims is roughly one-tenth of the previous open-weight coding SOTA (sources: Ricursive release page 2026-11-04; Hacker News Day 317 front page, 308 points; QbitAI / Jiqizhixin same-day coverage of Tencent Hy4 and Baidu ERNIE 5.5 Flash Base going open).</p>
+</blockquote>
+
+<h2>How a dense model beat the MoEs</h2>
+<p>For a year the coding SOTA leaderboard was almost all MoE: Beam 501B, Muse Spark Open 816B, Inkling 975B, Nemotron 3 Ultra 550B -- all hundreds of billions of parameters. Ripple went the other way: a <b>dense Transformer</b>, 80 layers, d_model only 5120 (thin and deep). On NVIDIA hardware it hit 40% MFU with plain sharding -- no custom kernels, no quantization. The trade is that all 65B parameters activate, but it buys two things: simple train/serve infrastructure, and a model that fits on a single box.</p>
+
+<p>Why does dense end up cheaper? Ricursive credits a "Steep Ascent" reinforcement-learning strategy over brute-force scaling: a mixed RL recipe of truncated importance sampling, score centering and a linear length penalty, fed by a self-built synthetic-data pipeline (they bought no post-training data). They reached 80.5 on Terminal-Bench 2.1 with 1.4M rollouts -- about 70x fewer than Beam. In other words, the money went into training strategy and data quality, not parameter count.</p>
+
+<h2>What 80.52 on Terminal-Bench 2.1 actually means</h2>
+<p>Terminal-Bench measures completing multi-step tasks in a real terminal -- closer to agentic coding than patching a snippet. Ricursive own comparison (all vendor-reported):</p>
+<table>
+<thead><tr><th>Model</th><th>Params</th><th>Terminal-Bench 2.1</th></tr></thead>
+<tbody>
+<tr><td>Ripple-65B Preview</td><td>65B (dense)</td><td><b>80.52</b></td></tr>
+<tr><td>Reflection Beam</td><td>501B</td><td>80.1</td></tr>
+<tr><td>Meta Muse Spark Open</td><td>816B</td><td>76.4</td></tr>
+<tr><td>Thinking Machines Inkling</td><td>975B</td><td>63.8</td></tr>
+<tr><td>NVIDIA Nemotron 3 Ultra</td><td>550B</td><td>56.4</td></tr>
+</tbody>
+</table>
+<p>Sideways: Ripple scored 79.1 on SWE-bench Pro v2.0 Hard, 76.5 on SWE-bench Verified, 98.3 on AIME 2025, 90.5 on HMMT Feb 2026. Weak spots: SciCode 39.4, DeepSWE 1.1 44.3, GPQA Diamond 85.2. So do not treat it as a generalist -- it is a coding-agent-tuned specialist, fine at math and reasoning, weak at research-code generation. A 65B dense model beating 500B+ MoEs on coding says that task-designed training plus clean post-training can offset a parameter gap. That is a signal for every team training its own code model.</p>
+
+<h2>Where the weights are, and what hardware</h2>
+<p>Three checkpoints, all Apache 2.0: instruction-tuned BF16, an NVFP4 compressed build, and a BF16 base. Available on Hugging Face, Together AI, GMI Cloud and OpenRouter, with Fireworks following. The hardware math: BF16 is ~130GB of weights, 250 tok/s on 2x B200; the NVFP4 build fits a single DGX Spark-class machine. OpenRouter GMICloud endpoint lists $0.20 per million input tokens and $0.60 per million output tokens, but the served context is only 16K, not the advertised 1M -- for the 1M window you self-host.</p>
+
+<h2>This open-weight coding wave is not one vendor</h2>
+<p>Zoom out to China and the same week moved: QbitAI (2026-11-05) reported Tencent Hy4 traffic surge forced a 10x capacity expansion, with Hunyuan Hy4 ranked first among open models on the Arena leaderboard; Jiqizhixin noted Hy4 at second among domestic models on the AA list; Baidu open-sourced ERNIE 5.5 Flash Base on 11-05, topping same-size SOTA on several benchmarks. Together with the Qwen 3.8, Kimi K3.1 Pro and Nemotron 3 Super covered in prior weeks, open-weight coding/general models are moving from runs to does-the-job. The real question for developers is how to wire these into your coding workflow and measure how many tasks they actually close.</p>
+
+<h2>Hands-on: serve Ripple-65B as an OpenAI-compatible endpoint with vLLM</h2>
+<p>With 2x B200 (or ~140GB VRAM equivalent) it is locally servable. BF16 command:</p>
+<pre><code># BF16: ~130GB weight VRAM, two B200 via tensor parallelism
+vllm serve Ricursive/Ripple-65B-Preview-BF16 --tensor-parallel-size 2 --max-model-len 32768 --dtype bfloat16
+
+# NVFP4 compressed build: runs on a single DGX Spark-class machine
+vllm serve Ricursive/Ripple-65B-Preview-NVFP4 --tensor-parallel-size 1 --max-model-len 32768 --quantization nvfp4
+</code></pre>
+<p>Once up it is a standard OpenAI-compatible endpoint; every script below reuses it unchanged.</p>
+
+<h2>Hands-on: run a minimal agentic-coding eval loop</h2>
+<p>Scores are not enough; validate on your own repo. This script is a runnable minimal loop: read repo files, ask the model for a unified diff, <code>git apply</code> it, run the tests, judge PASS/FAIL. Point it at any OpenAI-compatible endpoint, including the Ripple you just served:</p>
+<pre><code>import os, subprocess, tempfile, shutil, openai
+
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+def list_py(repo, cap=30):
+    out = []
+    for root, _, names in os.walk(repo):
+        if ".git" in root:
+            continue
+        for n in names:
+            if n.endswith(".py") and len(out) < cap:
+                out.append(os.path.join(root, n))
+    return out
+
+def propose(repo, issue):
+    blocks = []
+    for f in list_py(repo):
+        content = open(f, encoding="utf-8").read()[:2000]
+        blocks.append("### " + f + chr(10) + "```python" + chr(10) + content + chr(10) + "```")
+    ctx = chr(10).join(blocks)
+    prompt = (
+        "Issue: " + issue + chr(10) +
+        "Write a UNIFIED DIFF (git apply format) that fixes it. Only the diff." + chr(10) +
+        "Repo:" + chr(10) + ctx
+    )
+    r = client.chat.completions.create(
+        model="ripple-65b", messages=[{"role": "user", "content": prompt}],
+        temperature=0, max_tokens=2000,
+    )
+    text = r.choices[0].message.content
+    i = text.find("diff --git")
+    return text[i:] if i != -1 else ""
+
+def run(repo, issue, test_cmd):
+    patch = propose(repo, issue)
+    with tempfile.TemporaryDirectory() as td:
+        shutil.copytree(repo, td, dirs_exist_ok=True)
+        p = subprocess.run(["git", "apply"], input=patch, cwd=td,
+                           capture_output=True, text=True)
+        if p.returncode != 0:
+            print("patch failed:" + chr(10), p.stderr); return
+        res = subprocess.run(test_cmd, shell=True, cwd=td,
+                             capture_output=True, text=True)
+        print("TEST", "PASS" if res.returncode == 0 else "FAIL")
+        print(res.stdout[-500:])
+
+if __name__ == "__main__":
+    run("/path/to/tiny-repo", "add() returns wrong sum", "python -m pytest -q")
+</code></pre>
+<p>Expected: the model returns a patch starting with <code>diff --git</code>; the script applies it and runs your <code>test_cmd</code>, then prints <code>TEST PASS</code> or <code>TEST FAIL</code>. Wire it into CI and run it per PR to turn how-much-did-the-model-fix into a tracked metric instead of a feeling.</p>
+
+<h2>Should you adopt it</h2>
+<p>If you already use open-weight models like Qwen, Kimi or Nemotron for coding, Ripple-65B belongs on your shortlist -- especially when you are card-constrained but want coding-specialist capability. But do not let 80.52 dazzle you: it is vendor-reported, on Terminal-Bench, against vendor-reported rivals; its weak spots (research code, 16K served context today) need your own stress test. The steady path: pull the weights, serve with vLLM, run the loop above on your real repos for a bake-off, and decide on cost-per-completed-task rather than leaderboard points.</p>
+''',
+        'related': [
+            ('Qwen 3.8 27B on the laptop, used as a judge', 'blog/qwen-3-8-27b-laptop-judge-2026/'),
+            ('Kimi K3.1 Pro open-weights: 3T params and a 1M-token context', 'blog/kimi-k3-pro-1m-context-2026/'),
+        ],
+},
 'qwen-3-8-27b-laptop-judge-2026': {
         'tags': ['Qwen 3.8 27B', 'Qwen3.8-27B-fp8', 'local deploy', 'LLM-as-judge', 'model eval', 'quantization', 'llama.cpp', 'vLLM', 'open model', 'judge model', 'self-preference bias', 'consumer GPU'],
         'title': 'Qwen 3.8 27B Lands on the Laptop: Run a 27B Model Locally, Then Use It to Judge Other Models | DevTools Blog',
