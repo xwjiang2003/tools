@@ -183,13 +183,20 @@ Bing 索引同时供 ChatGPT Search 检索，所以这一步对传统搜索和 A
 
 | 平台 | 入口 | 说明 |
 |------|------|------|
-| Google Search Console | <https://search.google.com/search-console> | 用「网域」或「网址前缀」添加 `https://devtools.help/`，验证码填进 `src/index.html` 预留的 `google-site-verification` 注释行 |
-| Bing 网站管理员工具 | <https://www.bing.com/webmasters> | 同上，用 `msvalidate.01`；也可直接导入 Search Console |
+| Google Search Console | <https://search.google.com/search-console> | 优先用**网域属性 + DNS TXT**（Spaceship 加一条 `TXT: google-site-verification=...`），无需改代码；若走「网址前缀」+ HTML 标记，见下方步骤 |
+| Bing 网站管理员工具 | <https://www.bing.com/webmasters> | 可从 Search Console 直接导入；或 `msvalidate.01` meta |
 | 百度搜索资源平台 | <https://ziyuan.baidu.com> | 用 `baidu-site-verification`，或把验证文件放进本仓库 `docs/` |
 
 > **验证按域名算**：换到 `devtools.help` 需要**重新验证**，旧 `github.io` 资源的验证不能复用。
 
-验证码拿到后，把 `src/index.html` 里对应那行注释取消并填入即可，重新 `python3 build.py` 后推送。
+**模板里不再预留验证占位注释**（2026-11-06 移除：那段注释被复制进全部 1150 个页面，占位符还反复被 SEO
+审计工具误报成「已存在但填错的 meta」）。三种验证方式按需选一种：
+
+1. **DNS TXT（推荐，GSC 网域属性）** —— 在 Spaceship DNS 加 TXT 记录，覆盖 http/https/www 全量，不动代码，也不用重新部署。
+2. **HTML 文件** —— 把 `googleXXXX.html` / `baidu_verify_xxx.html` 放进本仓库 `docs/`，`check.py` 已有
+   `VERIFY_PREFIXES` 白名单，不会把它当页面校验。
+3. **HTML 标记** —— 在 `src/index.html` 的 `</head>` 前临时加一行
+   `<meta name="google-site-verification" content="真实验证码">`，`python3 build.py` 后推送；验证通过后建议删掉（DNS TXT 已足够）。
 百度对 `github.io` 收录一向很差，不要期待太高。
 
 ### 关于「提交给大模型厂商」
