@@ -207,7 +207,7 @@ MODULES_EN = [
     },
 ]
 
-# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 33 集）。
+# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 34 集）。
 # 批量转换 + 构建后自动全量。
 PUBLISHED = (
     'm01-l01', 'm01-l02', 'm01-l03', 'm01-l04', 'm01-l05', 'm01-l06',
@@ -216,10 +216,10 @@ PUBLISHED = (
     'm03-l01', 'm03-l02', 'm03-l03', 'm03-l04', 'm03-l05', 'm03-l06',
     'm04-l01', 'm04-l02', 'm04-l03', 'm04-l04', 'm04-l05', 'm04-l06',
     'm04-l07', 'm04-l08',
-    'm05-l01', 'm05-l02', 'm05-l03', 'm05-l04',
+    'm05-l01', 'm05-l02', 'm05-l03', 'm05-l04', 'm05-l05',
 )
 
-# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-06 核对 33 集）
+# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-06 核对 34 集）
 VIDEO = {
     'm01-l01': 'https://www.bilibili.com/video/BV1CNa36HET6',
     'm01-l02': 'https://www.bilibili.com/video/BV19yaG6kEfi',
@@ -254,6 +254,7 @@ VIDEO = {
     'm05-l02': 'https://www.bilibili.com/video/BV13D4w6cEjC',
     'm05-l03': 'https://www.bilibili.com/video/BV1MaxS6REep',
     'm05-l04': 'https://www.bilibili.com/video/BV1QGxX6NEwv',
+    'm05-l05': 'https://www.bilibili.com/video/BV1sAxQ6pE7t',
 }
 
 # 中心页文案（按语言）

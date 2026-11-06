@@ -1,0 +1,163 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="alt-wrap">
+
+  <section class="alt-hero">
+    <div class="alt-hero-top">
+      <span class="alt-hero-label">{{TL:hero_label}}</span>
+      <div class="alt-units" role="group">
+        <button type="button" class="alt-unit active" data-unit="m">m</button>
+        <button type="button" class="alt-unit" data-unit="ft">ft</button>
+      </div>
+    </div>
+    <div class="alt-reading">
+      <span class="alt-value" id="altValue">—</span>
+      <span class="alt-mark" id="altMark">m</span>
+    </div>
+    <div class="alt-meta">
+      <span class="alt-acc" id="altAcc">{{TL:acc_unknown}}</span>
+      <span class="alt-status" id="altStatus">{{TL:st_idle}}</span>
+    </div>
+    <div class="alt-hero-actions">
+      <button type="button" class="btn btn-primary alt-btn" id="altBtn">{{TL:btn_start}}</button>
+    </div>
+    <p class="alt-hint" id="altHint">{{TL:hint_privacy}}</p>
+  </section>
+
+  <section class="alt-metrics">
+    <div class="alt-metric"><span class="alt-metric-k">{{TL:m_hacc}}</span><span class="alt-metric-v" id="mHacc">—</span></div>
+    <div class="alt-metric"><span class="alt-metric-k">{{TL:m_vacc}}</span><span class="alt-metric-v" id="mVacc">—</span></div>
+    <div class="alt-metric"><span class="alt-metric-k">{{TL:m_vspeed}}</span><span class="alt-metric-v" id="mVspeed">—</span></div>
+    <div class="alt-metric"><span class="alt-metric-k">{{TL:m_time}}</span><span class="alt-metric-v" id="mTime">—</span></div>
+  </section>
+
+  <section class="alt-cols">
+    <div class="alt-card">
+      <div class="alt-card-head">{{TL:sec_pos}}</div>
+      <dl class="alt-kv">
+        <div><dt>{{TL:r_ell}}</dt><dd id="rEll">—</dd></div>
+        <div><dt>{{TL:r_ortho}}</dt><dd id="rOrtho">—</dd></div>
+        <div><dt>{{TL:m_lat}}</dt><dd id="rLat">—</dd></div>
+        <div><dt>{{TL:m_lon}}</dt><dd id="rLon">—</dd></div>
+        <div><dt>{{TL:r_src}}</dt><dd id="rSrc">{{TL:v_none}}</dd></div>
+        <div><dt>{{TL:r_pts}}</dt><dd id="rPts">0</dd></div>
+      </dl>
+    </div>
+
+    <div class="alt-stack">
+    <div class="alt-card">
+      <div class="alt-card-head">
+        {{TL:baro_title}}
+        <span class="alt-badge" id="baroBadge">{{TL:baro_off}}</span>
+      </div>
+      <p class="alt-note" id="baroWhy">{{TL:baro_off_why}}</p>
+      <div class="alt-kv alt-kv-tight" id="baroBody" hidden>
+        <div><dt>{{TL:baro_p}}</dt><dd id="baroP">—</dd></div>
+        <div><dt>{{TL:baro_p0}}</dt><dd id="baroP0">—</dd></div>
+        <div><dt>{{TL:baro_h}}</dt><dd id="baroH">—</dd></div>
+      </div>
+      <div class="alt-cal" id="baroCal" hidden>
+        <label for="calH">{{TL:baro_cal_h}}</label>
+        <div class="alt-cal-row">
+          <input class="tl-input" id="calH" inputmode="decimal" autocomplete="off" spellcheck="false">
+          <button type="button" class="btn btn-sm" id="calBtn">{{TL:baro_cal_btn}}</button>
+        </div>
+        <p class="alt-note" id="calMsg" hidden></p>
+      </div>
+      <p class="alt-note" id="baroNote" hidden>{{TL:baro_note}}</p>
+    </div>
+
+    <div class="alt-card">
+      <div class="alt-card-head">{{TL:geo_title}}</div>
+      <div class="alt-geo-row">
+        <label for="geoN">{{TL:geo_n}}</label>
+        <input class="tl-input" id="geoN" inputmode="decimal" autocomplete="off" spellcheck="false" value="0">
+        <span class="alt-note alt-note-inline">{{TL:geo_hint}}</span>
+      </div>
+      <p class="alt-note" style="margin:0">{{TL:geo_note}}</p>
+    </div>
+    </div>
+  </section>
+
+  <section class="alt-card">
+    <div class="alt-card-head">
+      {{TL:chart_title}}
+      <span class="alt-chart-stats">
+        <span>{{TL:m_asc}} <b id="cAsc">0</b></span>
+        <span>{{TL:m_desc}} <b id="cDesc">0</b></span>
+        <span>{{TL:r_pts}} <b id="cPts">0</b></span>
+      </span>
+    </div>
+    <div class="alt-canvas-box">
+      <canvas id="altChart" height="170"></canvas>
+      <p class="alt-empty" id="chartEmpty">{{TL:chart_empty}}</p>
+    </div>
+  </section>
+
+  <section class="alt-actions">
+    <button type="button" class="btn btn-sm" id="expGpx">{{TL:act_gpx}}</button>
+    <button type="button" class="btn btn-sm" id="expCsv">{{TL:act_csv}}</button>
+    <button type="button" class="btn btn-sm" id="expClear">{{TL:act_clear}}</button>
+    <span class="alt-toast" id="altToast" hidden></span>
+  </section>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:tier_title}}</h3>
+    <p class="tl-note">{{TL:tier_note}}</p>
+    <div class="dt-scroll">
+      <table class="dt-table">
+        <thead><tr id="tierHead"></tr></thead>
+        <tbody id="tierBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:formula_title}}</h3>
+    <p class="tl-note">{{TL:formula_note}}</p>
+    <pre class="alt-formula">h  = 44330 × (1 − (P/P0)<sup>1/5.255</sup>)
+P0 = P / (1 − h/44330)<sup>5.255</sup></pre>
+  </div>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:pit_title}}</h3>
+    <div class="dt-scroll">
+      <table class="dt-table">
+        <tbody id="pitBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tl-sec">
+    <p class="tl-note" id="altFootNote">{{TL:hint_bg}}</p>
+  </div>
+</div>
+<script>
+(function () {
+  // 表头与说明表按语言注入（数据段），避免在模板里写死任何中文。
+  function fill() {
+    var L = window.__TL__ || {};
+    var head = document.getElementById('tierHead');
+    var body = document.getElementById('tierBody');
+    var pit = document.getElementById('pitBody');
+    var h = '';
+    var cols = L.tier_head || [];
+    for (var i = 0; i < cols.length; i++) h += '<th>' + escHtml(cols[i]) + '</th>';
+    if (head) head.innerHTML = h;
+    var rows = L.tier_rows || [];
+    var b = '';
+    for (var j = 0; j < rows.length; j++) {
+      b += '<tr><td>' + escHtml(rows[j][0]) + '</td><td class="tl-wrap">' + escHtml(rows[j][1]) +
+        '</td><td>' + escHtml(rows[j][2]) + '</td></tr>';
+    }
+    if (body) body.innerHTML = b;
+    var pr = L.pit_rows || [];
+    var p = '';
+    for (var k = 0; k < pr.length; k++) {
+      p += '<tr><td>' + escHtml(pr[k][0]) + '</td><td class="tl-wrap">' + escHtml(pr[k][1]) + '</td></tr>';
+    }
+    if (pit) pit.innerHTML = p;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

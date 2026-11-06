@@ -2741,6 +2741,88 @@ TOOLS_EN = {
             ('UUID generator', 'uuid/'),
         ],
     },
+    'altimeter': {
+        'path': 'altimeter/',
+        'nav': 'Altimeter',
+        'title': 'Online Altimeter - Live GPS Altitude and Accuracy in Your Browser | DevTools',
+        'description': (
+            'Measure your altitude in the browser: continuous GPS height, horizontal and vertical accuracy, '
+            'vertical speed, an elevation profile and one-click GPX or CSV export. The page states the real '
+            '10-30 m vertical error and explains why a barometer needs a native app. Coordinates are '
+            'processed locally and never uploaded.'
+        ),
+        'keywords': (
+            'altimeter online,gps altitude,elevation finder,measure altitude,altitude accuracy,'
+            'barometric altitude,elevation profile,gpx export'
+        ),
+        'h1': 'Online Altimeter (GPS Altitude with Honest Accuracy)',
+        'intro': [
+            'You reach a pass on a hike, or a viewpoint on a drive, and want to know how high you actually '
+            'are. Most altitude sites hand you a number and say nothing about the thirty metres it might be '
+            'off by. This page puts the error next to the number so you can judge whether it is good enough.',
+            'A phone browser can only obtain the ellipsoidal height from a single-point GNSS fix, which is '
+            'typically 10-30 m off vertically. Metre-level altitude has exactly one source: the barometer, '
+            'which only a native app can read. So the promise here is narrow and explicit: real GPS height, '
+            'real error bars, and a clear answer on what to do if that is not enough.',
+        ],
+        'features': [
+            ('Continuous, not a one-off snapshot',
+             'The position watcher keeps refreshing altitude, horizontal accuracy and vertical speed, so '
+             'walking a stretch reveals the trend instead of a single lucky sample.'),
+            ('Accuracy shown honestly',
+             'When the device reports no vertical accuracy, the page says "accuracy unknown" instead of '
+             'inventing a decimal place that hides the error.'),
+            ('Barometer detection',
+             'If the browser exposes AmbientPressureSensor the page reads it and can back-calculate the '
+             'sea-level reference P0 from a known altitude.'),
+            ('Optional geoid correction',
+             'Enter the EGM96 geoid undulation N to turn ellipsoidal height into orthometric height. Zero '
+             'by default, with the reason spelled out.'),
+            ('Elevation profile and export',
+             'A live altitude-versus-time curve, total ascent and descent, and one-click GPX or CSV export.'),
+            ('Everything local',
+             'Coordinates are computed in your browser only. Nothing is uploaded, no cookies are written, '
+             'and already-received data keeps displaying offline.'),
+        ],
+        'steps': [
+            'Press "Start measuring" and allow the location prompt.',
+            'Wait for the first fix. A cold start downloads the ephemeris, which takes seconds to tens of '
+            'seconds; until then the page shows a dash rather than 0 m.',
+            'Read the ± figure under the big number: that is the current vertical error range.',
+            'Walk a stretch, watch the profile build up, then export GPX (imports into most tracking apps) '
+            'or CSV.',
+        ],
+        'faq': [
+            ('Why is this altitude tens of metres off from the sign at the viewpoint?',
+             'They are different quantities. GPS reports a WGS-84 ellipsoidal height, while trail signs and '
+             'topographic maps use orthometric height above a national datum. The gap is the geoid '
+             'undulation, tens of metres across China. Add the 10-30 m vertical error of a single fix and a '
+             '30-40 m difference is entirely normal. The "geoid undulation N" field on this page performs '
+             'that conversion.'),
+            ('Why does accuracy sometimes read "unknown"?',
+             'It comes from the altitudeAccuracy field of the fix, and plenty of Android devices and some '
+             'desktop browsers never report it. Showing "unknown" beats printing an invented ±1 m: a false '
+             'precision is worse than no precision.'),
+            ('Can a web page read the phone barometer?',
+             'Usually not. AmbientPressureSensor is still experimental in Chromium and needs a flag, and '
+             'iOS Safari does not expose the barometer to web pages at all. The sensor is reachable only '
+             'from a native app (TYPE_PRESSURE on Android, CMAltimeter on iOS), where its resolution works '
+             'out to roughly 0.1-1 m.'),
+            ('Why a dash on first load instead of 0 m?',
+             'A cold start has to download the ephemeris before the first valid fix, which takes seconds to '
+             'tens of seconds. Showing 0 m during that window implies you are at sea level, so the page '
+             'stays blank until a real height arrives.'),
+            ('Can I import the track into Strava or Komoot?',
+             'Yes. The GPX 1.1 export carries ele and time on every point, which Strava, Komoot, Gaia and '
+             'Garmin Connect all accept. The CSV is for your own spreadsheet or script.'),
+        ],
+        'seealso': [
+            ('Map coordinate converter (WGS-84 / GCJ-02 / BD-09)', 'coordinate/'),
+            ('Unit converter', 'unit-converter/'),
+            ('Unix timestamp converter', 'timestamp/'),
+            ('JSON formatter', 'json/'),
+        ],
+    },
 
 }
 

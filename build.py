@@ -128,6 +128,7 @@ JS_MODULES = [
     'string-tools.js', 'generator.js', 'home.js',
     'cidr.js', 'user-agent.js', 'punycode.js', 'url-parser.js', 'coordinate.js',
     'number-to-chinese.js', 'markdown-table.js', 'unit-converter.js', 'htpasswd.js',
+    'altimeter.js',
 ]
 
 # ---------------------------------------------------------------- 按页资产裁剪（2026-10-19）
@@ -186,6 +187,7 @@ PAGE_MODULES = {
     'markdown-table': ('core.js', 'markdown-table.js'),
     'unit-converter': ('core.js', 'unit-converter.js'),
     'htpasswd': ('core.js', 'htpasswd.js'),
+    'altimeter': ('core.js', 'altimeter.js'),
     'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
     'blog': ('core.js',), 'go-course': ('core.js',),
     'privacy': (),
@@ -215,6 +217,7 @@ PAGE_CSS = {
     'sql-formatter': ('base',), 'markdown-to-html': ('base',),
     'string': ('base',),
     'generator': ('base', 'generator'),
+    'altimeter': ('base', 'altimeter'),
     'hotnews': ('base', 'hotnews'), 'go-cheatsheet': ('base', 'cheatsheet'),
     'snippets': ('base', 'snippets'), 'blog': ('base', 'blog'),
     'go-course': ('base', 'blog', 'course'),
@@ -672,7 +675,7 @@ NAV_GROUPS = [
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
     {'zh': 'ID / 标识', 'en': 'ID / Identifiers', 'slugs': ['uuid', 'snowflake', 'tid', 'objectid', 'firebase']},
     {'zh': '网络 / 域名', 'en': 'Network / Domain', 'slugs': ['cidr', 'url-parser', 'punycode', 'user-agent']},
-    {'zh': '换算 / 坐标', 'en': 'Convert / Geo', 'slugs': ['unit-converter', 'coordinate', 'number-to-chinese']},
+    {'zh': '换算 / 坐标', 'en': 'Convert / Geo', 'slugs': ['unit-converter', 'coordinate', 'altimeter', 'number-to-chinese']},
     {'zh': '速查表', 'en': 'Cheat Sheets', 'slugs': ['go-cheatsheet']},
 ]
 CONTENT_GROUP = {'zh': '内容', 'en': 'Content', 'slugs': ['hotnews', 'blog', 'go-course']}
@@ -733,6 +736,7 @@ TOOL_BLURBS = {
         'punycode': '中文等国际化域名与 xn-- Punycode 双向转换',
         'url-parser': '拆解 URL 各段，查询参数可改可删并即时重组',
         'coordinate': 'WGS-84 / GCJ-02 / BD-09 坐标互转，含偏移距离',
+        'altimeter': 'GPS 实时海拔与真实精度，可导出 GPX 轨迹',
         'number-to-chinese': '数字转中文读法与人民币大写，支持千万亿级',
         'markdown-table': '表格文本与 Markdown 表格互转，按显示宽度对齐',
         'unit-converter': '长度、质量、温度、数据量等 12 类单位换算',
@@ -787,6 +791,7 @@ TOOL_BLURBS = {
         'punycode': 'Convert internationalised domains to and from xn-- Punycode',
         'url-parser': 'Break a URL into parts and edit its query parameters live',
         'coordinate': 'WGS-84 / GCJ-02 / BD-09 coordinate conversion with offset distance',
+        'altimeter': 'Live GPS altitude with honest accuracy, exportable GPX tracks',
         'markdown-table': 'Tabular text to Markdown tables, aligned by display width',
         'unit-converter': 'Length, mass, temperature, data size and 8 more categories',
         'htpasswd': 'Generate htpasswd lines for Nginx / Apache basic auth',
@@ -1438,7 +1443,7 @@ def _jsonld_raw(graph):
 # 必须早于 time 组的覆盖定义）。
 CSS_GROUPS = ['base', 'home', 'json', 'diff', 'regex', 'generator', 'liveclock',
               'time', 'baseconv', 'worldclock', 'hotnews', 'cheatsheet',
-              'snippets', 'blog', 'course', 'evergreen', 'legal']
+              'snippets', 'blog', 'course', 'evergreen', 'altimeter', 'legal']
 
 # 模板处理结果按资产组合 memoize：756 个页面实际只有十几种
 # (modules, css_groups, keep_cdn) 组合，每组合只做一次字符串替换。
