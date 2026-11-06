@@ -23,6 +23,8 @@
 .alt-reading{display:flex;align-items:baseline;gap:10px;margin:2px 0 0}
 .alt-value{font-size:76px;font-weight:700;line-height:1;letter-spacing:-2px;color:var(--text);
   font-variant-numeric:tabular-nums;font-family:"JetBrains Mono","Consolas",monospace}
+/* 76px 粗体的 "—" 会画成一根黑条，像遮挡块。空值改成细的浅灰短横。 */
+.alt-value.is-empty{font-weight:400;color:var(--text-muted);opacity:.55;letter-spacing:0}
 .alt-mark{font-size:20px;font-weight:600;color:var(--text-secondary)}
 
 .alt-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;min-height:22px}

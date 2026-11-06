@@ -357,10 +357,12 @@ LABELS['zh'] = {
         'r_vacc': '垂直精度',
         'r_src': '数据来源',
         'r_time': '定位时刻',
-        'r_pts': '采样点',
+        'r_pts': '定位次数',
+        'c_pts': '海拔采样点',
         'v_gps': 'GNSS 单点解算',
         'v_baro': '气压计（已校准）',
         'v_none': '暂无',
+        'v_horiz': '仅水平定位',
         'baro_title': '气压计',
         'baro_on': '已接入',
         'baro_off': '读不到',
@@ -386,6 +388,7 @@ LABELS['zh'] = {
                     '需按位置查 EGM96 / EGM2008 格网值。本页不做插值，只应用你填的偏移量。',
         'chart_title': '高程剖面',
         'chart_empty': '开始测量后，这里会出现海拔随时间的曲线。',
+        'chart_noele': '定位已经进来了，但没有一条带海拔，剖面画不出来。',
         'chart_t': '时间',
         'chart_h': '海拔',
         'act_gpx': '导出 GPX',
@@ -396,6 +399,9 @@ LABELS['zh'] = {
         'msg_empty': '还没有轨迹数据',
         'msg_cleared': '已清空',
         'hint_privacy': '定位与计算全部在你的浏览器里完成，坐标不会上传，也不写 Cookie。',
+        'hint_noele': '这台设备只给了坐标，没给海拔。桌面浏览器的定位靠 WiFi / 基站推算'
+                      '（水平精度上百米时基本就是这种），本身没有高度值可报。'
+                      '换手机、到户外空旷处打开，通常能拿到 ±10~30 m 的海拔。',
         'hint_denied': '在地址栏左侧的站点图标里把「位置」重新设为允许，再点重试。',
         'hint_bg': '测量期间会尝试保持屏幕常亮；切到后台后浏览器会暂停定位，回到前台自动续上。',
         'tier_title': '精度分三档，别把 A 档当 B 档用',
@@ -758,10 +764,12 @@ LABELS['en'] = {
         'r_vacc': 'Vertical accuracy',
         'r_src': 'Source',
         'r_time': 'Fix time',
-        'r_pts': 'Samples',
+        'r_pts': 'Fixes',
+        'c_pts': 'Alt. samples',
         'v_gps': 'GNSS single-point fix',
         'v_baro': 'Barometer (calibrated)',
         'v_none': 'none yet',
+        'v_horiz': 'horizontal only',
         'baro_title': 'Barometer',
         'baro_on': 'connected',
         'baro_off': 'unavailable',
@@ -789,6 +797,7 @@ LABELS['en'] = {
                     'EGM96 / EGM2008 grid. This page does no interpolation, it only applies your offset.',
         'chart_title': 'Elevation profile',
         'chart_empty': 'Start measuring and the altitude curve shows up here.',
+        'chart_noele': 'Fixes are arriving, but none of them carries an altitude, so there is nothing to plot.',
         'chart_t': 'time',
         'chart_h': 'altitude',
         'act_gpx': 'Export GPX',
@@ -800,6 +809,10 @@ LABELS['en'] = {
         'msg_cleared': 'Cleared',
         'hint_privacy': 'Positioning and maths happen in your browser only: no coordinates are uploaded '
                         'and no cookies are written.',
+        'hint_noele': 'This device returned coordinates but no altitude. A desktop browser locates you by '
+                      'WiFi and cell towers (a horizontal accuracy in the hundreds of metres is the '
+                      'giveaway) and has no height to report at all. Open the page on a phone, outdoors, '
+                      'and it usually returns an altitude within ±10-30 m.',
         'hint_denied': 'Set "Location" back to allow from the site icon in the address bar, then retry.',
         'hint_bg': 'The page tries to keep the screen awake while measuring. Browsers pause geolocation '
                    'in a background tab and resume when you come back.',

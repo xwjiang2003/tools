@@ -277,6 +277,15 @@ function initAltimeter() {
 
   // ------------------------------------------------------------ 渲染
 
+  // 占位符 "—" 在 76px 粗体下会画成一根黑条，看起来像加载动画或遮挡块。
+  // 加 .is-empty 让它变成细的浅灰短横，一眼看出"这里还没数"。
+  function setValue(el, text, isEmpty) {
+    if (!el) return;
+    el.textContent = text;
+    if (isEmpty) el.classList.add('is-empty');
+    else el.classList.remove('is-empty');
+  }
+
   function render() {
     var last = state.last;
     var n = geoN();
@@ -287,16 +296,23 @@ function initAltimeter() {
     if (markEl) markEl.textContent = unitLabel();
 
     if (!last) {
-      if (valueEl) valueEl.textContent = '—';
+      setValue(valueEl, '—', true);
       if (accEl) accEl.textContent = '—';
     } else if (last.ele == null) {
-      if (valueEl) valueEl.textContent = '—';
-      if (accEl) accEl.textContent = T('ele_missing', 'no altitude in this fix');
+      // 徽章只放"精度"，长句解释放 hint 行；原来是整句塞进胶囊，撑成一条蓝带很怪。
+      setValue(valueEl, '—', true);
+      if (accEl) accEl.textContent = accText(last.vacc);
     } else {
       var shown = last.ele - n;
       var d = altDecimals(last.vacc);
-      if (valueEl) valueEl.textContent = len(shown, d);
+      setValue(valueEl, len(shown, d), false);
       if (accEl) accEl.textContent = accText(last.vacc);
+    }
+
+    // 提示行跟着定位质量走，测量中才接管（权限被拒时 stop 之后不能再覆盖掉拒绝提示）
+    if (state.running) {
+      if (last && last.ele == null) setHint('hint_noele', '');
+      else setHint('hint_privacy', '');
     }
 
     if ($('mHacc')) $('mHacc').textContent = last ? accText(last.hacc) : '—';
@@ -308,8 +324,10 @@ function initAltimeter() {
     }
 
     var stats = altTrackStats(state.track, { threshold: state.unit === 'ft' ? 6.5 : 2 });
+    // 少于两个带海拔的样点，速度和累计爬升都无从算起——写 0 会被当成"确实没动"。
+    var enough = stats.n >= 2;
     if ($('mVspeed')) {
-      if (last) {
+      if (last && enough) {
         var vs = state.unit === 'ft' ? altToFeet(stats.vSpeed) : stats.vSpeed;
         $('mVspeed').textContent = num(vs, 1) + ' ' + speedLabel();
       } else {
@@ -317,8 +335,8 @@ function initAltimeter() {
       }
     }
     // 累计爬升/下降跟主单位一起变，模板里不写死单位，否则切到 ft 会显示"181 m"
-    if ($('cAsc')) $('cAsc').textContent = len(stats.asc, 0) + ' ' + unitLabel();
-    if ($('cDesc')) $('cDesc').textContent = len(stats.desc, 0) + ' ' + unitLabel();
+    if ($('cAsc')) $('cAsc').textContent = enough ? len(stats.asc, 0) + ' ' + unitLabel() : '—';
+    if ($('cDesc')) $('cDesc').textContent = enough ? len(stats.desc, 0) + ' ' + unitLabel() : '—';
     if ($('cPts')) $('cPts').textContent = String(stats.n);
 
     // 定位详情
@@ -330,11 +348,12 @@ function initAltimeter() {
     if ($('rLon')) $('rLon').textContent = last ? last.lon.toFixed(6) : '—';
     if ($('rHacc')) $('rHacc').textContent = last ? accText(last.hacc) : '—';
     if ($('rVacc')) $('rVacc').textContent = last ? accText(last.vacc) : '—';
+    // 这一行数的是"收到几次定位"，与剖面里"海拔采样点"口径不同，别再混用同一个数字
     if ($('rPts')) $('rPts').textContent = String(state.track.length);
     if ($('rSrc')) {
-      $('rSrc').textContent = last
-        ? (last.ele == null ? T('v_none', 'none yet') : T('v_gps', 'GNSS fix'))
-        : T('v_none', 'none yet');
+      if (!last) $('rSrc').textContent = T('v_none', 'none yet');
+      else if (last.ele == null) $('rSrc').textContent = T('v_horiz', 'horizontal only');
+      else $('rSrc').textContent = T('v_gps', 'GNSS fix');
     }
 
     renderBaro();
@@ -370,7 +389,14 @@ function initAltimeter() {
     }
     var empty = $('chartEmpty');
     if (pts.length < 2) {
-      if (empty) empty.hidden = false;
+      // 空态要分清两种：还没开始，和在测但设备不给海拔。
+      // 后者说"开始测量后会出现曲线"是错的——用户明明已经开始了。
+      if (empty) {
+        empty.textContent = state.track.length
+          ? T('chart_noele', 'Fixes are arriving, but none carries an altitude')
+          : T('chart_empty', 'Start measuring and the curve shows up here');
+        empty.hidden = false;
+      }
       cv.hidden = true;
       return;
     }
