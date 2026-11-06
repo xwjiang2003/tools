@@ -50,6 +50,225 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'openai-autonomous-vuln-discovery-2026',
+        'category': 'security',
+        'date': '2026-11-06',
+        'updated': '2026-11-06',
+        'tags': ['OpenAI', 'Linux 内核漏洞', '本地提权 LPE', '自主漏洞挖掘', '漏洞利用生成', '自动化渗透测试', '内核安全', '补丁生成', 'fuzzing', 'Cyber Model', 'Patch the Planet'],
+        'title': 'OpenAI 自主漏洞挖掘流水线挖出 948 个 Linux 提权漏洞：开发者安全自检清单与加固实战 | DevTools 博客',
+        'description': '2026-11-04 OpenAI 发布《A thousand fewer paths to root》：一条自主流水线一次运行复现 1724 个 Linux 内核漏洞、生成 948 个本地提权 exploit、API 成本 121 万美元。本文拆开这条"发现→复现→利用→补丁"漏斗的数字与经济学，并给开发者三块今天就能落地的实操：本地 LPE 自查脚本、syzkaller 内核 fuzz 配置、补丁窗口监控（源：OpenAI Engineering 2026-11-04；量子位 2026-11-05）。',
+        'keywords': 'Linux 内核漏洞 自动挖掘,OpenAI 自主漏洞挖掘 流水线,Linux 本地提权 LPE 漏洞,内核漏洞 如何利用,漏洞利用 自动生成,自动化渗透测试 工具,fuzzing 内核 教程,如何自查 Linux 提权漏洞,Linux 权限提升 修复,内核安全 加固 实战,OpenAI Cyber Model,GPT-5.5 Cyber,Patch the Planet 漏洞披露,syzkaller 内核 fuzz 上手,CI runner 提权 防护',
+        'h1': 'OpenAI 用 120 万美元跑出 948 个 Linux 提权漏洞：漏洞挖掘正在变成流水线',
+        'summary': '2026-11-04 OpenAI 发布《A thousand fewer paths to root》：一条自主"发现→复现→利用→补丁"流水线一次运行复现 1724 个 Linux 内核漏洞、生成 948 个本地提权 exploit、API 成本 121 万美元。本文拆数字与经济学，并给开发者三块可落地实操：本地 LPE 自查、syzkaller 内核 fuzz、补丁窗口监控。',
+        'body': '''
+<blockquote>
+<p><b>结论先说</b>：2026-11-04 OpenAI 发布工程报告《A thousand fewer paths to root》。他们用一个未发布的 cyber model 跑了一条"发现→复现→利用→补丁"全自主流水线，10 月中旬一次运行，从 Linux 内核里复现了 1724 个漏洞，生成了 <b>948 个可用的本地提权（LPE）exploit</b>，API 账单 1,213,430 美元，平均每个能拿 root 的利用约 1279 美元（源：OpenAI Engineering 2026-11-04；量子位《Linux内核被挖出948个漏洞》2026-11-05）。</p>
+</blockquote>
+
+<h2>漏洞挖掘从手艺变成了流水线</h2>
+<p>过去挖一个内核提权，得是一个安全研究员盯着某段子系统代码看好几天。OpenAI 这次把它做成了漏斗：先让 scout agent 圈出 5034 个审计目标（约 280 万行，占内核约 7%），analyst agent 用约 12 小时产出 2308 个候选漏洞，再用约 30 小时动态复现出 1724 个，最后产出 291 个信息泄露 PoC 和 1169 个 root exploit，经变体分析去重成 948 个独立补丁。候选误报率只有 3.1%。</p>
+
+<p>几个数字值得记住：目标 VM 跑的是<b>带 KASAN、SMEP/SMAP/KASLR/hardened usercopy 全开的普通桌面发行版</b>，不是弱化过的靶机；整次运行里 agent 至少用了 10 种第三方内核专家都说是新的利用技术；更早一次用 GPT-5.6 Sol 的跑批只找到 166 个提权，三个月内核加固之后，新模型反而多找了五倍以上的新漏洞。</p>
+
+<table>
+<thead><tr><th>阶段</th><th>产出</th><th>耗时</th></tr></thead>
+<tbody>
+<tr><td>划定攻击面</td><td>5034 个审计目标 / 约 2.8M 行</td><td>—</td></tr>
+<tr><td>发现候选</td><td>2308 个疑似漏洞</td><td>~12 小时</td></tr>
+<tr><td>复现/验证</td><td>1724 个复现成功（74.7%）</td><td>~30 小时</td></tr>
+<tr><td>利用生成</td><td>291 泄露 PoC + 1169 root exploit → 948 独立补丁</td><td>~10 天</td></tr>
+</tbody>
+</table>
+
+<h2>948 个 exploit 不等于 948 次入侵</h2>
+<p>先把 hype 拆掉：这些是<b>本地提权（LPE），不是远程代码执行（RCE）</b>。利用前提是你已经在这台机器上有一个无特权账号。它们不负责"从互联网打进来"，只负责"进来之后从普通用户到 root"这后半段。对多租户主机、CI/CD runner、共享跳板机、容器平台、开发者 fleet 来说，这段才是最致命的——因为拿到普通账号往往比拿到 root 容易得多。</p>
+
+<p>另一个被标题盖过的数字更重要：每次成功利用的平均成本。整次运行 121 万美元里，77.6 万花在利用阶段，单个成功 exploit 平均约 360 美元（长尾烧在难触发的竞态上）。OpenAI 拿历史赏金价（Pwn2Own 2 万、TyphoonPWN 7 万）套上去，得出 948 个 exploit 假设性估值 1890 万~6630 万美元，是运行成本的 16~55 倍。数字是自报的、假设性的，但方向没错：漏洞挖掘和武器化，已经从手艺变成了可以写进预算的条目。</p>
+
+<h2>human-in-the-loop 那次翻车，才是全文最有用的句子</h2>
+<p>早期一次跑批，流水线声称有 200 个成功 exploit；人工复核发现其中 20 个其实是通过<b>另一个零日</b>拿到 root 的，根本不是分配给它的那个漏洞。OpenAI 的补法是加了一道独立校验：确认每个 exploit 真的用到了它被分配的那个漏洞。这句话对所有想上"自主安全工具"的团队都成立——你能复现结果，和你能正确解释是怎么复现的，是两回事。企业采购这类工具，要的是可复现的 exploit、准确的根因、独立的二次验证，而不是一个漂亮的数字。</p>
+
+<h2>真正的风险是"补丁窗口"</h2>
+<p>比起 948 这个数字，IDC 的分析师点出了一个更实在的威胁：风险不在 948，而在"<b>从发现到修复真正落到生产环境</b>"这段窗口。OpenAI 跑扫描的那 10 天里，他们统计到有 100+ 个 LPE 已被其他贡献者修掉或进入暂存，另有约 300 个在公开讨论。但上游打了补丁 ≠ 你发行版内核装上了补丁。多租户主机、CI runner、共享跳板、容器平台、开发者机器，这些才是该优先盯补丁窗口的地方。</p>
+
+<h2>开发者能立刻做的三件事</h2>
+<p>模型没发布，你也不用等它。下面三块都能今天落地。</p>
+
+<h3>1) 本地 LPE 落脚点自查</h3>
+<p>下面这个脚本不干别的，只盘点本机常见的提权跳板。在有 root 权限的机器上跑，输出就是你的加固清单：</p>
+<pre><code># lpe_quick_audit.sh —— 盘点本机常见本地提权落脚点（仅自查，非攻击）
+set -u
+echo "== SUID 二进制（提权常用跳板）=="
+find / -type f -perm -4000 -exec ls -ld {} + 2>/dev/null | head -20
+
+echo "== SGID 二进制 =="
+find / -type f -perm -2000 -exec ls -ld {} + 2>/dev/null | head -20
+
+echo "== 全局可写且属主为 root 的文件 =="
+find / -type f -perm -0002 -uid 0 2>/dev/null | head -20
+
+echo "== 任意用户可写但属主为 root 的定时任务 =="
+ls -l /etc/cron.d/ /etc/cron.daily/ 2>/dev/null | grep -v root
+
+echo "== 当前内核版本 vs 发行版可用安全更新 =="
+uname -r
+if command -v apt >/dev/null; then
+  apt list --upgradable 2>/dev/null | grep -i linux-image || echo "无待升级内核包"
+fi
+</code></pre>
+<p>预期输出里，任何"<code>-rwsr-xr-x root</code> 且版本很老"的 SUID 二进制、以及"<code>-rw-rw-rw- root</code>"的全局可写文件，都是优先处理项。SUID 那一栏太长就先按包名排查——很多历史 CVE 都藏在老版本的 suid 程序里。</p>
+
+<h3>2) 用 syzkaller 跑内核 fuzz（研发/安全团队）</h3>
+<p>OpenAI 用的是内部管线，但内核 fuzz 的公开标准工具是 syzkaller。最小可跑配置：</p>
+<pre><code>{
+  "target": "linux/amd64",
+  "http": "127.0.0.1:56741",
+  "workdir": "/tmp/syz-work",
+  "kernel_obj": "/path/to/linux-built",
+  "image": "/path/to/stretch.img",
+  "sshkey": "/path/to/stretch.id_rsa",
+  "syzkaller": "/path/to/syzkaller",
+  "procs": 8,
+  "type": "qemu"
+}
+</code></pre>
+<p>先把内核用 KASAN 编出来，再 <code>syz-manager -config my.cfg</code> 起 manager，crash 会落进 <code>/tmp/syz-work/crashes</code>。前提是你有一份带符号的内核构建和一个 qemu 镜像——这套环境搭起来要半天，但它是目前验证"这个 syscall 路径到底安不安全"最便宜的办法。</p>
+
+<h3>3) 盯住补丁窗口</h3>
+<p>光扫不修没用。一个最小化的"我这台机器落后上游多少"检查：</p>
+<pre><code>import subprocess
+
+installed = subprocess.check_output(["uname", "-r"]).decode().strip()
+print("installed kernel:", installed)
+out = subprocess.run(["apt", "list", "--upgradable"],
+                     capture_output=True, text=True).stdout
+for line in out.splitlines():
+    if "linux-image" in line:
+        print("available upgrade:", line)
+</code></pre>
+<p>在 Debian/Ubuntu 上跑，如果 <code>available upgrade</code> 里出现了 <code>linux-image</code> 而你 <code>uname -r</code> 还是旧版本，说明补丁窗口已经开着——立刻排期重启升级。多租户和 CI 节点建议写进 cron，每天报一次。</p>
+
+<h2>防御纵深买时间</h2>
+<p>OpenAI 自己在报告里点名的防线是 Firecracker、gVisor 这类隔离层：它们把"普通用户→root"的爆炸半径摁在小虚拟机里。对大多数团队，性价比最高的动作不是追着 948 个 CVE 打，而是：最小权限 + 及时补丁 + 隔离执行（尤其别在 CI runner 上跑不受信代码）。漏洞会被机器越来越快地挖出来，胜负现在取决于谁先打上补丁。</p>
+''',
+        'related': [
+            ('自主沙箱逃逸：OpenAI 与 Hugging Face 的越狱事件复盘', 'blog/ai-agent-sandbox-escape-2026/'),
+            ('AI 编程工具的数据与训练隐私：开发者如何自查', 'blog/ai-coding-tools-data-training-privacy-2026/'),
+        ],
+},
+{
+        'slug': 'ripple-65b-agentic-coding-2026',
+        'category': 'ai',
+        'date': '2026-11-06',
+        'updated': '2026-11-06',
+        'tags': ['Ripple-65B', 'Ricursive', '开源代码模型', 'agentic coding', '智能体编程', 'Terminal-Bench', 'SWE-bench', '开放权重', '65B 模型', '稠密 Transformer', '本地部署'],
+        'title': 'Ripple-65B Preview 发布：65B 稠密模型在 agentic coding 上打过 8 倍大的对手，成本仅 1/10 | DevTools 博客',
+        'description': '2026-11-04 Ricursive 发布 Ripple-65B Preview——从零预训练的 65B 稠密开放权重模型，在 agentic coding 基准 Terminal-Bench 2.1 上拿到 80.52，压过 Reflection Beam 501B（80.1）、Muse Spark Open 816B（76.4）这些 8~15 倍大的 MoE 对手；研发成本约 3200 万美元，Ricursive 称是前代开放权重 SOTA 的约十分之一。本文拆解稠密 vs MoE 的效率之争与硬件账，并给可直接跑的 vLLM 部署命令与最小 agentic coding 评测回路（源：Ricursive 2026-11-04；HN Day 317 308 赞；量子位/机器之心同日报道腾讯 Hy4、百度文心 5.5 Flash Base 开源）。',
+        'keywords': 'Ripple-65B 部署,Ripple-65B Preview 教程,Ricursive 开源 代码模型,65B 模型 本地部署,vLLM 部署 Ripple-65B,SGLang 部署 Ripple-65B,agentic coding 是什么,Terminal-Bench 2.1 基准,SWE-bench 评测 教程,开源 代码大模型 实战,稠密 Transformer 代码模型,开放权重 编程模型,如何 用 开源模型 写代码,代码智能体 评测 回路',
+        'h1': 'Ripple-65B：一个 65B 稠密模型，怎么在 coding 基准上赢了 500B+ 的 MoE',
+        'summary': 'Ricursive 的 Ripple-65B Preview 用 65B 稠密架构在 agentic coding 上压过 500B+ 的 MoE 对手，研发成本仅约 3200 万美元。本文给 vLLM 部署命令和一个可跑的最小 coding 评测回路。',
+        'body': '''
+<blockquote>
+<p><b>结论先说</b>：2026-11-04，Ricursive 发布 <b>Ripple-65B Preview</b>——一个从零预训练、65B 稠密（dense）开放权重模型，在 agentic coding 基准 Terminal-Bench 2.1 上拿到 80.52，压过 Reflection Beam 501B（80.1）、Muse Spark Open 816B（76.4）这些 8~15 倍大的 MoE 对手；而整个研发成本只有约 3200 万美元，Ricursive 称是前代开放权重 SOTA 的约十分之一（源：Ricursive 发布页 2026-11-04；Hacker News Day 317 头条 308 赞；量子位/机器之心同日报道腾讯 Hy4、百度文心 5.5 Flash Base 开源）。</p>
+</blockquote>
+
+<h2>稠密模型怎么打过 MoE</h2>
+<p>过去一年"代码 SOTA"几乎被 MoE 霸榜：Beam 501B、Muse Spark Open 816B、Inkling 975B、Nemotron 3 Ultra 550B，全是几千亿参数的混合专家。Ripple 反其道——选了<b>稠密 Transformer</b>，80 层、d_model 只有 5120（薄而深），在 NVIDIA 硬件上用简单分片就跑出 40% MFU，不写自定义 kernel、不用量化。代价是 65B 全量参数都得激活，但它换来了两件事：训练/推理基础设施简单，以及单机就能 servable。</p>
+
+<p>为什么稠密反而便宜？Ricursive 的说法是"Steep Ascent"强化学习策略而非暴力堆叠：混合 RL 配方用了截断重要性采样、score centering、线性长度惩罚，配自研合成数据管线（不买任何后训练数据），在 Terminal-Bench 2.1 上 140 万次 rollout 就到 80.5——他们称这比 Beam 少约 70 倍 rollout。换句话说，钱花在了训练策略和数据质量，而不是参数堆量。</p>
+
+<h2>Terminal-Bench 2.1 的 80.52 到底意味着什么</h2>
+<p>Terminal-Bench 测的是"在真实终端里完成多步任务"的能力，比单纯补代码更接近 agentic coding。Ripple 自己公布的对比（注意都是厂商自报）：</p>
+<table>
+<thead><tr><th>模型</th><th>参数量</th><th>Terminal-Bench 2.1</th></tr></thead>
+<tbody>
+<tr><td>Ripple-65B Preview</td><td>65B（稠密）</td><td><b>80.52</b></td></tr>
+<tr><td>Reflection Beam</td><td>501B</td><td>80.1</td></tr>
+<tr><td>Meta Muse Spark Open</td><td>816B</td><td>76.4</td></tr>
+<tr><td>Thinking Machines Inkling</td><td>975B</td><td>63.8</td></tr>
+<tr><td>NVIDIA Nemotron 3 Ultra</td><td>550B</td><td>56.4</td></tr>
+</tbody>
+</table>
+<p>横向看，Ripple 在 SWE-bench Pro v2.0 Hard 79.1、SWE-bench Verified 76.5、AIME 2025 98.3、HMMT Feb 2026 90.5；弱项在 SciCode 39.4、DeepSWE 1.1 44.3、GPQA Diamond 85.2。所以别把它当成通才——它是为 coding agent 调过的专用模型，数学和推理够用，科研代码生成偏弱。一个 65B 稠密模型在 coding 上压过 500B+ MoE，说明的是"<b>为任务设计的训练 + 干净的后训练</b>"能抵消参数规模差距，这对所有想训自己代码模型的团队都是个信号。</p>
+
+<h2>开源权重在哪、要什么硬件</h2>
+<p>三个 checkpoint 全部 Apache 2.0：指令微调 BF16、NVFP4 压缩版、BF16 base。Hugging Face、Together AI、GMI Cloud、OpenRouter 可下/可托管，Fireworks 随后上线。硬件账：BF16 在数据中心卡上约 130GB 权重，2×B200 跑 250 tok/s；NVFP4 版能压到单张 DGX Spark 这类小机器。OpenRouter 的 GMICloud 端点标价输入 $0.20 / 百万 token、输出 $0.60 / 百万 token，不过当前上下文窗口只开到 16K 而非宣传的 1M——真要 1M 上下文得自己部署。</p>
+
+<h2>这股"开放权重 coding"浪潮不止一家</h2>
+<p>把视野拉到国内，同一周也有动作：量子位 2026-11-05 报道腾讯 Hy4 调用激增已十倍扩容，混元 Hy4 在 Arena 榜单列全球开源模型第一；机器之心同日称 Hy4 列 AA 榜单国模第二；百度也在 11-05 开源了文心 5.5 Flash Base，多基准刷同尺寸 SOTA。加上前面几周我们写过的 Qwen 3.8、Kimi K3.1 Pro、Nemotron 3 Super，开放权重 coding/通用模型正在从"能跑"走向"能干活"。对开发者来说，真正的问题是：怎么把这些模型接进自己的编码工作流，并能量化它们到底帮你完成多少任务。</p>
+
+<h2>实操：用 vLLM 把 Ripple-65B 跑成 OpenAI 兼容服务</h2>
+<p>有 2×B200（或等价的 140GB+ 显存）就能本地 servable。BF16 命令：</p>
+<pre><code># BF16：需要约 130GB 权重显存，两张 B200 走张量并行
+vllm serve Ricursive/Ripple-65B-Preview-BF16 --tensor-parallel-size 2 --max-model-len 32768 --dtype bfloat16
+
+# NVFP4 压缩版：单张 DGX Spark 这类小机器也能跑
+vllm serve Ricursive/Ripple-65B-Preview-NVFP4 --tensor-parallel-size 1 --max-model-len 32768 --quantization nvfp4
+</code></pre>
+<p>起来后是一个标准 OpenAI 兼容端点，下面所有脚本都直接复用，不用改一行。</p>
+
+<h2>实操：跑一个最小 agentic coding 评测回路</h2>
+<p>光看分数不够，得在自己仓库上验。下面这个脚本是一个能直接跑的最小闭环：读仓库文件 → 让模型出 unified diff → <code>git apply</code> → 跑测试 → 判 PASS/FAIL。把它指向任意 OpenAI 兼容端点（包括上面起的 Ripple）即可：</p>
+<pre><code>import os, subprocess, tempfile, shutil, openai
+
+client = openai.OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+def list_py(repo, cap=30):
+    out = []
+    for root, _, names in os.walk(repo):
+        if ".git" in root:
+            continue
+        for n in names:
+            if n.endswith(".py") and len(out) < cap:
+                out.append(os.path.join(root, n))
+    return out
+
+def propose(repo, issue):
+    blocks = []
+    for f in list_py(repo):
+        content = open(f, encoding="utf-8").read()[:2000]
+        blocks.append("### " + f + chr(10) + "```python" + chr(10) + content + chr(10) + "```")
+    ctx = chr(10).join(blocks)
+    prompt = (
+        "Issue: " + issue + chr(10) +
+        "Write a UNIFIED DIFF (git apply format) that fixes it. Only the diff." + chr(10) +
+        "Repo:" + chr(10) + ctx
+    )
+    r = client.chat.completions.create(
+        model="ripple-65b", messages=[{"role": "user", "content": prompt}],
+        temperature=0, max_tokens=2000,
+    )
+    text = r.choices[0].message.content
+    i = text.find("diff --git")
+    return text[i:] if i != -1 else ""
+
+def run(repo, issue, test_cmd):
+    patch = propose(repo, issue)
+    with tempfile.TemporaryDirectory() as td:
+        shutil.copytree(repo, td, dirs_exist_ok=True)
+        p = subprocess.run(["git", "apply"], input=patch, cwd=td,
+                           capture_output=True, text=True)
+        if p.returncode != 0:
+            print("patch failed:" + chr(10), p.stderr); return
+        res = subprocess.run(test_cmd, shell=True, cwd=td,
+                             capture_output=True, text=True)
+        print("TEST", "PASS" if res.returncode == 0 else "FAIL")
+        print(res.stdout[-500:])
+
+if __name__ == "__main__":
+    run("/path/to/tiny-repo", "add() returns wrong sum", "python -m pytest -q")
+</code></pre>
+<p>预期：模型返回一段 <code>diff --git</code> 开头的补丁，脚本 apply 后跑你的 <code>test_cmd</code>，最后打印 <code>TEST PASS</code> 或 <code>TEST FAIL</code>。把它接进 CI，对每个 PR 跑一遍，就能把"模型帮你修了多少"变成可追踪的指标，而不是靠感觉。</p>
+
+<h2>到底要不要上</h2>
+<p>如果你已经在用 Qwen/Kimi/Nemotron 这类开放权重模型做代码任务，Ripple-65B 值得进你的短名单，尤其当你受限于"没有几张卡"又想要 coding 专用能力时。但别被 80.52 冲昏头：它是厂商自报、在 Terminal-Bench 上、且对比对象也是自报数字；弱项（科研代码、长上下文当前只开 16K 托管）要自己压测。最稳的做法是：拉权重 → vLLM 起服务 → 用上面的回路在你真实仓库上 bake-off，按"每个成功任务的成本"而不是"榜单分数"来拍板。</p>
+''',
+        'related': [
+            ('Qwen 3.8 27B 笔记本本地跑 + 当裁判', 'blog/qwen-3-8-27b-laptop-judge-2026/'),
+            ('Kimi K3.1 Pro 开源：3T 权重 + 100 万 token 上下文', 'blog/kimi-k3-pro-1m-context-2026/'),
+        ],
+},
+{
         'slug': 'qwen-3-8-27b-laptop-judge-2026',
         'category': 'ai',
         'date': '2026-11-05',
