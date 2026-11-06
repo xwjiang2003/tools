@@ -1,0 +1,108 @@
+/* altimeter.css — 网页海拔计专用样式（base.css 之后加载）
+   目标：户外强光下瞟一眼就能读到海拔，所以主数字在窄屏也不低于 56px；
+   其余信息的职责是"别让用户误读精度"，颜色一律取 base.css 的变量，暗色主题自动跟随。 */
+
+.alt-wrap{display:flex;flex-direction:column;gap:14px;max-width:1040px;margin:0 auto}
+/* [hidden] 只是 UA 的 display:none，一旦元素被设成 display:flex/block 就会被覆盖：
+   气压计不可用时那三行空值、以及无数据时的空 canvas 都靠这条规则才真的藏起来。 */
+.alt-wrap [hidden]{display:none!important}
+
+/* ---------------------------------------------------------------- 主读数 */
+.alt-hero{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:18px 20px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background-image:linear-gradient(180deg,var(--primary-light) 0%,transparent 62%)}
+[data-theme="dark"] .alt-hero{background-image:linear-gradient(180deg,rgba(96,165,250,.10) 0%,transparent 62%)}
+.alt-hero-top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.alt-hero-label{font-size:12.5px;font-weight:600;color:var(--text-secondary);letter-spacing:.4px}
+.alt-units{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.alt-unit{padding:3px 12px;border:none;background:var(--card-bg);color:var(--text-secondary);
+  font-size:12px;font-family:inherit;cursor:pointer;transition:all var(--transition);line-height:1.6}
+.alt-unit:hover{color:var(--primary)}
+.alt-unit.active{background:var(--primary);color:#fff}
+
+.alt-reading{display:flex;align-items:baseline;gap:10px;margin:2px 0 0}
+.alt-value{font-size:76px;font-weight:700;line-height:1;letter-spacing:-2px;color:var(--text);
+  font-variant-numeric:tabular-nums;font-family:"JetBrains Mono","Consolas",monospace}
+.alt-mark{font-size:20px;font-weight:600;color:var(--text-secondary)}
+
+.alt-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;min-height:22px}
+.alt-acc{font-size:14px;font-weight:600;color:var(--primary);
+  background:var(--primary-light);padding:2px 10px;border-radius:999px}
+[data-theme="dark"] .alt-acc{background:rgba(96,165,250,.14)}
+.alt-status{font-size:12.5px;color:var(--text-secondary)}
+
+.alt-hero-actions{margin-top:6px}
+.alt-btn{min-width:168px;font-size:15px;padding:10px 22px}
+.alt-btn-stop{background:var(--danger);border-color:var(--danger)}
+.alt-hint{margin:8px 0 0;font-size:12px;line-height:1.6;color:var(--text-muted);text-align:center;max-width:640px}
+
+/* ---------------------------------------------------------------- 指标格 */
+.alt-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.alt-metric{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.alt-metric-k{font-size:11.5px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alt-metric-v{font-size:15px;font-weight:600;color:var(--text);
+  font-family:"JetBrains Mono","Consolas",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------------------------------------------------------------- 卡片 */
+.alt-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.alt-stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.alt-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:12px 16px 14px;min-width:0}
+.alt-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;flex-wrap:wrap}
+.alt-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:var(--tab-hover);color:var(--text-secondary)}
+.alt-note{margin:0 0 8px;font-size:12.5px;line-height:1.7;color:var(--text-secondary)}
+.alt-note-inline{margin:0;font-size:12px}
+
+.alt-kv{display:flex;flex-direction:column}
+.alt-kv>div{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding:7px 0;border-bottom:1px dashed var(--border)}
+.alt-kv>div:last-child{border-bottom:none}
+.alt-kv dt{font-size:12.5px;color:var(--text-secondary);flex-shrink:0}
+.alt-kv dd{font-size:13px;color:var(--text);text-align:right;word-break:break-all;
+  font-family:"JetBrains Mono","Consolas",monospace;margin:0}
+.alt-kv-tight>div{padding:6px 0}
+
+.alt-cal{margin-top:2px}
+.alt-cal label{display:block;font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
+.alt-cal-row{display:flex;gap:8px}
+.alt-cal-row .tl-input{max-width:220px}
+
+/* ---------------------------------------------------------------- 图表 */
+.alt-chart-stats{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;font-weight:400;color:var(--text-secondary)}
+.alt-chart-stats b{font-family:"JetBrains Mono","Consolas",monospace;font-weight:600;color:var(--text)}
+.alt-canvas-box{position:relative;min-height:170px}
+#altChart{width:100%;height:170px;display:block}
+.alt-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  margin:0;font-size:12.5px;color:var(--text-muted);text-align:center;padding:0 12px}
+
+/* ---------------------------------------------------------------- 操作 */
+.alt-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.alt-toast{font-size:12px;color:var(--success);font-weight:600}
+
+/* ---------------------------------------------------------------- 高程异常 */
+.alt-geo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.alt-geo-row label{font-size:12.5px;color:var(--text-secondary);white-space:nowrap}
+.alt-geo-row .tl-input{max-width:120px;flex:0 0 auto}
+
+.alt-formula{margin:0;padding:12px 14px;background:var(--editor-bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-family:"JetBrains Mono","Consolas",monospace;font-size:12.5px;
+  line-height:1.8;color:var(--text);overflow-x:auto;white-space:pre}
+.alt-formula sup{font-size:9px}
+
+/* ---------------------------------------------------------------- 断点 */
+@media(max-width:900px){
+  .alt-cols{grid-template-columns:minmax(0,1fr)}
+  .alt-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .alt-value{font-size:64px}
+}
+@media(max-width:430px){
+  .alt-hero{padding:14px 14px 12px}
+  .alt-value{font-size:56px;letter-spacing:-1px}
+  .alt-mark{font-size:16px}
+  .alt-hero-actions,.alt-btn{width:100%}
+  .alt-card{padding:10px 12px 12px}
+  .alt-chart-stats{gap:8px}
+}
