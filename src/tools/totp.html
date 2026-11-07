@@ -1,0 +1,94 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="tt-wrap">
+
+  <section class="tt-card">
+    <label class="tt-label" for="ttSecret">{{TL:secret_label}}</label>
+    <div class="tt-row">
+      <input class="tl-input tt-secret" id="ttSecret" type="text" autocomplete="off"
+             autocapitalize="characters" spellcheck="false" placeholder="{{TL:secret_ph}}">
+      <button type="button" class="btn btn-sm" id="ttEye">{{TL:btn_hide}}</button>
+      <button type="button" class="btn btn-sm" id="ttClear">{{TL:btn_clear}}</button>
+    </div>
+    <p class="tt-hint">{{TL:secret_hint}}</p>
+    <p class="tt-uri" id="ttUri" hidden></p>
+    <p class="tt-err" id="ttErr" hidden></p>
+
+    <div class="tt-opts">
+      <label class="tt-opt">{{TL:f_algo}}
+        <select class="tl-sel" id="ttAlgo">
+          <option value="SHA-1" selected>SHA-1</option>
+          <option value="SHA-256">SHA-256</option>
+          <option value="SHA-512">SHA-512</option>
+        </select>
+      </label>
+      <label class="tt-opt">{{TL:f_digits}}
+        <select class="tl-sel" id="ttDigits">
+          <option value="6" selected>6</option>
+          <option value="8">8</option>
+        </select>
+      </label>
+      <label class="tt-opt">{{TL:f_period}}
+        <select class="tl-sel" id="ttPeriod">
+          <option value="30" selected>30 s</option>
+          <option value="60">60 s</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="tt-show">
+    <button type="button" class="tt-code is-idle" id="ttCode">{{TL:code_idle}}</button>
+    <div class="tt-bar"><span class="tt-bar-fill" id="ttBarFill"></span></div>
+    <div class="tt-show-meta">
+      <span class="tt-remain" id="ttRemain"></span>
+      <span class="tt-idle" id="ttIdle">{{TL:idle_hint}}</span>
+    </div>
+    <div class="tt-actions">
+      <button type="button" class="btn btn-sm" id="ttCopy">{{TL:btn_copy}}</button>
+      <button type="button" class="btn btn-sm" id="ttSync">{{TL:btn_sync}}</button>
+      <span class="tt-toast" id="ttToast" hidden></span>
+    </div>
+    <p class="tt-skew" id="ttSkew" hidden></p>
+  </section>
+
+  <p class="tt-privacy">{{TL:privacy}}</p>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:how_title}}</h3>
+    <p class="tl-note">{{TL:how_note}}</p>
+    <pre class="tt-formula">T      = floor(unixSeconds / period)
+M      = HMAC(key, int8be(T))
+offset = M[len-1] &amp; 0x0f
+code   = ((M[offset] &amp; 0x7f) &lt;&lt; 24 | M[offset+1] &lt;&lt; 16
+          | M[offset+2] &lt;&lt; 8 | M[offset+3]) % 10^digits</pre>
+  </div>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:pit_title}}</h3>
+    <div class="dt-scroll">
+      <table class="dt-table">
+        <tbody id="ttPit"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // 踩坑表按语言注入（数据段），模板里不写死任何中文。
+  function fill() {
+    var L = window.__TL__ || {};
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    var rows = L.pit_rows || [];
+    var b = '';
+    for (var i = 0; i < rows.length; i++) {
+      b += '<tr><td class="tl-wrap">' + esc(rows[i][0]) + '</td><td class="tl-wrap">' + esc(rows[i][1]) + '</td></tr>';
+    }
+    var host = document.getElementById('ttPit');
+    if (host) host.innerHTML = b;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

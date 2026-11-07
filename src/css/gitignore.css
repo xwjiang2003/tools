@@ -1,0 +1,73 @@
+/* ---------------------------------------------------------------- .gitignore 生成器 */
+.gi-wrap{display:flex;flex-direction:column;gap:12px;max-width:1120px;margin:0 auto}
+/* [hidden] 必须自己兜住：.gi-group 等设了 display，UA 的 display:none 会被覆盖 */
+.gi-wrap [hidden]{display:none!important}
+
+/* 搜索条 */
+.gi-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gi-search{flex:1;min-width:180px;height:36px}
+.gi-set{font-size:12.5px;color:var(--text-secondary);white-space:nowrap;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:999px;padding:4px 11px}
+
+/* 预设 */
+.gi-presets{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.gi-presets-label{font-size:12.5px;color:var(--text-muted);margin-right:2px}
+.gi-preset{font-family:inherit}
+
+/* 两栏：左选择、右输出 */
+.gi-cols{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;align-items:start}
+
+/* 模板分组 */
+.gi-groups{display:flex;flex-direction:column;gap:14px;min-width:0}
+.gi-group{min-width:0}
+.gi-group-head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.gi-group-name{font-size:12.5px;font-weight:600;color:var(--text-secondary);letter-spacing:.02em}
+.gi-group-n{font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.gi-chips{gap:6px}
+.gi-chip{font-family:inherit}
+
+/* 输出面板 */
+.gi-out{position:sticky;top:64px;display:flex;flex-direction:column;gap:10px;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:12px}
+.gi-out-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gi-out-name{font-family:"JetBrains Mono","Consolas",monospace;font-size:13px;font-weight:600;color:var(--text)}
+.gi-out-meta{font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+
+.gi-pre{margin:0;padding:10px 12px;min-height:220px;max-height:46vh;overflow:auto;
+  background:var(--editor-bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-family:"JetBrains Mono","Consolas",monospace;font-size:12px;line-height:1.72;
+  color:var(--text);white-space:pre;tab-size:4}
+.gi-pre:focus-visible{outline:none;border-color:var(--primary)}
+
+/* 取反规则失效的提醒：这是本页最有价值的一句提示，不能做成灰色小字。
+   pre-line 让规则列表另起一行——挤在冒号后面会看不清到底哪几条。 */
+.gi-warn{margin:0;padding:8px 10px;border-radius:var(--radius-sm);font-size:12px;line-height:1.7;
+  background:rgba(243,156,18,.12);color:#b45309;word-break:break-all;white-space:pre-line}
+#giPit td:first-child{width:30%;min-width:7em}
+[data-theme="dark"] .gi-warn{color:#fbbf24;background:rgba(251,191,36,.10)}
+
+.gi-out-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gi-toast{font-size:12px;color:var(--success)}
+
+/* 自定义追加 */
+.gi-custom{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--border)}
+.gi-custom-label{font-size:12.5px;color:var(--text-secondary)}
+.gi-ta{width:100%;min-height:84px;resize:vertical;padding:8px 10px;
+  border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card-bg);color:var(--text);
+  font-family:"JetBrains Mono","Consolas",monospace;font-size:12.5px;line-height:1.7}
+.gi-ta:focus{outline:none;border-color:var(--primary)}
+.gi-pos{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+.gi-pos label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+
+.gi-note{margin:0;font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center}
+
+@media (max-width:900px){
+  .gi-cols{grid-template-columns:minmax(0,1fr)}
+  .gi-out{position:static;top:auto}
+  .gi-pre{max-height:300px}
+}
+@media (max-width:430px){
+  .gi-presets-label{display:none}
+  .gi-out{padding:10px}
+}

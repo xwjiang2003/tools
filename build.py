@@ -128,7 +128,7 @@ JS_MODULES = [
     'string-tools.js', 'generator.js', 'home.js',
     'cidr.js', 'user-agent.js', 'punycode.js', 'url-parser.js', 'coordinate.js',
     'number-to-chinese.js', 'markdown-table.js', 'unit-converter.js', 'htpasswd.js',
-    'altimeter.js', 'qr-decode.js',
+    'altimeter.js', 'qr-decode.js', 'gitignore.js', 'totp.js',
 ]
 
 # ---------------------------------------------------------------- 按页资产裁剪（2026-10-19）
@@ -189,6 +189,8 @@ PAGE_MODULES = {
     'htpasswd': ('core.js', 'htpasswd.js'),
     'altimeter': ('core.js', 'altimeter.js'),
     'qr-decode': ('core.js', 'qr-decode.js'),
+    'gitignore': ('core.js', 'gitignore.js'),
+    'totp': ('core.js', 'totp.js'),
     'hotnews': ('core.js',), 'go-cheatsheet': ('core.js',), 'snippets': ('core.js',),
     'blog': ('core.js',), 'go-course': ('core.js',),
     'privacy': (),
@@ -220,6 +222,8 @@ PAGE_CSS = {
     'generator': ('base', 'generator'),
     'altimeter': ('base', 'altimeter'),
     'qr-decode': ('base', 'qr-decode'),
+    'gitignore': ('base', 'gitignore'),
+    'totp': ('base', 'totp'),
     'hotnews': ('base', 'hotnews'), 'go-cheatsheet': ('base', 'cheatsheet'),
     'snippets': ('base', 'snippets'), 'blog': ('base', 'blog'),
     'go-course': ('base', 'blog', 'course'),
@@ -669,9 +673,9 @@ NAV_GROUPS = [
     {'zh': 'JSON', 'en': 'JSON', 'slugs': ['json']},
     {'zh': '格式转换', 'en': 'Convert', 'slugs': ['formatter', 'gofmt-online', 'sql-formatter', 'markdown-to-html', 'markdown-table', 'yaml', 'toml', 'csv', 'csv-to-sql-insert', 'color']},
     {'zh': '进制转换', 'en': 'Base Convert', 'slugs': ['base', 'binary', 'hex']},
-    {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt', 'htpasswd', 'qr-decode']},
+    {'zh': '编码 / 加密', 'en': 'Encode / Crypto', 'slugs': ['encode', 'hash', 'jwt', 'htpasswd', 'qr-decode', 'totp']},
     {'zh': '文本 / 字符串', 'en': 'Text / String', 'slugs': ['diff', 'string', 'regex', 'case']},
-    {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['generator', 'snippets']},
+    {'zh': '代码 / 生成', 'en': 'Code / Gen', 'slugs': ['generator', 'snippets', 'gitignore']},
     {'zh': '时间 / 日期', 'en': 'Time / Date', 'slugs': [
         'timestamp', 'batch', 'timestamp-list', 'cron-generator', 'timezones', 'weeknumbers', 'daynumbers',
         'years', 'world-clock', 'countdown', 'date-difference', 'date-calculator', 'duration']},
@@ -740,6 +744,8 @@ TOOL_BLURBS = {
         'coordinate': 'WGS-84 / GCJ-02 / BD-09 坐标互转，含偏移距离',
         'altimeter': 'GPS 实时海拔与真实精度，可导出 GPX 轨迹',
         'qr-decode': '从图片或截图里读出二维码内容，本地解码不上传',
+        'gitignore': '按技术栈勾选模板，合并去重生成 .gitignore',
+        'totp': 'TOTP 两步验证动态码，本地计算不落盘',
         'number-to-chinese': '数字转中文读法与人民币大写，支持千万亿级',
         'markdown-table': '表格文本与 Markdown 表格互转，按显示宽度对齐',
         'unit-converter': '长度、质量、温度、数据量等 12 类单位换算',
@@ -796,6 +802,8 @@ TOOL_BLURBS = {
         'coordinate': 'WGS-84 / GCJ-02 / BD-09 coordinate conversion with offset distance',
         'altimeter': 'Live GPS altitude with honest accuracy, exportable GPX tracks',
         'qr-decode': 'Read a QR code out of any image or screenshot, decoded locally',
+        'gitignore': 'Pick stack templates and merge them into one clean .gitignore',
+        'totp': 'Two-factor TOTP codes, computed locally and never stored',
         'markdown-table': 'Tabular text to Markdown tables, aligned by display width',
         'unit-converter': 'Length, mass, temperature, data size and 8 more categories',
         'htpasswd': 'Generate htpasswd lines for Nginx / Apache basic auth',
@@ -1447,7 +1455,8 @@ def _jsonld_raw(graph):
 # 必须早于 time 组的覆盖定义）。
 CSS_GROUPS = ['base', 'home', 'json', 'diff', 'regex', 'generator', 'liveclock',
               'time', 'baseconv', 'worldclock', 'hotnews', 'cheatsheet',
-              'snippets', 'blog', 'course', 'evergreen', 'altimeter', 'qr-decode', 'legal']
+              'snippets', 'blog', 'course', 'evergreen', 'altimeter', 'qr-decode',
+              'gitignore', 'totp', 'legal']
 
 # 模板处理结果按资产组合 memoize：756 个页面实际只有十几种
 # (modules, css_groups, keep_cdn) 组合，每组合只做一次字符串替换。
