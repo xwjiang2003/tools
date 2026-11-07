@@ -50,6 +50,194 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+        'slug': 'ai-agent-git-autonomy-2026',
+        'category': 'security',
+        'date': '2026-11-07',
+        'updated': '2026-11-07',
+        'tags': ['OpenAI', 'Pierre', 'Codex', 'agentic coding', 'Git 自动化', '源码管控', '密钥泄露', '分支保护', 'CI 安全', '供应链安全', 'Pando', '智能体'],
+        'title': '当 AI 智能体接管 Git：OpenAI 收购 Pierre 之后，代码生产节奏被重写 | DevTools 博客',
+        'description': '2026-11-04 OpenAI 宣布收购 Pierre Computer Company 并公开自研 Git 后端 Pando，把生产环境代码推送中位延迟压低近 80%。本文拆解 agent 成为高频代码生产者后 Git 工作流的瓶颈与风险面（密钥泄露、未经审查代码进主干、供应链、不可追溯），给出六条可落地的防御纵深与可运行的 pre-receive 密钥拦截钩子、Codex/Claude Code 权限边界配置（源：OpenAI 官方公告 2026-11-04；证券时报/第一财经 2026-11-05）。',
+        'keywords': 'AI 智能体 提交代码 安全,agentic coding git 权限,OpenAI 收购 Pierre,Codex git 仓库,如何防止 AI 泄露密钥,AI 写代码 风险 防护,CI 门禁 AI 生成代码,智能体 并行建分支 限流,Pando 源码管控 后端,agent 代码审查 供应链,Git 分支保护 最佳实践,安全让 AI 操作仓库,Codex 自主编程 安全,如何审计 AI 提交,Claude Code 权限 allowlist',
+        'h1': '当 AI 智能体接管 Git：OpenAI 收购 Pierre 之后，代码生产节奏被重写',
+        'summary': '2026-11-04 OpenAI 收购 Pierre 并公开 Pando，把代码推送中位延迟降近 80%，说明 agent 已成高频代码生产者。本文拆解 Git 工作流瓶颈与风险面，给出防御纵深与可运行钩子。',
+        'body': '''
+<blockquote>
+<p><b>结论先说</b>：11 月 4 日 OpenAI 宣布收购 Pierre Computer Company，并把自研 Git 后端 Pando 摆上台面。表面是「买个代码审查工具」，实质是承认一件事——AI 智能体已经成了高频代码生产者，而为人设计的 Git 工作流正在被重写（源：OpenAI 官方公告 2026-11-04；证券时报/第一财经 2026-11-05）。</p>
+</blockquote>
+
+<h2>Git 是为「人一天推几次」设计的</h2>
+<p>Pierre 的联合创始人 Jacob Thornton 是 Bootstrap 的联合作者，团队 11~50 人，2023 年成立，累计融资约 2400 万美元。它做的 Code Storage 是一套「面向 AI 智能体大规模工作负载的 Git 托管基础设施」，Trees 和 Diffs 两个开源库已经被塞进 Codex 的文件浏览和差异审查界面。</p>
+
+<p>OpenAI 同一周还公开了 Pando：一个自研的源代码管控后端，服务整个 OpenAI 代码库，把生产环境代码推送的中位延迟压低了近 <b>80%</b>。注意，这不是锦上添花，而是内部已经被 agent 的高频写入打爆之后的刚需——一个开发者同时跑 N 个 agent，每个都并行建分支、改文件、提 PR，传统托管平台按人类低频操作设计的限流、权限和审查流程，直接成了瓶颈。</p>
+
+<table>
+<thead><tr><th>维度</th><th>人类开发者</th><th>AI 智能体并行</th></tr></thead>
+<tbody>
+<tr><td>日提交量</td><td>几次到几十次</td><td>成百上千次 / 多分支</td></tr>
+<tr><td>分支生命周期</td><td>小时~天</td><td>分钟级、用完即弃</td></tr>
+<tr><td>审查节奏</td><td>人看 diff</td><td>机器初审 + 人终审</td></tr>
+<tr><td>典型瓶颈</td><td>人力</td><td>推送吞吐、令牌限流、权限模型</td></tr>
+</tbody>
+</table>
+
+<h2>agent 能直接 commit，风险面就变了</h2>
+<p>当写代码的主体从人变成能自主 push 的 agent，威胁模型得重画一遍：</p>
+<ul>
+<li><b>密钥泄露</b>：agent 读 <code>.env</code> 或本地凭据，顺手写进 commit，一次 push 就把 secret 推到远端历史里，撤销要重写历史。</li>
+<li><b>未经审查的代码进主干</b>：agent 自测通过不等于安全，它能写出能跑但引入后门或劣质依赖的改动。</li>
+<li><b>供应链</b>：agent 有权装依赖、改 CI 配置、加 webhook，等于拿到仓库的写入面。</li>
+<li><b>不可追溯</b>：OpenAI 说想「把企业交付的代码与员工所做的决策联系起来」——反过来，agent 生成的代码如果没人背锅，出了事查不到决策链。</li>
+</ul>
+
+<h2>防御纵深：别让 agent 直推 main</h2>
+<p>把「让 AI 写代码」和「让 AI 拥有仓库写权限」分开。下面这套是能今天落地的：</p>
+<ol>
+<li><b>分支保护 + 强制 PR</b>：main 禁止直接 push，agent 只能在独立分支或 worktree 里工作，merge 必须过 PR。</li>
+<li><b>签名提交</b>：开启 GPG/SSH signed commits，push 时校验，未签名的一律拒。</li>
+<li><b>密钥扫描钩子</b>：pre-commit / pre-receive 跑 gitleaks，命中即拦。</li>
+<li><b>沙箱 + 最小权限</b>：agent 进程在容器里跑，网络白名单、只写分配到的 scratch 路径，禁外网。</li>
+<li><b>人工门禁</b>：agent 的 PR 必须带 <code>Reviewed-by</code> 人类签名才允许 merge。</li>
+<li><b>审计轨迹</b>：要求 agent 提交带 <code>Co-Authored-By: &lt;agent&gt;</code> trailer，把生成与决策绑定。</li>
+</ol>
+
+<h2>分步实操：一个能拦密钥的 pre-receive 钩子</h2>
+<p>下面这段服务端钩子（<code>.git/hooks/pre-receive</code>）扫描本次新引入的提交，命中疑似密钥就拒绝推送。几条误报率低的模式足够覆盖绝大多数「手滑提交」：</p>
+
+<pre><code>#!/usr/bin/env python3
+# .git/hooks/pre-receive
+import sys, re, subprocess
+
+PATTERNS = [
+    (r'AKIA[0-9A-Z]{16}', 'AWS access key'),
+    (r'ghp_[0-9A-Za-z]{36}', 'GitHub PAT'),
+    (r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', 'private key'),
+    (r'sk-[A-Za-z0-9]{32,}', 'API secret'),
+]
+COMPILED = [(re.compile(p), n) for p, n in PATTERNS]
+
+def scan(text):
+    hits = []
+    for rx, name in COMPILED:
+        for m in rx.finditer(text):
+            hits.append((name, m.group(0)[:12] + '...'))
+    return hits
+
+for line in sys.stdin:
+    old, new, ref = line.split()
+    if new == '0' * 40:
+        continue
+    revs = subprocess.check_output(
+        ['git', 'rev-list', new, '--not', '--all']).decode().split()
+    for rev in revs:
+        diff = subprocess.check_output(
+            ['git', 'show', rev, '--no-color', '-U0']).decode('utf-8', 'replace')
+        if scan(diff):
+            sys.stderr.write('rejected: possible secret in %s\\n' % rev[:8])
+            sys.exit(1)
+</code></pre>
+
+<p>更省事的做法是直接用 gitleaks：</p>
+<pre><code># 作为 pre-receive 跑
+gitleaks protect --pipe --redact
+# 或本地 pre-commit
+gitleaks protect --staged --redact</code></pre>
+
+<p>再给 agent 一个权限边界（以 Claude Code / Codex 的 settings.json 为例）——只放它需要的命令，把 push / commit / 出网全 deny 掉：</p>
+<pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(python:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}</code></pre>
+
+<h2>写在最后</h2>
+<p>OpenAI 收购 Pierre 不是「又买一家公司」，而是把「agent 时代的源码管控」当成下一仗。对普通团队来说，今天就该做一件事：把 agent 的写权限关进分支保护和钩子里，让它提 PR、人来做终审。代码生产效率上去了，事故面却不会跟着膨胀。</p>
+''',
+        'related': [('OpenAI 自主漏洞挖掘流水线挖出 948 个 Linux 提权漏洞', 'blog/openai-autonomous-vuln-discovery-2026/'), ('AI 编码工具的数据训练与隐私边界', 'blog/ai-coding-tools-data-training-privacy-2026/')]
+},
+{
+        'slug': 'agent-skills-standard-2026',
+        'category': 'tooling',
+        'date': '2026-11-07',
+        'updated': '2026-11-07',
+        'tags': ['Agent Skills', 'Anthropic', 'SKILL.md', 'agentskills.io', 'cloudflare', 'security-audit-skill', 'coding agent', '技能规范', '插件', '可移植', 'skills CLI', '自动化审计'],
+        'title': 'Agent Skills 正在变成新标准：一份能被任意代理加载的技能，该怎么写 | DevTools 博客',
+        'description': '2026-11 第一周，anthropics/skills、google/skills、mattpocock/skills、cloudflare/security-audit-skill 同一天冲上 GitHub Trending，共享一个 SKILL.md。本文拆解 Agent Skills 规范的两个易踩坑（description 上限 1024 字符、name 禁用 claude/anthropic 保留词），以 cloudflare 六阶段安全审计技能为案例，并给出可运行的最小技能与 skills CLI 安装实操（源：GitHub Trending 2026-11-07；Anthropic skills 仓库 2026-11-06）。',
+        'keywords': 'agent skills 是什么,如何编写 agent skill,Anthropic skills 规范,SKILL.md 格式 教程,cloudflare security-audit-skill 使用,agentskills.io 标准,agent 技能 可移植,如何给 AI 写技能包,coding agent skill 安全,多阶段安全审计 自动化,skills CLI 安装,自定义 agent 技能 实战,代理 插件 规范,如何分享 agent 技能',
+        'h1': 'Agent Skills 正在变成新标准：一份能被任意代理加载的技能，该怎么写',
+        'summary': 'GitHub Trending 被一批 skills 仓库刷屏，共享 SKILL.md。本文讲清规范坑点、cloudflare 审计技能案例，并给出可运行的最小技能与安装实操。',
+        'body': '''
+<blockquote>
+<p><b>结论先说</b>：11 月第一周，anthropics/skills、google/skills、mattpocock/skills、cloudflare/security-audit-skill 同一天冲上 GitHub Trending。它们做的事不同，但共享一个文件——<code>SKILL.md</code>。Anthropic 把它沉淀成了跨代理的标准，规范站点是 agentskills.io（源：GitHub Trending 2026-11-07；Anthropic skills 仓库 2026-11-06 更新）。</p>
+</blockquote>
+
+<h2>一个 skill 就是给 LLM 的即插即用插件</h2>
+<p>Agent Skills 的本质很简单：一个文件夹，里面有一份 <code>SKILL.md</code>（YAML frontmatter + 自然语言指令），可选带脚本和资源。代理在需要时动态加载它，而不是把所有流程都塞进 system prompt。好处是上下文更省、能力可组合、还能跨团队和跨代理复用。</p>
+
+<h2>规范里两个容易踩的坑</h2>
+<p>frontmatter 只需要两个字段：<code>name</code> 和 <code>description</code>。但实测有两个坑：</p>
+<ul>
+<li><b>description 不能超过 1024 字符</b>：anthropics/skills 自己就把一条 1176 字符的 description 砍到 992 字符，因为上传校验会卡这个上限。而 description 是代理决定「要不要加载这个技能」的唯一依据，写得太短或太泛，技能永远不会被触发。</li>
+<li><b>name 不能含保留词</b>：claude 和 anthropic 这两个词不能出现在技能名里。anthropics/skills 仓库里就有一条提交把 <code>claude-academy-guide</code> 改名成 <code>academy-guide</code>，原因正是 reserved words。</li>
+</ul>
+
+<pre><code>---
+name: pr-title-lint
+description: Enforce Conventional Commits for PR/commit titles. Use when a PR is opened or a commit title looks non-conforming.
+---
+# PR Title Lint
+Reject titles that do not match type(scope): summary.
+## Steps
+1. Read the title from the argument or the latest commit.
+2. Match ^(feat|fix|docs|refactor|test|chore)(.+)?: .+$
+3. On mismatch, print the suggested fix and exit 1.</code></pre>
+
+<h2>为什么是「标准」而不是「功能」</h2>
+<p>看 star 数就知道了：mattpocock/skills 约 31.7 万、anthropics/skills 约 18.8 万、google/skills 约 2.3 万。生态已经自发聚拢，<code>skills.sh</code> 提供的 CLI 让安装跨平台：</p>
+<pre><code>npx skills add https://github.com/cloudflare/security-audit-skill --skill security-audit
+npx skills add ./pr-title-lint --global</code></pre>
+<p>这是 2026 年 agent 工程里最被低估的一块基建：它把「能力」从模型权重和 prompt 里抽出来，变成可版本化、可审计、可分享的单元。</p>
+
+<h2>案例：cloudflare/security-audit-skill 把审计做成流水线</h2>
+<p>它不是一个提示词，而是一个六阶段流程：侦察到覆盖驱动猎杀，到候选验证，到结构化输出（<code>findings.json</code> + <code>report-schema.json</code>），再到独立记录复核，最后出目标中立报告。两个设计值得抄：</p>
+<ul>
+<li><b>对抗验证</b>：验证某条发现是否成立的 agent，绝不是发现它的那个 agent。自己查自己永远偏乐观。</li>
+<li><b>只在确认边界失效时才确认</b>：拿不准的标 <code>needs_validation</code>，宁可挂着也不下结论；severity 要 impact 乘 likelihood，而不是「偏离清单就扣分」。</li>
+</ul>
+<p>它还硬性要求 OS 级沙箱（禁外网、限资源、只写 scratch）——否则结论只能停在 <code>needs_validation</code>，根本不执行目标代码。这条正好和「让 agent 操作仓库先上沙箱」呼应。</p>
+
+<h2>分步实操：写一个最小 skill 并用 CLI 装起来</h2>
+<p>照着上面的 frontmatter 建一个文件夹，再补一个真正能跑的 lint 脚本：</p>
+<pre><code>#!/usr/bin/env bash
+# pr-title-lint.sh
+title="$1"
+python3 - "$title" <<'PY'
+import sys, re
+title = sys.argv[1]
+pat = r'^(feat|fix|docs|refactor|test|chore)(\\([^)]+\\))?:\s.+$'
+if not re.match(pat, title):
+    print("bad title:", title)
+    sys.exit(1)
+PY</code></pre>
+<p>本地装好并验证触发：</p>
+<pre><code>npx skills add ./pr-title-lint --global
+# 让代理对一条不合规标题跑这个 skill，应返回 exit 1</code></pre>
+
+<h2>写在最后</h2>
+<p>skill 等于「给代理装插件」，而插件能带任意脚本。所以铁律只有一条：只装来源可信的 skill，装之前先读一遍它的 SKILL.md 和脚本，并在沙箱里跑。把能力做成可审计的单元，agent 工程才算真正工程化。</p>
+''',
+        'related': [('当 AI 智能体接管 Git：代码生产节奏被重写', 'blog/ai-agent-git-autonomy-2026/'), ('OpenAI 自主漏洞挖掘流水线挖出 948 个 Linux 提权漏洞', 'blog/openai-autonomous-vuln-discovery-2026/')]
+},
+{
         'slug': 'openai-autonomous-vuln-discovery-2026',
         'category': 'security',
         'date': '2026-11-06',
