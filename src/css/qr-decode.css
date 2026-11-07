@@ -1,0 +1,88 @@
+/* ---------------------------------------------------------------- 二维码解析 */
+.qr-wrap{display:flex;flex-direction:column;gap:14px;max-width:900px;margin:0 auto}
+/* 这一组里有 display:flex/grid 的元素，hidden 属性会被 UA 的 display:none 覆盖，
+   局部样式组必须自己兜住，否则"识别中"的隐藏元素会一直占位。 */
+.qr-wrap [hidden]{display:none!important}
+
+/* 放置区 */
+.qr-drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:34px 20px 30px;background:var(--card-bg);border-radius:var(--radius);
+  box-shadow:var(--shadow);border:2px dashed var(--border);cursor:pointer;
+  transition:border-color var(--transition),background var(--transition)}
+.qr-drop:hover,.qr-drop:focus-visible{border-color:var(--primary);outline:none}
+.qr-drop.is-over{border-color:var(--primary);background:var(--primary-light)}
+[data-theme="dark"] .qr-drop.is-over{background:rgba(96,165,250,.10)}
+.qr-drop-icon{width:46px;height:46px;color:var(--text-muted);margin-bottom:2px}
+.qr-drop.is-over .qr-drop-icon{color:var(--primary)}
+.qr-drop-main{margin:0;font-size:16px;font-weight:600;color:var(--text);text-align:center}
+.qr-drop-sub{margin:0;font-size:12.5px;line-height:1.7;color:var(--text-secondary);text-align:center;max-width:520px}
+.qr-drop-actions{margin-top:8px}
+
+/* 状态条 */
+.qr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 2px;font-size:12.5px;color:var(--text-secondary)}
+.qr-status{font-weight:500}
+
+/* 结果列表 */
+.qr-results{display:flex;flex-direction:column;gap:12px}
+.qr-card{display:grid;grid-template-columns:132px minmax(0,1fr);gap:14px;align-items:start;
+  background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+.qr-card.is-nothumb{grid-template-columns:minmax(0,1fr)}
+.qr-card-media{display:flex;align-items:center;justify-content:center;min-width:0;
+  background:var(--bg-soft,#f4f6f8);border-radius:8px;overflow:hidden;aspect-ratio:1/1}
+[data-theme="dark"] .qr-card-media{background:rgba(255,255,255,.05)}
+.qr-card-media img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
+.qr-card-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.qr-card-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qr-kind{font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;
+  background:var(--primary-light);color:var(--primary);white-space:nowrap}
+[data-theme="dark"] .qr-kind{background:rgba(96,165,250,.14)}
+.qr-kind.is-wait{background:var(--bg-soft,#f4f6f8);color:var(--text-secondary)}
+[data-theme="dark"] .qr-kind.is-wait{background:rgba(255,255,255,.06)}
+.qr-kind.is-fail{background:rgba(239,68,68,.12);color:#dc2626}
+.qr-kind.is-wifi{background:rgba(16,185,129,.14);color:#059669}
+.qr-kind.is-vcard,.qr-kind.is-otpauth{background:rgba(139,92,246,.14);color:#7c3aed}
+.qr-kind.is-url{background:rgba(59,130,246,.14);color:#2563eb}
+.qr-kind.is-geo{background:rgba(245,158,11,.16);color:#b45309}
+[data-theme="dark"] .qr-kind.is-wifi{color:#34d399}
+[data-theme="dark"] .qr-kind.is-vcard,[data-theme="dark"] .qr-kind.is-otpauth{color:#a78bfa}
+[data-theme="dark"] .qr-kind.is-url{color:#60a5fa}
+[data-theme="dark"] .qr-kind.is-geo{color:#fbbf24}
+[data-theme="dark"] .qr-kind.is-fail{color:#f87171}
+
+/* 字段表 */
+.qr-fields{display:flex;flex-direction:column;gap:4px;min-width:0}
+.qr-field{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:baseline;
+  font-size:13px;line-height:1.6}
+.qr-field-k{color:var(--text-secondary);font-size:12px}
+.qr-field-v{color:var(--text);word-break:break-all;min-width:0}
+.qr-field.is-secret .qr-field-v{font-family:"JetBrains Mono","Consolas",monospace;
+  background:var(--bg-soft,#f4f6f8);border-radius:4px;padding:0 5px}
+[data-theme="dark"] .qr-field.is-secret .qr-field-v{background:rgba(255,255,255,.06)}
+
+/* 纯文本 / 链接原文 */
+.qr-text{margin:0;font-family:"JetBrains Mono","Consolas",monospace;font-size:12.5px;line-height:1.65;
+  color:var(--text);word-break:break-all;background:var(--bg-soft,#f4f6f8);border-radius:6px;
+  padding:8px 10px;max-height:180px;overflow:auto}
+[data-theme="dark"] .qr-text{background:rgba(255,255,255,.05)}
+
+/* 风险提示 */
+.qr-warn{margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:#b45309}
+.qr-warn li{margin:0}
+[data-theme="dark"] .qr-warn{color:#fbbf24}
+.qr-warn-note{margin:0;font-size:12px;line-height:1.65;color:var(--text-muted)}
+
+/* 失败说明 */
+.qr-empty{margin:0;font-size:13px;font-weight:600;color:var(--text)}
+.qr-empty-why{margin:0;font-size:12.5px;line-height:1.7;color:var(--text-secondary)}
+
+.qr-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.qr-privacy{margin:0;font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center}
+
+@media (max-width:560px){
+  .qr-drop{padding:26px 14px 24px}
+  .qr-card{grid-template-columns:minmax(0,1fr);gap:10px}
+  .qr-card-media{aspect-ratio:auto;max-height:150px}
+  .qr-card-media img{width:auto;max-width:100%;height:132px;object-fit:contain}
+  .qr-field{grid-template-columns:68px minmax(0,1fr);gap:8px}
+}

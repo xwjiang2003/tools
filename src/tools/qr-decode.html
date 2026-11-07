@@ -1,0 +1,31 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="qr-wrap">
+
+  <section class="qr-drop" id="qrDrop" tabindex="0" role="button" aria-labelledby="qrDropMain">
+    <svg class="qr-drop-icon" viewBox="0 0 48 48" aria-hidden="true" fill="none"
+         stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="13" height="13" rx="2"/>
+      <rect x="29" y="6" width="13" height="13" rx="2"/>
+      <rect x="6" y="29" width="13" height="13" rx="2"/>
+      <path d="M29 29h5v5h-5zM38 29h4M29 38h4M38 38h4v4"/>
+    </svg>
+    <p class="qr-drop-main" id="qrDropMain">{{TL:drop_main}}</p>
+    <p class="qr-drop-sub">{{TL:drop_sub}}</p>
+    <div class="qr-drop-actions">
+      <button type="button" class="btn btn-primary" id="qrPick">{{TL:btn_pick}}</button>
+    </div>
+    <!-- accept 里的 * 用 &#42; 实体写：源码中若出现 "/*" 字面量，会被 build 的
+         方言替换当成 CSS 注释开头，一路吞到下一个 */ ，导致整页后半段不再翻译。 -->
+    <input type="file" id="qrFile" accept="image/&#42;" multiple hidden>
+  </section>
+
+  <div class="qr-bar" id="qrBar" hidden>
+    <span class="qr-status" id="qrStatus"></span>
+    <button type="button" class="btn btn-sm" id="qrClear">{{TL:btn_clear}}</button>
+  </div>
+
+  <div class="qr-results" id="qrResults"></div>
+
+  <p class="qr-privacy">{{TL:privacy}}</p>
+</div>
+<script src="/assets/cdn/jsqr/1.4.0/jsQR.js"></script>

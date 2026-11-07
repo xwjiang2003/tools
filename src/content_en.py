@@ -2823,6 +2823,78 @@ TOOLS_EN = {
             ('JSON formatter', 'json/'),
         ],
     },
+    'qr-decode': {
+        'path': 'qr-decode/',
+        'nav': 'QR decoder',
+        'title': 'Online QR Code Decoder - Read a QR Code From an Image, Decoded Locally | DevTools',
+        'description': (
+            'Drop a QR code image and read what is inside: links, WiFi credentials, contact cards, phone numbers, '
+            'email addresses, coordinates and two-factor setup are detected and laid out by type. '
+            'Batch several images, paste a screenshot, and nothing is uploaded - decoding runs in your browser.'
+        ),
+        'keywords': ('qr code decoder,read qr code,scan qr code from image,qr code reader online,'
+                     'decode qr code image,wifi qr code,extract qr code content,qr code to link'),
+        'h1': 'Online QR Code Decoder',
+        'intro': [
+            'Drop an image containing a QR code, or just press Ctrl+V to paste a screenshot, and the content '
+            'appears immediately. Links, WiFi setups, contact cards, phone numbers, emails, coordinates and '
+            'two-factor configs are classified and shown in their own structure, so you no longer have to guess '
+            'what a wall of encoded text means.',
+            'Decoding runs in JavaScript inside your browser: the image never reaches a server, which is also why '
+            'this page keeps working offline. Drop a dozen files at once or paste several screenshots in a row '
+            'and each one is handled separately, with a reason given whenever one fails.',
+        ],
+        'features': [
+            ('Three ways to feed an image', 'Drag and drop, pick files, or paste a screenshot with Ctrl+V. '
+                                            'On a phone you can choose from the gallery or take a photo.'),
+            ('Content type detection', 'Links, WiFi (SSID / password / security), vCard contacts, phone, SMS, '
+                                       'email, geo coordinates, otpauth two-factor setups and plain text each '
+                                       'get a dedicated layout.'),
+            ('Batch with per-file verdicts', 'Select several files or paste repeatedly; every image gets its own '
+                                             'card, and failures say why instead of disappearing silently.'),
+            ('Retries for cropped or scaled codes', 'The decoder retries at several scales and adds the quiet zone '
+                                                    'back, because a QR code with its white margin cropped away is '
+                                                    'one of the most common reasons a scan fails.'),
+            ('Link risk hints', 'When the payload is a URL the page flags bare IPs, @-disguised addresses, '
+                                'shortened links and plain http, so you can check the source before opening it.'),
+            ('Decoded locally', 'No upload step and no cookies; still works with the network switched off.'),
+        ],
+        'steps': [
+            'Drop the image into the dashed box above, click "Choose images", or press Ctrl+V to paste a screenshot.',
+            'Decoding starts automatically; results appear below in the order the images were added, each with a type badge.',
+            'Use "Copy" to take the text, or "Open link" when the payload is a URL (opens in a new tab).',
+            'If an image fails, crop away the background but keep the white margin around the code, then try again.',
+        ],
+        'faq': [
+            ('Is my image uploaded anywhere?',
+             'No. Decoding uses the jsQR library shipped with the page; the image only exists in this tab memory '
+             'and there is no code that sends either the image or the result to a server. The page still works '
+             'with the network off.'),
+            ('Why does a QR code fail to decode?',
+             'Four usual causes: blur, glare or screen moiré; the three corner squares cropped off; the screenshot '
+             'shrank the code too much; or there is no white margin (quiet zone) left around it. The first three '
+             'need a fresh photo or screenshot, the last one can be fixed by padding the image with white.'),
+            ('Can it read two QR codes in one image?',
+             'No. The decoder returns a single result per image, so only the first code is read. Split the codes '
+             'into separate images, or drop several files at once.'),
+            ('Does it read one-dimensional barcodes?',
+             'No. This page only handles QR codes. Product barcodes and Code128 need a different decoder.'),
+            ('Is the link inside a QR code safe?',
+             'It cannot be guaranteed. A QR code is just text encoded as a pattern and carries no reputation '
+             'information, so anyone can generate one pointing at a phishing site. The page flags bare IPs, '
+             'addresses containing @, shortened links and plain http, but those are suspicious signals, not a verdict.'),
+            ('Why does decoded Chinese text look garbled?',
+             'A few older generators produce codes in a non-UTF-8 legacy encoding, which the browser reads as UTF-8 '
+             'and mangles. There is no reliable marker to detect this, so this page does not guess the encoding. '
+             'If you can confirm the original text, run it through the encoding converter instead.'),
+        ],
+        'seealso': [
+            ('QR code generator', 'generator/'),
+            ('URL parser', 'url-parser/'),
+            ('Base64 / URL encoder', 'encode/'),
+            ('Unit converter', 'unit-converter/'),
+        ],
+    },
 
 }
 
