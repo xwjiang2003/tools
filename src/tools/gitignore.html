@@ -1,0 +1,92 @@
+<script>window.__TL__ = {{TL_JSON}};</script>
+<div class="gi-wrap">
+
+  <div class="gi-bar">
+    <input class="tl-input gi-search" id="giSearch" type="search" autocomplete="off"
+           spellcheck="false" placeholder="{{TL:search_ph}}" aria-label="{{TL:search_ph}}">
+    <span class="gi-set" id="giSetCount"></span>
+  </div>
+
+  <div class="gi-presets" id="giPresets">
+    <span class="gi-presets-label">{{TL:preset_label}}</span>
+  </div>
+
+  <div class="gi-cols">
+    <div class="gi-groups" id="giGroups"></div>
+
+    <aside class="gi-out">
+      <div class="gi-out-head">
+        <code class="gi-out-name">.gitignore</code>
+        <span class="gi-out-meta" id="giMeta"></span>
+      </div>
+
+      <pre class="gi-pre" id="giPre" tabindex="0"></pre>
+      <p class="gi-warn" id="giWarn" hidden></p>
+
+      <div class="gi-out-actions">
+        <button type="button" class="btn btn-primary btn-sm" id="giCopy">{{TL:btn_copy}}</button>
+        <button type="button" class="btn btn-sm" id="giDownload">{{TL:btn_download}}</button>
+        <button type="button" class="btn btn-sm" id="giClear">{{TL:btn_clear}}</button>
+        <span class="gi-toast" id="giToast" hidden></span>
+      </div>
+
+      <div class="gi-custom">
+        <label class="gi-custom-label" for="giCustom">{{TL:custom_label}}</label>
+        <textarea class="gi-ta" id="giCustom" rows="4" spellcheck="false"
+                  placeholder="{{TL:custom_ph}}"></textarea>
+        <div class="gi-pos">
+          <label><input type="radio" name="giPos" value="end" checked> {{TL:pos_end}}</label>
+          <label><input type="radio" name="giPos" value="start"> {{TL:pos_start}}</label>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="gi-note">{{TL:foot_note}}</p>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:syntax_title}}</h3>
+    <p class="tl-note">{{TL:syntax_note}}</p>
+    <div class="dt-scroll">
+      <table class="dt-table">
+        <thead><tr><th>{{TL:th_pat}}</th><th>{{TL:th_means}}</th></tr></thead>
+        <tbody id="giSyntax"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tl-sec">
+    <h3 class="tl-sec-title">{{TL:pit_title}}</h3>
+    <div class="dt-scroll">
+      <table class="dt-table">
+        <tbody id="giPit"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // 语法表与踩坑表按语言注入（数据段），模板里不写死任何中文。
+  function fill() {
+    var L = window.__TL__ || {};
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var syn = L.syntax_rows || [];
+    var sb = '';
+    for (var i = 0; i < syn.length; i++) {
+      sb += '<tr><td><code>' + esc(syn[i][0]) + '</code></td><td class="tl-wrap">' + esc(syn[i][1]) + '</td></tr>';
+    }
+    var synHost = document.getElementById('giSyntax');
+    if (synHost) synHost.innerHTML = sb;
+
+    var pit = L.pit_rows || [];
+    var pb = '';
+    for (var j = 0; j < pit.length; j++) {
+      pb += '<tr><td class="tl-wrap">' + esc(pit[j][0]) + '</td><td class="tl-wrap">' + esc(pit[j][1]) + '</td></tr>';
+    }
+    var pitHost = document.getElementById('giPit');
+    if (pitHost) pitHost.innerHTML = pb;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+  else fill();
+})();
+</script>

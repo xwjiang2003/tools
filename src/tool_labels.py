@@ -374,6 +374,114 @@ LABELS['zh'] = {
         'msg_noqr': '没解出二维码',
         'lib_fail': '解码库没加载成功，刷新页面再试',
     },
+    # ------------------------------------------------------------ gitignore
+    'gitignore': {
+        'search_ph': '搜索模板，例如 python、docker、unity',
+        'set_count': '已选 {n}',
+        'preset_label': '常用组合',
+        'preset_node': 'Node 前端',
+        'preset_python': 'Python 后端',
+        'preset_go': 'Go 服务',
+        'preset_java': 'Java 后端',
+        'preset_mixed': '小项目混合栈',
+        'cat_lang': '语言',
+        'cat_framework': '框架',
+        'cat_editor': '编辑器 / IDE',
+        'cat_os': '操作系统',
+        'cat_tool': '构建 / 工具',
+        'cat_common': '通用',
+        'out_empty': '左边点一个模板，这里立刻生成。',
+        'n_groups': '{n} 个分组',
+        'n_rules': '{n} 条规则',
+        'n_dupes': '去掉 {n} 条重复',
+        'warn_dead': '下面这些取反规则不会生效——它前面没有对应的忽略规则，或者父目录已经被整目录忽略：',
+        'btn_copy': '复制',
+        'btn_download': '下载',
+        'btn_clear': '清空',
+        'copied': '已复制',
+        'copy_fail': '复制失败，请手动选中后复制',
+        'copy_empty': '还没有内容可复制',
+        'downloaded': '已下载 gitignore.txt，重命名为 .gitignore 即可',
+        'custom_label': '自己再补几条（每行一条）',
+        'custom_ph': '例如 *.local\n/tmp/',
+        'pos_end': '加在末尾',
+        'pos_start': '加在最前',
+        'foot_note': '模板内置在页面里，选择与合并全部在你的浏览器中完成，不上传、不联网。'
+                     '每份模板只保留高频规则；可提交的文件（go.sum、Cargo.lock、composer.lock、'
+                     'gradle-wrapper.jar）一律不忽略。',
+        'syntax_title': '语法速查',
+        'syntax_note': 'gitignore 的匹配规则不多，但「锚定」与「取反」两条最容易记错，'
+                       '写错之后 git 不会报错，只会安静地忽略不该忽略的东西。',
+        'th_pat': '写法',
+        'th_means': '含义',
+        'syntax_rows': [
+            ['# 注释', '整行注释，git 完全跳过'],
+            ['*.log', '不含斜杠 → 匹配任意层级的同名文件'],
+            ['/dist', '前导斜杠 → 只匹配仓库根目录下的 dist'],
+            ['build/', '尾随斜杠 → 只匹配目录，同名文件不受影响'],
+            ['**/tmp', '双星号 → 跨任意层级'],
+            ['doc/*.txt', '单星号 → 只匹配这一层，不跨目录'],
+            ['!keep.log', '取反：把已忽略的文件重新纳入，顺序敏感'],
+        ],
+        'pit_title': '四个容易踩的坑',
+        'pit_rows': [
+            ['模板之间会重复',
+             '同一行规则出现在两个模板里时只保留第一次出现的位置，顺序不会被打乱。'],
+            ['下载下来叫 gitignore.txt',
+             '浏览器不允许直接保存以点开头的文件。把它重命名为 .gitignore 放进仓库根目录即可。'],
+            ['已提交的文件不会自动消失',
+             '.gitignore 只影响未被跟踪的文件。要让已经提交的文件退出跟踪，得用 git rm --cached。'],
+            ['编辑器与系统规则更适合放全局',
+             'VS Code、macOS 这类与个人环境绑定的规则，写进 ~/.config/git/ignore 比每个仓库都抄一遍更省事。'],
+        ],
+    },
+    # ------------------------------------------------------------ totp
+    'totp': {
+        'secret_label': '密钥（Base32）或 otpauth 链接',
+        'secret_ph': '例如 JBSW Y3DP EBFG H2ZL',
+        'secret_hint': '直接粘贴 otpauth:// 链接会自动拆出密钥与算法、位数、周期。'
+                       '密钥里的空格、连字符与等号会被自动清理。',
+        'btn_show': '显示',
+        'btn_hide': '隐藏',
+        'btn_clear': '清空',
+        'code_idle': '— — —',
+        'idle_hint': '填入密钥后自动开始计时',
+        'f_algo': '算法',
+        'f_digits': '位数',
+        'f_period': '周期',
+        'btn_copy': '复制验证码',
+        'btn_sync': '校准本机时间',
+        'copied': '已复制',
+        'copy_fail': '复制失败，请手动选中',
+        'copy_empty': '还没有验证码',
+        'err_char': '密钥里有非法字符：Base32 只允许 A–Z 与 2–7，这个字符不认识：{c}',
+        'err_short': '密钥太短，解不出任何字节，请检查是否复制完整。',
+        'err_nocrypto': '当前环境不支持 Web Crypto（需要 https 或 localhost），算不出 HMAC。',
+        'err_hotp': '这是 hotp 链接，基于计数器而不是时间，本页不支持。',
+        'skew_ok': '本机时间与服务器相差 {n} 秒（本次测量误差约 ±{e} 秒），已按服务器时间计算。',
+        'skew_fail': '没取到服务器时间（可能被网络策略拦了），继续按本机时间计算。',
+        'privacy': '密钥只在当前标签页里参与一次 HMAC 计算：不上传、不写 localStorage，'
+                   '刷新页面即清空。「校准本机时间」只向本站发一次 HEAD 请求，不带密钥。',
+        'how_title': '它是怎么算出来的',
+        'how_note': 'RFC 6238 把时间切成固定长度的格子，用密钥对「当前是第几格」做 HMAC，'
+                    '再按 RFC 4226 的动态截断取其中 4 字节转成十进制。格子一换，结果就变，'
+                    '所以每隔 30 秒刷新一次——这也是它离线的根本原因：没有人替你算，'
+                    '手机上的 App 和这个页面用的是同一套公开算法。',
+        'pit_title': '五个常见疑问',
+        'pit_rows': [
+            ['验证码一直不对，先看时间',
+             'TOTP 唯一的输入就是时间，本机偏 30 秒就必然全错。点「校准本机时间」能和服务器对一次。'],
+            ['密钥里的空格要不要删',
+             '不用管，页面会自动清理空格、连字符与等号填充。'],
+            ['密钥里出现 0 或 1 说明抄错了',
+             'Base32 的字母表只有 A–Z 和 2–7。出现 0、1、8、9 通常是 OCR 或手抄错误，'
+             '请回到原始来源核对。'],
+            ['同一个密钥，别人也算得出来',
+             '是的。TOTP 是共享秘密，密钥泄露等于二次验证失效。这也是本页不保存任何东西的原因。'],
+            ['不要把密钥发给别人',
+             '把密钥交给任何人，等于把第二因子一起交出去，哪怕只是「让他帮我算一下」。'],
+        ],
+    },
     # ------------------------------------------------------------ altimeter
     'altimeter': {
         'hero_label': '当前海拔',
@@ -836,6 +944,130 @@ LABELS['en'] = {
         'msg_readfail': 'Could not read that image; the browser may not support the format',
         'msg_noqr': 'no code found',
         'lib_fail': 'The decoder library did not load — reload the page and try again',
+    },
+    # ------------------------------------------------------------ gitignore
+    'gitignore': {
+        'search_ph': 'Search templates, e.g. python, docker, unity',
+        'set_count': '{n} selected',
+        'preset_label': 'Common sets',
+        'preset_node': 'Node frontend',
+        'preset_python': 'Python backend',
+        'preset_go': 'Go service',
+        'preset_java': 'Java backend',
+        'preset_mixed': 'Small mixed stack',
+        'cat_lang': 'Languages',
+        'cat_framework': 'Frameworks',
+        'cat_editor': 'Editors / IDEs',
+        'cat_os': 'Operating systems',
+        'cat_tool': 'Build / tools',
+        'cat_common': 'Common',
+        'out_empty': 'Pick a template on the left and it appears here immediately.',
+        'n_groups': '{n} groups',
+        'n_rules': '{n} rules',
+        'n_dupes': '{n} duplicates dropped',
+        'warn_dead': 'These negation rules will not take effect: no matching ignore rule comes before them, '
+                     'or the parent directory is already ignored as a whole:',
+        'btn_copy': 'Copy',
+        'btn_download': 'Download',
+        'btn_clear': 'Clear',
+        'copied': 'Copied',
+        'copy_fail': 'Copy failed — select the text manually',
+        'copy_empty': 'Nothing to copy yet',
+        'downloaded': 'Saved as gitignore.txt — rename it to .gitignore',
+        'custom_label': 'Add your own lines (one per line)',
+        'custom_ph': 'e.g. *.local\n/tmp/',
+        'pos_end': 'Append at the end',
+        'pos_start': 'Put at the top',
+        'foot_note': 'The templates ship with this page: selection and merging happen in your browser, '
+                     'with no upload and no network. Each template keeps only the rules that actually bite; '
+                     'files that must be committed (go.sum, Cargo.lock, composer.lock, gradle-wrapper.jar) '
+                     'are never ignored.',
+        'syntax_title': 'Syntax cheat sheet',
+        'syntax_note': 'The pattern language is small, but anchoring and negation are the two rules people '
+                       'get wrong most often. git never complains about a bad pattern; it just quietly ignores '
+                       'something you wanted to keep.',
+        'th_pat': 'Pattern',
+        'th_means': 'Meaning',
+        'syntax_rows': [
+            ['# comment', 'Whole-line comment, skipped entirely by git'],
+            ['*.log', 'No slash means it matches that name at any depth'],
+            ['/dist', 'Leading slash anchors it to the repository root'],
+            ['build/', 'Trailing slash matches directories only'],
+            ['**/tmp', 'Double star crosses any number of levels'],
+            ['doc/*.txt', 'Single star stays within one level'],
+            ['!keep.log', 'Negation re-includes a file; order matters'],
+        ],
+        'pit_title': 'Four traps worth knowing',
+        'pit_rows': [
+            ['Templates overlap',
+             'When the same rule appears in two templates it is kept at its first position, so your '
+             'ordering is never reshuffled.'],
+            ['The download is named gitignore.txt',
+             'Browsers will not save a file whose name starts with a dot. Rename it to .gitignore and drop '
+             'it in the repository root.'],
+            ['Already-committed files stay committed',
+             '.gitignore only affects untracked files. To untrack something already committed, use '
+             'git rm --cached.'],
+            ['Editor and OS rules belong in a global ignore',
+             'Rules tied to your machine (VS Code, macOS) are better placed in ~/.config/git/ignore than '
+             'copied into every repository.'],
+        ],
+    },
+    # ------------------------------------------------------------ totp
+    'totp': {
+        'secret_label': 'Secret (Base32) or otpauth link',
+        'secret_ph': 'e.g. JBSW Y3DP EBFG H2ZL',
+        'secret_hint': 'Paste an otpauth:// link and the secret, algorithm, digits and period are filled in for '
+                       'you. Spaces, hyphens and padding in the secret are cleaned up automatically.',
+        'btn_show': 'Show',
+        'btn_hide': 'Hide',
+        'btn_clear': 'Clear',
+        'code_idle': '— — —',
+        'idle_hint': 'Enter a secret to start the timer',
+        'f_algo': 'Algorithm',
+        'f_digits': 'Digits',
+        'f_period': 'Period',
+        'btn_copy': 'Copy code',
+        'btn_sync': 'Check device clock',
+        'copied': 'Copied',
+        'copy_fail': 'Copy failed — select the text manually',
+        'copy_empty': 'No code yet',
+        'err_char': 'Illegal character in the secret: Base32 only allows A–Z and 2–7, and this one is not '
+                    'recognised: {c}',
+        'err_short': 'The secret is too short to yield a single byte — check that the copy is complete.',
+        'err_nocrypto': 'This environment has no Web Crypto (needs https or localhost), so HMAC cannot be '
+                        'computed.',
+        'err_hotp': 'That is a hotp link (counter based, not time based). This page does not support it.',
+        'skew_ok': 'Your device is {n} seconds off the server clock (measurement accuracy about {e} s). '
+                   'Codes are now computed against the server time.',
+        'skew_fail': 'Could not read the server clock (maybe blocked by a network policy). '
+                     'Continuing with the local clock.',
+        'privacy': 'The secret takes part in one HMAC computation inside this tab: nothing is uploaded, '
+                   'nothing is written to localStorage, and reloading clears it. "Check device clock" sends a '
+                   'single HEAD request to this site and carries no secret.',
+        'how_title': 'How the code is computed',
+        'how_note': 'RFC 6238 slices time into fixed-length steps and HMACs the step number with your secret; '
+                    'RFC 4226 dynamic truncation then takes four bytes of that digest and turns them into '
+                    'decimal. The step number changes, the code changes — every 30 seconds by default. That is '
+                    'also why this works offline: nothing is being looked up, your phone app and this page run '
+                    'the same public algorithm.',
+        'pit_title': 'Five questions worth answering',
+        'pit_rows': [
+            ['The code is wrong, check the clock first',
+             'Time is the only input to TOTP, so a device that is 30 seconds off will always produce the '
+             'wrong code. "Check device clock" compares against the server once.'],
+            ['Do I need to remove the spaces',
+             'No. Spaces, hyphens and padding are stripped automatically.'],
+            ['A 0 or 1 means the secret was copied wrong',
+             'The Base32 alphabet is A–Z and 2–7 only. A 0, 1, 8 or 9 usually means an OCR or transcription '
+             'error, so go back to the original source.'],
+            ['Anyone with the secret can compute the same codes',
+             'Yes. TOTP is a shared secret, so leaking it defeats the second factor entirely. That is exactly '
+             'why this page stores nothing.'],
+            ['Never send the secret to anyone',
+             'Handing over the secret hands over the second factor, even if the request is just "compute one '
+             'code for me".'],
+        ],
     },
     # ------------------------------------------------------------ altimeter
     'altimeter': {

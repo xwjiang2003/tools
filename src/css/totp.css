@@ -1,0 +1,64 @@
+/* ---------------------------------------------------------------- TOTP 验证码 */
+.tt-wrap{display:flex;flex-direction:column;gap:14px;max-width:720px;margin:0 auto}
+.tt-wrap [hidden]{display:none!important}
+
+/* 输入卡 */
+.tt-card{display:flex;flex-direction:column;gap:8px;background:var(--card-bg);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+.tt-label{font-size:12.5px;font-weight:600;color:var(--text-secondary)}
+.tt-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tt-secret{flex:1;min-width:0;height:38px;font-size:13.5px;letter-spacing:.08em;
+  font-family:"JetBrains Mono","Consolas",monospace}
+.tt-hint{margin:0;font-size:12px;line-height:1.7;color:var(--text-muted)}
+.tt-uri{margin:0;font-size:12.5px;color:var(--primary);word-break:break-all}
+.tt-err{margin:0;font-size:12.5px;line-height:1.7;color:var(--danger);word-break:break-all}
+
+.tt-opts{display:flex;gap:16px;flex-wrap:wrap;padding-top:8px;margin-top:2px;border-top:1px dashed var(--border)}
+.tt-opt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary)}
+
+/* 验证码展示 */
+.tt-show{display:flex;flex-direction:column;gap:10px}
+.tt-code{display:block;width:100%;padding:16px 10px;border:1px solid var(--border);
+  border-radius:var(--radius);background:var(--card-bg);color:var(--text);
+  font-family:"JetBrains Mono","Consolas",monospace;font-size:clamp(30px,8.4vw,46px);
+  font-weight:600;line-height:1.15;letter-spacing:.06em;font-variant-numeric:tabular-nums;
+  text-align:center;cursor:pointer;transition:all var(--transition);box-shadow:var(--shadow);
+  /* 空态与出码态字号不同，固定最小高度避免整个页面跟着跳一下 */
+  min-height:84px}
+.tt-code:hover{border-color:var(--primary)}
+.tt-code:active{transform:scale(.995)}
+/* 空态不能用粗体：大字号粗体的破折号会连成一条黑杠，看着像故障。
+   但也别太大——46px 的细体破折号在这一行里像三条分隔线，同样读不懂。 */
+.tt-code.is-idle{color:var(--text-muted);font-weight:500;font-size:clamp(26px,6vw,34px);
+  letter-spacing:.18em;box-shadow:none}
+
+.tt-bar{height:4px;border-radius:99px;background:var(--border);overflow:hidden}
+.tt-bar-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--primary);
+  transition:width .18s linear}
+.tt-bar-fill.is-warn{background:var(--warning)}
+
+/* 左对齐：空态时只有提示文字，用 space-between 会把它孤零零推到右边 */
+.tt-show-meta{display:flex;align-items:center;justify-content:flex-start;gap:10px;
+  font-size:12.5px;color:var(--text-secondary);min-height:18px}
+.tt-remain{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+.tt-idle{color:var(--text-muted)}
+
+.tt-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tt-toast{font-size:12px;color:var(--success)}
+.tt-skew{margin:0;font-size:12px;line-height:1.7;color:var(--text-secondary)}
+
+.tt-privacy{margin:0;font-size:12px;line-height:1.7;color:var(--text-muted);text-align:center}
+
+/* 常见问题表第一列是短标题，默认按内容分配会把标题挤成两行 */
+#ttPit td:first-child{width:36%;min-width:9em}
+
+.tt-formula{margin:0;padding:12px 14px;background:var(--editor-bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);overflow-x:auto;
+  font-family:"JetBrains Mono","Consolas",monospace;font-size:12.5px;line-height:1.8;color:var(--text)}
+
+@media (max-width:430px){
+  .tt-card{padding:12px}
+  .tt-code{padding:14px 6px}
+  .tt-row{gap:6px}
+  .tt-opts{gap:12px}
+}

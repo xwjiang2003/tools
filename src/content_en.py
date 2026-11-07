@@ -2895,6 +2895,158 @@ TOOLS_EN = {
             ('Unit converter', 'unit-converter/'),
         ],
     },
+    'gitignore': {
+        'path': 'gitignore/',
+        'nav': 'gitignore builder',
+        'title': 'Online .gitignore Generator - Merge Templates Without Duplicates | DevTools',
+        'description': (
+            'Tick your language, framework, editor and OS and get one merged .gitignore: rules repeated '
+            'across templates appear once, and negation rules that would silently do nothing are flagged. '
+            'Add your own lines, copy or download. Templates ship with the page - nothing is uploaded.'
+        ),
+        'keywords': ('gitignore generator,gitignore template,.gitignore online,create gitignore,'
+                     'node gitignore,python gitignore,go gitignore,gitignore builder'),
+        'h1': 'Online .gitignore Generator',
+        'intro': [
+            'The first thing a new repository needs is a .gitignore, and the usual move is to search for '
+            '"python gitignore" and paste the entire official template - a hundred-odd lines of which half '
+            'is irrelevant, while the rules that actually matter (.env, editor folders) get left out until '
+            'some commit pushes a secret upstream.',
+            'This page splits 40 common stacks into individually tickable blocks. Select and they merge: '
+            'duplicate rules collapse to one occurrence, ordering is preserved, and negation rules written '
+            'in the wrong place are called out immediately. Every template ships with the page, so the '
+            'merging happens in your browser with no upload and no network.',
+        ],
+        'features': [
+            ('40 stack templates', 'Fifteen languages, six frameworks, five editors, three operating systems, '
+                                   'seven build tools and four common blocks, all searchable.'),
+            ('Cross-template de-duplication', 'When the same rule appears in several templates it is kept at '
+                                              'its first position, so ticking two more boxes does not double '
+                                              'the file.'),
+            ('Dead negation detection', 'A !keep.log rule placed before the ignore rule it depends on, or '
+                                        'under a directory that is ignored as a whole, does nothing at all. '
+                                        'The output lists every such rule below the result.'),
+            ('Append your own lines', 'Add rules at the top or the bottom. At the top means your wording '
+                                      'wins: generated lines that duplicate it are dropped.'),
+            ('Copy and download', 'Copy to clipboard, or download as gitignore.txt (browsers will not save a '
+                                  'file whose name starts with a dot - rename it).'),
+            ('Local only', 'There is no upload endpoint on this page, it works offline, and closing the tab '
+                           'leaves nothing behind.'),
+        ],
+        'steps': [
+            'Type a keyword in the search box (python, docker, unity), or click one of the common sets.',
+            'Tick whatever applies - languages, frameworks, editors and OSes mix freely, and the output '
+            'updates live.',
+            'Read the warning under the result: if a negation rule cannot take effect, it tells you which one.',
+            'Copy it into the .gitignore at the repository root, or download and rename.',
+        ],
+        'faq': [
+            ('I already committed files. Does adding a .gitignore help?',
+             'No. A .gitignore only affects untracked files; anything git already tracks stays tracked. '
+             'To untrack a file while keeping it on disk, run git rm --cached <file> and commit that removal.'),
+            ('Why not ship the full official templates?',
+             'The official ones aim for complete coverage, often running to a hundred lines and including '
+             'tools nobody has used in a decade. For a real project that is mostly noise, and the longer the '
+             'file the less anyone reads it - the few rules that matter get buried. Each template here keeps '
+             'only the rules that actually bite.'),
+            ('Why is the downloaded file called gitignore.txt?',
+             'Neither browsers nor operating systems let a web page save a file whose name starts with a dot. '
+             'Rename it to .gitignore after downloading, or just copy and paste into the project.'),
+            ('Why does my !important.log rule do nothing?',
+             'Negation is strictly ordered: !xxx must come after the rule that ignores xxx. On top of that, '
+             'if a parent directory is ignored as a whole (for example logs/), git never descends into it, so '
+             'no negation inside can help - switch to logs/* and re-include individual entries. The warning '
+             'below the output catches both cases.'),
+            ('Is there a difference between node_modules and node_modules/?',
+             'The trailing slash matches directories only, never a regular file of the same name. In practice '
+             'the difference is tiny, but if the repository happens to contain a script called node_modules, '
+             'the slash form is safer.'),
+            ('Do I need a .gitignore in every subdirectory?',
+             'Usually not. One at the repository root covers the project, with paths resolved relative to it. '
+             'Splitting is only worth it when subdirectories need genuinely different rule sets, such as a '
+             'monorepo whose packages diverge a lot.'),
+        ],
+        'seealso': [
+            ('Code snippets', 'snippets/'),
+            ('Go cheat sheet', 'go-cheatsheet/'),
+            ('Regex tester', 'regex/'),
+            ('Text diff', 'diff/'),
+        ],
+    },
+    'totp': {
+        'path': 'totp/',
+        'nav': 'TOTP codes',
+        'title': 'Online TOTP Generator - Two-Factor Codes Computed Locally | DevTools',
+        'description': (
+            'Paste a Base32 secret or an otpauth link and get the current 6- or 8-digit two-factor code with '
+            'a countdown. SHA-1, SHA-256 and SHA-512, 30 or 60 second periods, plus a clock check against the '
+            'server. The secret is never uploaded and never stored.'
+        ),
+        'keywords': ('totp online,totp generator,two factor code,2fa code generator,authenticator online,'
+                     'otpauth parser,one time password,google authenticator online'),
+        'h1': 'Online TOTP Code Generator',
+        'intro': [
+            'You changed phones, reinstalled your authenticator, or simply want to read one code on your '
+            'desktop - and the answer is "install our app". This page is for exactly that one-off need.',
+            'Paste the Base32 secret, or drop in the otpauth:// link the site gave you, and the code appears '
+            'immediately, rotating every 30 seconds with a countdown beside it. Algorithm, digit count and '
+            'period are adjustable, because implementations are not uniform. Everything is computed in your '
+            'browser: the secret never reaches a server and is never written to local storage.',
+        ],
+        'features': [
+            ('Paste an otpauth link', 'Drop the whole two-factor link in and the secret, algorithm, digits and '
+                                      'period are extracted and filled in for you.'),
+            ('Adjustable parameters', 'SHA-1, SHA-256 or SHA-512; 6 or 8 digits; 30 or 60 second periods. '
+                                      'A few sites use non-default combinations, and the wrong one never matches.'),
+            ('Countdown and cutoff warning', 'The bar drains and the code rotates; the last five seconds turn '
+                                             'amber so you do not copy a code that expires mid-typing.'),
+            ('Clock check', 'The most common reason codes fail is a device clock that drifted. One click '
+                            'compares against the server clock and reports the offset.'),
+            ('Character-level validation', 'A 0, 1, 8 or 9 in the secret is named precisely - the Base32 '
+                                           'alphabet is A-Z and 2-7 only.'),
+            ('Nothing stored', 'The secret takes part in one HMAC computation inside this tab. Reloading '
+                               'clears it; nothing goes to localStorage and nothing goes into the URL.'),
+        ],
+        'steps': [
+            'Paste the secret into the field, or paste the whole otpauth:// link.',
+            'The large digits are the current code; the bar empties and the code rotates.',
+            'Click the digits to copy them (or use the copy button below).',
+            'If a site keeps rejecting the code, hit the clock check first and see how far off you are.',
+        ],
+        'faq': [
+            ('Is it safe to type my secret here?',
+             'At the code level: the HMAC is computed with the browser native Web Crypto API, the secret '
+             'lives only in this page memory, there is no upload path and nothing is written to local '
+             'storage. You can read the JavaScript this page loads and verify that yourself. '
+             'Be clear about the limit though: any web page can be tampered with or have scripts injected by '
+             'an extension, so do not enter a secret on a shared computer or an untrusted network. '
+             'For daily use, an app on your phone is still the better answer.'),
+            ('The code is rejected. What is the most likely cause?',
+             'In order of likelihood: the device clock is off (by far the most common), the wrong algorithm '
+             '(a few sites use SHA-256), a digit count or period mismatch, or a character missing from the '
+             'secret. The first three are diagnosable right here - start with the clock check.'),
+            ('Do I need to strip the spaces and hyphens?',
+             'No. Base32 is usually displayed in groups of four with spaces; spaces, hyphens and padding are '
+             'removed automatically.'),
+            ('Does it support HOTP?',
+             'No, and it says so explicitly when you paste a hotp link. HOTP is counter based rather than '
+             'time based: every use increments a counter, so it needs counter input and state synchronisation. '
+             'Cramming that into this page would mostly produce wrong codes.'),
+            ('Should the code match what my phone app shows?',
+             'Within the same time step, with identical parameters, yes - both run the same public algorithm. '
+             'If you copied a code and it failed immediately, you probably crossed the 30 second boundary; '
+             'watch the countdown and try again.'),
+            ('Does it work offline?',
+             'Yes. Computing a code needs no network at all; only the clock check makes a request, and that '
+             'one goes to this site.'),
+        ],
+        'seealso': [
+            ('QR code decoder', 'qr-decode/'),
+            ('Base64 / URL encoder', 'encode/'),
+            ('MD5 / SHA hash', 'hash/'),
+            ('UUID generator', 'uuid/'),
+        ],
+    },
 
 }
 
