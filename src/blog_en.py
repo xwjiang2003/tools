@@ -6,6 +6,186 @@
 """
 
 ARTICLES_EN = {
+'agent-skills-standard-2026': {
+        'tags': ['Agent Skills', 'Anthropic', 'SKILL.md', 'agentskills.io', 'cloudflare', 'security-audit-skill', 'coding agent', 'skill spec', 'plugin', 'portable', 'skills CLI', 'automated audit'],
+        'title': 'Agent Skills Are Becoming a Standard: How to Write a Skill Any Agent Can Load | DevTools Blog',
+        'description': 'In the first week of November, anthropics/skills, google/skills, mattpocock/skills and cloudflare/security-audit-skill all hit GitHub Trending, sharing one file: SKILL.md. This post breaks the Agent Skills spec down to two easy-to-miss traps (1024-char description cap, reserved words claude/anthropic banned from names), walks cloudflare six-phase security-audit skill as a case study, and ships a runnable minimal skill plus skills CLI install steps.',
+        'keywords': 'what are agent skills,how to write an agent skill,Anthropic skills spec,SKILL.md format tutorial,cloudflare security-audit-skill usage,agentskills.io standard,portable agent skill,how to write AI skill package,coding agent skill security,multi-phase security audit automation,skills CLI install,custom agent skill tutorial,agent plugin spec,how to share agent skills',
+        'h1': 'Agent Skills Are Becoming a Standard: How to Write a Skill Any Agent Can Load',
+        'summary': 'A wave of skills repos hit GitHub Trending, all sharing SKILL.md. This post covers the spec traps, the cloudflare audit-skill case study, and a runnable minimal skill with install steps.',
+        'body': '''
+<blockquote>
+<p><b>TL;DR</b>: In the first week of November, anthropics/skills, google/skills, mattpocock/skills and cloudflare/security-audit-skill all hit GitHub Trending on the same day. They do different things, but they share one file: <code>SKILL.md</code>. Anthropic has turned it into a cross-agent standard; the spec lives at agentskills.io (source: GitHub Trending 2026-11-07; Anthropic skills repo updated 2026-11-06).</p>
+</blockquote>
+
+<h2>A skill is a plug-and-play plugin for an LLM</h2>
+<p>The idea is simple: a folder with one <code>SKILL.md</code> (YAML frontmatter plus natural-language instructions), optionally carrying scripts and assets. The agent loads it on demand instead of stuffing every procedure into the system prompt. You save context, you get composable capabilities, and the same skill works across teams and across agents.</p>
+
+<h2>Two traps in the spec</h2>
+<p>The frontmatter needs only two fields: <code>name</code> and <code>description</code>. Two traps bite in practice:</p>
+<ul>
+<li><b>description is capped at 1024 characters</b>: anthropics/skills itself trimmed a 1176-char description down to 992 because the upload validator enforces the limit. And description is the only signal an agent uses to decide whether to load a skill -- too short or too vague, and it never triggers.</li>
+<li><b>name cannot contain reserved words</b>: claude and anthropic are banned from skill names. There is literally a commit in anthropics/skills that renamed <code>claude-academy-guide</code> to <code>academy-guide</code> for exactly this reason.</li>
+</ul>
+
+<pre><code>---
+name: pr-title-lint
+description: Enforce Conventional Commits for PR/commit titles. Use when a PR is opened or a commit title looks non-conforming.
+---
+# PR Title Lint
+Reject titles that do not match type(scope): summary.
+## Steps
+1. Read the title from the argument or the latest commit.
+2. Match ^(feat|fix|docs|refactor|test|chore)(.+)?: .+$
+3. On mismatch, print the suggested fix and exit 1.</code></pre>
+
+<h2>Why this is a standard, not a feature</h2>
+<p>Look at the stars: mattpocock/skills around 317k, anthropics/skills around 188k, google/skills around 23k. The ecosystem converged on its own, and the <code>skills.sh</code> CLI makes installs portable:</p>
+<pre><code>npx skills add https://github.com/cloudflare/security-audit-skill --skill security-audit
+npx skills add ./pr-title-lint --global</code></pre>
+<p>This is the most underrated piece of agent engineering in 2026: it pulls "capability" out of model weights and prompts and turns it into a versioned, auditable, shareable unit.</p>
+
+<h2>Case study: cloudflare turns auditing into a pipeline</h2>
+<p>cloudflare/security-audit-skill is not a prompt -- it is a six-phase flow: reconnaissance, coverage-led hunting, candidate validation, structured output (<code>findings.json</code> plus <code>report-schema.json</code>), independent record verification, then a target-neutral report. Two design choices are worth stealing:</p>
+<ul>
+<li><b>Adversarial verification</b>: the agent that validates a finding is never the agent that found it. Checking your own work is always optimistic.</li>
+<li><b>Only confirm a boundary failure</b>: when unsure, mark it <code>needs_validation</code> and leave it hanging instead of declaring a verdict; severity is impact times likelihood, not "deviated from a checklist."</li>
+</ul>
+<p>It also hard-requires an OS-level sandbox (no external network, resource limits, writes only to scratch) -- otherwise the conclusion stays at <code>needs_validation</code> and never executes target code. That lines up with the "sandbox the agent before it touches a repo" rule from the git piece.</p>
+
+<h2>Hands-on: write a minimal skill and install it</h2>
+<p>Take the frontmatter above, drop in a script that actually runs:</p>
+<pre><code>#!/usr/bin/env bash
+# pr-title-lint.sh
+title="$1"
+python3 - "$title" <<'PY'
+import sys, re
+title = sys.argv[1]
+pat = r'^(feat|fix|docs|refactor|test|chore)(\\([^)]+\\))?:\s.+$'
+if not re.match(pat, title):
+    print("bad title:", title)
+    sys.exit(1)
+PY</code></pre>
+<p>Install locally and verify the trigger:</p>
+<pre><code>npx skills add ./pr-title-lint --global
+# ask the agent to run this skill on a non-conforming title; it should exit 1</code></pre>
+
+<h2>Closing thought</h2>
+<p>A skill is "install a plugin into your agent," and a plugin can carry arbitrary scripts. So the only rule that matters: install skills only from sources you trust, read its SKILL.md and scripts before installing, and run them in a sandbox. Turn capability into auditable units, and agent engineering finally becomes engineering.</p>
+''',
+        'related': [('When AI agents take over Git: the cadence of code is rewritten', 'blog/ai-agent-git-autonomy-2026/'), ('OpenAI autonomous pipeline found 948 Linux LPE exploits', 'blog/openai-autonomous-vuln-discovery-2026/')]
+},
+'ai-agent-git-autonomy-2026': {
+        'tags': ['OpenAI', 'Pierre', 'Codex', 'agentic coding', 'Git automation', 'source control', 'secret leakage', 'branch protection', 'CI security', 'supply chain', 'Pando', 'agents'],
+        'title': 'When AI Agents Take Over Git: OpenAI Acquires Pierre and Rewrites the Cadence of Code Production | DevTools Blog',
+        'description': 'On 2026-11-04 OpenAI announced the acquisition of Pierre Computer Company and unveiled Pando, its in-house source-control backend that cut production push median latency by nearly 80%. This post breaks down the bottleneck and the new risk surface once agents become high-frequency code producers (secret leakage, unreviewed code reaching main, supply-chain exposure, untraceable decisions), then gives six defense-in-depth moves plus a runnable pre-receive hook that blocks secrets and a Codex/Claude Code permission boundary.',
+        'keywords': 'AI agent commits code security,agentic coding git permissions,OpenAI acquires Pierre,Codex git repository,how to stop AI leaking secrets,AI writing code risk protection,CI gate AI generated code,agents parallel branches rate limit,Pando source control backend,agent code review supply chain,git branch protection best practices,safe AI repository access,Codex autonomous coding security,how to audit AI commits,Claude Code permission allowlist',
+        'h1': 'When AI Agents Take Over Git: OpenAI Acquires Pierre and Rewrites the Cadence of Code Production',
+        'summary': 'OpenAI acquired Pierre and unveiled Pando, cutting push latency by nearly 80% -- proof that agents are now high-frequency code producers. This post breaks the bottleneck, the risk surface, and ships a runnable secret-blocking hook plus a permission boundary.',
+        'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On November 4 OpenAI announced the acquisition of Pierre Computer Company and put its in-house Git backend Pando on the table. On the surface it is "buying a code-review tool"; in reality it admits something -- AI agents have become high-frequency code producers, and the Git workflow built for humans is being rewritten (source: OpenAI official announcement 2026-11-04; Securities Times / Yicai 2026-11-05).</p>
+</blockquote>
+
+<h2>Git was designed for "a human pushes a few times a day"</h2>
+<p>Pierre co-founder Jacob Thornton co-authored Bootstrap; the team is 11-50 people, founded in 2023, with around 24M dollars raised. Its Code Storage is "Git hosting infrastructure for large-scale AI-agent workloads," and its open-source Trees and Diffs libraries already power the file browser and diff viewer inside Codex.</p>
+
+<p>The same week OpenAI also revealed Pando: an in-house source-control backend serving the entire OpenAI codebase, cutting production push median latency by nearly <b>80%</b>. This is not polish -- it is the result of agents' high-frequency writes already overwhelming internal infrastructure. One developer runs N agents in parallel, each branching, editing, and opening PRs; the rate limits, permission models, and review flows designed for low-frequency human use become the bottleneck.</p>
+
+<table>
+<thead><tr><th>Dimension</th><th>Human developer</th><th>Parallel AI agents</th></tr></thead>
+<tbody>
+<tr><td>Commits per day</td><td>A few to dozens</td><td>Hundreds to thousands / many branches</td></tr>
+<tr><td>Branch lifetime</td><td>Hours to days</td><td>Minutes, disposable</td></tr>
+<tr><td>Review rhythm</td><td>Human reads diff</td><td>Machine pre-check + human final pass</td></tr>
+<tr><td>Typical bottleneck</td><td>Manpower</td><td>Push throughput, token rate limits, permission model</td></tr>
+</tbody>
+</table>
+
+<h2>Once agents can commit, the risk surface shifts</h2>
+<p>When the author of code changes from a human to an agent that can push on its own, redraw the threat model:</p>
+<ul>
+<li><b>Secret leakage</b>: an agent reads <code>.env</code> or local credentials and writes them into a commit; one push lands the secret in remote history, and undoing it means rewriting history.</li>
+<li><b>Unreviewed code reaching main</b>: an agent passing its own tests is not the same as safe; it can ship changes that run but plant a backdoor or pull in a bad dependency.</li>
+<li><b>Supply chain</b>: an agent with the right to install deps, edit CI config, or add webhooks holds the repo's write surface.</li>
+<li><b>Untraceable decisions</b>: OpenAI wants to "connect the code a company ships with the decisions its people make" -- the flip side is that agent-generated code with no owner leaves no decision trail when something breaks.</li>
+</ul>
+
+<h2>Defense in depth: never let the agent push to main</h2>
+<p>Separate "let the AI write code" from "let the AI hold repo write access." This is shippable today:</p>
+<ol>
+<li><b>Branch protection plus mandatory PRs</b>: block direct pushes to main; the agent works only in a branch or worktree, and merges go through a PR.</li>
+<li><b>Signed commits</b>: turn on GPG/SSH signed commits and verify on push; reject anything unsigned.</li>
+<li><b>Secret-scanning hook</b>: run gitleaks in pre-commit / pre-receive and block on a hit.</li>
+<li><b>Sandbox plus least privilege</b>: run the agent in a container with a network allowlist, writes limited to its assigned scratch path, no external network.</li>
+<li><b>Human gate</b>: an agent PR must carry a human <code>Reviewed-by</code> before merge.</li>
+<li><b>Audit trail</b>: require the agent to tag commits with a <code>Co-Authored-By: &lt;agent&gt;</code> trailer so generation and decision stay bound together.</li>
+</ol>
+
+<h2>Hands-on: a pre-receive hook that blocks secrets</h2>
+<p>This server-side hook (<code>.git/hooks/pre-receive</code>) scans the newly introduced commits and rejects the push on a suspected secret. A handful of low-false-positive patterns covers most "oops" commits:</p>
+
+<pre><code>#!/usr/bin/env python3
+# .git/hooks/pre-receive
+import sys, re, subprocess
+
+PATTERNS = [
+    (r'AKIA[0-9A-Z]{16}', 'AWS access key'),
+    (r'ghp_[0-9A-Za-z]{36}', 'GitHub PAT'),
+    (r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', 'private key'),
+    (r'sk-[A-Za-z0-9]{32,}', 'API secret'),
+]
+COMPILED = [(re.compile(p), n) for p, n in PATTERNS]
+
+def scan(text):
+    hits = []
+    for rx, name in COMPILED:
+        for m in rx.finditer(text):
+            hits.append((name, m.group(0)[:12] + '...'))
+    return hits
+
+for line in sys.stdin:
+    old, new, ref = line.split()
+    if new == '0' * 40:
+        continue
+    revs = subprocess.check_output(
+        ['git', 'rev-list', new, '--not', '--all']).decode().split()
+    for rev in revs:
+        diff = subprocess.check_output(
+            ['git', 'show', rev, '--no-color', '-U0']).decode('utf-8', 'replace')
+        if scan(diff):
+            sys.stderr.write('rejected: possible secret in %s\\n' % rev[:8])
+            sys.exit(1)
+</code></pre>
+
+<p>The quicker path is gitleaks directly:</p>
+<pre><code># as a pre-receive hook
+gitleaks protect --pipe --redact
+# or local pre-commit
+gitleaks protect --staged --redact</code></pre>
+
+<p>Then give the agent a permission boundary (Claude Code / Codex settings.json) -- allow only what it needs, deny push / commit / outbound network outright:</p>
+<pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(python:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}</code></pre>
+
+<h2>Closing thought</h2>
+<p>OpenAI buying Pierre is not "another acquisition" -- it is treating agent-era source control as the next battleground. For ordinary teams the one move to make today is simple: lock the agent's write access inside branch protection and hooks, let it open PRs, and keep the human as the final approver. Throughput goes up without the blast radius expanding with it.</p>
+''',
+        'related': [('OpenAI autonomous pipeline found 948 Linux LPE exploits', 'blog/openai-autonomous-vuln-discovery-2026/'), ('AI coding tools, data and training privacy', 'blog/ai-coding-tools-data-training-privacy-2026/')]
+},
 'openai-autonomous-vuln-discovery-2026': {
         'tags': ['OpenAI', 'Linux kernel', 'LPE', 'autonomous vuln discovery', 'exploit generation', 'fuzzing', 'kernel security', 'patch generation', 'Cyber Model', 'Patch the Planet'],
         'title': 'OpenAI Autonomous Vulnerability Pipeline Found 948 Linux LPE Exploits: Developer Self-Audit and Hardening Guide | DevTools Blog',
