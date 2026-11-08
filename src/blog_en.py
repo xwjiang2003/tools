@@ -6,6 +6,247 @@
 """
 
 ARTICLES_EN = {
+'agent-browser-ai-2026': {
+    'tags': ['Vercel', 'agent-browser', 'browser automation', 'AI agent', 'MCP', 'accessibility tree', 'CDP', 'Playwright', 'browser-use', 'agent infrastructure', 'Rust', 'session persistence', 'skill distribution'],
+    'title': 'A Browser for AI Agents: Vercel agent-browser Tops GitHub, One Ref Drives the Whole Page | DevTools Blog',
+    'description': 'On 2026-11-08 Vercel agent-browser hit GitHub Trending at 47k stars, and the same day HN Show HN surfaced Zig, ASCII, and Pickle competitors. This post breaks down how it turns the browser into a peripheral an agent drives one command at a time via accessibility tree, @e refs, and a background CDP daemon, compares it with Playwright and browser-use, and ships runnable install, snapshot-loop, and MCP examples (sources: GitHub Trending 2026-11-08; agent-browser.dev; HN Show HN 2026-11-08).',
+    'keywords': 'agent-browser tutorial,how to use Vercel agent-browser,AI browser automation,browser automation for AI agents,agent-browser MCP setup,accessibility tree agent,what is agent-native browser,agent-browser vs Playwright,agent-browser vs browser-use,drive browser with CLI for LLM,agent-browser session persistence,agent-browser skills install,reduce tokens browser automation,web agent tools',
+    'h1': 'A Browser for AI Agents: Vercel agent-browser Tops GitHub, One Ref Drives the Whole Page',
+    'summary': 'On 2026-11-08 Vercel agent-browser hit GitHub Trending at 47k stars. It turns the browser into a peripheral agents drive one command at a time via accessibility tree, @e refs, and a background CDP daemon. This post compares it with Playwright and browser-use and ships runnable examples.',
+    'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On 2026-11-08 a Rust CLI, vercel-labs/agent-browser, sat at the top of GitHub Trending with 47k stars (+190 that day). The same day HN Show HN surfaced competitors: Kuri (a Zig rewrite), an ASCII-wireframe browser for agents, Pickle (policy-gated actions), and Public Browser MCP claiming +48% speed and -33% tokens per session versus AgentBrowser. The signal is clear: the browser is being redesigned as a peripheral for agents, not a window for humans (sources: GitHub Trending 2026-11-08; agent-browser.dev; HN Show HN 2026-11-08).</p>
+</blockquote>
+
+<h2>The old pain: shoving the whole DOM at the model</h2>
+<p>The usual way to let an LLM drive a page is to dump the DOM or HTML into the context. Two problems: token blow-up (a mid-size page is KB to tens of KB), and noise (the model has to find "the login button" among hundreds of divs). browser-use extracts interactives, but still re-reads the whole structure each turn.</p>
+<p>agent-browser takes a different route: it returns a compact <b>accessibility tree</b> where every interactive element gets a stable ref like <code>@e1</code>. The agent reads a snapshot, acts on a ref, reads again, repeats. The browser stays resident in a background daemon, so each step is one short shell call.</p>
+
+<h2>How it actually works</h2>
+<p>The CLI ships each command to a background daemon that drives the browser over the Chrome DevTools Protocol. Each <code>--session</code> gets its own daemon and browser; headless by default, auto-exits after an idle hour (or persists state when session persistence is on).</p>
+<ul>
+<li><code>snapshot</code> returns compact text; interactive elements each carry a ref;</li>
+<li>clicking <code>@e1</code> really clicks that element, not "please click here";</li>
+<li>if the target is hidden, disabled, off-screen, or covered by a consent banner, it <b>fails honestly</b> instead of reporting success, so you clear the obstruction, re-snapshot, and retry.</li>
+</ul>
+
+<h2>How it differs from Playwright / browser-use</h2>
+<table>
+<thead><tr><th>Axis</th><th>Playwright / Puppeteer</th><th>browser-use</th><th>agent-browser</th></tr></thead>
+<tbody>
+<tr><td>Built for</td><td>human QA / test scripts</td><td>LLM direct drive</td><td>agent, one command at a time</td></tr>
+<tr><td>What the model sees</td><td>raw HTML / DOM</td><td>extracted interactives</td><td>accessibility tree + @e ref</td></tr>
+<tr><td>Call granularity</td><td>code / script</td><td>natural-language intent</td><td>one shell command</td></tr>
+<tr><td>Browser lifetime</td><td>inside the script</td><td>per session</td><td>resident daemon, reused across commands</td></tr>
+<tr><td>Token cost</td><td>high (whole page)</td><td>medium</td><td>low (compact tree; Public Browser MCP claims -33%/session)</td></tr>
+</tbody>
+</table>
+
+<h2>Up and running in five commands</h2>
+<pre><code>npm install -g agent-browser
+agent-browser install          # download Chrome for Testing on first run
+agent-browser open example.com
+agent-browser snapshot -i      # interactive elements only, each with a ref
+agent-browser click @e1
+agent-browser get url          # check the result
+agent-browser close</code></pre>
+<p>No install? <code>npx agent-browser open example.com</code> runs it. On Linux add <code>agent-browser install --with-deps</code> for system libraries.</p>
+
+<h2>A minimal ref-driven loop (Python, stdlib only)</h2>
+<p>This needs no third-party package: open a page, read the snapshot, grab the ref of a "log in" link by regex, click it, verify the URL changed.</p>
+<pre><code>import subprocess, re
+
+def snap(session):
+    return subprocess.run(
+        ["agent-browser", "--session", session, "snapshot", "-i"],
+        capture_output=True, text=True).stdout
+
+def click_ref(session, ref):
+    subprocess.run(
+        ["agent-browser", "--session", session, "click", ref], check=True)
+
+sess = "demo"
+subprocess.run(["agent-browser", "--session", sess, "open", "https://example.com"])
+tree = snap(sess)
+m = re.search(r'link "([^"]+)" [ref=(e\d+)]', tree)
+if m and "log in" in m.group(1).lower():
+    click_ref(sess, m.group(2))
+    url = subprocess.run(
+        ["agent-browser", "--session", sess, "get", "url"],
+        capture_output=True, text=True).stdout.strip()
+    print("clicked", m.group(2), "-&gt;", url)</code></pre>
+<p>In a real project you wrap "snapshot, decide, act" in a loop and let the LLM read the plain-text snapshot to pick the next ref. That beats stuffing the whole HTML into the prompt on every turn.</p>
+
+<h2>Plugging it into an agent: MCP and skill stubs</h2>
+<p>For agent use, the cleanest path is the MCP server over stdio:</p>
+<pre><code>agent-browser mcp</code></pre>
+<p>A neat trick is the skill stub: <code>agent-browser skills get core</code> prints a core-loop instruction that tracks the CLI version; <code>npx skills add vercel-labs/agent-browser</code> installs a thin stub that just tells the agent to load <code>agent-browser skills get core</code>. So the instructions always match the installed CLI version and never rot after an upgrade. You can also drop one line into AGENTS.md:</p>
+<pre><code>Use `agent-browser` for browser automation. Before the first use, run
+`agent-browser skills get core` and follow it.</code></pre>
+
+<h2>Set the security boundaries first</h2>
+<p>agent-browser Security docs describe four gates: an auth vault, domain allowlists, action policies, and content boundaries. Before you let an agent loose on the web, at least pin the domain allowlist so it cannot follow links off-site and start clicking around.</p>
+
+<h2>Where it pays off</h2>
+<p>agent-browser is not "a better Playwright"; it redefines the browser from a window humans look through into a peripheral agents drive. The swarm of competitors (Zig, ASCII, policy-gated, MCP) says the direction is right. Move the repetitive "open page, read info, click once" flows there first; you get better token economy and steadier runs. Add screenshots and eval when you need visual understanding or tricky forms.</p>
+''',
+    'related': [('Agent Skills Are Becoming a Standard: how to write a portable skill', 'blog/agent-skills-standard-2026/')]
+},
+'multi-turn-semantic-caching-2026': {
+    'tags': ['semantic caching', 'LLM cost', 'arXiv 2026', 'multi-turn', 'KV reuse', 'embedding', 'reuse risk', 'ContextCache', 'vCache', 'ElastiCache', 'LLM serving', 'GPT-4o-mini judge', 'latency'],
+    'title': 'Can Multi-Turn Semantic Caching Really Cut 40% of Inference Cost? A New arXiv Paper Turns Reuse Into Learnable Risk | DevTools Blog',
+    'description': 'arXiv 2611.01077 (submitted 2026-10-31), Multi-Turn Semantic Caching for Low-Cost LLM Serving, shows that with 1000 cache entries multi-turn semantic caching avoids 35-41% of generation cost and cuts latency 19-35%, beating ContextCache, ElastiCache, and vCache. This post explains why single-turn embedding similarity fails in multi-turn (AUC only 0.62-0.74), how to learn reuse risk from judge feedback, and ships a runnable Python implementation plus an OpenAI-compatible cache middleware.',
+    'keywords': 'LLM semantic caching tutorial,semantic caching LLM how to,reduce LLM API cost,cost-effective LLM serving,multi-turn semantic caching,LLM serving cost,semantic cache Python,ContextCache alternative,vCache ElastiCache comparison,reuse risk,LLM judge feedback,improve cache hit rate,LLM inference latency,OpenAI caching middleware',
+    'h1': 'Can Multi-Turn Semantic Caching Really Cut 40% of Inference Cost? A New arXiv Paper Turns Reuse Into Learnable Risk',
+    'summary': 'arXiv 2611.01077 shows multi-turn semantic caching avoids 35-41% of generation cost at 1000 entries. This post explains why single-turn similarity fails in multi-turn, how to learn reuse risk, and ships a runnable Python implementation plus a FastAPI middleware.',
+    'body': '''
+<blockquote>
+<p><b>TL;DR</b>: arXiv 2611.01077, submitted 2026-10-31, runs a solid experiment: with 1000 cache entries, multi-turn semantic caching avoids 35-41% of generation cost and cuts estimated latency by 19-35%, measured on real conversation logs (SocraTeach math tutoring, Taskmaster-3 movie ticketing), not synthetic toys. The bigger point: "similar means reuse" is mostly wrong in multi-turn dialogue (source: arXiv:2611.01077, submitted 2026-10-31).</p>
+</blockquote>
+
+<h2>Why single-turn similarity fails in multi-turn</h2>
+<p>Classic semantic caching embeds the request and reuses an old answer for a similar one. That works for single turns, but "similar" in a conversation depends on the <b>whole history</b>, while an embedding only sees the current line.</p>
+<p>The paper measures request-plus-history embedding similarity across five workloads and gets an AUC of just <b>0.62-0.74</b> for "can we reuse". The harshest case: in SocraTeach, the same follow-up question with a different history is safe to reuse only <b>22%</b> of the time. In math tutoring, "what to explain next" depends heavily on how far the proof has progressed.</p>
+
+<h2>Modeling "can we reuse" as a learnable risk</h2>
+<p>The paper turns the reuse decision into two quantities:</p>
+<ul>
+<li><b>Compatibility mask</b> <code>chi(z,u)</code>: rules out never-usable pairs (e.g. force key equality).</li>
+<li><b>Reuse risk</b> <code>r(z,u)</code>: the probability that, in state z, the cached answer a(u) is "unacceptable" to the judge or user.</li>
+</ul>
+<p>Reuse loss is <code>rho(z,u) = min(1, gamma * r(z,u))</code> when compatible, else 1; <code>gamma</code> converts risk into normalized cost. The label Y comes from a reuse judge: the paper uses GPT-4o-mini at temperature 0 to decide whether a cached answer is acceptable for the current request plus history.</p>
+<p>The optimal serving rule is intuitive: call the LLM only when its expected cost <code>c(z)</code> is less than or equal to the reuse loss <code>rho(z,u)</code>; otherwise return the cache. In other words, it is not "similar, so return cache", but "does the generation cost the cache avoids outweigh the risk of a wrong reuse".</p>
+
+<h2>Budgeted admission and two algorithms</h2>
+<p>The cache holds at most k entries; the problem becomes minimizing expected loss over all subsets of size at most k. Two algorithms:</p>
+<ul>
+<li><b>CUCB-SC-MT</b> (offline): builds a layered epsilon-net from logs, estimates state weights, fits cost and risk with KRR, then Reverse Greedy picks representatives, with a suboptimality guarantee.</li>
+<li><b>CLCB-LS-MT</b> (online): per-conversation snapshots, low switching (updates the cache only at conversation boundaries), samples judge labels with probability zeta to update risk, regret <code>O(sqrt(N))</code>.</li>
+</ul>
+<p>The core insight: caching is a <b>budget trade-off</b> -- spend capacity on states with high reuse value and low risk, not on the most similar requests.</p>
+
+<h2>The numbers: 35-41% saved at 1000 entries</h2>
+<table>
+<thead><tr><th>Method (k=1000)</th><th>Taskmaster-3 SCA</th><th>SocraTeach SCA</th></tr></thead>
+<tbody>
+<tr><td>CLCB-LS-MT (this paper)</td><td>35.0%</td><td>41.0%</td></tr>
+<tr><td>ContextCache</td><td>17.9%</td><td>25.1%</td></tr>
+<tr><td>ElastiCache-MT</td><td>22.3%</td><td>0.8%</td></tr>
+<tr><td>vCache</td><td>14.7%</td><td>0.7%</td></tr>
+</tbody>
+</table>
+<p>SCA (Safe Cost Avoided) is the share of cost saved by safe hits. On latency, CLCB-LS-MT drives estimated serving latency down to 0.80-0.85x t_LLM on Taskmaster-3 and 0.65-0.70x on SocraTeach -- a 19-35% cut.</p>
+
+<h2>Build one yourself (Python, stdlib only)</h2>
+<p>This runs with no numpy or sklearn. The idea: represent queries and context as bag-of-words vectors, estimate reuse risk with a tiny logistic regression that learns online from a proxy judge, and admit a cache hit only when the LLM cost beats the risk-adjusted cost.</p>
+<pre><code>import math
+
+def embed(text):
+    v = {}
+    for w in text.lower().split():
+        v[w] = v.get(w, 0) + 1
+    return v
+
+def cosine(a, b):
+    keys = set(a) | set(b)
+    num = sum(a.get(k, 0) * b.get(k, 0) for k in keys)
+    da = math.sqrt(sum(x * x for x in a.values()))
+    db = math.sqrt(sum(x * x for x in b.values()))
+    return num / (da * db) if da and db else 0.0
+
+# minimal logistic regression: features = [query sim, history cosine, bias]
+w = [0.0, 0.0, 0.0]
+
+def risk(feat):
+    z = sum(wi * fi for wi, fi in zip(w, feat))
+    return 1.0 / (1.0 + math.exp(-z))
+
+def judge_proxy(q_new, h_new, q_old, h_old):
+    # proxy judge: same turn and highly overlapping history means reusable
+    sq = cosine(embed(q_new), embed(q_old))
+    sh = cosine(embed(" ".join(h_new)), embed(" ".join(h_old)))
+    return 0 if (sq &gt; 0.9 and sh &gt; 0.85) else 1
+
+COST_LLM = 1.0
+GAMMA = 1.0
+cache = []          # each: (q_text, h_text, answer)
+total = 0.0
+saved = 0.0
+lr = 0.1
+
+def serve(q_text, hist):
+    global total, saved
+    qv, hv = embed(q_text), embed(" ".join(hist))
+    best, bsim = None, -1.0
+    for item in cache:
+        s = cosine(qv, embed(item[0]))
+        if s &gt; bsim:
+            best, bsim = item, s
+    if best is not None:
+        feat = [bsim, cosine(hv, embed(" ".join(best[1]))), 1.0]
+        rho = min(1.0, GAMMA * risk(feat))
+        if COST_LLM &lt;= rho:        # calling the LLM is cheaper
+            ans = "gen:" + q_text
+        else:
+            ans = best[2]          # reuse the cache
+            saved += COST_LLM
+        y = judge_proxy(q_text, hist, best[0], best[1])
+        err = y - risk(feat)
+        for i in range(len(w)):
+            w[i] += lr * err * feat[i]
+    else:
+        ans = "gen:" + q_text
+    total += COST_LLM
+    cache.append((q_text, hist, ans))
+    return ans
+
+for i in range(200):
+    h = ["order ticket %d" % i]
+    serve("what is the price", h)
+    serve("confirm the seat", h)
+    serve("thank you", h)
+print("cost saved: %.1f%%" % (100.0 * saved / total))</code></pre>
+
+<h2>A cache in front of an OpenAI-compatible endpoint</h2>
+<p>The same logic drops in front of any <code>/v1/chat/completions</code> call. This FastAPI middleware caches by cheap similarity and a risk gate; swap the cheap embed for a real embedding model in production.</p>
+<pre><code># pip install fastapi uvicorn
+from fastapi import FastAPI, Request
+import math
+
+app = FastAPI()
+store = []   # (emb, completion)
+
+def cheap_embed(messages):
+    v = {}
+    for m in messages:
+        for w in m.get("content", "").lower().split():
+            v[w] = v.get(w, 0) + 1
+    return v
+
+def cosine(a, b):
+    num = sum(a.get(k, 0) * b.get(k, 0) for k in set(a) | set(b))
+    da = math.sqrt(sum(x * x for x in a.values()))
+    db = math.sqrt(sum(x * x for x in b.values()))
+    return num / (da * db) if da and db else 0.0
+
+@app.post("/v1/chat/completions")
+async def chat(req: Request):
+    body = await req.json()
+    emb = cheap_embed(body.get("messages", []))
+    for e, comp in store:
+        if cosine(emb, e) &gt;= 0.92:
+            comp["_cached"] = True
+            return comp
+    result = {"choices": [{"message": {"role": "assistant",
+                 "content": "call upstream here"}}]}
+    store.append((emb, result))
+    return result</code></pre>
+
+<h2>Where to use it</h2>
+<p>Semantic caching pays off in high-repeat, low-tolerance-cost settings: customer support, tutoring, fixed-flow Q and A. In multi-turn dialogue, stop forcing single-turn similarity; either adopt the paper risk learning or at least group by conversation state before comparing. Evict low-hit entries (say by a reuse-risk threshold) and spend capacity on high-value states.</p>
+''',
+    'related': [('Long-context KV cache compression and the VRAM math', 'blog/kv-cache-compression-long-context-2026/'), ('Run Qwen 3.8 27B locally as an LLM-as-judge', 'blog/qwen-3-8-27b-laptop-judge-2026/')]
+},
 'agent-skills-standard-2026': {
         'tags': ['Agent Skills', 'Anthropic', 'SKILL.md', 'agentskills.io', 'cloudflare', 'security-audit-skill', 'coding agent', 'skill spec', 'plugin', 'portable', 'skills CLI', 'automated audit'],
         'title': 'Agent Skills Are Becoming a Standard: How to Write a Skill Any Agent Can Load | DevTools Blog',
