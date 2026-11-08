@@ -50,6 +50,255 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'agent-browser-ai-2026',
+    'category': 'tooling',
+    'date': '2026-11-08',
+    'updated': '2026-11-08',
+    'tags': ['Vercel', 'agent-browser', '浏览器自动化', 'AI Agent', 'MCP', '无障碍树', 'CDP', 'Playwright', 'browser-use', 'Agent 基础设施', 'Rust', '会话持久化', '技能分发'],
+    'title': '给 AI Agent 的浏览器：Vercel agent-browser 屠榜 GitHub，一个 ref 驱动整个网页 | DevTools 博客',
+    'description': '2026-11-08 Vercel 的 agent-browser 冲上 GitHub Trending 47k 星，同日 HN 冒出 Zig/ASCII/Pickle 等竞品。本文拆它如何用无障碍树 + @e 引用 + 后台 CDP 守护进程把浏览器变成 agent 可逐命令驱动的「外设」，对比 Playwright/browser-use，并给出可运行的安装、快照驱动循环与 MCP 接入示例（源：GitHub Trending 2026-11-08；agent-browser.dev；HN Show HN 2026-11-08）。',
+    'keywords': 'agent-browser 教程,Vercel agent-browser 使用,AI 浏览器自动化 怎么做,agent-browser MCP 接入,browser automation for AI agents,无障碍树 agent 驱动,agent-native browser 是什么,agent-browser 对比 Playwright,agent-browser 对比 browser-use,AI agent 控制网页 实战,如何用 CLI 驱动浏览器给大模型,agent-browser session 持久化,agent-browser skills 安装,浏览器自动化 降 token,web agent 工具 推荐',
+    'h1': '给 AI Agent 的浏览器：Vercel agent-browser 屠榜 GitHub，一个 ref 驱动整个网页',
+    'summary': '2026-11-08 Vercel 的 agent-browser 冲上 GitHub Trending 47k 星。它用无障碍树快照 + @e 引用 + 后台 CDP 守护进程，把浏览器变成 agent 能逐条命令驱动的「外设」。本文对比 Playwright/browser-use，给出可运行示例。',
+    'body': '''
+<blockquote>
+<p><b>先给结论</b>：11 月 8 日 GitHub Trending 前排被一个 Rust CLI 占了——vercel-labs/agent-browser，单日 +190 星、总星 47k。同一天 HN 的 Show HN 区冒出 Kuri（Zig 写的替代）、一个用 ASCII wireframe 喂 agent 的浏览器、Pickle（策略门控动作），还有 Public Browser MCP 号称比 AgentBrowser 快 48%、每会话少 33% token。信号很清楚：浏览器正被重新设计成「给 agent 用的外设」，而不是「人看的窗口」（源：GitHub Trending 2026-11-08；agent-browser.dev；HN Show HN 2026-11-08）。</p>
+</blockquote>
+
+<h2>传统做法的痛点：把整页 HTML 塞给模型</h2>
+<p>让 LLM 操作网页，最常见的思路是把页面 DOM/HTML 整个丢给模型。问题有两个：一是 token 爆炸，一个中等页面几 KB 到几十 KB；二是噪声大，模型要在几百个 div 里找「那个登录按钮」。browser-use 这类工具做了抽取，但每次仍要重新理解整页结构。</p>
+<p>agent-browser 换了一条路：它返回<b>无障碍树（accessibility tree）</b>的紧凑文本表示，给每个可交互元素一个稳定引用 <code>@e1</code>。agent 读快照、对着引用发动作、再读快照，一步步来。浏览器常驻在后台，每条命令就是一次短平快的 shell 调用。</p>
+
+<h2>它怎么运转</h2>
+<p>CLI 把每条命令发给一个后台守护进程，守护进程通过 Chrome DevTools Protocol 控制浏览器。每个 <code>--session</code> 有独立的守护进程和浏览器；默认无头，一小时没命令就自动退出（配了 session 持久化会先存状态）。</p>
+<ul>
+<li><code>snapshot</code> 返回紧凑文本，交互元素各带一个 ref；</li>
+<li>点 <code>@e1</code> 就是真正去点那个元素，不是「建议点这里」；</li>
+<li>更关键的是：点击目标被隐藏、禁用、移出视口、或被 cookie 横幅盖住时，它<b>不会谎报成功</b>，而是让你先处理遮挡元素、重新快照再重试。</li>
+</ul>
+
+<h2>和 Playwright / browser-use 到底差在哪</h2>
+<table>
+<thead><tr><th>维度</th><th>Playwright / Puppeteer</th><th>browser-use</th><th>agent-browser</th></tr></thead>
+<tbody>
+<tr><td>设计对象</td><td>人类 QA / 测试脚本</td><td>LLM 直接驱动</td><td>agent 逐命令驱动</td></tr>
+<tr><td>喂给模型什么</td><td>原始 HTML / DOM</td><td>抽取后的可交互元素</td><td>无障碍树 + @e 引用</td></tr>
+<tr><td>调用粒度</td><td>代码 / 脚本</td><td>自然语言意图</td><td>一条 shell 命令</td></tr>
+<tr><td>浏览器生命周期</td><td>脚本内管理</td><td>会话内</td><td>常驻 daemon，跨命令复用</td></tr>
+<tr><td>token 成本</td><td>高（整页 HTML）</td><td>中</td><td>低（紧凑树；Public Browser MCP 称每会话 -33%）</td></tr>
+</tbody>
+</table>
+
+<h2>上手：五条命令跑起来</h2>
+<pre><code>npm install -g agent-browser
+agent-browser install          # 首次下载 Chrome for Testing
+agent-browser open example.com
+agent-browser snapshot -i      # 只看交互元素，每个带 ref
+agent-browser click @e1
+agent-browser get url          # 检查点击结果
+agent-browser close</code></pre>
+<p>不想装也行：<code>npx agent-browser open example.com</code> 直接跑。Linux 上记得 <code>agent-browser install --with-deps</code> 把系统库一并装上。</p>
+
+<h2>一个最小「ref 驱动循环」（Python，仅标准库）</h2>
+<p>下面这段不依赖任何第三方库，思路是：开页面 → 读快照 → 用正则抓「登录」链接的 ref → 点它 → 验证 URL 变了。</p>
+<pre><code>import subprocess, re
+
+def snap(session):
+    return subprocess.run(
+        ["agent-browser", "--session", session, "snapshot", "-i"],
+        capture_output=True, text=True).stdout
+
+def click_ref(session, ref):
+    subprocess.run(
+        ["agent-browser", "--session", session, "click", ref], check=True)
+
+sess = "demo"
+subprocess.run(["agent-browser", "--session", sess, "open", "https://example.com"])
+tree = snap(sess)
+m = re.search(r'link "([^"]+)" [ref=(e\d+)]', tree)
+if m and "log in" in m.group(1).lower():
+    click_ref(sess, m.group(2))
+    url = subprocess.run(
+        ["agent-browser", "--session", sess, "get", "url"],
+        capture_output=True, text=True).stdout.strip()
+    print("clicked", m.group(2), "-&gt;", url)</code></pre>
+<p>真实项目里你会把「读快照—决策—动作」包成一个循环，让 LLM 看 <code>snapshot</code> 的纯文本来决定下一步点哪个 ref。比把整页 HTML 丢进 prompt 省得多。</p>
+
+<h2>接进 agent：MCP + 技能分发</h2>
+<p>给 agent 用，最顺手的是它的 MCP server（走 stdio）：</p>
+<pre><code>agent-browser mcp</code></pre>
+<p>另一个巧思是「技能桩」：<code>agent-browser skills get core</code> 输出一份随 CLI 版本走的核心循环指令；<code>npx skills add vercel-labs/agent-browser</code> 装的是一个薄桩，只告诉 agent 去加载 <code>agent-browser skills get core</code>。这样指令永远和装的 CLI 版本一致，不会因为升级而过期。也可以在 AGENTS.md 里写一句：</p>
+<pre><code>Use `agent-browser` for browser automation. Before the first use, run
+`agent-browser skills get core` and follow it.</code></pre>
+
+<h2>安全边界，先划好再放手</h2>
+<p>agent-browser 的 Security 文档给了四道闸：auth vault（凭据保险库）、domain allowlists（域名白名单）、action policies（动作策略）、content boundaries（内容边界）。给 agent 开浏览器前，至少把允许访问的域名白名单定下来，别让它顺着链接跳到外站乱点。</p>
+
+<h2>落地判断</h2>
+<p>agent-browser 不是「更好的 Playwright」，而是把浏览器从「人看的窗口」重定义成「agent 的外设」。竞品一拥而上（Zig、ASCII、策略门控、MCP 版），说明方向对了。先把那些重复的「开网页—读信息—点一下」流程迁过去，token 和稳定性都会更好；需要视觉理解或复杂表单时，再叠加截图和 eval。</p>
+''',
+    'related': [('延伸阅读：Agent Skills 跨代理标准与最小技能实现', 'blog/agent-skills-standard-2026/')]
+},
+{
+    'slug': 'multi-turn-semantic-caching-2026',
+    'category': 'ai',
+    'date': '2026-11-08',
+    'updated': '2026-11-08',
+    'tags': ['语义缓存', 'LLM 降本', 'arXiv 2026', '多轮对话', 'KV 复用', 'embedding', 'reuse risk', 'ContextCache', 'vCache', 'ElastiCache', 'LLM 服务', 'GPT-4o-mini judge', '延迟优化'],
+    'title': '多轮语义缓存真能省 40% 推理费？arXiv 新论文把「能不能复用」变成可学习的风险 | DevTools 博客',
+    'description': '2026-10-31 提交的 arXiv:2611.01077《Multi-Turn Semantic Caching for Low-Cost LLM Serving》证明：1000 条缓存下多轮语义缓存能避免 35-41% 生成成本、降低 19-35% 延迟，优于 ContextCache/ElastiCache/vCache。本文拆单轮 embedding 相似度为何在多轮失灵（AUC 仅 0.62-0.74），如何用 judge 反馈学「复用风险」，并给出可运行的 Python 实现与 OpenAI 兼容接口缓存中间件（源：arXiv:2611.01077 2026-10-31）。',
+    'keywords': 'LLM 语义缓存 降本教程,semantic caching LLM how to,降低 LLM API 成本 实战,多轮语义缓存 原理,multi-turn semantic caching 实现,LLM 服务 降本 方案,语义缓存 Python 实现,ContextCache 替代,vCache ElastiCache 对比,reuse risk 复用风险,LLM judge 反馈 学习,对话缓存 命中率 提升,LLM 推理 延迟 优化,给 OpenAI 接口加缓存',
+    'h1': '多轮语义缓存真能省 40% 推理费？arXiv 新论文把「能不能复用」变成可学习的风险',
+    'summary': 'arXiv:2611.01077 证明多轮语义缓存可在 1000 条缓存下避免 35-41% 生成成本。本文拆单轮相似度为何在多轮失灵，怎么学复用风险，并给出可运行 Python 实现与 FastAPI 中间件。',
+    'body': '''
+<blockquote>
+<p><b>先给结论</b>：10 月 31 日挂到 arXiv 的 2611.01077 做了个扎实实验——在 1000 条缓存条目下，多轮语义缓存能省掉 35-41% 的生成成本、把估计延迟压低 19-35%，而且用的是真实对话日志（SocraTeach 数学辅导、Taskmaster-3 电影购票），不是合成玩具数据。更关键的是它戳破一个常见错觉：「相似就复用」在多轮对话里基本是错的（源：arXiv:2611.01077，提交于 2026-10-31）。</p>
+</blockquote>
+
+<h2>单轮相似度，为什么在多轮失灵</h2>
+<p>语义缓存的经典做法是：把请求 embedding 一下，和缓存里相似的请求复用旧答案。单轮场景有效，但多轮对话里「相似」要看<b>整段历史</b>，而 embedding 只看当前这句话。</p>
+<p>论文在五个工作负载上测出，单用请求+历史的 embedding 相似度，判断「能否复用」的 AUC 只有 <b>0.62-0.74</b>。最狠的例子：SocraTeach 里同样一句追问，换个历史背景，只有 <b>22%</b> 的情况能安全复用旧答案。数学辅导里「下一步讲什么」高度依赖前面推到了哪。</p>
+
+<h2>把「能不能复用」建模成可学习的风险</h2>
+<p>论文把复用决策抽象成两个量：</p>
+<ul>
+<li><b>兼容掩码</b> <code>chi(z,u)</code>：排除永远不能复用的（比如强制要求 key 相同）。</li>
+<li><b>复用风险</b> <code>r(z,u)</code>：在对话状态 z 下，缓存的回答 a(u) 对 judge / 用户「不可接受」的概率。</li>
+</ul>
+<p>复用损失定义为 <code>rho(z,u) = min(1, gamma * r(z,u))</code>（兼容时），否则为 1；<code>gamma</code> 把风险换算成归一化成本。标签 Y 来自一个 reuse judge——论文用 GPT-4o-mini（temperature 0）判「这个缓存回答对当前请求+历史能否接受」。</p>
+<p>最优服务规则很直觉：当调用 LLM 的期望成本 <code>c(z)</code> 小于等于复用损失 <code>rho(z,u)</code> 时，才调 LLM（即不命中缓存）；否则直接返回缓存。换句话说，不是「相似就返缓存」，而是「<b>缓存能避免的生成成本，是否抵得过复用出错的风险</b>」。</p>
+
+<h2>预算准入 + 两个算法</h2>
+<p>缓存最多放 k 条；问题变成在所有不超过 k 条的子集里，最小化期望损失。论文给两个算法：</p>
+<ul>
+<li><b>CUCB-SC-MT</b>（离线）：从日志建分层 epsilon-net、估状态权重、用 KRR 拟合成本与风险，再 Reverse Greedy 选代表，有 suboptimality 保证。</li>
+<li><b>CLCB-LS-MT</b>（在线）：逐对话快照、低切换（只在对话边界更新缓存）、以概率 zeta 采样 judge 标签更新风险，regret 为 <code>O(sqrt(N))</code>。</li>
+</ul>
+<p>核心洞察：缓存是一个<b>预算权衡</b>——把容量留给「复用价值高、风险低」的状态，而不是无脑缓存最相似的。</p>
+
+<h2>数字：1000 条缓存下，省 35-41%</h2>
+<table>
+<thead><tr><th>方法（k=1000）</th><th>Taskmaster-3 SCA</th><th>SocraTeach SCA</th></tr></thead>
+<tbody>
+<tr><td>CLCB-LS-MT（本文）</td><td>35.0%</td><td>41.0%</td></tr>
+<tr><td>ContextCache</td><td>17.9%</td><td>25.1%</td></tr>
+<tr><td>ElastiCache-MT</td><td>22.3%</td><td>0.8%</td></tr>
+<tr><td>vCache</td><td>14.7%</td><td>0.7%</td></tr>
+</tbody>
+</table>
+<p>SCA（Safe Cost Avoided）是被「安全命中」省下的成本占比。延迟方面，CLCB-LS-MT 把估计服务延迟降到 0.80-0.85×t_LLM（Taskmaster-3）和 0.65-0.70×（SocraTeach），即降 19-35%。</p>
+
+<h2>动手实现一个（Python，仅标准库可跑）</h2>
+<p>下面这段不依赖 numpy / sklearn，自己跑一遍就能看到「风险学习」怎么压低成本。思路：把查询和上下文表示成词袋向量，复用风险用一个极简的逻辑回归（在线 SGD 跟着一个代理 judge 学），准入时比较「调 LLM 成本」和「复用风险换算的成本」。</p>
+<pre><code>import math
+
+def embed(text):
+    v = {}
+    for w in text.lower().split():
+        v[w] = v.get(w, 0) + 1
+    return v
+
+def cosine(a, b):
+    keys = set(a) | set(b)
+    num = sum(a.get(k, 0) * b.get(k, 0) for k in keys)
+    da = math.sqrt(sum(x * x for x in a.values()))
+    db = math.sqrt(sum(x * x for x in b.values()))
+    return num / (da * db) if da and db else 0.0
+
+# 极小逻辑回归：特征 = [query 相似度, 历史余弦, 常项]
+w = [0.0, 0.0, 0.0]
+
+def risk(feat):
+    z = sum(wi * fi for wi, fi in zip(w, feat))
+    return 1.0 / (1.0 + math.exp(-z))
+
+def judge_proxy(q_new, h_new, q_old, h_old):
+    # 代理 judge：同轮且历史高度重叠才可复用
+    sq = cosine(embed(q_new), embed(q_old))
+    sh = cosine(embed(" ".join(h_new)), embed(" ".join(h_old)))
+    return 0 if (sq &gt; 0.9 and sh &gt; 0.85) else 1
+
+COST_LLM = 1.0
+GAMMA = 1.0
+cache = []          # 每项: (q_text, h_text, answer)
+total = 0.0
+saved = 0.0
+lr = 0.1
+
+def serve(q_text, hist):
+    global total, saved
+    qv, hv = embed(q_text), embed(" ".join(hist))
+    best, bsim = None, -1.0
+    for item in cache:
+        s = cosine(qv, embed(item[0]))
+        if s &gt; bsim:
+            best, bsim = item, s
+    if best is not None:
+        feat = [bsim, cosine(hv, embed(" ".join(best[1]))), 1.0]
+        rho = min(1.0, GAMMA * risk(feat))
+        if COST_LLM &lt;= rho:        # 调 LLM 更划算
+            ans = "gen:" + q_text
+        else:
+            ans = best[2]          # 复用缓存
+            saved += COST_LLM
+        y = judge_proxy(q_text, hist, best[0], best[1])
+        err = y - risk(feat)
+        for i in range(len(w)):
+            w[i] += lr * err * feat[i]
+    else:
+        ans = "gen:" + q_text
+    total += COST_LLM
+    cache.append((q_text, hist, ans))
+    return ans
+
+for i in range(200):
+    h = ["order ticket %d" % i]
+    serve("what is the price", h)
+    serve("confirm the seat", h)
+    serve("thank you", h)
+print("cost saved: %.1f%%" % (100.0 * saved / total))</code></pre>
+
+<h2>给 OpenAI 兼容接口加一层缓存</h2>
+<p>同一套逻辑可以直接挡在任意 <code>/v1/chat/completions</code> 前面。下面这个 FastAPI 中间件用廉价相似度 + 风险阈值为对话加缓存；生产环境把 cheap_embed 换成真实 embedding 模型即可。</p>
+<pre><code># pip install fastapi uvicorn
+from fastapi import FastAPI, Request
+import math
+
+app = FastAPI()
+store = []   # (emb, completion)
+
+def cheap_embed(messages):
+    v = {}
+    for m in messages:
+        for w in m.get("content", "").lower().split():
+            v[w] = v.get(w, 0) + 1
+    return v
+
+def cosine(a, b):
+    num = sum(a.get(k, 0) * b.get(k, 0) for k in set(a) | set(b))
+    da = math.sqrt(sum(x * x for x in a.values()))
+    db = math.sqrt(sum(x * x for x in b.values()))
+    return num / (da * db) if da and db else 0.0
+
+@app.post("/v1/chat/completions")
+async def chat(req: Request):
+    body = await req.json()
+    emb = cheap_embed(body.get("messages", []))
+    for e, comp in store:
+        if cosine(emb, e) &gt;= 0.92:
+            comp["_cached"] = True
+            return comp
+    result = {"choices": [{"message": {"role": "assistant",
+                 "content": "call upstream here"}}]}
+    store.append((emb, result))
+    return result</code></pre>
+
+<h2>落地建议</h2>
+<p>语义缓存的甜区是「高重复、低容错成本」的场景：客服、tutoring、固定流程问答。多轮对话里别再用单轮相似度硬套——要么上论文那套风险学习，要么至少按对话状态分组再判相似。先把命中率低的缓存条目清掉（比如按 reuse risk 阈值），容量留给高价值状态。</p>
+''',
+    'related': [('延伸阅读：长上下文 KV 缓存压缩与显存算账', 'blog/kv-cache-compression-long-context-2026/'), ('延伸阅读：用 Qwen 3.8 27B 当本地 LLM-as-Judge', 'blog/qwen-3-8-27b-laptop-judge-2026/')]
+},
+{
         'slug': 'ai-agent-git-autonomy-2026',
         'category': 'security',
         'date': '2026-11-07',
