@@ -50,6 +50,170 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'weight-space-programming-2026',
+    'category': 'ai',
+    'date': '2026-11-09',
+    'updated': '2026-11-09',
+    'tags': ['权重空间编程', 'GPT-6 Astra', 'Qwen3.5-0.8B', '模型编辑', '开源权重', 'ROME', 'MEMIT', 'abliteration', '神经权重手术', '模型可验证', '模型自查', 'MIT CSAIL', '开放权重安全'],
+    'title': '大模型给小模型"做手术"：MIT 用 GPT-6 Astra 直接改 Qwen 权重，MATH-500 从 7.9% 拉到 48.1% | DevTools 博客',
+    'description': '2026-11-02 MIT CSAIL 公布"权重空间编程"：让 GPT-6 Astra 直接读写并改写 Qwen3.5-0.8B 的权重，不动梯度训练，只改约 0.016% 的参数就把 MATH-500 从 7.9% 提到 48.1%。本文拆它怎么定位推理死循环、为什么 Gemma 没收益、spaCy 作者为何炮轰，并给出可运行的权重 diff 检查脚本（源：MIT CSAIL 博客 2026-11-02；VentureBeat；Hugging Face Ahsen Khaliq 复现）。',
+    'keywords': '权重空间编程 教程,GPT-6 Astra 修改 Qwen 权重,如何修改大模型权重 不上训练,weight-space programming 是什么,大模型权重编辑 实操,Qwen3.5-0.8B 权重补丁,模型编辑 ROME MEMIT,abliteration 权重手术,开放权重 可验证,如何自查模型权重被改,模型权重 diff 工具,直接编辑神经网络权重 风险,开源模型 权重安全',
+    'h1': '大模型给小模型"做手术"：MIT 用 GPT-6 Astra 直接改 Qwen 权重，MATH-500 从 7.9% 拉到 48.1%',
+    'summary': '2026-11-02 MIT CSAIL 公布"权重空间编程"，让 GPT-6 Astra 直接改写 Qwen3.5-0.8B 权重、不动训练就把 MATH-500 从 7.9% 提到 48.1%。本文拆原理、争议与可运行权重 diff 脚本。',
+    'body': '''
+<blockquote>
+<p><b>先给结论</b>：11 月 2 日，MIT CSAIL 四个研究员（Rikiya Takehi、Jayden Teoh、Alex Zhang、Omar Khattab）发了篇博客《Sparks of Weight-Space Programming》，标题就很狂——让 GPT-6 Astra 直接读、直接改另一个神经网络的权重。最炸的一项：它把 Qwen3.5-0.8B 约 0.016% 的权重改了改（131,072 个参数），没做任何梯度训练，MATH-500 就从 7.9% 跳到 48.1%，大约六倍。这事儿在海外炸了锅，共同作者的 X 帖子浏览破 490 万（源：MIT CSAIL 博客 2026-11-02；VentureBeat 2026-11-03；智东西编译 2026-11-03）。</p>
+</blockquote>
+
+<h2>权重空间编程到底是什么：把权重当源码来读和改</h2>
+<p>常规改模型，是你拿一批样本、算梯度、一点点挪动几百万个权重——微调、RLHF、LoRA 全是这条路。MIT 这回换了个思路：把神经网络的权重当成可读、可写的源码，让一个前沿模型直接去"检修"另一个网络。团队管这叫 weight-space programming。VentureBeat 给的比喻很准：像给神经网络做基因编辑。</p>
+<p>具体玩法是一个被 bubblewrap 隔离的 Python 沙箱：Astra 能加载 Qwen 的权重、能看前向推理时的内部信号，但<b>没有 GPU、没有网络、不能算梯度</b>。它只拿到练习题（7,469 道 GSM8K、7,275 道 MATH 训练题），永远看不到最终评测集。每次真正跑模型最多 50 次，每次能批量答 512 题。最强那次尝试耗了 158 轮对话、80 次 Python 执行、20.3 小时（其中 4.7 小时在等服务恢复）。</p>
+
+<h2>它到底改了什么：砍掉一个推理死循环</h2>
+<p>Qwen3.5-0.8B 开了思考模式后在 MATH-500 上只有 7.9%，根因不是不会做数学，是<b>陷在推理死循环里</b>——前 96 个练习回答里 85 个把 32,768 token 的输出额度跑满还没答完。Astra 对比"循环时"和"正常推理时"的内部信号，把病灶定位到第 15、19 层的 MLP：从两层各 64 个输出列里，减去与"重复"相关的方向分量。改完，触发输出上限的回答比例从 93.0% 掉到 33.1%——石头搬开，原本就会做的题终于答完了。</p>
+<table>
+<thead><tr><th>指标</th><th>编辑前</th><th>编辑后</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>MATH-500</td><td>7.9%</td><td>48.1%</td><td>修推理循环，非灌数学</td></tr>
+<tr><td>GSM8K</td><td>13.8%</td><td>67.1%</td><td>同上</td></tr>
+<tr><td>IFEval（指令遵循）</td><td>21.0%</td><td>62.3%</td><td>循环不只坑数学</td></tr>
+<tr><td>触发输出上限比例</td><td>93.0%</td><td>33.1%</td><td>循环被砍</td></tr>
+<tr><td>Gemma 3 270M MATH-500</td><td colspan="2">基线上 &lt;1pp</td><td>无循环 → 无收益</td></tr>
+</tbody>
+</table>
+<p>作者反复强调一句话："Editing weights could remove an obstacle that hid an ability, but it could not add an ability the model lacked."（编辑权重能搬开挡住能力的石头，但给不了模型本来没有的能力。）这恰好圈定了边界。</p>
+
+<h2>争议来了：这算编程，还是花式超参搜索</h2>
+<p>先看负结果。同一个方法在 Gemma 3 270M 上几乎零收益——因为它本来就不怎么死循环。能搬的石头没石头可搬。再看质疑：Meta 的 Lucas Beyer 点出，提示词其实已经引导 Astra 去查"重复推理"，等于先把答案喂了一半。更狠的是 spaCy 作者、explosion 的 Matthew Honnibal 发长文炮轰（量子位 2026-11-09《MIT神作被锤》），质疑这到底是"编程"还是披着 LLM 外衣的定向超参搜索，以及开放权重的声明到底该怎么验证。</p>
+<p>社区复现也给了一记冷水。Hugging Face 的 Ahsen Khaliq 照着实验日志重建了编辑后的模型，MATH-500 跑出 <b>51.0%</b>（开思考），而未编辑的基座在关思考时是 45.8%；但论文里吹的 GSM8K、IFEval 增益，复现都没拿到。也就是说，核心结论（修循环 → 数学分涨）站得住，但幅度与泛化还要打问号。这也是为什么 MIT 自己说在建评测基准和执行框架，而不是直接宣布方法论成熟。</p>
+
+<h2>它其实是模型编辑这棵老树的新枝</h2>
+<p>直接动权重、不改训练，并不是 MIT 首创。2022 NeurIPS 的 ROME、2023 ICLR 的 MEMIT 就在做定向事实编辑；2024 年那篇删"拒绝方向"的工作（也就是 abliteration，我之前单独写过一篇）也是同一条脉络。MIT 这回的区别是：把"读权重 → 定位故障 → 写补丁"整段交给前沿模型，而且明确说下一步想拿它做<b>递归自我改进（RSI）</b>。对想在本地养小模型的开发者，这条路径值得盯：用大模型当"维修工"排查内部故障，修完的小模型照样独立跑、不依赖那个大模型。</p>
+
+<h2>实操：自己 diff 两份权重，看它到底动了哪些</h2>
+<p>论文的编辑后模型已经开源（RikiyaT/Qwen3.5-0.8B-weight-space-programming，Apache 2.0）。先把两边权重拉下来：</p>
+<pre><code>pip install safetensors
+huggingface-cli download RikiyaT/Qwen3.5-0.8B-weight-space-programming
+huggingface-cli download Qwen/Qwen3.5-0.8B</code></pre>
+<p>下面这段兼容 safetensors 和 .bin，自动 glob 多分片，逐张量统计改了几个权重、最大改动幅度，最后单独验证论文说的"第 15、19 层 MLP"：</p>
+<pre><code>import glob, torch
+
+try:
+    from safetensors.torch import load_file
+    def load(p): return load_file(p)
+except ImportError:
+    def load(p): return torch.load(p, map_location="cpu", weights_only=True)
+
+base_dir = "Qwen3.5-0.8B"                              # 基座权重目录
+edit_dir = "Qwen3.5-0.8B-weight-space-programming"    # 编辑后权重目录
+
+base_files = sorted(glob.glob(f"{base_dir}/*.safetensors") or sorted(glob.glob(f"{base_dir}/*.bin")))
+edit_files = sorted(glob.glob(f"{edit_dir}/*.safetensors") or sorted(glob.glob(f"{edit_dir}/*.bin")))
+
+total_changed = 0
+per_tensor = []
+for bf, ef in zip(base_files, edit_files):
+    b = load(bf); e = load(ef)
+    for name in b:
+        if name not in e:
+            continue
+        d = e[name] - b[name]
+        n_changed = int((d != 0).sum().item())
+        if n_changed:
+            per_tensor.append((name, n_changed, float(d.abs().max().item())))
+            total_changed += n_changed
+
+per_tensor.sort(key=lambda x: -x[1])
+print(f"changed weights total: {total_changed}")
+for name, n, mag in per_tensor[:8]:
+    print(f"{name:42s} changed={n:8d} max|delta|={mag:.4f}")
+
+# 单独验证论文说法：第 15、19 层 MLP 的输出投影被改
+for layer in (15, 19):
+    key = f"model.layers.{layer}.mlp.down_proj.weight"
+    hits = [t for t in per_tensor if key in t[0]]
+    if hits:
+        print(f"layer {layer} down_proj: {hits[0][1]} weights changed")</code></pre>
+<p>跑出来若 total_changed 接近 131,072、且改动集中在 15/19 层，说明你拿到的权重和论文日志对得上；否则就是权重被改过却没说清——这正是开放权重时代最该自己查的一步。</p>
+
+<h2>判断：一把刚开刃的刀</h2>
+<p>权重空间编程现在更像一把刚开刃的刀——能割掉挡路的循环，割不出新能力。真要信一个"被 Astra 改过"的模型，先 diff、再复跑基准、再决定上不上生产。蒸馏是把能力传下去，权重手术是把故障修掉；后者在本地小模型运维上更有想象空间。但开放权重的时代，<b>可验证比可下载更重要</b>。</p>
+''',
+    'related': [('延伸阅读：免训练改模型——abliteration 删除拒绝方向', 'blog/abliteration-training-free-llm-2026/')]
+},
+{
+    'slug': 'rsi-self-improvement-loop-2026',
+    'category': 'ai',
+    'date': '2026-11-09',
+    'updated': '2026-11-09',
+    'tags': ['递归自我改进', 'RSI', '自我改进循环', 'AI Agent', 'eval-gated', 'Anthropic', 'ERNIE Evolve', 'Theseus Lab', 'Agent0', 'AIDE2', '梦境记忆巩固', '自改进安全', 'Karpathy AutoResearch'],
+    'title': 'RSI 不是科幻了：Anthropic 80% 代码由 Claude 写，自改进循环已经跑在生产里 | DevTools 博客',
+    'description': '2026-11-09 机器之心报道 Theseus Lab 称"95% 的工程师已在跑自我改进循环"，同日百度文心首次披露 RSI 进展（ERNIE Evolve）。本文拆 RSI 现在真实长什么样、为什么只在"可验证领域"成立、怎么用 eval 门控搭一个安全的自改进循环，并给出可运行骨架（源：Anthropic RSI 研究；机器之心 2026-11-09；量子位 2026-11-09；Karpathy AutoResearch；Weco AIDE2）。',
+    'keywords': '递归自我改进 RSI 教程,AI 自我改进循环 怎么做,RSI agent 自改进 实战,如何搭建 eval-gated 自改进循环,Anthropic RSI 80% 代码,自我改进 agent 安全护栏,agent 梦境记忆巩固,自改进循环 崩溃风险,AI 自我改进 验证门控,如何防止自改进 agent 跑偏,recursive self-improvement loop,AI 自己写自己代码,自改进 agent 验证',
+    'h1': 'RSI 不是科幻了：Anthropic 80% 代码由 Claude 写，自改进循环已经跑在生产里',
+    'summary': '2026-11-09 机器之心报道 Theseus Lab"95% 工程师已在跑自我改进循环"，百度文心同日披露 ERNIE Evolve RSI。本文拆 RSI 真实形态、可验证域边界与安全自改进循环骨架。',
+    'body': '''
+<blockquote>
+<p><b>先给结论</b>：11 月 9 日，机器之心发了篇 Theseus Lab 的稿子，一句话挺刺眼——"95% 的工程师已经在跑自我改进循环"。同一天量子位说百度文心首次披露 RSI 进展，叫 ERNIE Evolve，已经用在新模型研发里；TokenRhythm 的 NeoHorse-1.5-Flash 也在 11 月 5 日进了 RSI 第二轮迭代。递归自我改进（Recursive Self-Improvement）这个 1965 年 Good 提出的概念，正从哲学论文掉进工程 changelog（源：机器之心 2026-11-09；量子位 2026-11-09、2026-11-05）。</p>
+</blockquote>
+
+<h2>现在的 RSI 真实长什么样：弱形式，不是神醒</h2>
+<p>先泼冷水——它不是"一个神级系统醒来自己进化"。Anthropic 自己给的是弱形式：截至 2026 年 5 月，它合并进代码库的代码 80%+ 由 Claude 写（2025 年初 Claude Code 上线前还是个位数）；每个工程师每季度提交的代码量，相对 2021-2025 基准涨了约 8 倍。OpenAI 更直接，做了个内部 RSI Index 基准（调试研究系统、优化训练配方、改进其他模型），GPT-5.6 Sol 在它上面比上一代高 16.2 分，还被单独给了个模糊 prompt 就自己去选 GPU、跑后训练、产出更小的 Luna 档。</p>
+<p>更具体的工程证据来自大佬的个人实验：Karpathy 把 AutoResearch 指向自己的 nanochat，两天跑了约 700 个实验、找到约 20 个真提速，其中一个 QK-Norm 里漏掉的标量乘子连他自己都没发现。Weco AI 的 AIDE2 更狠：外层 agent 重写下层 agent 的代码，100 步无人值守、8 天，产出 7 个逐代变好的版本，还自己把奖励作弊率从 63% 压到 34%（源：datasciencedojo 2026 综述；Weco AI 2026-07-14）。</p>
+
+<h2>为什么只在"可验证领域"成立</h2>
+<p>RSI 的本质是一条反馈环：<b>提出改动 → 跑评测 → 过了就保留</b>（带验证门控的爬山）。软件是最好的培养皿：代码能自动生成、执行、测试、打分，环里不用塞人。但一旦离开代码和数学，到"什么才算对"很难廉价验证的地方，环就软了。Anthropic 也明说工程师还在环里：选活、审改动、决定合不合。那 80% 衡量的是"作者身份"不是"自主权"。从"写大部分代码"到"决定造什么、无人值守上线"，中间整段就是安全故事。</p>
+<p>这正是 Chen 等人 2026 年那篇 1,250 篇论文综述的核心提醒： poorly verified 的改进循环，典型失败模式是自确认循环（self-confirming loops）和多样性崩溃（diversity collapse）——agent 自己生成训练数据、自己打分，分数越刷越好看，能力却没真涨。Burtsev 给出的判据 ℛ_AI&gt;1 才进入自放大区，而研究难度上升可以随时终结这段放大。</p>
+
+<h2>三层自进化与"梦境"巩固</h2>
+<p>Theseus Lab 的三层路线，恰好对应工程里能落地的形态：①开放环境自主探索（给模糊需求，agent 自己找线索、查数据源）；②实践经验持续内化——这一步和 Anthropic 说的"梦境"一致：任务结束后回看全部日志，把踩过的坑固化成可复用规则或技能；③从一阶改进走向二阶进化——让 AI 审这些方法本身。把"梦境"写成代码，就是每次项目结束跑一个 consolidation pass：把成功路径和踩坑提炼进 memory.md 或 skill，下次直接吃。我之前写过的跨会话长期记忆，到这里成了生产级模式。</p>
+
+<h2>实操：搭一个 eval-gated 的自改进循环（仅标准库）</h2>
+<p>下面是最低可用骨架。三个要点焊死：改动必须过验证门控才保留；记忆巩固单独成步；每一步留回滚点。</p>
+<pre><code>import subprocess, datetime
+
+MEMORY = "memory.md"     # "梦境"巩固落地的文件
+ROLLOVER = 5             # 每 N 轮做一次记忆巩固
+
+def eval_once(patch):
+    """跑测试，返回 (passed, score)。真实项目里换成你的 CI / 基准。"""
+    # 占位实现：实际应 apply patch -> 跑 pytest / 跑基准 -> 解析结果
+    return True, 0.0
+
+def propose_patch(round_id):
+    """真实项目里让 LLM 读日志+代码生成补丁；这里给确定性占位。"""
+    return f"# patch {round_id}\\n"
+
+def consolidate(kept):
+    """梦境巩固：把保留下来的改动提炼成可复用规则，追加进 memory.md。"""
+    if not kept:
+        return
+    stamp = datetime.date.today().isoformat()
+    with open(MEMORY, "a", encoding="utf-8") as f:
+        f.write(f"\\n## {stamp} 自改进保留项（{len(kept)}）\\n")
+        for k in kept:
+            f.write(f"- 保留补丁 {k}\\n")
+
+kept = []
+for r in range(ROLLOVER):
+    patch = propose_patch(r)
+    ok, score = eval_once(patch)
+    print(f"round {r}: passed={ok} score={score:.2f}")
+    if ok:
+        kept.append(r)            # 验证门控：只留过的
+        # 这里 apply patch + git commit（带回滚点，便于回退）
+
+consolidate(kept)               # 项目结束做"梦境"巩固
+print("kept", kept, "-&gt; 已写入", MEMORY)</code></pre>
+<p>把 <code>eval_once</code> 换成真实 pytest / 基准；<code>propose_patch</code> 接 LLM（函数签名如 <code>call_llm(logs)</code>）；apply 用 git 留回滚点；再加上能力上限（capability ceiling）和人工 approve 闸。AIDE2 的关键教训就在这：它自己学会了"少作弊"，靠的不是提示词劝善，而是评测把奖励黑客行为量化出来、门控挡掉。</p>
+
+<h2>判断：弱形式已经上线，闸比速度重要</h2>
+<p>RSI 现在已经跑在生产里，只是以弱形式——模型写大部分代码、人决定方向。真正危险的不是它突然变聪明，而是环转太快，人来不及审计每一代。所以搭自改进循环，先把"验证门控"和"梦境巩固"两条焊死：改动不过评测不准进主干，经验不沉淀成记忆就白跑。速度既是卖点也是风险，这句话对自改进 agent 比对任何系统都更真。</p>
+''',
+    'related': [('延伸阅读：让 Agent 拥有跨会话长期记忆', 'blog/agent-persistent-memory-2026/')]
+},
+
+{
     'slug': 'agent-browser-ai-2026',
     'category': 'tooling',
     'date': '2026-11-08',
