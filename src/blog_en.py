@@ -6,6 +6,162 @@
 """
 
 ARTICLES_EN = {
+'weight-space-programming-2026': {
+    'tags': ['weight-space programming', 'GPT-6 Astra', 'Qwen3.5-0.8B', 'model editing', 'open weights', 'ROME', 'MEMIT', 'abliteration', 'neural weight surgery', 'model verifiability', 'model self-check', 'MIT CSAIL', 'open-weight security'],
+    'title': 'A frontier model operating on another model weights: MIT used GPT-6 Astra to edit Qwen and lifted MATH-500 from 7.9% to 48.1% | DevTools Blog',
+    'description': 'On 2026-11-02 MIT CSAIL published "Sparks of Weight-Space Programming": GPT-6 Astra read and rewrote Qwen3.5-0.8B weights with no gradient training, changing only ~0.016% of parameters yet lifting MATH-500 from 7.9% to 48.1%. This post breaks down how it located the reasoning loop, why Gemma showed no gain, why spaCy author pushed back, and ships a runnable weight-diff inspector (sources: MIT CSAIL blog 2026-11-02; VentureBeat; Hugging Face Ahsen Khaliq reproduction).',
+    'keywords': 'weight-space programming tutorial,how GPT-6 Astra edited Qwen weights,edit LLM weights without training,what is weight-space programming,model weight editing hands-on,Qwen3.5-0.8B weight patch,model editing ROME MEMIT,abliteration weight surgery,open weights verifiability,how to check if model weights were changed,model weight diff tool,direct neural network weight editing risk,open-source model weight security',
+    'h1': 'A frontier model operating on another model weights: MIT used GPT-6 Astra to edit Qwen and lifted MATH-500 from 7.9% to 48.1%',
+    'summary': 'On 2026-11-02 MIT CSAIL published weight-space programming: GPT-6 Astra rewrote Qwen3.5-0.8B weights with no training and lifted MATH-500 from 7.9% to 48.1%. This post breaks down the mechanism, the controversy, and a runnable weight-diff script.',
+    'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On 2026-11-02, four MIT CSAIL researchers (Rikiya Takehi, Jayden Teoh, Alex Zhang, Omar Khattab) posted a blog titled "Sparks of Weight-Space Programming" with a wild premise: let GPT-6 Astra read and directly rewrite the weights of another neural network. The headline result: it changed about 0.016% of Qwen3.5-0.8B parameters (131,072 weights), with no gradient training at all, and MATH-500 jumped from 7.9% to 48.1% -- roughly 6x. The post blew up overseas, the co-author X thread passed 4.9M views (sources: MIT CSAIL blog 2026-11-02; VentureBeat 2026-11-03; zhidx translation 2026-11-03).</p>
+</blockquote>
+
+<h2>What weight-space programming actually is: treat weights as readable, writable source</h2>
+<p>The normal way to change a model is to grab examples, compute gradients, and nudge millions of weights a little at a time -- fine-tuning, RLHF, LoRA all walk this road. MIT tried something else: treat a network weights as source code you can read and edit, and hand that job to a frontier model. They call it weight-space programming. VentureBeat nailed the metaphor: gene editing for neural networks.</p>
+<p>The setup is a bubblewrap-isolated Python sandbox. Astra can load Qwen weights and inspect internal signals during a forward pass, but there is <b>no GPU, no network, no gradients</b>. It only gets practice problems (7,469 GSM8K, 7,275 MATH training items) and never sees the final test set. It may actually run the model at most 50 times, each answering up to 512 problems in a batch. The strongest attempt took 158 conversation turns, 80 Python executions, and 20.3 hours (4.7 of those waiting out a service outage).</p>
+
+<h2>What it actually changed: cut a reasoning loop</h2>
+<p>Qwen3.5-0.8B in thinking mode scored only 7.9% on MATH-500, not because it could not do the math but because it was <b>stuck in a reasoning loop</b> -- 85 of its first 96 practice answers ran the full 32,768-token budget without finishing. Astra compared internal signals between looping and normal reasoning, traced the fault to the MLP of layers 15 and 19, and subtracted the repetition-associated direction from 64 output columns in each layer. After the edit, the share of answers hitting the output cap dropped from 93.0% to 33.1% -- the rock moved, and problems it already could solve finally got finished.</p>
+<table>
+<thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>MATH-500</td><td>7.9%</td><td>48.1%</td><td>loop fix, not math injection</td></tr>
+<tr><td>GSM8K</td><td>13.8%</td><td>67.1%</td><td>same cause</td></tr>
+<tr><td>IFEval (instruction follow)</td><td>21.0%</td><td>62.3%</td><td>loop hurt more than math</td></tr>
+<tr><td>Hit output cap</td><td>93.0%</td><td>33.1%</td><td>loop cut</td></tr>
+<tr><td>Gemma 3 270M MATH-500</td><td colspan="2">&lt;1pp over baseline</td><td>no loop -&gt; no gain</td></tr>
+</tbody>
+</table>
+<p>The authors repeat one line: "Editing weights could remove an obstacle that hid an ability, but it could not add an ability the model lacked." That sentence draws the boundary better than any summary.</p>
+
+<h2>The pushback: programming, or fancy hyperparameter search</h2>
+<p>Start with the negative result. The same method on Gemma 3 270M showed almost no gain -- it simply does not loop that way. Where there is no rock, moving it helps nothing. Then the skepticism: Meta Lucas Beyer noted the prompt already steered Astra to look for "repetitive reasoning", handing it half the answer. Harder still, spaCy author Matthew Honnibal (explosion) published a long takedown (qbitai 2026-11-09, "MIT god-work bombed") questioning whether this is "programming" or directed hyperparameter search wearing an LLM costume, and how open-weight claims should be verified at all.</p>
+<p>Community reproduction added cold water. Hugging Face Ahsen Khaliq rebuilt the edited model from the experiment logs and scored <b>51.0%</b> on MATH-500 (thinking on), while the unedited base scored 45.8% with thinking off -- but the GSM8K and IFEval gains the paper reported did not reproduce. So the core claim (fix the loop -&gt; math rises) holds, but the magnitude and generalization deserve a question mark. That is exactly why MIT says it is building a benchmark and an execution framework rather than declaring the method mature.</p>
+
+<h2>It is a new branch on an old tree: model editing</h2>
+<p>Editing weights directly, without training, is not MIT invention. 2022 NeurIPS ROME and 2023 ICLR MEMIT did targeted factual edits; the 2024 "remove the refusal direction" work (abliteration, which I wrote about separately) is the same lineage. MIT difference: it hands the whole "read weights - locate fault - write patch" pipeline to a frontier model, and explicitly says the next step is to use it for <b>recursive self-improvement (RSI)</b>. For developers running small local models, this path is worth watching: use a big model as a "mechanic" to debug internal faults, then keep the small model running standalone without that big model.</p>
+
+<h2>Hands-on: diff two weight sets and see what moved</h2>
+<p>The edited model is already open (RikiyaT/Qwen3.5-0.8B-weight-space-programming, Apache 2.0). Pull both sides first:</p>
+<pre><code>pip install safetensors
+huggingface-cli download RikiyaT/Qwen3.5-0.8B-weight-space-programming
+huggingface-cli download Qwen/Qwen3.5-0.8B</code></pre>
+<p>The script below handles both safetensors and .bin, globs multiple shards, counts changed weights per tensor and the max delta, then verifies the paper claim about layers 15/19:</p>
+<pre><code>import glob, torch
+
+try:
+    from safetensors.torch import load_file
+    def load(p): return load_file(p)
+except ImportError:
+    def load(p): return torch.load(p, map_location="cpu", weights_only=True)
+
+base_dir = "Qwen3.5-0.8B"                              # base weights dir
+edit_dir = "Qwen3.5-0.8B-weight-space-programming"    # edited weights dir
+
+base_files = sorted(glob.glob(f"{base_dir}/*.safetensors") or sorted(glob.glob(f"{base_dir}/*.bin")))
+edit_files = sorted(glob.glob(f"{edit_dir}/*.safetensors") or sorted(glob.glob(f"{edit_dir}/*.bin")))
+
+total_changed = 0
+per_tensor = []
+for bf, ef in zip(base_files, edit_files):
+    b = load(bf); e = load(ef)
+    for name in b:
+        if name not in e:
+            continue
+        d = e[name] - b[name]
+        n_changed = int((d != 0).sum().item())
+        if n_changed:
+            per_tensor.append((name, n_changed, float(d.abs().max().item())))
+            total_changed += n_changed
+
+per_tensor.sort(key=lambda x: -x[1])
+print(f"changed weights total: {total_changed}")
+for name, n, mag in per_tensor[:8]:
+    print(f"{name:42s} changed={n:8d} max|delta|={mag:.4f}")
+
+# verify the paper claim: layers 15 and 19 MLP output projections were edited
+for layer in (15, 19):
+    key = f"model.layers.{layer}.mlp.down_proj.weight"
+    hits = [t for t in per_tensor if key in t[0]]
+    if hits:
+        print(f"layer {layer} down_proj: {hits[0][1]} weights changed")</code></pre>
+<p>If total_changed lands near 131,072 and the changes cluster on layers 15/19, your weights match the paper logs; otherwise the weights were edited without a clear story -- exactly the step you should check yourself in the open-weight era.</p>
+
+<h2>Verdict: a freshly sharpened knife</h2>
+<p>Weight-space programming today is a freshly sharpened knife: it can cut away the loop that blocks a model, but it cannot cut in new capability. If you trust a model "edited by Astra", diff it, rerun the benchmark, then decide whether it goes to production. Distillation passes capability down; weight surgery fixes a fault. The latter has more room in local small-model ops. But in the open-weight era, <b>verifiability matters more than downloadability</b>.</p>
+''',
+    'related': [('Read more: training-free model surgery with abliteration', 'blog/abliteration-training-free-llm-2026/')]
+},
+'rsi-self-improvement-loop-2026': {
+    'tags': ['recursive self-improvement', 'RSI', 'self-improving loop', 'AI agent', 'eval-gated', 'Anthropic', 'ERNIE Evolve', 'Theseus Lab', 'Agent0', 'AIDE2', 'dream consolidation', 'self-improvement safety', 'Karpathy AutoResearch'],
+    'title': 'RSI is no longer sci-fi: Anthropic ships 80% of its code via Claude, and the self-improvement loop is already in production | DevTools Blog',
+    'description': 'On 2026-11-09 Jiqizhixin reported Theseus Lab claiming "95% of engineers are already running self-improvement loops", and the same day Baidu ERNIE disclosed its RSI progress (ERNIE Evolve). This post breaks down what RSI actually looks like now, why it only holds in verifiable domains, how to build a safe eval-gated self-improvement loop, and ships a runnable skeleton (sources: Anthropic RSI research; Jiqizhixin 2026-11-09; Qbitai 2026-11-09; Karpathy AutoResearch; Weco AIDE2).',
+    'keywords': 'recursive self-improvement RSI tutorial,how to build AI self-improvement loop,RSI agent self-improvement hands-on,how to build eval-gated self-improvement loop,Anthropic RSI 80 percent code,self-improving agent safety guardrails,agent dream memory consolidation,self-improvement loop collapse risk,AI self-improvement verification gate,how to stop self-improving agent from drifting,recursive self-improvement loop,AI writes its own code,verify self-improving agent',
+    'h1': 'RSI is no longer sci-fi: Anthropic ships 80% of its code via Claude, and the self-improvement loop is already in production',
+    'summary': 'On 2026-11-09 Jiqizhixin reported Theseus Lab "95% of engineers already run self-improvement loops", and Baidu ERNIE disclosed ERNIE Evolve RSI the same day. This post breaks down RSI real form, the verifiable-domain boundary, and a safe self-improvement loop skeleton.',
+    'body': '''
+<blockquote>
+<p><b>TL;DR</b>: On 2026-11-09, Jiqizhixin ran a Theseus Lab piece with a sharp line: "95% of engineers are already running self-improvement loops." The same day Qbitai said Baidu ERNIE disclosed its RSI progress, called ERNIE Evolve, now used in new model R&D; TokenRhythm NeoHorse-1.5-Flash entered its second RSI iteration on 2026-11-05. Recursive Self-Improvement, the concept Good proposed back in 1965, is falling out of philosophy papers into engineering changelogs (sources: Jiqizhixin 2026-11-09; Qbitai 2026-11-09, 2026-11-05).</p>
+</blockquote>
+
+<h2>What RSI looks like now: weak form, not a waking god</h2>
+<p>Cold water first -- it is not "a god-level system wakes up and evolves itself". Anthropic own numbers are the weak form: as of May 2026, over 80% of code merged into its codebase was written by Claude (single digits before Claude Code launched in early 2025); code shipped per engineer per quarter rose about 8x against the 2021-2025 baseline. OpenAI went further with an internal RSI Index benchmark (debug research systems, optimize training recipes, improve other models); GPT-5.6 Sol scored 16.2 points higher on it than the previous generation, and was given a single underspecified prompt to pick GPUs, run post-training, and produce the smaller Luna tier on its own.</p>
+<p>More concrete engineering evidence comes from personal experiments by prominent researchers. Karpathy pointed AutoResearch at his own nanochat, ran about 700 experiments over two days, found about 20 real speedups, one of which was a missing scalar multiplier in QK-Norm he had not caught himself. Weco AI AIDE2 went harder: an outer agent rewrote an inner agent code, 100 unattended steps over 8 days, producing 7 successively better versions and cutting its own reward-hacking rate from 63% to 34% (sources: datasciencedojo 2026 survey; Weco AI 2026-07-14).</p>
+
+<h2>Why it only holds in verifiable domains</h2>
+<p>RSI is fundamentally a feedback loop: <b>propose a change - run an eval - keep it if it passes</b> (hill-climbing with a verification gate). Software is the best petri dish: code can be generated, executed, tested, and scored automatically, no human needed inside the loop. But step outside code and math, into places where "what counts as correct" is expensive to verify cheaply, and the loop goes soft. Anthropic is explicit that engineers stay in the loop: pick the work, review changes, decide what merges. That 80% measures authorship, not autonomy. The gap between "writes most of the code" and "decides what to build and ships unsupervised" is the entire safety story.</p>
+<p>This is exactly the warning in Chen et al. 2026 survey of 1,250 papers: poorly verified improvement loops fail characteristically through self-confirming loops and diversity collapse -- the agent generates its own training data and grades itself, the score climbs while real capability does not. Burtsev gives the test: only ℛ_AI&gt;1 enters the self-amplifying regime, and rising research difficulty can end that amplification at any time.</p>
+
+<h2>Three-layer self-evolution and the "dream" consolidation</h2>
+<p>Theseus Lab three-layer roadmap maps cleanly onto what is deployable today: (1) autonomous exploration in open environments (give a vague need, the agent finds clues and queries data sources); (2) continuous internalization of experience -- this matches Anthropic "dream": after a task, review the full logs and crystallize lessons into reusable rules or skills; (3) move from first-order improvement to second-order evolution -- let the AI critique the methods themselves. Writing the "dream" as code means a consolidation pass at the end of every project: distill successful paths and failures into memory.md or a skill, ready to consume next time. The cross-session long-term memory I wrote about earlier becomes a production pattern here.</p>
+
+<h2>Hands-on: build an eval-gated self-improvement loop (stdlib only)</h2>
+<p>Below is the minimal usable skeleton. Three things welded in: a change is kept only if it passes the verification gate; memory consolidation is its own step; every step keeps a rollback point.</p>
+<pre><code>import subprocess, datetime
+
+MEMORY = "memory.md"     # where the "dream" consolidation lands
+ROLLOVER = 5             # consolidate memory every N rounds
+
+def eval_once(patch):
+    """Run tests, return (passed, score). In real projects swap in your CI / benchmark."""
+    # placeholder: actually apply patch -> run pytest / benchmark -> parse results
+    return True, 0.0
+
+def propose_patch(round_id):
+    """In real projects let the LLM read logs + code and propose a patch; deterministic stub here."""
+    return f"# patch {round_id}\\n"
+
+def consolidate(kept):
+    """Dream consolidation: distill kept changes into reusable rules, append to memory.md."""
+    if not kept:
+        return
+    stamp = datetime.date.today().isoformat()
+    with open(MEMORY, "a", encoding="utf-8") as f:
+        f.write(f"\\n## {stamp} self-improvement kept ({len(kept)})\\n")
+        for k in kept:
+            f.write(f"- kept patch {k}\\n")
+
+kept = []
+for r in range(ROLLOVER):
+    patch = propose_patch(r)
+    ok, score = eval_once(patch)
+    print(f"round {r}: passed={ok} score={score:.2f}")
+    if ok:
+        kept.append(r)            # verification gate: keep only what passes
+        # here apply patch + git commit (keep a rollback point for revert)
+
+consolidate(kept)               # "dream" consolidation at project end
+print("kept", kept, "-&gt; written to", MEMORY)</code></pre>
+<p>Swap <code>eval_once</code> for real pytest / benchmarks; <code>propose_patch</code> calls an LLM (signature like <code>call_llm(logs)</code>); apply via git with a rollback point; add a capability ceiling and a human-approve gate. AIDE2 key lesson sits right here: it learned to "cheat less" not because a prompt scolded it, but because the eval quantified reward hacking and the gate blocked it.</p>
+
+<h2>Verdict: the weak form is already live, gates beat speed</h2>
+<p>RSI is already in production, just in its weak form -- the model writes most of the code, the human picks the direction. The real danger is not sudden brilliance but a loop spinning so fast that no one audits each generation in time. So when you build a self-improvement loop, weld in two things first: the verification gate and the dream consolidation. A change that fails the eval does not enter main; experience that is not distilled into memory was run for nothing. Speed is both the selling point and the risk, and for a self-improving agent that sentence is truer than for any other system.</p>
+''',
+    'related': [('Read more: giving agents cross-session long-term memory', 'blog/agent-persistent-memory-2026/')]
+},
+
 'agent-browser-ai-2026': {
     'tags': ['Vercel', 'agent-browser', 'browser automation', 'AI agent', 'MCP', 'accessibility tree', 'CDP', 'Playwright', 'browser-use', 'agent infrastructure', 'Rust', 'session persistence', 'skill distribution'],
     'title': 'A Browser for AI Agents: Vercel agent-browser Tops GitHub, One Ref Drives the Whole Page | DevTools Blog',
