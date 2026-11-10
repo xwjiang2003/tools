@@ -3073,7 +3073,7 @@ PRIVACY_BODY_EN = """
 <p>This site uses one third-party analytics service (Baidu Analytics) and one <strong>self-hosted</strong> visit counter to understand traffic, referrers and which tools are used:</p>
 <ul>
   <li>
-    <strong>Self-hosted visit counter</strong> (same-origin <code>/busuanzi</code>) — only powers the
+    <strong>Self-hosted visit counter</strong> (same-origin <code>/counter</code>) — only powers the
     page-view and visitor counts shown in the footer. Requests are handled by this site's own server
     and never go to any third party; de-duplication relies solely on an anonymous cookie set by this
     site, and no names, email addresses or other personal information are collected or used for

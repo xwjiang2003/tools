@@ -142,7 +142,7 @@
 <script src="js/totp.js"></script>
 <!-- ========== Analytics: self-hosted visitor counter ==========
      Replaces the flaky third-party busuanzi service (busuanzi.ibruce.info kept returning 502).
-     The counter backend runs on this same server: nginx proxies /busuanzi to a local service, so the
+     The counter backend runs on this same server: nginx proxies /counter to a local service, so the
      only network call is a same-origin JSONP request. Loaded on production only (skipped for file://
      and localhost) so local testing never pollutes the live numbers. -->
 <script>
@@ -161,7 +161,7 @@
   };
   var s = document.createElement('script');
   s.async = true;
-  s.src = '/busuanzi?jsonpCallback=' + encodeURIComponent(cb);
+  s.src = '/counter?jsonpCallback=' + encodeURIComponent(cb);
   // If the counter backend is unreachable, drop the footer stats rather than show an empty slot
   s.onerror = function () {
     var f = document.getElementById('footerStats');
