@@ -6,6 +6,174 @@
 """
 
 ARTICLES_EN = {
+'mopd-multi-teacher-distillation-2026': {
+    'tags': ['MOPD', 'multi-teacher distillation', 'Open-MOPD', 'RL expert merge', 'TRL', 'AsyncDistillationTrainer', 'Nemotron 3 Ultra', 'Mistral Large 4', 'model merging', 'LLM post-training'],
+    'title': 'Multi-teacher policy distillation MOPD is taking over LLM post-training: how NVIDIA, Mistral and Xiaomi fuse a squad of RL experts into one model | DevTools Blog',
+    'description': 'The November 2026 Hugging Face blog laid out MOPD (multi-teacher on-policy distillation): NVIDIA Nemotron 3 Ultra, Mistral Large 4, Xiaomi MiMo-V2.6 and Moonshot Kimi K3 all use it to merge several RL experts into one generalist. This post breaks down how MOPD works, how Open-MOPD lifts headroom recovery from 35.6% to 83.4%, the counterpoint on GPU cost, and ships runnable TRL AsyncDistillationTrainer code (sources: Hugging Face blog 2026-11; arXiv:2608.19098; arXiv:2610.04272; arXiv:2610.26950).',
+    'keywords': 'mopd multi-teacher policy distillation tutorial,mixture of policy distillation what is it,Open-MOPD 35.6 to 83.4,how to merge multiple RL expert models into one,TRL AsyncDistillationTrainer tutorial,multi-teacher on-policy distillation hands-on,LLM post-training distillation merge experts,Nemotron 3 Ultra MOPD,Mistral Large 4 three teachers distillation,how to cut distillation GPU cost,on-policy distillation vs off-policy,model merging expert models training,distill multiple RL experts into one model',
+    'h1': 'Multi-teacher policy distillation MOPD is taking over LLM post-training: how NVIDIA, Mistral and Xiaomi fuse a squad of RL experts into one model',
+    'summary': 'The November 2026 Hugging Face blog explained MOPD in full: NVIDIA Nemotron 3 Ultra, Mistral Large 4, Xiaomi MiMo-V2.6 and Kimi K3 all use multi-teacher on-policy distillation to merge a squad of RL experts into one generalist. This post breaks down the mechanism, Open-MOPD 35.6% to 83.4%, the GPU-cost counterpoint and runnable TRL code.',
+    'body': '''
+<blockquote>
+<p><b>One fact you probably overlooked</b>: many of the most capable models shipped in 2026 were not trained as one giant, but as a pack of specialists that were later distilled back into a single model. Hugging Face published a November 2026 blog, "MOPD: how frontier labs merge RL experts into one model", laying out a post-training trick quietly used by NVIDIA, Mistral, Xiaomi and Moonshot (source: Hugging Face blog 2026-11).</p>
+</blockquote>
+
+<h2>Why multi-teacher: serving a pack of specialists is expensive</h2>
+<p>RL post-training is great at building domain specialists -- one strong at math, one at coding, one at instruction following. But keeping three models live at once blows your VRAM and latency budgets. MOPD (Multi-teacher On-Policy Distillation) flips it: each prompt is routed to its domain expert, and the expert gives <b>dense per-token reward supervision</b> over the trajectories the student generates, compressing several specialists into one student. The only difference from plain on-policy distillation is the headcount: one teacher versus a squad.</p>
+
+<h2>Who uses it, and how they split teachers</h2>
+<p>The HF blog lists a remarkably concrete table, drawn from each lab own technical report:</p>
+<table>
+<thead><tr><th>Lab</th><th>Model</th><th>How teachers are split</th></tr></thead>
+<tbody>
+<tr><td>NVIDIA</td><td>Nemotron 3 Ultra</td><td>10+ teachers, two MOPD rounds</td></tr>
+<tr><td>Mistral</td><td>Mistral Large 4</td><td>3 teachers by reasoning effort (high/med/low)</td></tr>
+<tr><td>Liquid AI</td><td>LFM2.5-24B-A2B</td><td>two MOPD stages, non-agentic then agentic</td></tr>
+<tr><td>Xiaomi</td><td>MiMo-V2.6</td><td>MOPD2, two families of domain teachers</td></tr>
+<tr><td>Moonshot</td><td>Kimi K3</td><td>9 experts, by domain and reasoning effort</td></tr>
+<tr><td>DeepSeek</td><td>DeepSeek-V4</td><td>10+ domain teachers, replacing V3.2 mixed-RL stage</td></tr>
+</tbody>
+</table>
+<p>Look at the Mistral row: it does not split by math/code/instruction, but by <b>reasoning effort</b> into high/medium/low teachers. That is a signal -- the routing dimension is not only domain, it can be difficulty, style, or agentic degree.</p>
+
+<h2>The naive MOPD trap: only 35.6% of the headroom recovered</h2>
+<p>Open-MOPD from Tsinghua AIR and ByteDance Seed (arXiv:2608.19098) did something hardcore: they built a fully controlled benchmark on SmolLM3-3B-Base with oracle routing, isolating capability integration from routing error. The punchline stings -- standard naive MOPD recovers only <b>35.6%</b> of the headroom between mixed SFT and the RouteRL oracle, and short tasks like instruction following stall early and degrade badly.</p>
+<p>The root cause they found is not gradient conflict but <b>misallocation of the token-level optimization budget</b>, driven by three orthogonal factors: (1) structural sequence-length disparities across domains (code/math answers are longer than instruction-following ones); (2) different convergence rates across domains; (3) reward staleness from repeated minibatches of a shared rollout. The fix is three axes: token-share balancing, gap-aware dynamic budget allocation, and student reward refresh. Together they lift headroom recovery from 35.6% to <b>83.4%</b>. The full recipe, training trajectories and eval suites are open and reproducible on an 8xA100 academic budget.</p>
+
+<h2>The counterpoint: is MOPD really better than tuned off-policy distillation</h2>
+<p>Do not get ahead of yourself. arXiv:2610.04272, "Rethinking Self-Distillation for Multi-Teacher Capability Merging", poured cold water: across four models and two task compositions they saw no consistent in-domain recovery advantage of MOPD over tuned off-policy distillation, and MOPD burned <b>14.8x to 23.1x</b> the SFT training GPU-hours. In other words, MOPD is not cheap, and cheaper off-policy distillation or training-free weight merging is a better baseline in many cases. A later arXiv:2610.26950, CA-MOPD, nudged the average from naive 31.36 to 32.22 using capability-aware allocation plus specialist-merge initialization -- proof the method is still moving fast.</p>
+
+<h2>Hands-on: run MOPD with TRL</h2>
+<p>TRL AsyncDistillationTrainer supports MOPD natively. The flow: serve each expert with vLLM as an OpenAI-compatible endpoint, point the student at a set of teacher URLs, and use a teacher_id column to route prompts. Generation, scoring and training run asynchronously -- the student keeps generating while it trains. The snippet below is adapted from the official HF example (source: Hugging Face blog 2026-11):</p>
+<pre><code>from datasets import interleave_datasets, load_dataset
+from trl.experimental.async_distillation import (
+    AsyncDistillationConfig, AsyncDistillationTrainer,
+)
+
+dataset = load_dataset(
+    "BytedTsinghua-SIA/Open-MOPD-Data",
+    data_files="rl_prompt_mix/train.parquet",
+    split="train",
+)
+dataset = dataset.select_columns(["prompt", "domain"]).rename_column(
+    "domain", "teacher_id"
+).shuffle(seed=42)
+
+# 40/40/20 for math/code/if so short tasks are not drowned by long ones
+dataset = interleave_datasets(
+    [
+        dataset.filter(lambda row, d=domain: row["teacher_id"] == d)
+        for domain in ("math", "code", "if")
+    ],
+    probabilities=[0.4, 0.4, 0.2],
+    seed=42,
+)
+
+config = AsyncDistillationConfig(
+    teacher_server_urls={
+        "math": "http://localhost:8001",
+        "code": "http://localhost:8002",
+        "if":   "http://localhost:8003",
+    },
+    beta=1.0,            # reverse KL, only the sampled token teacher prob is used
+    teacher_top_k=1,     # with beta=1.0 keep each teacher response small
+    max_completion_length=16384,
+    vllm_server_timeout=3600,
+)
+
+trainer = AsyncDistillationTrainer(
+    model="BytedTsinghua-SIA/Open-MOPD-SmolLM3-3B-MixSFT",
+    args=config,
+    train_dataset=dataset,
+)
+trainer.train()</code></pre>
+<p>Serve the three experts with vllm serve on 8001/8002/8003 first, then run this. Under reverse KL (beta=1.0) TRL only takes the teacher probability for the token the student sampled, so every teacher must share the student tokenizer -- which is exactly why the Open-MOPD recipe requires all teachers to start from the same SFT checkpoint.</p>
+
+<h2>Verdict: when MOPD is worth it</h2>
+<p>MOPD is not "bigger means cheaper" magic. It fits when you already have a squad of RL specialists from a shared SFT base and genuinely need to fuse them into one model for production; if you only want a point or two, tuned off-policy distillation or training-free weight merging is an order of magnitude cheaper. Before adopting MOPD, settle three things: do the teachers share a tokenizer, how do you slice the domain/effort dimension, and are you willing to pay for those 14.8x-and-up GPU-hours. In the open-weight era, being able to reproduce a post-training recipe beats being able to download the weights.</p>
+''',
+    'related': [('Read more: weight-space surgery with a frontier model', 'blog/weight-space-programming-2026/')]
+},
+'llm-cache-poisoning-2026': {
+    'tags': ['vLLM', 'SGLang', 'GPTCache', 'KV cache hash collision', 'cache poisoning', 'LLM serving security', 'CVE-2025-25183', 'semantic cache', 'NDSS 2026', 'prefix caching', 'content filter bypass', 'multimodal image cache'],
+    'title': 'LLM serving cache poisoning: your vLLM and SGLang cache can be poisoned, NDSS 2026 breaks KV hash collision and semantic cache misses | DevTools Blog',
+    'description': 'The 2026 NDSS paper "Cache Me, Catch You" by XingTuLab audited the caching mechanisms of vLLM, SGLang and GPTCache, and found that KV prefix caching, image caching and semantic caching all rely on hash keys that can be collided -- letting an attacker make their crafted request hit someone else cache. This post breaks the three vulnerability classes, the CVE list, and ships a runnable audit plus hardening script (sources: NDSS 2026; GitHub XingTuLab/Cache_Me_Catch_You; vLLM/SGLang/GPTCache advisories).',
+    'keywords': 'LLM cache poisoning tutorial,vLLM cache vulnerability CVE-2025-25183,KV cache hash collision attack,SGLang prefix caching security,GPTCache semantic cache attack bypass,how to detect vLLM cache vulnerability,LLM serving framework security audit,LLM serving cache poisoning,prefix caching hash collision,how to fix semantic cache false hit,multimodal model image cache hash collision,content filter bypass LLM,open weight deployment security',
+    'h1': 'LLM serving cache poisoning: your vLLM and SGLang cache can be poisoned, NDSS 2026 breaks KV hash collision and semantic cache misses',
+    'summary': 'The 2026 NDSS paper "Cache Me, Catch You" audited vLLM, SGLang and GPTCache caches, and found KV prefix caching, image caching and semantic caching all use hash keys that can be collided, so an attacker can poison caches and make other requests hit crafted entries. This post breaks the three classes, the CVE list and a runnable audit plus hardening script.',
+    'body': '''
+<blockquote>
+<p><b>A finding that should make your back stiffen</b>: the LLM cache you use to cut cost may be getting poisoned. The 2026 NDSS paper "Cache Me, Catch You" by XingTuLab audited the caching mechanisms of vLLM, SGLang and GPTCache, and found that KV prefix caching, image caching and semantic caching all rely on hash keys that can be collided -- letting an attacker make their crafted request hit someone else cache (source: NDSS 2026; GitHub XingTuLab/Cache_Me_Catch_You).</p>
+</blockquote>
+
+<h2>Why serving caches exist, and why they bite</h2>
+<p>Three caches are performance lifelines: <b>KV prefix caching</b> reuses KV already in VRAM for requests sharing a prefix; <b>image caching</b> skips repeated preprocessing for multimodal models; <b>semantic caching</b> reuses a previous answer for semantically similar questions. The weak point is the cache key -- at heart it is a hash. Once an attacker can forge a hash collision, a request that should be handled independently silently hits a carefully crafted cache entry. The fallout: wrong output, information leakage, even content-filter bypass.</p>
+
+<h2>Three vulnerability classes, one by one</h2>
+<p><b>1. KV cache prefix hash collision.</b> SGLang and vLLM key prefixes with Python tuple hash. The paper uses a Meet-in-the-Middle (bidirectional birthday) attack -- hash_coll.py plus an OpenMP-accelerated omp_collision_cd.cpp in the repo -- to search for collisions. After hitting someone prefix cache, your request reuses KV computed from the victim context: cross-user hit, leakage and filter bypass in one move.</p>
+<p><b>2. Image cache hash collision.</b> vLLM hashes images with tobytes() then SHA-256; SGLang uses SHA-256; there is also a size-based collision. The paper shows three vectors: P-image (abusing PNG palette mode to build visually different images with identical hashes), SHA-256 collision search, and size-image (same raw pixels but different displayed content). The multimodal model then treats a reskinned image as the same one.</p>
+<p><b>3. Semantic cache inconsistency.</b> GPTCache-style caches judge "same question" by embedding similarity. The paper shows requests with high similarity scores can mean something completely opposite or even contradictory -- so a question that should be answered fresh gets a wrong or harmful reused answer.</p>
+
+<h2>The CVE list that already exists</h2>
+<table>
+<thead><tr><th>Vulnerability</th><th>Framework</th><th>ID</th></tr></thead>
+<tbody>
+<tr><td>KV cache collision</td><td>vLLM</td><td>GHSA-rm76-4mrf-v9r8 / CVE-2025-25183, CVE-2025-1953</td></tr>
+<tr><td>Image hash collision (tobytes)</td><td>vLLM</td><td>GHSA-c65p-x677-fgj6 / CVE-2025-46722</td></tr>
+<tr><td>PNG tRNS transparency bypass</td><td>vLLM</td><td>GHSA-8jr5-v98p-w75m</td></tr>
+<tr><td>Semantic cache inconsistency</td><td>GPTCache</td><td>fix PR #669</td></tr>
+</tbody>
+</table>
+<p>None of this is theoretical. The authors disclosed responsibly to each framework maintainer; vLLM and SGLang shipped fixes in later versions, but plenty of self-hosted instances are still on old builds.</p>
+
+<h2>Hands-on: three steps to audit and harden</h2>
+<p>Step one, know which version you actually run. This snippet reads installed framework versions and flags the ones below known cache-CVE lines:</p>
+<pre><code>import importlib.metadata as md
+
+# packages your serving stack actually imports
+PKGS = {"vllm": "vllm", "sglang": "sglang", "gptcache": "gptcache"}
+
+# highest version known to carry a cache-collision CVE (illustrative; verify on NVD)
+VULN = {
+    "vllm": "0.6.3",      # CVE-2025-25183 / CVE-2025-46722 affect <= this line
+    "gptcache": "0.1.44", # semantic-cache inconsistency, fixed in PR #669
+}
+
+for label, pkg in PKGS.items():
+    try:
+        ver = md.version(pkg)
+    except md.PackageNotFoundError:
+        print(label + ": not installed, skip")
+        continue
+    ceil = VULN.get(label)
+    if ceil and ver <= ceil:
+        flag = "below safe line, cache CVE present"
+    else:
+        flag = "above known safe line"
+    print(label + " " + ver + ": " + flag)</code></pre>
+<p>Step two, verify prefix caching does not leak across requests. Against any OpenAI-compatible endpoint, send a long prefix A, then a completely different prefix B, and watch whether B returns suspiciously fast or borrows content that belonged to A. If anything looks off, turn prefix caching off:</p>
+<pre><code># vLLM: do not enable prefix caching (matters for untrusted / multi-tenant input)
+vllm serve meta-llama/Llama-3.1-8B-Instruct \
+    --enable-prefix-caching False
+
+# or set it explicitly in EngineArgs
+# from vllm import EngineArgs
+# EngineArgs(enable_prefix_caching=False)</code></pre>
+<p>Step three, put a consistency gate in front of semantic caching. Do not trust embedding similarity alone; add a light check: before reusing a key, compare structured fields (intent label, entity set) and treat mismatch as a miss:</p>
+<pre><code>def semantic_get(cache, query_vec, query_meta, sim_threshold=0.92):
+    hit = cache.nearest(query_vec, sim_threshold)
+    if not hit:
+        return None
+    # similar is not safe: mismatch on structured fields means miss
+    if hit.meta["intent"] != query_meta["intent"]:
+        return None
+    return hit.value</code></pre>
+
+<h2>Verdict: caching is a tug-of-war between speed and safety</h2>
+<p>Caching can cut your inference cost substantially, but once its hash key is collidable it becomes a cross-user attack surface. Self-hosting open weights gives you more control, and also means you own these holes. The cheapest actions are three: upgrade frameworks to CVE-fixed versions, disable prefix caching for untrusted input, and add structured consistency checks to semantic caches. Do not wait to be poisoned before remembering the hash key was never a security boundary.</p>
+''',
+    'related': [('Read more: OpenAI autonomous vulnerability discovery pipeline', 'blog/openai-autonomous-vuln-discovery-2026/')]
+},
 'weight-space-programming-2026': {
     'tags': ['weight-space programming', 'GPT-6 Astra', 'Qwen3.5-0.8B', 'model editing', 'open weights', 'ROME', 'MEMIT', 'abliteration', 'neural weight surgery', 'model verifiability', 'model self-check', 'MIT CSAIL', 'open-weight security'],
     'title': 'A frontier model operating on another model weights: MIT used GPT-6 Astra to edit Qwen and lifted MATH-500 from 7.9% to 48.1% | DevTools Blog',
