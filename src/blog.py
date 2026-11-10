@@ -50,6 +50,182 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'mopd-multi-teacher-distillation-2026',
+    'category': 'ai',
+    'date': '2026-11-10',
+    'updated': '2026-11-10',
+    'tags': ['MOPD', '多教师蒸馏', 'Open-MOPD', 'RL 专家合并', 'TRL', 'AsyncDistillationTrainer', 'Nemotron 3 Ultra', 'Mistral Large 4', '模型合并', 'LLM 后训练'],
+    'title': '多教师策略蒸馏 MOPD 正在接管 LLM 后训练：NVIDIA、Mistral、小米怎么把一群 RL 专家塞进一个模型 | DevTools 博客',
+    'description': '2026-11 Hugging Face 博客系统讲了 MOPD（多教师在线策略蒸馏）：NVIDIA Nemotron 3 Ultra、Mistral Large 4、小米 MiMo-V2.6、Moonshot Kimi K3 都用它把多个 RL 专家合并成一个通才。本文拆 MOPD 原理、Open-MOPD 把 headroom 回收从 35.6% 拉到 83.4% 的三板斧、反方对 GPU 成本的质疑，并给出用 TRL AsyncDistillationTrainer 可跑的蒸馏代码（源：Hugging Face blog 2026-11；arXiv:2608.19098；arXiv:2610.04272；arXiv:2610.26950）。',
+    'keywords': 'mopd 多教师策略蒸馏 教程,mixture of policy distillation 是什么,Open-MOPD 35.6% 到 83.4%,如何把多个 RL 专家模型合并成一个,TRL AsyncDistillationTrainer 教程,多教师在线蒸馏 实操,LLM 后训练 蒸馏 合并专家,Nemotron 3 Ultra MOPD,Mistral Large 4 三教师 蒸馏,如何降低蒸馏 GPU 成本,on-policy distillation vs off-policy,模型合并 专家模型 训练,distill multiple RL experts into one model',
+    'h1': '多教师策略蒸馏 MOPD 正在接管 LLM 后训练：NVIDIA、Mistral、小米怎么把一群 RL 专家塞进一个模型',
+    'summary': '2026-11 Hugging Face 博客把 MOPD 讲透了：NVIDIA Nemotron 3 Ultra、Mistral Large 4、小米 MiMo-V2.6、Kimi K3 都用多教师在线策略蒸馏把一群 RL 专家合并成一个通才。本文拆原理、Open-MOPD 的 35.6% 到 83.4%、反方 GPU 成本质疑与可跑的 TRL 代码。',
+    'body': '''
+<blockquote>
+<p><b>先说一个你大概率会忽略的事实</b>：2026 年最前沿的一批模型，权重背后不是训了一个巨无霸，而是训了一堆专家、再蒸馏回一个。Hugging Face 在 2026-11 发了一篇博客《MOPD: how frontier labs merge RL experts into one model》，把这套被 NVIDIA、Mistral、小米、Moonshot 偷偷在用的后训练手法摆上了台面（源：Hugging Face blog 2026-11）。</p>
+</blockquote>
+
+<h2>为什么要多教师：serving 一堆专家太贵</h2>
+<p>RL 后训练擅长造领域专家——一个数学强的、一个写代码强的、一个指令遵循强的。但线上同时养三个模型，显存和 latency 都吃不消。MOPD（Multi-teacher On-Policy Distillation，多教师在线策略蒸馏）的思路是：每个 prompt 按领域路由到对应的 RL 专家，专家对学生生成的轨迹给<b>逐 token 的密集奖励监督</b>，把多个专家的能力压进一个学生模型。它和普通 on-policy distillation 的区别就一个字——普通版只有一个老师，MOPD 有一队。</p>
+
+<h2>谁在用，怎么分老师</h2>
+<p>HF 博客列了一张很实的表（按各家自己的技术报告）：</p>
+<table>
+<thead><tr><th>实验室</th><th>模型</th><th>老师怎么分</th></tr></thead>
+<tbody>
+<tr><td>NVIDIA</td><td>Nemotron 3 Ultra</td><td>10+ 个老师，两轮 MOPD</td></tr>
+<tr><td>Mistral</td><td>Mistral Large 4</td><td>3 个老师，按推理强度（高/中/低）</td></tr>
+<tr><td>Liquid AI</td><td>LFM2.5-24B-A2B</td><td>两个阶段，一个非 agentic、一个 agentic</td></tr>
+<tr><td>小米</td><td>MiMo-V2.6</td><td>MOPD2，两类领域老师家族</td></tr>
+<tr><td>Moonshot</td><td>Kimi K3</td><td>9 个专家，按领域 + 推理强度</td></tr>
+<tr><td>DeepSeek</td><td>DeepSeek-V4</td><td>10+ 个领域老师，替换 V3.2 的混合 RL 阶段</td></tr>
+</tbody>
+</table>
+<p>注意 Mistral 那条：它不是按数学/代码/指令分，而是按<b>推理强度</b>分高/中/低三个老师。这给了一个信号——MOPD 的路由维度不只有领域，还可以是难度、风格、agentic 程度。</p>
+
+<h2>朴素 MOPD 的坑：只回收了 35.6% 的头部空间</h2>
+<p>清华 AIR 和字节 Seed 的 Open-MOPD（arXiv:2608.19098）做了件很硬核的事：在 SmolLM3-3B-Base 上搭了一个完全可控的基准，用 oracle 路由把能力整合和路由错误拆开。结论很扎心——标准的朴素 MOPD 只回收了从混合 SFT 到 RouteRL oracle 之间<b>35.6%</b> 的 headroom，而且指令遵循这类短任务早早停摆、严重退化。</p>
+<p>他们排查出根因不是梯度冲突，而是<b>token 级优化预算的错配</b>，来自三个正交因素：①不同领域序列长度结构差异（代码/数学的回答普遍比指令遵循长）；②各领域收敛速度不同；③共享 rollout 多次 minibatch 导致的 reward 陈旧。修法是三板斧：token-share balancing（按领域平衡 token 占比）、gap-aware dynamic budget allocation（按差距动态调预算）、student reward refresh（刷新陈旧 reward）。合起来把 headroom 回收从 35.6% 拉到 <b>83.4%</b>。整套配方、训练轨迹、评测套件都开源在 8×A100 的学术预算上可复现。</p>
+
+<h2>反方：MOPD 真比调好的离线蒸馏强吗</h2>
+<p>别急着上头。arXiv:2610.04272《Rethinking Self-Distillation for Multi-Teacher Capability Merging》泼了冷水：在四个模型和两种任务组合上，他们没看到 MOPD 相对调好的 off-policy distillation 有一致的内域回收优势；而且 MOPD 用的训练 GPU 小时是 SFT 的 <b>14.8× 到 23.1×</b>。换句话说，MOPD 的代价不小，便宜的离线蒸馏和免训练的 weight merging 在很多场景是更划算的基线。后续 arXiv:2610.26950 的 CA-MOPD 用能力感知分配加专家合并初始化把平均分从 naive 的 31.36 提到 32.22，但也说明这条路还在快速演化。</p>
+
+<h2>实操：用 TRL 跑一次 MOPD</h2>
+<p>TRL 的 AsyncDistillationTrainer 已经原生支持 MOPD。流程是：先用 vLLM 把每个专家起成一个 OpenAI 兼容服务，再给学生配一组 teacher URL，用 teacher_id 列把 prompt 路由到对应专家。生成、打分、训练异步进行，学生边训边生成。下面这段改编自 HF 官方示例（源：Hugging Face blog 2026-11）：</p>
+<pre><code>from datasets import interleave_datasets, load_dataset
+from trl.experimental.async_distillation import (
+    AsyncDistillationConfig, AsyncDistillationTrainer,
+)
+
+dataset = load_dataset(
+    "BytedTsinghua-SIA/Open-MOPD-Data",
+    data_files="rl_prompt_mix/train.parquet",
+    split="train",
+)
+dataset = dataset.select_columns(["prompt", "domain"]).rename_column(
+    "domain", "teacher_id"
+).shuffle(seed=42)
+
+# 数学/代码/指令遵循各占 40/40/20，避免短任务被长任务淹没
+dataset = interleave_datasets(
+    [
+        dataset.filter(lambda row, d=domain: row["teacher_id"] == d)
+        for domain in ("math", "code", "if")
+    ],
+    probabilities=[0.4, 0.4, 0.2],
+    seed=42,
+)
+
+config = AsyncDistillationConfig(
+    teacher_server_urls={
+        "math": "http://localhost:8001",
+        "code": "http://localhost:8002",
+        "if":   "http://localhost:8003",
+    },
+    beta=1.0,            # 反向 KL，只比对采样到的 token 的 teacher 概率
+    teacher_top_k=1,     # 配合 beta=1.0 让每个老师的回复尽量小
+    max_completion_length=16384,
+    vllm_server_timeout=3600,
+)
+
+trainer = AsyncDistillationTrainer(
+    model="BytedTsinghua-SIA/Open-MOPD-SmolLM3-3B-MixSFT",
+    args=config,
+    train_dataset=dataset,
+)
+trainer.train()</code></pre>
+<p>先把三个专家用 vllm serve 起在 8001/8002/8003，再跑这段。反向 KL（beta=1.0）下 TRL 只取学生采样 token 对应的老师概率，所以每个老师必须和学生共享同一个 tokenizer——这也是为什么 Open-MOPD 的配方要求老师都从同一个 SFT checkpoint 出发。</p>
+
+<h2>判断：什么时候值得上 MOPD</h2>
+<p>MOPD 不是更大就更省的魔法。它适合你已经有一队同根 SFT 出来的 RL 专家、且确实要合成一个模型上线的情况；如果只是想提一个点，调好的离线蒸馏或免训练 weight merging 便宜一个数量级。上 MOPD 前先想清楚三件事：老师是不是同 tokenizer、领域/强度维度怎么切、以及你愿不愿意为那 14.8× 起步的 GPU 小时买单。开源权重时代，能自己复现后训练配方，比能下载权重更值钱。</p>
+''',
+    'related': [('延伸阅读：用大模型给小模型做权重手术', 'blog/weight-space-programming-2026/')]
+},
+{
+    'slug': 'llm-cache-poisoning-2026',
+    'category': 'security',
+    'date': '2026-11-10',
+    'updated': '2026-11-10',
+    'tags': ['vLLM', 'SGLang', 'GPTCache', 'KV 缓存哈希碰撞', '缓存投毒', 'LLM 服务安全', 'CVE-2025-25183', '语义缓存', 'NDSS 2026', '前缀缓存', '内容过滤绕过', '多模态图像缓存'],
+    'title': '你跑的 vLLM/SGLang 缓存可能被投毒：NDSS 2026 拆出 KV 缓存哈希碰撞与语义缓存误命中 | DevTools 博客',
+    'description': '2026 年 NDSS 录用、XingTuLab 的《Cache Me, Catch You》系统审计了 vLLM、SGLang、GPTCache 的缓存机制，发现 KV 前缀缓存、图像缓存、语义缓存全都存在可被碰撞的哈希键，攻击者能让自己构造的请求命中别人请求的缓存。本文拆三类漏洞、CVE 清单，并给出可跑的版本自查与加固脚本（源：NDSS 2026；GitHub XingTuLab/Cache_Me_Catch_You；vLLM/SGLang/GPTCache 安全公告）。',
+    'keywords': 'LLM 缓存投毒 教程,vLLM 缓存漏洞 CVE-2025-25183,KV cache 哈希碰撞 攻击,SGLang 前缀缓存 安全,GPTCache 语义缓存 攻击 绕过,如何检测 vLLM 缓存漏洞,大模型服务框架 安全 自查,LLM serving cache poisoning,prefix caching hash collision,如何修复语义缓存 误命中,多模态模型 图像缓存 哈希碰撞,content filter bypass LLM,开放权重 部署 安全',
+    'h1': '你跑的 vLLM/SGLang 缓存可能被投毒：NDSS 2026 拆出 KV 缓存哈希碰撞与语义缓存误命中',
+    'summary': '2026 NDSS 论文《Cache Me, Catch You》审计了 vLLM、SGLang、GPTCache 的缓存，发现 KV 前缀缓存、图像缓存、语义缓存的哈希键都能被碰撞，攻击者能投毒让别人的请求命中自己构造的缓存。本文拆三类漏洞、CVE 清单与可跑的自查加固脚本。',
+    'body': '''
+<blockquote>
+<p><b>先讲个让人后背发凉的发现</b>：你用来降本的 LLM 缓存，可能正被别人拿来投毒。2026 年 NDSS 录用、XingTuLab 的《Cache Me, Catch You》系统审计了 vLLM、SGLang、GPTCache 的缓存机制，发现 KV 前缀缓存、图像缓存、语义缓存全都存在可被碰撞的哈希键——攻击者能让自己构造的请求，命中别人请求的缓存（源：NDSS 2026；GitHub XingTuLab/Cache_Me_Catch_You）。</p>
+</blockquote>
+
+<h2>为什么 LLM 服务要缓存，又为什么缓存会咬人</h2>
+<p>三类缓存是性能命脉：<b>KV 前缀缓存</b>让共享前缀的请求复用显存里的 KV；<b>图像缓存</b>让多模态模型跳过重复的图像预处理；<b>语义缓存</b>让意思相近的问题直接复用上一次回答。问题出在缓存键——它本质是个哈希。一旦攻击者能造出哈希碰撞，就能让一条本该独立处理的请求，悄悄命中另一条被精心构造的缓存，后果是错误输出、信息泄露、甚至内容过滤被绕过。</p>
+
+<h2>三类漏洞，逐一拆</h2>
+<p><b>1. KV 缓存前缀哈希碰撞。</b>SGLang / vLLM 用 Python 的 tuple hash 给前缀做键。论文用 Meet-in-the-Middle（双向生日）攻击（仓库里的 hash_coll.py 加 OpenMP 加速的 omp_collision_cd.cpp）搜索碰撞。命中别人的前缀缓存后，你的请求会复用受害者上下文算出的 KV——跨用户命中、泄露、绕过 filter 一气呵成。</p>
+<p><b>2. 图像缓存哈希碰撞。</b>vLLM 对图像用 tobytes() 再 SHA-256；SGLang 用 SHA-256；还有按尺寸的碰撞。论文给出三种打法：P-image（利用 PNG 调色板模式构造肉眼不同但哈希相同的图）、SHA-256 碰撞搜索、size-image（原始像素相同但显示内容不同）。多模态模型于是把一张换了皮的图当成同一张处理。</p>
+<p><b>3. 语义缓存不一致。</b>GPTCache 这类用 embedding 相似度判断是不是同一个问题。论文指出高相似度得分的请求，语义可能完全相反甚至对立——结果本该独立回答的问题被误命中，给出错误或有害的复用结果。</p>
+
+<h2>已经有的 CVE 清单</h2>
+<table>
+<thead><tr><th>漏洞</th><th>框架</th><th>编号</th></tr></thead>
+<tbody>
+<tr><td>KV 缓存碰撞</td><td>vLLM</td><td>GHSA-rm76-4mrf-v9r8 / CVE-2025-25183、CVE-2025-1953</td></tr>
+<tr><td>图像哈希碰撞（tobytes）</td><td>vLLM</td><td>GHSA-c65p-x677-fgj6 / CVE-2025-46722</td></tr>
+<tr><td>PNG tRNS 透明绕过</td><td>vLLM</td><td>GHSA-8jr5-v98p-w75m</td></tr>
+<tr><td>语义缓存不一致</td><td>GPTCache</td><td>修复 PR #669</td></tr>
+</tbody>
+</table>
+<p>这些都不是理论。作者已负责任披露给各框架维护者，vLLM/SGLang 后续版本有修复，但很多自托管实例还停在旧版本。</p>
+
+<h2>实操：三步自查加加固</h2>
+<p>第一步，先看清你线上跑的是哪个版本。下面这段能直接跑，读出已装框架版本并对照已知的缓存 CVE 给警告：</p>
+<pre><code>import importlib.metadata as md
+
+# 你线上实际 import 的包名（vLLM / SGLang / GPTCache）
+PKGS = {"vllm": "vllm", "sglang": "sglang", "gptcache": "gptcache"}
+
+# 已知有缓存碰撞 CVE 的版本上界（示意，请以 NVD 为准）
+VULN = {
+    "vllm": "0.6.3",      # CVE-2025-25183 / CVE-2025-46722 影响小于等于此线
+    "gptcache": "0.1.44", # 语义缓存不一致，PR #669 修复
+}
+
+for label, pkg in PKGS.items():
+    try:
+        ver = md.version(pkg)
+    except md.PackageNotFoundError:
+        print(label + ": 未安装，跳过")
+        continue
+    ceil = VULN.get(label)
+    if ceil and ver <= ceil:
+        flag = "低于安全线，存在缓存 CVE"
+    else:
+        flag = "高于已知安全线"
+    print(label + " " + ver + ": " + flag)</code></pre>
+<p>第二步，验证前缀缓存是否跨请求泄露。对任意 OpenAI 兼容端点，先发一条长前缀 A，再发一条完全不同前缀 B，观察 B 是否异常地快（或返回了本该属于 A 的内容）。若命中可疑，直接关掉前缀缓存：</p>
+<pre><code># vLLM 启动时不启用前缀缓存（对不可信/多租户输入尤其重要）
+vllm serve meta-llama/Llama-3.1-8B-Instruct \
+    --enable-prefix-caching False
+
+# 或在 EngineArgs 里显式关
+# from vllm import EngineArgs
+# EngineArgs(enable_prefix_caching=False)</code></pre>
+<p>第三步，语义缓存加一致性闸门。别只信 embedding 相似度，加一道轻量校验：同 key 复用前，先比对请求结构化字段（如意图标签、实体集合），不一致就当 miss：</p>
+<pre><code>def semantic_get(cache, query_vec, query_meta, sim_threshold=0.92):
+    hit = cache.nearest(query_vec, sim_threshold)
+    if not hit:
+        return None
+    # 语义相近不代表安全：结构化字段不一致就当没命中
+    if hit.meta["intent"] != query_meta["intent"]:
+        return None
+    return hit.value</code></pre>
+
+<h2>判断：缓存是性能与安全的拉锯</h2>
+<p>缓存能帮你把推理成本砍掉一大块，但它的哈希键一旦可被碰撞，就成了跨用户攻击面。开放权重自己部署更可控，但也意味着这些坑要自己负责。最低成本的动作就三件：把框架升到修了 CVE 的版本、对不可信输入关前缀缓存、语义缓存加结构化一致性校验。别等被投毒了才想起哈希键不是边界。</p>
+''',
+    'related': [('延伸阅读：OpenAI 自主漏洞挖掘流水线', 'blog/openai-autonomous-vuln-discovery-2026/')]
+},
+{
     'slug': 'weight-space-programming-2026',
     'category': 'ai',
     'date': '2026-11-09',
