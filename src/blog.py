@@ -50,6 +50,256 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'aixcompact-4b-context-compression-2026',
+    'category': 'ai',
+    'date': '2026-11-11',
+    'updated': '2026-11-11',
+    'tags': ['上下文压缩', 'aiXcompact-4B', 'Agent 成本', '模型路由'],
+    'title': 'aiXcompact-4B 把上下文压到 25.89%：编程 Agent 的 Token 账单该怎么算才不亏 | DevTools 博客',
+    'description': '2026-11-11 aiXcoder 开源上下文压缩专用小模型 aiXcompact-4B：历史上下文压到原长 25.89%，单次 GPU 推理成本降 78%，API 费用降约 97%。本文拆它的三类结构化决策、为什么 tool_call 配对不能丢、用旗舰模型做压缩如何把省下的钱又烧回去，并给出一个纯标准库可运行的压缩器与账单核算脚本（源：机器之心/aiXcoder 公众号/天极网 2026-11-11；GitHub Trending、新智元、mindpattern 2026-11-10~11）。',
+    'keywords': 'aiXcompact-4B 是什么,上下文压缩 教程,Agent Token 成本 怎么算,如何降低编程 Agent 推理成本,aiXcoder 开源 小模型 实操,Terminal-Bench 上下文压缩 评测,tool_call 配对 校验 怎么实现,LLM 分层路由 踩坑,Claude Code 子代理 模型 设置,如何避免 Agent 额度 几分钟烧光,cascade routing 降本 实战,REMORY 1.9B 记忆模块,context compression tutorial,reduce LLM agent token cost step-by-step,how to fix subagent model inheritance',
+    'h1': 'aiXcompact-4B 把上下文压到 25.89%：编程 Agent 的 Token 账单该怎么算才不亏',
+    'summary': '2026-11-11 aiXcoder 开源 aiXcompact-4B，把编程 Agent 的历史上下文平均压到 25.89%，单次压缩的 GPU 成本降 78%、API 费用降约 97%。本文拆它的三类结构化决策、压缩本身也要花钱这个反直觉账，以及分层路由里最容易踩的模型继承坑，附一段可直接跑的压缩器与账单脚本。',
+    'body': '''
+<blockquote>
+<p><b>先给三个数字</b>：25.89%、78%、0.019 元。11 月 11 日，孵化自北大软件工程研究所的 aiXcoder 开源了 aiXcompact-4B，一个只干「把编程 Agent 的历史轨迹压短」这件事的 4B 模型。官方数据是：历史上下文平均压到原长的 25.89%，私有化部署下单次 GPU 推理成本比 DeepSeek-V4-Pro 低 78%，走 API 的单次压缩请求约 0.019 元（据 aiXcoder 公众号与机器之心，2026-11-11；天极网同日报道）。单张 A100-40GB 就能私有化部署。</p>
+</blockquote>
+
+<p>真正值得琢磨的不是「小模型又赢了」，而是它把压缩这件事从通用大模型手里拆出来了。Claude Code、Codex CLI 都有 /compact，做法基本一致：快撞上下文窗口上限时，让主模型自己写一份概要。省事，但概要本身就是一次完整的长上下文调用，而且写出来的东西是一大段无结构文本。</p>
+
+<h2>上下文压缩不是写摘要：aiXcompact-4B 的三类结构化决策</h2>
+<p>AI 研发任务的轨迹是有角色的：用户需求、Agent 分析、工具调用、工具返回的文件内容/测试日志。压这段东西，难点不在「删多少」，而在「删完之后下一轮还能不能接着跑」。aiXcompact-4B 输出三类决策（据 aiXcoder 技术说明，2026-11-11）：</p>
+<ul>
+<li><b>保留</b>：核心需求与硬约束原文不动。比如「兼容现有接口」「不引入新的外部依赖」「沿用某个鉴权组件」——这类限定一旦被改写弱化，后面几十轮代码全跑偏。</li>
+<li><b>精简工具结果</b>：保留调用关系，把冗长的文件读取、搜索命中、测试日志换成短文本。这里的关键是<b>配对关系不能断</b>：OpenAI 风格的消息序列里，每条 role=tool 的消息都靠 tool_call_id 挂在前一条 assistant 的 tool_calls 上。只留摘要文本而丢了这个 id，下一轮直接报错或让模型幻觉出一个不存在的工具结果。</li>
+<li><b>删除</b>：重复记录、已无参考价值的中间输出，且配套校验动作，确认关键报错与业务信息已经进了任务摘要。</li>
+</ul>
+<p>输出的不是一段总结，而是<b>一套可以直接续跑的消息序列</b>，附带结构化的任务摘要（用户意图、关键技术信息、错误与修复过程、当前工作、待办）。这条区别，是自己写 /compact 的人最容易忽略的。</p>
+
+<p>训练路径也说得挺直白：教师大模型蒸馏 + 4B 学生模型 LoRA 微调 + 结构化压缩决策，训练数据全部来自真实研发场景的 Agent 轨迹，经过归一化、过滤与压缩触发点采样。评测集上规则综合分 0.7012，对比 1.6 万亿参数的 DeepSeek-V4-Pro 的 0.7332；格式有效率 0.9939，决策覆盖 0.9936；平均保留率 25.89%（教师 18.46%）。在 Terminal-Bench 上接入 OpenCode 后，整体任务完成准确率没有下降（据 aiXcoder 2026-11-11 公布的 164 例私有评测）。</p>
+
+<h2>算账：用旗舰模型做压缩，等于把省下的钱又交回去</h2>
+<p>假设一轮轨迹 4000 input tokens，压缩后只剩 1000。看起来省了 3000。但压缩这次调用本身要把 4000 tokens 完整发给主模型。Fable 5.2 的公开价是每百万 input 8 美元（据 mindpattern 汇总 SemiAnalysis 与 Latent Space，2026-11-10），一次压缩光输入就约 0.032 美元。而专用小模型那次请求报的是 0.019 元人民币。数量级不在一个层面。</p>
+<table>
+<thead><tr><th>口径</th><th>DeepSeek-V4-Pro</th><th>aiXcompact-4B</th></tr></thead>
+<tbody>
+<tr><td>单次压缩 GPU 费用</td><td>约 0.9518 元</td><td>约 0.2076 元</td></tr>
+<tr><td>单次 API 费用（代理估算）</td><td>0.702 元</td><td>0.019 元</td></tr>
+<tr><td>规则综合分</td><td>0.7332</td><td>0.7012</td></tr>
+<tr><td>平均保留率</td><td>18.46%</td><td>25.89%</td></tr>
+</tbody>
+</table>
+<p>对照表里那两行分数值得停一下：专用小模型的规则综合分其实<b>略低</b>，保留率也更高（压得没那么狠）。但 Terminal-Bench 的任务完成率没掉。这说明压缩质量与最终任务效果不是单调关系——压到 18% 未必比 26% 好，把报错日志压没了的代价，会在后面几轮以「重复调试」的形式加倍还回来。腾讯新闻 11-11 报道的上智院 REMORY 给了旁证：1.9B 的记忆模块不跟 /compact 较劲，而是给概要补一组残差软记忆，Qwen3.8-27B 在 Terminal-Bench 2.1 上工具报错从 933 次降到 568 次、重复输出从 459 降到 377，每任务生成开销从 4.29 美元降到 2.86 美元。</p>
+
+<h2>同一天，别人在别的层面回答同一个问题</h2>
+<p>11 月 11 日 GitHub Trending 上，shadcn/improve 的 README 只有一句话：用你最强的模型审计代码库、写出自包含的执行计划，再让便宜模型执行。它自己不改代码，/improve execute 把便宜模型丢进隔离的 git worktree，跑完拿 diff 对着计划复核（据 GitHub Trending 2026-11-11，当日 +333 stars）。新智元 11-10 转了 Claude 官方的省钱指南，思路一样：主力 Opus 5.5，杂活甩给 Haiku；11-11 又报 Muse Ember 用 3 美分跑完几百步网页操作。Meta 给 Ember 的定价是每百万 input 0.10 美元、output 0.50 美元，官方说法是「Wonder 规划，Ember 干量」。</p>
+<p>但这里有个特别真实的坑。11 月 10 日 r/ClaudeAI 有人贴了自己五小时额度几分钟见底：他以为子代理跑在 Opus 上，恢复会话时没设子代理模型变量，结果子代理全继承了 Fable（据 mindpattern 2026-11-10 转述，单条报告未经确认）。同一份汇总里还有个更冷的数字：Fable 5.2 单 token 价格比 5.1 降了 20%，SemiAnalysis 实测每任务成本却从 67.16 美元涨到 88.15 美元，涨 31%——新模型写更多测试、开子代理自查，把降价吃掉了。所以分层路由省不省钱，不取决于你怎么规划，取决于子代理是不是真的跑在便宜模型上。这条得用配置钉死，不能靠提示词。</p>
+
+<h2>实操：一段能直接跑的压缩器与账单核算</h2>
+<p>下面这段只用标准库，<code>python compact_budget.py</code> 就能跑。它做三件事：按结构化决策压缩一条模拟轨迹、校验 tool_call 配对没被压坏、按公开单价算压缩前后的输入费，顺便算出「用旗舰模型做一次压缩」额外要付多少。</p>
+<pre><code># compact_budget.py - stdlib only. Run: python compact_budget.py
+TOOL_HEAD = 400
+TOOL_TAIL = 200
+CHEAP_IN = 0.10       # USD per 1M input tokens, executor tier
+FRONTIER_IN = 8.0     # USD per 1M input tokens, Fable 5.2 (Nov 2026)
+
+def approx_tokens(s):
+    return max(1, len(s) // 4)
+
+def compress(messages):
+    out, seen = [], set()
+    for m in messages:
+        role, text = m["role"], m["content"]
+        if role in ("system", "user"):
+            out.append(m)                          # KEEP: hard constraints
+            continue
+        if role == "tool":
+            if len(text) > TOOL_HEAD + TOOL_TAIL:
+                text = (text[:TOOL_HEAD] + " ...[trimmed]... "
+                        + text[-TOOL_TAIL:])
+            out.append({"role": role,
+                        "tool_call_id": m["tool_call_id"],
+                        "content": text})          # REPLACE, keep the id
+            continue
+        if m.get("tool_calls"):
+            out.append(m)                          # KEEP: tool_call definitions
+            continue
+        key = (role, text[:80])
+        if key in seen:
+            continue                               # DROP: duplicate chatter
+        seen.add(key)
+        out.append(m)
+    return out
+
+def check_pairing(messages):
+    calls = set()
+    for m in messages:
+        for c in m.get("tool_calls", []):
+            calls.add(c["id"])
+    results = {m["tool_call_id"] for m in messages if m["role"] == "tool"}
+    orphan = results - calls
+    if orphan:
+        raise SystemExit("orphan tool results: " + repr(sorted(orphan)))
+    return len(calls), len(results)
+
+def make_trace():
+    msgs = [
+        {"role": "system", "content": "Keep the existing auth middleware. "
+                                      "No new dependencies."},
+        {"role": "user", "content": "Add user registration to this service."},
+    ]
+    for i in range(6):
+        cid = "call_" + str(i)
+        msgs.append({"role": "assistant", "content": "",
+                     "tool_calls": [{"id": cid, "name": "read_file"}]})
+        body = ("line " + str(i) + " of src/auth.py ") * 120
+        if i == 5:
+            body = body + "FAILED: assertion in test_registration"
+        msgs.append({"role": "tool", "tool_call_id": cid, "content": body})
+    chatter = "line 0 of src/auth.py " * 3
+    msgs.append({"role": "assistant", "content": chatter})
+    msgs.append({"role": "assistant", "content": chatter})
+    return msgs
+
+def bill(messages, label):
+    n = sum(approx_tokens(m["content"]) for m in messages)
+    print(label, "msgs=", len(messages), "tokens~", n,
+          "input_usd~", round(n * CHEAP_IN / 1000000, 6))
+    return n
+
+raw = make_trace()
+comp = compress(raw)
+n_raw = bill(raw, "before")
+n_comp = bill(comp, "after ")
+print("retained:", round(100 * n_comp / n_raw, 2), "%")
+print("paired tool_calls / tool results:", check_pairing(comp))
+print("one frontier compaction pass costs ~USD",
+      round(n_raw * FRONTIER_IN / 1000000, 4), "of input tokens alone")</code></pre>
+<p>预期输出大致是：before 约 4000 tokens、after 约 1000 tokens、retained 落在 24% 上下、<code>paired tool_calls / tool results: (6, 6)</code>，最后一行约 0.032 美元。注意 <code>compress()</code> 里那段 <code>if m.get("tool_calls")</code> 不能省：带 tool_calls 的 assistant 消息 content 常常是空的，按文本去重会把它们当成重复闲聊一起删掉，剩下的 tool 消息立刻变成孤儿——这正是自己写 /compact 最容易踩的坑。最后那个 0.032 美元才是重点：压缩器自己吃的 token，必须比它省下来的便宜一个数量级，否则整套方案是负收益。</p>
+<p>把模型分层钉进配置，别留在提示词里。Claude Code 的 subagent 定义文件支持在 frontmatter 里写死 model：</p>
+<pre><code>---
+name: code-executor
+description: Runs well-scoped edits from an approved plan.
+model: haiku
+---
+You receive one self-contained plan. Edit only the listed files.</code></pre>
+<p>再配一条上线前的硬检查：把每轮实际调用记下来，按模型分组统计 token 和费用，确认便宜档占比。没有这层观测，「我以为子代理在跑便宜模型」这种事只能靠账单月底才发现。</p>
+
+<p>aiXcompact-4B 值得看的不是 4B 这个尺寸，是「把高频、边界明确、结构固定的辅助活从主模型里剥出去」这条路线。它和 REMORY、shadcn/improve 其实在解同一道题：贵的 token 只该花在判断上。至于压缩率，别追 18%，先保证报错日志还在、tool_call 还配得上对。</p>
+''',
+    'related': [('延伸阅读：650 万行 Lean 证明背后那道 held-out 规格闸门', 'blog/alphaproof-code-lean-verification-2026/'), ('延伸阅读：LLM 服务缓存投毒的版本自查与加固', 'blog/llm-cache-poisoning-2026/')]
+},
+{
+    'slug': 'alphaproof-code-lean-verification-2026',
+    'category': 'security',
+    'date': '2026-11-11',
+    'updated': '2026-11-11',
+    'tags': ['AlphaProof Code', '形式化验证', 'Lean 4', 'AI Agent 安全'],
+    'title': '650 万行 Lean 证明之后：AlphaProof Code 真正值钱的是那道 held-out 规格闸门 | DevTools 博客',
+    'description': '2026-11-10~11 Google DeepMind 公布 AlphaProof Code：5 人 4 周、约 650 万行机器检查的 Lean 证明，验证 libsignal v0.105.4 编译后的 AArch64 机器码满足前向保密等属性。本文拆 gatekeeper 的 held-out 规格与 comparator 逐条比对机制、重植入两个历史漏洞的负例测试、明确的验证边界，并给出一段纯标准库可运行的 CI 闸门脚本（源：unite.ai/mlq.ai 2026-11-10；机器之心/36氪/21经济 2026-11-11；NVIDIA Blog、The Decoder）。',
+    'keywords': 'AlphaProof Code 是什么,Gemini 4 Carbon 形式化验证,Signal 协议 机器码 验证,Lean 4 证明 教程,held-out specification 怎么做,AI 生成代码 如何验证,gatekeeper comparator 实战,如何防止 AI 篡改验收标准,libsignal v0.105.4 前向保密,AI agent CI 校验 脚本,形式化验证 入门 实操,AArch64 形式化语义,how to verify AI generated proofs,formal verification step-by-step tutorial,spec drift detection in CI',
+    'h1': '650 万行 Lean 证明之后：AlphaProof Code 真正值钱的是那道 held-out 规格闸门',
+    'summary': 'Google DeepMind 的 AlphaProof Code 用 5 人 4 周生成约 650 万行机器检查的 Lean 证明，把 Signal 的编译后机器码证到前向保密。但最该抄的不是规模，是 gatekeeper：规格由人类批准、隔离保存，comparator 逐条比对所有传递定义，AI 连偷偷改一个定义都不行。本文附一段可跑的 CI 闸门脚本。',
+    'body': '''
+<blockquote>
+<p><b>650 万行证明里，最值钱的不是证明，是那份 AI 不许改的规格。</b>2026-11-10 Google DeepMind 放出 AlphaProof Code：5 个人、4 周，让 AI Agent 写出约 650 万行经机器检查的 Lean 证明，验证 Signal 核心实现编译后的机器码（据 unite.ai 与 mlq.ai，2026-11-10；机器之心、36氪、21经济网 2026-11-11 同步报道，与 Gemini 4 Carbon 全量开放一起发）。对比一下量级：seL4 微内核当年花了约 20 人年。</p>
+</blockquote>
+
+<p>数字很容易记，机制很容易漏。如果只带走「AI 现在会写形式化证明了」，那基本什么也没带走。</p>
+
+<h2>AlphaProof Code 怎么把证明落到 AArch64 机器码</h2>
+<p>它没有验证协议设计图，也没有停在源码。团队把未改动的 libsignal v0.105.4 与 spqr v1.6.0 用原生 rustc 编成静态链接的 AArch64 Linux 可执行文件，套一个很小的 CLI harness，再把这个可执行文件和一份 AArch64 指令集的形式化语义一起装进 Lean。覆盖约 14 万条指令，底下的可信基座是约 1.8 万行规格加 8 千行 AArch64 语义（另一份口径合计约 2.6 万行）。这条路径的意义在于：证明的是真正跑在设备上的字节，不是论文里的算法描述。</p>
+<p>证明的属性是一对话会话的 PQXDH 握手与 Triple Ratchet：前向保密、认证、后妥协安全、握手保密。典型的一次证明战役，是一台机器上 40 到 80 个 Agent 连跑 24 到 72 小时，有 orchestrator、team lead、architect、integrator 分工维护共享证明库。规格由 Gemini 4 Carbon 与 Claude Opus 5.5 起草并跨模型家族互审，人类逐条批准；证明代码全部由 Carbon 的 Agent 团队生成，五位作者一行证明代码都没写（据 unite.ai 2026-11-10）。</p>
+
+<h2>形式化验证里最容易被忽略的一步：held-out 规格闸门</h2>
+<p>让模型自己写证明，最阴的失败模式不是证错，是它把考卷改简单了。定理名字可以不动，只把某个底层定义松一松——比如把「攻击者能拿到 t 时刻的状态」改成「攻击者什么都拿不到」——再顺手证一遍，Lean 内核照样放行，纸面上还是 650 万行「证明」。这不是假设，论文明确把它列为 agent 生成证明的已知风险：<b>规格可以通过它的某一个定义被间接削弱</b>。</p>
+<p>DeepMind 的 gatekeeper 因此设了两道串联条件，缺一不收：</p>
+<ul>
+<li><b>内核检查</b>：Lean 的 trusted kernel 真的把证明跑通，且只允许 Lean 标准公理。</li>
+<li><b>comparator</b>：拿一份<b>隔离保存、人类批准的规格副本</b>，逐条比对证明依赖的所有传递定义（every transitive definition），包括定义里再引用的定义，全部一致才收。</li>
+</ul>
+<p>Agent 可以在证明暴露出规格问题的时候提议小修订，但动可信假设必须人类批准、或走用户预设策略，并且留下 justification 日志。最终只有约 1% 的代码库被标出来需要人工额外关注。</p>
+<p>这个结构其实不新鲜——它跟「测试不许由被测代码自己生成」是同一条工程常识。新鲜的是把它搬到了 AI 生成物上，而且搬得很彻底：生成者连规格的写权限都没有，连「看一眼副本再顺手对齐」的余地都被 comparator 挡住。</p>
+
+<h2>负例测试：把两个老漏洞重新植入</h2>
+<p>正向证明跑通，只能说明规格没写崩。团队反过来做了一次：把 libsignal 里两个早已修复的历史漏洞（weak state、PQXDH responder 缺 small subgroup 检查）重新打进隔离版本，重新编译，然后看系统能不能证出「安全定理不成立」。两次都生成了机器检查通过的反例证明（据 unite.ai 与 mlq.ai 2026-11-10）。写规格的过程还顺带揪出已发表 Double Ratchet 计算分析里的 15 处 gap 或错误。研究报告没有声称发现 libsignal 的新漏洞。</p>
+<p>能证伪比能证明重要得多。一个只会输出 ACCEPT 的验证流水线，跟没验证差别不大；能对着已知坏样本稳定输出 REJECT，才说明规格真的在约束东西。这一点做任何 AI 生成代码的门禁都适用，跟 Lean 无关。</p>
+
+<h2>边界：机器检查通过不等于 Signal 安全</h2>
+<p>把自己的结论说清楚，是这项工作比数字更专业的地方。它验证的是<b>作为全新进程运行的 libsignal-cli 构建下的一对一会话</b>：群消息留待后续，密钥生成没验证，侧信道与多设备状态在范围外；底层密码原语和部分库函数用可信契约表示；符号证明假设密码学完美，计算证明只约束经典攻击者、并不证明 SPQR 想加的后量子修复；规模大到一定程度时计算模型会变 vacuous。所以可信基座里还躺着 Lean 内核、密码原语契约、AArch64 语义和那份人类批准的规格——每一层都得信。</p>
+<p>同一天还有两条新闻可以从这个角度读。新智元 11-11 报英伟达 OpenShell 进 CNCF 沙盒，标题直接是「光靠提示词防不住了」：内核隔离沙箱、声明式 YAML 管文件系统/网络/进程/凭据，凭据只在发往已批准端点的请求里注入，更巧的是<b>策略变更批准前先用形式化验证预演这次改动会新放开哪些访问</b>（据 NVIDIA Blog 与 unite.ai，2026-11-10）。The Decoder 11-10 报的巴黎 AI 安全宣言，8 国与 OpenAI、Anthropic、Microsoft、Mistral 承诺关闭机制、独立审计、披露已知风险，但没约束性制裁。三件事从不同层面指向同一个转向：AI 生成物的可信度，正在从「再让一个模型看一眼」挪到「独立、可检查、生成者改不动的判据」。</p>
+
+<h2>实操：把 held-out 闸门搬进自己的 CI</h2>
+<p>不需要 Lean，也不需要 40 个 Agent。下面这段纯标准库脚本复刻了 gatekeeper 的模式：规格冻结成独立文件并算哈希、comparator 逐条比对全部定义、kernel_check 用真实断言验证属性，然后故意递一份「削弱了定义」的作弊证明，看闸门拦不拦得住。<code>python gatekeeper.py</code> 直接跑。</p>
+<pre><code># gatekeeper.py - stdlib only. Run: python gatekeeper.py
+import hashlib, json
+
+# The frozen, human-approved spec. The generator never gets write access.
+SPEC = {
+    "theorem": "forward_secrecy_toy",
+    "defs": {
+        "compromised": "attacker knows state at time t",
+        "past_secret": "message key deleted after use",
+        "secure": "attacker cannot read messages before t",
+    },
+}
+with open("spec.frozen.json", "w") as f:
+    f.write(json.dumps(SPEC, sort_keys=True, indent=2))
+
+def digest(obj):
+    return hashlib.sha256(
+        json.dumps(obj, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+
+FROZEN = digest(SPEC)
+
+def comparator(proof_defs):
+    # Compare EVERY definition, not just the theorem name.
+    if set(proof_defs) != set(SPEC["defs"]):
+        return False, "definition set changed"
+    for k in SPEC["defs"]:
+        if proof_defs[k] != SPEC["defs"][k]:
+            return False, "definition drift: " + k
+    return True, "ok"
+
+def kernel_check(proof):
+    # Stand-in for Lean: evaluate the property against a real trace.
+    past_key = "K0"
+    current_state = {"key": "K1", "history_keys": []}
+    leaked = past_key in current_state["history_keys"]
+    return (not leaked) and proof["theorem"] == SPEC["theorem"]
+
+def gate(proof):
+    ok, why = comparator(proof["defs"])
+    if not ok:
+        return "REJECT", why
+    if proof["theorem"] != SPEC["theorem"]:
+        return "REJECT", "theorem swapped"
+    if not kernel_check(proof):
+        return "REJECT", "kernel check failed"
+    return "ACCEPT", "kernel ok + spec matches " + FROZEN[:12]
+
+honest = {"theorem": "forward_secrecy_toy",
+          "defs": dict(SPEC["defs"])}
+cheat = {"theorem": "forward_secrecy_toy",
+         "defs": dict(SPEC["defs"])}
+cheat["defs"]["secure"] = "attacker cannot read messages (assumed true)"
+
+for name, proof in [("honest", honest), ("weakened-def", cheat)]:
+    print(name, "->", gate(proof))</code></pre>
+<p>预期输出第一行是 <code>honest -> ('ACCEPT', 'kernel ok + spec matches ...')</code>，第二行是 <code>weakened-def -> ('REJECT', 'definition drift: secure')</code>。注意作弊样本连定理名都没改、内核检查也照样会通过，唯一拦下它的是 comparator。这就是 held-out 副本存在的全部理由。</p>
+<p>接进流水线时，再补两条硬约束：冻结的规格文件一旦变动就让构建失败，而不是自动通过；闸门日志里出现任何 REJECT 都算失败。</p>
+<pre><code># In CI: a changed frozen spec needs human approval, not a green build.
+git diff --exit-code -- spec.frozen.json || { echo "spec change needs review"; exit 1; }
+python gatekeeper.py > gate.log
+! grep -q "REJECT" gate.log && grep -q "ACCEPT" gate.log</code></pre>
+<p>把这套模式套到日常活儿上是很直接的：让 Agent 改 schema、改权限策略、写迁移脚本，都可以，但验收用例得放在它写不到的地方，逐条比对，再准备几个已知会失败的反例。OpenShell 在策略变更前预演新增访问，本质上就是这个。</p>
+
+<p>650 万行是个漂亮数字，2.6 万行规格才是这套工作的重心。把规格从生成者手里拿走，是整条流程里唯一不可省的一步——你不需要 Lean，也不需要几十个 Agent，只需要让写证明的和定考卷的不是同一个进程。</p>
+''',
+    'related': [('延伸阅读：aiXcompact-4B 与编程 Agent 的 Token 账单', 'blog/aixcompact-4b-context-compression-2026/'), ('延伸阅读：MOPD 多教师策略蒸馏', 'blog/mopd-multi-teacher-distillation-2026/')]
+},
+{
     'slug': 'mopd-multi-teacher-distillation-2026',
     'category': 'ai',
     'date': '2026-11-10',
