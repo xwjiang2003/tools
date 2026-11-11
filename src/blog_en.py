@@ -6,6 +6,248 @@
 """
 
 ARTICLES_EN = {
+'aixcompact-4b-context-compression-2026': {
+    'tags': ['context compression', 'aiXcompact-4B', 'agent cost', 'model routing'],
+    'title': 'aiXcompact-4B compresses context to 25.89%: how to price the token bill of a coding agent without losing money | DevTools Blog',
+    'description': 'On 2026-11-11 aiXcoder open-sourced aiXcompact-4B, a 4B model built only to compress coding-agent trajectories: history down to 25.89% of its length, 78% lower GPU cost per compaction, about 97% lower API cost. This post breaks down its three structured decisions, why tool_call pairing must survive compression, how a frontier-model compactor gives the savings straight back, and ships a runnable stdlib-only compressor plus bill calculator (sources: Jiqizhixin / aiXcoder / Yesky 2026-11-11; GitHub Trending, Aiera, mindpattern 2026-11-10 to 11).',
+    'keywords': 'what is aiXcompact-4B,context compression tutorial,how to calculate agent token cost,how to reduce coding agent inference cost,aiXcoder open source small model hands-on,Terminal-Bench context compression eval,how to validate tool_call pairing,LLM tiered routing pitfalls,Claude Code subagent model setting,how to avoid burning agent quota in minutes,cascade routing cost reduction hands-on,REMORY 1.9B memory module,context compression tutorial step-by-step,reduce LLM agent token cost,how to fix subagent model inheritance',
+    'h1': 'aiXcompact-4B compresses context to 25.89%: how to price the token bill of a coding agent without losing money',
+    'summary': 'On 2026-11-11 aiXcoder open-sourced aiXcompact-4B, cutting coding-agent history to 25.89% of its length with 78% lower GPU cost and about 97% lower API cost per compaction. This post breaks down the three structured decisions, the counterintuitive cost of compaction itself, and the model-inheritance trap in tiered routing, with a runnable compressor and bill script.',
+    'body': '''
+<blockquote>
+<p><b>Three numbers first</b>: 25.89%, 78%, 0.019 yuan. On November 11, aiXcoder -- spun out of Peking University's Institute of Software Engineering -- released aiXcompact-4B, a 4B model that does exactly one job: shrink the history of a coding agent. The published figures: history compressed to 25.89% of its original length on average, 78% lower GPU inference cost per compaction than DeepSeek-V4-Pro in private deployment, and roughly 0.019 yuan per API compaction request (per the aiXcoder announcement and Jiqizhixin, 2026-11-11; Yesky reported the same day). A single A100-40GB can host it.</p>
+</blockquote>
+
+<p>The interesting part is not that a small model won again. It is that compaction got pulled out of the general-purpose model entirely. Claude Code and Codex CLI both ship a /compact command, and both do roughly the same thing: when the context window is about to fill, ask the main model to write a summary. Convenient, except that writing the summary is itself a full long-context call, and the output is one unstructured blob of prose.</p>
+
+<h2>Context compression is not summarization: aiXcompact-4B's three structured decisions</h2>
+<p>A coding trajectory has roles: the user request, the agent's analysis, tool calls, and tool results carrying file contents or test logs. Compressing it is not about how much you delete. It is about whether the next turn can still run. aiXcompact-4B emits three kinds of decisions (per the aiXcoder technical note, 2026-11-11):</p>
+<ul>
+<li><b>Keep</b>: core requirements and hard constraints verbatim. "Stay compatible with the existing interface", "no new external dependencies", "reuse this auth component" -- paraphrase these and the next forty turns of code drift off course.</li>
+<li><b>Trim tool results</b>: keep the call, replace long file reads, search hits and test logs with short text. The catch is <b>pairing must survive</b>. In an OpenAI-style message list, every role=tool message hangs off an earlier assistant message's tool_calls via tool_call_id. Emit a summary and lose that id, and the next turn either errors out or the model hallucinates a tool result that never existed.</li>
+<li><b>Delete</b>: duplicate records and intermediate output with no further reference value, paired with a check that key errors and business facts already made it into the task summary.</li>
+</ul>
+<p>The output is not a paragraph. It is <b>a message sequence you can hand straight back to the agent</b>, plus a structured task summary covering intent, key technical facts, errors and fixes, current work, and todos. That distinction is the first thing people get wrong when rolling their own /compact.</p>
+
+<p>The training path is equally unromantic: teacher-model distillation, LoRA fine-tuning of a 4B student, and structured compaction decisions. Training data comes entirely from real agent trajectories in software engineering, after normalization, filtering and compaction-trigger sampling. On the private eval set it scores 0.7012 on the composite rule metric against 0.7332 for the 1.6-trillion-parameter DeepSeek-V4-Pro, with 0.9939 format validity and 0.9936 decision coverage. Average retention is 25.89% versus 18.46% for the teacher. On Terminal-Bench, plugged into OpenCode, overall task completion accuracy did not drop (164 private cases published by aiXcoder, 2026-11-11).</p>
+
+<h2>The bill: compacting with a frontier model hands the savings straight back</h2>
+<p>Say one trajectory is 4,000 input tokens and compression leaves 1,000. Looks like 3,000 saved. But the compaction call itself has to send all 4,000 tokens to the main model. Fable 5.2 lists at 8 USD per million input tokens (per mindpattern's roundup of SemiAnalysis and Latent Space, 2026-11-10), so that single pass costs about 0.032 USD in input alone. The dedicated small model's request is quoted at 0.019 yuan. Not the same order of magnitude.</p>
+<table>
+<thead><tr><th>Metric</th><th>DeepSeek-V4-Pro</th><th>aiXcompact-4B</th></tr></thead>
+<tbody>
+<tr><td>GPU cost per compaction</td><td>about 0.9518 yuan</td><td>about 0.2076 yuan</td></tr>
+<tr><td>API cost per compaction (proxy estimate)</td><td>0.702 yuan</td><td>0.019 yuan</td></tr>
+<tr><td>Composite rule score</td><td>0.7332</td><td>0.7012</td></tr>
+<tr><td>Average retention</td><td>18.46%</td><td>25.89%</td></tr>
+</tbody>
+</table>
+<p>Pause on those last two rows. The small model's rule score is actually <b>slightly lower</b>, and it retains more (compresses less aggressively). Yet task completion on Terminal-Bench held. Compaction quality and final task outcome are not monotonic: 18% is not automatically better than 26%, and dropping a stack trace gets paid back with interest a few turns later as repeated debugging. REMORY, a 1.9B memory module from the Shanghai Innovation Institute reported by Tencent News on 2026-11-11, is a useful counterpoint: instead of fighting /compact, it appends residual soft memory to the summary. On Qwen3.8-27B running Terminal-Bench 2.1, tool errors fell from 933 to 568, repeated output from 459 to 377, and per-task generation cost from 4.29 to 2.86 USD.</p>
+
+<h2>The same day, three other teams answered the same question at different layers</h2>
+<p>On GitHub Trending for 2026-11-11, shadcn/improve has a one-line README: use your most capable model to audit your codebase and write plans for cheaper models to execute. The skill writes no code itself. /improve execute sends a cheaper model into an isolated git worktree, then reviews the resulting diff against the plan (per GitHub Trending, 2026-11-11, +333 stars that day). Aiera relayed Anthropic's own cost guide on 11-10 with the same split: Opus 5.5 for the main line, Haiku for the chores; on 11-11 it reported Muse Ember finishing hundreds of browser steps for three cents. Meta prices Ember at 0.10 USD per million input tokens and 0.50 per million output, with the line "Muse Wonder plans, Muse Ember handles the volume".</p>
+<p>Then there is a very concrete trap. On 2026-11-10 an r/ClaudeAI user posted that a five-hour usage window vanished in minutes: they expected subagents on Opus, but a resumed session had not set the subagent model variable, so the children inherited Fable (per mindpattern, 2026-11-10; single unconfirmed report). The same roundup carries a colder number: Fable 5.2 cut per-token price 20% versus 5.1, yet SemiAnalysis measured per-task cost rising from 67.16 to 88.15 USD, up 31%, because the new model writes more tests and spawns subagents to check itself. So tiered routing saves money only if the children really run on the cheap model. Pin that in config. Do not leave it in a prompt.</p>
+
+<h2>Hands-on: a compressor and bill calculator you can run right now</h2>
+<p>The script below is stdlib only; <code>python compact_budget.py</code> runs it. It does three things: compress a simulated trajectory with structured decisions, verify tool_call pairing survived, and price the input tokens before and after using published rates -- plus the extra cost of doing one compaction pass on a frontier model.</p>
+<pre><code># compact_budget.py - stdlib only. Run: python compact_budget.py
+TOOL_HEAD = 400
+TOOL_TAIL = 200
+CHEAP_IN = 0.10       # USD per 1M input tokens, executor tier
+FRONTIER_IN = 8.0     # USD per 1M input tokens, Fable 5.2 (Nov 2026)
+
+def approx_tokens(s):
+    return max(1, len(s) // 4)
+
+def compress(messages):
+    out, seen = [], set()
+    for m in messages:
+        role, text = m["role"], m["content"]
+        if role in ("system", "user"):
+            out.append(m)                          # KEEP: hard constraints
+            continue
+        if role == "tool":
+            if len(text) > TOOL_HEAD + TOOL_TAIL:
+                text = (text[:TOOL_HEAD] + " ...[trimmed]... "
+                        + text[-TOOL_TAIL:])
+            out.append({"role": role,
+                        "tool_call_id": m["tool_call_id"],
+                        "content": text})          # REPLACE, keep the id
+            continue
+        if m.get("tool_calls"):
+            out.append(m)                          # KEEP: tool_call definitions
+            continue
+        key = (role, text[:80])
+        if key in seen:
+            continue                               # DROP: duplicate chatter
+        seen.add(key)
+        out.append(m)
+    return out
+
+def check_pairing(messages):
+    calls = set()
+    for m in messages:
+        for c in m.get("tool_calls", []):
+            calls.add(c["id"])
+    results = {m["tool_call_id"] for m in messages if m["role"] == "tool"}
+    orphan = results - calls
+    if orphan:
+        raise SystemExit("orphan tool results: " + repr(sorted(orphan)))
+    return len(calls), len(results)
+
+def make_trace():
+    msgs = [
+        {"role": "system", "content": "Keep the existing auth middleware. "
+                                      "No new dependencies."},
+        {"role": "user", "content": "Add user registration to this service."},
+    ]
+    for i in range(6):
+        cid = "call_" + str(i)
+        msgs.append({"role": "assistant", "content": "",
+                     "tool_calls": [{"id": cid, "name": "read_file"}]})
+        body = ("line " + str(i) + " of src/auth.py ") * 120
+        if i == 5:
+            body = body + "FAILED: assertion in test_registration"
+        msgs.append({"role": "tool", "tool_call_id": cid, "content": body})
+    chatter = "line 0 of src/auth.py " * 3
+    msgs.append({"role": "assistant", "content": chatter})
+    msgs.append({"role": "assistant", "content": chatter})
+    return msgs
+
+def bill(messages, label):
+    n = sum(approx_tokens(m["content"]) for m in messages)
+    print(label, "msgs=", len(messages), "tokens~", n,
+          "input_usd~", round(n * CHEAP_IN / 1000000, 6))
+    return n
+
+raw = make_trace()
+comp = compress(raw)
+n_raw = bill(raw, "before")
+n_comp = bill(comp, "after ")
+print("retained:", round(100 * n_comp / n_raw, 2), "%")
+print("paired tool_calls / tool results:", check_pairing(comp))
+print("one frontier compaction pass costs ~USD",
+      round(n_raw * FRONTIER_IN / 1000000, 4), "of input tokens alone")</code></pre>
+<p>Expect roughly 4,000 tokens before, about 1,000 after, retained around 24%, <code>paired tool_calls / tool results: (6, 6)</code>, and about 0.032 USD on the last line. Do not drop the <code>if m.get("tool_calls")</code> branch in <code>compress()</code>: assistant messages carrying tool_calls often have empty content, so text-based dedup would delete them as duplicate chatter and leave the tool results orphaned -- the exact trap when rolling your own /compact. That last 0.032 USD is the point: the compactor's own token spend has to be an order of magnitude below what it saves, or the whole scheme runs at a loss.</p>
+<p>Pin the model split in config, not in a prompt. Claude Code subagent definitions accept a model in frontmatter:</p>
+<pre><code>---
+name: code-executor
+description: Runs well-scoped edits from an approved plan.
+model: haiku
+---
+You receive one self-contained plan. Edit only the listed files.</code></pre>
+<p>Add one hard pre-deploy check too: log every actual call, group tokens and cost by model, and confirm the cheap tier's share. Without that telemetry, "I assumed the subagents were on the cheap model" only shows up on the invoice at month end.</p>
+
+<p>What makes aiXcompact-4B worth reading is not the 4B size. It is the move of pulling a high-frequency, well-bounded, structurally fixed side job out of the main model. REMORY and shadcn/improve are working the same problem: expensive tokens belong on judgment. As for the compression ratio, do not chase 18% -- first make sure the stack trace is still there and the tool_call ids still pair up.</p>
+''',
+    'related': [('Read next: the held-out spec gate behind 6.5 million lines of Lean proofs', 'blog/alphaproof-code-lean-verification-2026/'), ('Read next: auditing LLM serving cache poisoning', 'blog/llm-cache-poisoning-2026/')]
+},
+'alphaproof-code-lean-verification-2026': {
+    'tags': ['AlphaProof Code', 'formal verification', 'Lean 4', 'AI agent security'],
+    'title': 'After 6.5 million lines of Lean: the held-out spec gate is the part of AlphaProof Code worth copying | DevTools Blog',
+    'description': 'On 2026-11-10 Google DeepMind published AlphaProof Code: five researchers, four weeks, about 6.5 million lines of machine-checked Lean proofs covering the compiled AArch64 machine code of libsignal v0.105.4. This post breaks down the gatekeeper with its held-out specification and per-definition comparator, the negative tests that reintroduced two historical bugs, the explicit verification boundaries, and ships a runnable stdlib-only CI gate (sources: unite.ai / mlq.ai 2026-11-10; Jiqizhixin / 36Kr / 21Jingji 2026-11-11; NVIDIA Blog; The Decoder).',
+    'keywords': 'what is AlphaProof Code,Gemini 4 Carbon formal verification,Signal protocol machine code verification,Lean 4 proof tutorial,how to build a held-out specification,how to verify AI generated code,gatekeeper comparator hands-on,how to stop AI from weakening acceptance criteria,libsignal v0.105.4 forward secrecy,AI agent CI verification script,formal verification for beginners,AArch64 formal semantics,how to verify AI generated proofs,formal verification step-by-step tutorial,spec drift detection in CI',
+    'h1': 'After 6.5 million lines of Lean: the held-out spec gate is the part of AlphaProof Code worth copying',
+    'summary': 'Google DeepMind and its AlphaProof Code project produced about 6.5 million lines of machine-checked Lean proofs in four weeks with five people, proving forward secrecy over the compiled machine code of Signal. The part to copy is not the scale but the gatekeeper: a human-approved, isolated spec plus a comparator that checks every transitive definition, so an agent cannot quietly relax a single definition. Includes a runnable CI gate.',
+    'body': '''
+<blockquote>
+<p><b>The most valuable thing in those 6.5 million lines is the spec the AI was not allowed to edit.</b> On 2026-11-10 Google DeepMind released AlphaProof Code: five people, four weeks, AI agents writing roughly 6.5 million lines of machine-checked Lean proofs over the compiled machine code of Signal's core implementation (per unite.ai and mlq.ai, 2026-11-10; Jiqizhixin, 36Kr and 21Jingji covered it on 2026-11-11 alongside the general availability of Gemini 4 Carbon). For scale: the seL4 microkernel verification took about twenty person-years.</p>
+</blockquote>
+
+<p>The number is easy to remember and the mechanism is easy to miss. If the takeaway is "AI can now write formal proofs", almost nothing was learned.</p>
+
+<h2>How AlphaProof Code gets proofs down to AArch64 machine code</h2>
+<p>It did not verify a protocol diagram, and it did not stop at source. The team compiled unmodified libsignal v0.105.4 and the spqr v1.6.0 crate with stock rustc into a statically linked AArch64 Linux executable, wrapped it in a small CLI harness, and loaded that binary into Lean alongside a formal model of the AArch64 instruction set. Coverage is roughly 140,000 instructions. The trusted base underneath is about 18,000 lines of specification plus 8,000 lines of AArch64 semantics (another accounting puts the combined figure near 26,000 lines). What matters is the target: the bytes that actually run on a device, not the algorithm as described in a paper.</p>
+<p>The properties cover one-to-one sessions over the PQXDH handshake and the Triple Ratchet: forward secrecy, authentication, post-compromise security, and handshake secrecy. A typical campaign ran 40 to 80 agents on one machine for 24 to 72 hours, with orchestrator, team lead, architect and integrator roles maintaining a shared proof base. Specs were drafted and cross-reviewed by Gemini 4 Carbon and Claude Opus 5.5 -- deliberately from different model families -- and approved one by one by humans. All proof code came from the Carbon agent teams; none of the five authors wrote a line of it (per unite.ai, 2026-11-10).</p>
+
+<h2>The step in formal verification everyone skips: the held-out spec gate</h2>
+<p>Let a model write proofs and the nastiest failure mode is not a wrong proof. It is a quietly simplified exam. Leave the theorem name alone, loosen one low-level definition -- say, change "attacker learns the state at time t" into "attacker learns nothing" -- then prove it again. Lean's kernel still accepts, and on paper you still have 6.5 million lines of "proof". This is not hypothetical: the paper lists it explicitly as a known risk of agent-generated proofs, that <b>a specification can be weakened indirectly through one of its definitions</b>.</p>
+<p>DeepMind's gatekeeper therefore requires two conditions in series, and accepts nothing missing either:</p>
+<ul>
+<li><b>Kernel check</b>: Lean's trusted kernel actually type-checks the proof, using only Lean's standard axioms.</li>
+<li><b>Comparator</b>: a <b>held-out, human-approved copy of the spec</b> is compared against every transitive definition the proof relies on, including definitions referenced by other definitions. Everything must match.</li>
+</ul>
+<p>Agents may propose small amendments when a proof exposes a spec problem, but changing trusted assumptions needs human approval or an explicit user-set policy, and every change is logged with a justification. About one percent of the codebase ended up flagged for extra human attention.</p>
+<p>None of this structure is new -- it is the same engineering rule as "tests must not be generated by the code under test". What is new is applying it to AI-generated artifacts, and applying it thoroughly: the generator has no write access to the spec, and the comparator removes even the option of glancing at the copy and casually aligning with it.</p>
+
+<h2>Negative tests: reintroduce two old bugs</h2>
+<p>A passing proof only tells you the spec is not broken. So the team ran it backwards: they reverse-applied the fixes for two long-repaired libsignal bugs -- weak state, and a missing small-subgroup check in the PQXDH responder -- recompiled, and asked the system to show the security theorem fails. Both runs produced machine-checked counter-proof that the binaries violate the theorem (per unite.ai and mlq.ai, 2026-11-10). Writing the specs also surfaced 15 gaps or bugs in a published computational analysis of the Double Ratchet. The study reports no new vulnerabilities in libsignal.</p>
+<p>Being able to falsify matters more than being able to prove. A verification pipeline that only ever prints ACCEPT is barely distinguishable from no verification; stable REJECT against known-bad samples is evidence the spec actually constrains something. That holds for any gate over AI-generated code, Lean or not.</p>
+
+<h2>Boundaries: machine-checked does not mean Signal is secure</h2>
+<p>Stating its own limits clearly is more professional than the headline number. What was verified is <b>one-to-one sessions in the libsignal-cli build running as a fresh process</b>: group messaging is future work, key generation was not verified, side channels and multi-device state are out of scope; low-level cryptographic primitives and selected library routines are represented by trusted contracts; the symbolic proof assumes perfect cryptography; the computational proof covers classical attackers only and does not establish the post-quantum healing SPQR is designed to add; at sufficiently large message and session scales the computational model becomes vacuous. The trusted base still includes Lean's kernel, the crypto contracts, the AArch64 semantics and that human-approved spec. Every layer has to be trusted.</p>
+<p>Two other stories from the same 24 hours read well through this lens. Aiera reported on 11-11 that NVIDIA's OpenShell entered the CNCF Sandbox, under the headline that prompt-level defenses are no longer enough: kernel-isolated sandboxes, declarative YAML policies over filesystem, network, process and credentials, credentials injected only into requests bound for approved endpoints -- and, neatly, <b>formal verification rehearsing what new access a policy change would grant before it is approved</b> (per NVIDIA Blog and unite.ai, 2026-11-10). The Decoder reported on 11-10 that eight countries plus OpenAI, Anthropic, Microsoft and Mistral signed a Paris declaration committing to shutdown mechanisms, independent audits and disclosure of known risks, without binding sanctions. Three different layers, one shift: trust in AI-generated artifacts is moving from "have another model take a look" to criteria that are independent, checkable, and immutable by the generator.</p>
+
+<h2>Hands-on: move the held-out gate into your own CI</h2>
+<p>No Lean required, and no forty agents. The stdlib-only script below reproduces the gatekeeper pattern: freeze the spec into a separate file and hash it, compare every definition with a comparator, verify the property with a real assertion in kernel_check, then hand it a deliberately weakened proof and see whether the gate catches it. Run <code>python gatekeeper.py</code>.</p>
+<pre><code># gatekeeper.py - stdlib only. Run: python gatekeeper.py
+import hashlib, json
+
+# The frozen, human-approved spec. The generator never gets write access.
+SPEC = {
+    "theorem": "forward_secrecy_toy",
+    "defs": {
+        "compromised": "attacker knows state at time t",
+        "past_secret": "message key deleted after use",
+        "secure": "attacker cannot read messages before t",
+    },
+}
+with open("spec.frozen.json", "w") as f:
+    f.write(json.dumps(SPEC, sort_keys=True, indent=2))
+
+def digest(obj):
+    return hashlib.sha256(
+        json.dumps(obj, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+
+FROZEN = digest(SPEC)
+
+def comparator(proof_defs):
+    # Compare EVERY definition, not just the theorem name.
+    if set(proof_defs) != set(SPEC["defs"]):
+        return False, "definition set changed"
+    for k in SPEC["defs"]:
+        if proof_defs[k] != SPEC["defs"][k]:
+            return False, "definition drift: " + k
+    return True, "ok"
+
+def kernel_check(proof):
+    # Stand-in for Lean: evaluate the property against a real trace.
+    past_key = "K0"
+    current_state = {"key": "K1", "history_keys": []}
+    leaked = past_key in current_state["history_keys"]
+    return (not leaked) and proof["theorem"] == SPEC["theorem"]
+
+def gate(proof):
+    ok, why = comparator(proof["defs"])
+    if not ok:
+        return "REJECT", why
+    if proof["theorem"] != SPEC["theorem"]:
+        return "REJECT", "theorem swapped"
+    if not kernel_check(proof):
+        return "REJECT", "kernel check failed"
+    return "ACCEPT", "kernel ok + spec matches " + FROZEN[:12]
+
+honest = {"theorem": "forward_secrecy_toy",
+          "defs": dict(SPEC["defs"])}
+cheat = {"theorem": "forward_secrecy_toy",
+         "defs": dict(SPEC["defs"])}
+cheat["defs"]["secure"] = "attacker cannot read messages (assumed true)"
+
+for name, proof in [("honest", honest), ("weakened-def", cheat)]:
+    print(name, "->", gate(proof))</code></pre>
+<p>Expect <code>honest -> ('ACCEPT', 'kernel ok + spec matches ...')</code> on the first line and <code>weakened-def -> ('REJECT', 'definition drift: secure')</code> on the second. Note the cheat never touched the theorem name and would have passed the kernel check; the comparator is the only thing that stopped it. That is the entire reason the held-out copy exists.</p>
+<p>Wiring it into a pipeline, add two hard constraints: a changed frozen spec fails the build instead of auto-passing, and any REJECT in the gate log counts as failure.</p>
+<pre><code># In CI: a changed frozen spec needs human approval, not a green build.
+git diff --exit-code -- spec.frozen.json || { echo "spec change needs review"; exit 1; }
+python gatekeeper.py > gate.log
+! grep -q "REJECT" gate.log && grep -q "ACCEPT" gate.log</code></pre>
+<p>Mapping this onto everyday work is direct: let an agent change a schema, edit a permission policy or write a migration script, but keep the acceptance cases somewhere it cannot write, compare them one by one, and keep a few known-failing negative samples. OpenShell rehearsing newly granted access before approving a policy change is the same idea in a different layer.</p>
+
+<p>6.5 million lines is a handsome number; the 26,000 lines of spec are the center of gravity. Taking the spec away from the generator is the one step in this pipeline you cannot skip -- you do not need Lean and you do not need dozens of agents, you only need the proof writer and the exam writer to be different processes.</p>
+''',
+    'related': [('Read next: aiXcompact-4B and the real token bill of coding agents', 'blog/aixcompact-4b-context-compression-2026/'), ('Read next: MOPD multi-teacher distillation', 'blog/mopd-multi-teacher-distillation-2026/')]
+},
 'mopd-multi-teacher-distillation-2026': {
     'tags': ['MOPD', 'multi-teacher distillation', 'Open-MOPD', 'RL expert merge', 'TRL', 'AsyncDistillationTrainer', 'Nemotron 3 Ultra', 'Mistral Large 4', 'model merging', 'LLM post-training'],
     'title': 'Multi-teacher policy distillation MOPD is taking over LLM post-training: how NVIDIA, Mistral and Xiaomi fuse a squad of RL experts into one model | DevTools Blog',
