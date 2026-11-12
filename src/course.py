@@ -207,7 +207,7 @@ MODULES_EN = [
     },
 ]
 
-# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 39 集）。
+# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 40 集）。
 # 批量转换 + 构建后自动全量。
 PUBLISHED = (
     'm01-l01', 'm01-l02', 'm01-l03', 'm01-l04', 'm01-l05', 'm01-l06',
@@ -221,9 +221,10 @@ PUBLISHED = (
     'm06-l02',
     'm06-l03',
     'm06-l04',
+    'm06-l05',
 )
 
-# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-11 核对 39 集）
+# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-12 核对 40 集）
 VIDEO = {
     'm01-l01': 'https://www.bilibili.com/video/BV1CNa36HET6',
     'm01-l02': 'https://www.bilibili.com/video/BV19yaG6kEfi',
@@ -264,6 +265,7 @@ VIDEO = {
     'm06-l02': 'https://www.bilibili.com/video/BV1ZEWt6TEY9',
     'm06-l03': 'https://www.bilibili.com/video/BV1PbWM6fEeU',
     'm06-l04': 'https://www.bilibili.com/video/BV1NtWM68EwY',
+    'm06-l05': 'https://www.bilibili.com/video/BV1qKW963EnY',
 }
 
 # 中心页文案（按语言）
