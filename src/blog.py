@@ -49,6 +49,286 @@ def category_label(slug, lang):
 
 
 ARTICLES = [
+
+{
+    'slug': 'bla-token-budget-exhaustion-2026',
+    'category': 'security',
+    'date': '2026-11-12',
+    'updated': '2026-11-12',
+    'tags': ['BLA', 'Token 预算耗尽', '经济拒绝服务', 'Agent 安全'],
+    'title': 'BLA 让 AI 逆向 Token 账单暴涨 300 倍：预算耗尽攻击怎么防、如何自查 | DevTools 博客',
+    'description': '2026-11-10 量子位报道中山大学本科生项目 BLA：投毒、卡爆分析器上限、诱导误判三步，把 607 字节的 .asar 包撑到 16.93 MiB，AI 逆向的 Token 消耗涨 300-2800 倍。本文把它放回经济拒绝服务（Economic DoS / Denial-of-Wallet）这条研究线，拆 QPS 限流、会话 token 上限、LLM-as-judge 三层防御为何全失效，对照 2026-11-12 GitHub Trending 的 microsoft/TokenEconomizer 与 OmniRoute，并给出纯标准库可跑的工具层成本闸门（源：量子位 2026-11-10；凤凰网转载实测；Beyond Max Tokens 2026-01；Clawdrain 2026-03；Unit 42 2026-07-10；GitHub Trending 2026-11-12）。',
+    'keywords': 'BLA 是什么,Token 账单暴涨 300 倍,反 AI 逆向 教程,REA 逆向工具 怎么防,经济拒绝服务 是什么,如何自查 Agent Token 成本异常,Token 预算耗尽攻击 怎么防,LLM Agent 成本闸门 实操,Denial-of-Wallet 防御,提示注入 成本放大 检测,如何限制 agent 工具调用 循环,SourceMap 投毒 原理,asar 包头 上限 绕过,microsoft TokenEconomizer 使用,how to detect token amplification attack,LLM agent budget guard step-by-step,reduce runaway agent cost tutorial,fix tool call loop',
+    'h1': 'BLA 让 AI 逆向 Token 账单暴涨 300 倍：预算耗尽攻击怎么防',
+    'summary': '607 字节的包加固后变成 16.93 MiB，AI 逆向的 Token 账单涨到 300-2800 倍。把它放回经济拒绝服务这条线看，攻击面从"内容"挪到了"路径长度"：输出正确、输入合法、每步都在额度内，常规三层防御一层都拦不住。附一段纯标准库可跑的工具层成本闸门。',
+    'body': '''
+<p>607 字节的包，加固后变成 16.93 MiB。不是压缩出了 bug，是有人往 .asar 包头里塞了约 4000 条"路径很长、内容很短"的诱饵文件，让索引体积先撑爆分析器的默认读取上限。据量子位 2026-11-10 报道，这个叫 BLA 的项目是中山大学软件工程大三学生做的 MCP 服务加 CLI，GitHub 上 3900+ 星、476 forks；作者内部测试称加固后逆向 AI 的 Token 消耗涨到原来的 300 到 2800 倍，用仓库里 14 个示例估算，总 Token 约为加固前的 639.5 倍、总费用约 304.4 倍（凤凰网转载的实测描述，2026-11）。</p>
+
+<p>它针对的是 REA——一周刷到 10 万星的"AI 逆向一切"。但如果只把这当成一次攻守易位的八卦就亏了。BLA 的三步，投毒 → 耗尽预算 → 诱导误判，跟 2026 年安全研究里最难受的那条线是同一件事：<b>最终答案可以完全正确，账单照样爆掉</b>。</p>
+
+<h2>投毒投的是证据，不是指令</h2>
+<p>网页的 JS 打包压缩后常常挤在几行里，SourceMap 会告诉调试器这一行对应原始项目里哪个文件、什么位置，有时还附源码正文。对逆向工具来说这是一份现成的路标。BLA 生成格式有效的映射，里面填虚构的源码路径和代码片段，让一段普通客户端代码看起来像在调用硬件安全区，还贴心附上远程认证接口和注释。类似的诱饵还有假凭据、假诊断信息、看起来像授权逻辑的代码分支。</p>
+<p>妙处在于它没让模型做任何违规动作，只是提高了"看起来值得继续查"的证据密度。REA 的分析器先从文件里提取模块、函数、调用关系，编程 Agent 再据此决定查哪里、怎么解释这个功能；喂进去的全是合法输入。13 个加固前后对照项里，7 项在被测步骤报错或被拒绝，2 项返回部分结果，1 项只在指定查询时报错，剩下 3 项没观察到阻断。不是"一加固就赢"，但足够把成本曲线掰弯。</p>
+
+<h2>预算耗尽已经是一类正经攻击</h2>
+<p>2026 年 1 月那篇《Beyond Max Tokens: Stealthy Resource Amplification via Tool Calling Chains in LLM Agents》（南洋理工、UIUC、港科大、上海交大）把机制讲得很清楚：被污染的 MCP 工具服务器不改工具的功能，只改模型能读到的文本可见字段，再加一套模板化的返回策略， nudging agent 反复调用工具、反复展开上下文。函数签名保持有效，最终答案依然正确且无害，研究者甚至用蒙特卡洛树搜索去调这些文本改动，目标是在任务不失败的前提下把成本拉到最大。跨 6 个模型、标准 tool-use 基准，单条查询轨迹被推过 60000 tokens，单次成本最高放大 658 倍，能耗涨 100 到 560 倍，GPU 的 KV 缓存占用从不到 1% 顶到 35% 到 74%——同机其他租户的性能跟着掉一半。</p>
+<p>后面还有一串同族工作：2026 年 3 月的 Clawdrain 把同样的静默 token 耗尽搬到 coding agent 上；Unit 42 在 2026-07-10 的通告里把 RAG 投毒造成的 Denial-of-Wallet 单列成 RA-ICA，称嵌入 PDF/XLSX 元数据的 token-sink 提示能让单查询消耗涨约 1300%；OWASP 2026 的报告说提示注入尝试同比涨约 340%，仍是 LLM 应用头号风险。据 TianPan 对这条研究线的整理（2026-04-27），工具调用链放大的关键在于：每一个单独步骤都在限制范围内，是总和越了线，Harness 甚至会配合放行，因为每步都合规。</p>
+
+<h2>三层常规防御，一层都拦不住</h2>
+<ul>
+<li><b>QPS 限流数的是请求，不是成本</b>。一个请求可能只花掉缓存命中下的 0.0001 美元，也可能是带子智能体的循环花掉 0.50 美元，在限流眼里都记 1 次。攻击者只要把速率压在标称上限以下，照样能烧光月度预算。</li>
+<li><b>按会话设 token 上限，等于把上限设成攻击的目标支出率</b>。攻击会自适应到恰好吃满额度；乘以几千个投毒请求，这个"天花板"反而成了每次能稳定提取的最大金额。</li>
+<li><b>输出监控基本瞎</b>。据上述整理汇总的评测，这类攻击被 LLM-as-judge 之类识别出来的概率不到 3%：没有幻觉工具调用，没有可疑字符串，输出是正确的。错的是开销，而多数监控的 schema 里压根没有 cost 这个字段。</li>
+</ul>
+<p>三条连起来看，结论有点反直觉：在这类攻击里成本不是"运维指标"，它是唯一可见的症状。所以它必须是一等公民的可观测信号，而且要在<b>工具调用发生的那一刻</b>就计费，不能等月底对账。</p>
+
+<h2>11 月 12 日 Trending 上，防守方在另一条路上</h2>
+<p>今天 GitHub Trending 里的 microsoft/TokenEconomizer 是微软做的黑盒降本插件，明确不改 agent 的模型、权重和代码，只通过 context、hooks、settings 和 CLI 工作。README 报的数字：SWE-Bench 上五个 agent–model 组合平均成本降 18.4% 到 30.9%，30 个 repository × combination 单元全部更便宜，5 个组合里 4 个 Pass@1 反而提升。三个机制——micro-skills 每隔 k=3 个 session 提议仓库事实（默认 off，因为提议要调模型）、tool pruning 在工具 p=10 个 prompts 未用且跨 m=2 个 session、或跨 s=5 个 session 未用后把它从 settings 里摘掉（默认 on）、loop guard 先攒 e=5 个正常结束的 turn 学出本仓库的 usual turn，judge 置信度至少 c=0.7 才给一次短 redirect，每 turn 最多 r=1 次，churning 超过 usual 长度 b=2.5 倍时用规则兜底。它还写了一句很克制的话：never stops a turn itself。</p>
+<p>但别把它当防攻击的盾。它优化的是"正常浪费"：重复发现同一事实、加载长期不用的工具定义、卡在失败循环里。面对 adversarial 浪费有两个短板：loop guard 的 judge 本身是一次要付钱的 model call，攻击者完全可以把轨迹做成"看起来总差一步就好"，诱发反复 redirect；tool pruning 学的是"这个工具长期没用"，而投毒轨迹里被高频调用的恰恰是刚变得很活跃的工具。降本插件和成本闸门是两件事，前者做效率，后者做熔断。同日 Trending 上的 OmniRoute 用 RTK+Caveman 压缩宣称省 15% 到 95% tokens、对 375 家 provider 做 quota-aware 回退，思路同样是省，不是防。真要防，得在工具边界上放一个跟模型无关的计数器。</p>
+
+<h2>实操：给工具层加一道与模型无关的成本闸门 how to fix</h2>
+<p>下面这段只用标准库，<code>python budget_guard.py</code> 直接跑。它盯四个量：会话累计美元、单步美元、工具返回字符数、完全相同调用的重复次数。任何一条越线就 BLOCK，而且<b>被拦的那一步不计入已花费</b>，这点在算"省下多少"时很关键。</p>
+<pre><code># budget_guard.py - stdlib only. Run: python budget_guard.py
+# A cost gate for tool-using agents. No API key needed for this demo.
+
+USD_PER_1M_INPUT = 0.10
+USD_PER_1M_OUTPUT = 0.50
+MAX_SESSION_USD = 0.02
+MAX_STEP_USD = 0.01
+MAX_TOOL_RESULT_CHARS = 6000
+REPEAT_LIMIT = 3
+
+
+def price(in_tok, out_tok):
+    return (in_tok * USD_PER_1M_INPUT + out_tok * USD_PER_1M_OUTPUT) / 1000000
+
+
+class CostGate:
+    def __init__(self):
+        self.spent = 0.0
+        self.calls = {}
+        self.steps = 0
+
+    def check(self, tool_name, args, result, in_tok, out_tok):
+        self.steps += 1
+        cost = price(in_tok, out_tok)
+        sig = (tool_name, repr(sorted(args.items())))
+        self.calls[sig] = self.calls.get(sig, 0) + 1
+        reasons = []
+        if len(result) > MAX_TOOL_RESULT_CHARS:
+            reasons.append("tool result %d chars exceeds cap %d"
+                           % (len(result), MAX_TOOL_RESULT_CHARS))
+        if cost > MAX_STEP_USD:
+            reasons.append("step cost %.6f exceeds cap %.6f"
+                           % (cost, MAX_STEP_USD))
+        if self.calls[sig] >= REPEAT_LIMIT:
+            reasons.append("repeated identical call %s x%d"
+                           % (tool_name, self.calls[sig]))
+        if self.spent + cost > MAX_SESSION_USD:
+            reasons.append("session spend %.6f + %.6f exceeds cap %.6f"
+                           % (self.spent, cost, MAX_SESSION_USD))
+        if reasons:
+            return "BLOCK", reasons, self.spent
+        self.spent += cost
+        return "OK", [], self.spent
+
+
+def scenario(title, steps):
+    gate = CostGate()
+    print("==", title)
+    for step in steps:
+        verdict, reasons, spent = gate.check(*step)
+        print("   step %d %-10s %-5s spent_usd=%.6f"
+              % (gate.steps, step[0], verdict, spent))
+        for r in reasons:
+            print("      reason:", r)
+        if verdict == "BLOCK":
+            print("   STOPPED; unspent budget usd=%.6f"
+                  % (MAX_SESSION_USD - spent))
+            return
+
+
+def demo():
+    normal = [
+        ("read_file", {"path": "src/app.py"}, "import os; app = create_app()", 1200, 200),
+        ("run_tests", {"cmd": "pytest -q"}, "3 passed", 1800, 150),
+        ("grep", {"pattern": "TODO"}, "2 matches", 2100, 120),
+    ]
+    scenario("normal trajectory", normal)
+
+    decoy = "// sourceMappingURL=hw/secure_enclave/attest.js.map "
+    oversized = [
+        ("read_file", {"path": "hw/bundle.js"}, decoy * 200, 9000, 1200),
+    ]
+    scenario("poisoned decoy SourceMap", oversized)
+
+    loop = [
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+    ]
+    scenario("agent stuck in a tool loop", loop)
+
+    slow = [("search_docs", {"q": "enclave attest %d" % i}, "no match", 40000, 2000)
+            for i in range(8)]
+    scenario("slow burn under the per-step cap", slow)
+
+
+if __name__ == "__main__":
+    demo()
+</code></pre>
+<p>四个场景跑出来的形状（这就是日志里该有的东西）：</p>
+<pre><code>== normal trajectory
+   step 1 read_file  OK    spent_usd=0.000220
+   step 2 run_tests  OK    spent_usd=0.000475
+   step 3 grep       OK    spent_usd=0.000745
+== poisoned decoy SourceMap
+   step 1 read_file  BLOCK spent_usd=0.000000
+      reason: tool result 10400 chars exceeds cap 6000
+   STOPPED; unspent budget usd=0.020000
+== agent stuck in a tool loop
+   step 1 read_file  OK    spent_usd=0.000400
+   step 2 read_file  OK    spent_usd=0.000800
+   step 3 read_file  BLOCK spent_usd=0.000800
+      reason: repeated identical call read_file x3
+   STOPPED; unspent budget usd=0.019200
+== slow burn under the per-step cap
+   step 1 search_docs OK    spent_usd=0.005000
+   step 2 search_docs OK    spent_usd=0.010000
+   step 3 search_docs OK    spent_usd=0.015000
+   step 4 search_docs OK    spent_usd=0.020000
+   step 5 search_docs BLOCK spent_usd=0.020000
+      reason: session spend 0.020000 + 0.005000 exceeds cap 0.020000
+   STOPPED; unspent budget usd=0.000000
+</code></pre>
+<p>三个细节值得抄进生产版。签名要用 (tool_name, 归一化后的 args)，只按工具名去重会把正常的多文件读取误杀；字符数上限要按<b>返回内容</b>算而不是请求内容，投毒载荷几乎全在返回里；会话上限还得配一个外部硬额度（API 侧的 spend cap 或项目预算），闸门只是提前熔断，不是账单保险箱。至于 6000 字符、0.02 美元这些阈值，照你自己轨迹的分布调，别抄。</p>
+
+<p>量子位那条标题写的是"让黑客 Token 账单原地暴涨 300 倍"，攻守易位看着挺解气。但对天天跑 agent 的人来说更该带走的是另一句：当输出正确、输入合法、每一步都在额度内，唯一能告诉你出事的，就只剩下那条按 token 画出来的曲线了。</p>
+''',
+    'related': [('延伸阅读：同一条报错，换个位置放模型就不修了', 'blog/tool-error-delivery-recovery-2026/'), ('延伸阅读：LLM 服务缓存投毒的版本自查与加固', 'blog/llm-cache-poisoning-2026/')]
+},
+{
+    'slug': 'tool-error-delivery-recovery-2026',
+    'category': 'tooling',
+    'date': '2026-11-12',
+    'updated': '2026-11-12',
+    'tags': ['Tool-Calling Agent', '错误恢复', '错误投递', 'Agent 评测'],
+    'title': '同一条报错换个位置放模型就不修了：Tool-Calling Agent 错误恢复教程与实操 | DevTools 博客',
+    'description': 'arXiv:2611.11581（2026-11-08）用 13 个 3B-70B 开放模型做了确定性重跑：错误文本一个字不改，只改它出现在对话里的位置，模型的下一步动作就从重试变成停手。本文拆三种投递方式、ToolMaze 上 7-8B 提升 14.2 点与 Loud/Quiet 的负结果、删除失败交换后配对校验"全绿"的陷阱，关联 2026-11-12 机器之心 Tool-Calling Agent 训练数据合成与 GitHub Trending 的 TokenEconomizer loop guard，附纯标准库可跑的投递层实现。',
+    'keywords': 'Tool-Calling Agent 错误恢复 教程,同一条报错 模型不重试,如何修复 agent 工具调用失败,LLM 错误投递 是什么,arXiv 2611.11581 解读,ToolMaze 提升 14.2 点,Loud Quiet 静默损坏 检测,tool_call_id 配对 校验 陷阱,agent 停得太早 怎么修,错误重试策略 实操,NeurIPS 2026 工具调用 数据合成,CloudOpsBench 80% 失败 推理,TokenEconomizer loop guard 配置,how to fix LLM agent tool error recovery,tool error delivery tutorial step-by-step,reduce agent stopping failure',
+    'h1': '同一条报错，换个位置放模型就不修了：Tool-Calling Agent 的错误投递',
+    'summary': 'arXiv:2611.11581 把错误文本固定不动，只改它出现在对话里的位置，13 个 3B-70B 模型的下一步动作就变了：删掉失败交换时 Llama 直接停手，追加一条新 user turn 能把 ToolMaze 显式错误成功率抬高 10-14 点。但 Loud/Quiet 测出静默损坏毫无收益。附一段可跑的投递层实现。',
+    'body': '''
+<p>把这条报错原样留在对话里，模型会换条路径重试；把它删掉、只在上一句里补个"上次失败了"，Llama 系列会直接停手不干了。同一条 <code>FileNotFoundError: config/app.yaml</code>，同样的模型、同样的温度、同样的用户意图，只改它出现的位置，下一步动作就变了。</p>
+
+<p>不是玄学。2026-11-08 挂上 arXiv 的 2611.11581《Same Error, Different Recovery: How Delivery Changes LLM Agent Behavior》（Sunghyeun Woo、Javier Conde、Pedro Reviriego）把这件事做成了受控实验：两项研究都把计划在收集数据之前固定，跨 13 个开放模型、3B 到 70B，用确定性重跑比较"下一步动作"和"后续任务是否完成"。隔离出来的变量，是大多数 agent 框架根本没建模的那一层——<b>错误是怎么被送到模型面前的</b>。</p>
+
+<h2>改了什么，又没改什么</h2>
+<p>错误文本一个字不动。变的是 placement、guidance、retained history、turn structure。落到代码里就是三种典型投递：<b>删掉失败交换</b>（把 assistant 的 tool_calls 连同 role=tool 的结果一起抹掉，上下文最干净）、<b>改写历史</b>（把失败塞进上一条 user 消息里）、<b>追加一条新 user turn</b>（保留完整失败交换，另起一轮告诉模型出错了）。工具调用类应用里第一种特别常见，因为很多框架在"压缩上下文"或"遇到异常重置"时会顺手把失败的那几轮清掉。</p>
+<p>结果：删掉失败交换时，Llama 系列出现论文里说的 severe stopping failure；追加新 user turn 能避开这个坑，在 pooled synthetic 比较里不劣于改写历史，但作者强调<b>不是每个模型都最优</b>。他们把这个形式做成确定性推理引擎里的 opt-in recovery layer， ToolMaze 上显式错误的成功率，7-8B 模型 +14.2 点，32-70B 模型 +10.5 点。</p>
+<p>我最看重的是那个负结果：Loud/Quiet 有 24 个多轮任务，既有看得见的失败也有静默损坏，按最终状态一致性打分，<b>没有测出可测量的收益</b>。反过来，客户端如果拿到了精确的 fault kind，表现还要更好。所以论文的措辞相当克制——delivery 是恢复里一个独立因素，既不是引擎专属的解法，也不是一条通用重试策略。翻成大白话："加一句请重试"只在错误被明确说出来时管用；工具返回了错的数据却没报错，这一层什么也做不了。</p>
+
+<h2>为什么位置能压过内容</h2>
+<p>消息角色是带语义的。assistant 自己写下的失败是"我的记录"，user 轮里出现的失败是"外部观测到的事实"。把失败交换整段删掉，模型下一轮面对的是一个没有前因的断点——它连自己刚才调过哪个工具、参数是什么都不知道，最省事的动作就是停下来向用户交代。保留 tool_calls 和 tool_call_id 的配对，模型才能把"哪个调用炸了"和"下一步该改哪个参数"对上号。这也是为什么论文把 retained history 单列成一个变量：省下来的那几百个 token，买走的是因果链。</p>
+<p>顺带一个特别容易踩的坑：<b>配对校验通过，不等于信息还在</b>。把整段失败交换删干净之后，orphan tool result 和 unanswered tool call 都是空的，校验看起来非常健康，可模型已经不记得自己试过什么。历史"干净"和状态"完整"是两码事，下面的实操会把这个反差直接打印出来。</p>
+
+<h2>今天其他几条消息，在说同一件事</h2>
+<p>机器之心 2026-11-12 挂出 NeurIPS 2026 论文解读《从「先出题」到「先探索」：重新思考 Tool-Calling Agent 的训练数据合成》——训练侧开始补失败轨迹，不再是先编好题目再补标准答案。ModelScope 上的 Qwopus3.8-27B-Coder-Flash（2026-11-08）把工作流直接写成"阅读 → 推理 → 调用工具 → 编辑 → 测试 → <b>恢复</b> → 交付"，恢复是一个显式阶段，而不是藏在 retry 装饰器里。The Decoder 2026-11-04 报的 CloudOpsBench 更直白：45 个真实 AWS 运维任务，最好的模型也只解出 60%，约 80% 的失败源于误判任务范围、没查全相关服务、或者<b>停得太早</b>——跟论文里的 stopping failure 是同一种病，只是换到了云运维的场景。</p>
+<p>工程侧最有意思的对照是今天 GitHub Trending 上的 microsoft/TokenEconomizer。它的 loop guard 要等 e=5 个正常结束的 turn 才学出本仓库的 usual turn，judge 置信度 ≥0.7 才给一次短 redirect，每 turn 最多 r=1 次，churning 超过 usual 长度 b=2.5 倍才用规则兜底，而且明确写着从不自行停止 turn。一边在研究"模型自己会停"，一边在设计"系统绝不替你停"，两边其实在回答同一个问题：停止这个动作，到底该由谁来做。</p>
+
+<h2>实操：把投递方式做成可切换的一层 step-by-step</h2>
+<p>下面这段只用标准库，<code>python delivery.py</code> 直接跑。三种策略构造出来的 messages、配对校验结果、token 估算一次打印；拿到真实端点后，把 <code>build()</code> 的返回值直接塞进请求体就是一组 A/B，不需要改 agent 主循环。</p>
+<pre><code># delivery.py - stdlib only. Run: python delivery.py
+# Build and validate three ways of handing a failed tool call back to an agent.
+
+CALL_ID = "call_01"
+
+
+def failed_exchange():
+    return [
+        {"role": "user", "content": "Read config/app.yaml and print the port."},
+        {"role": "assistant", "content": "",
+         "tool_calls": [{"id": CALL_ID, "name": "read_file",
+                         "arguments": {"path": "config/app.yaml"}}]},
+        {"role": "tool", "tool_call_id": CALL_ID,
+         "content": "Error: FileNotFoundError: config/app.yaml"},
+    ]
+
+
+def drop_exchange(msgs):
+    return [m for m in msgs
+            if m["role"] != "tool" and not m.get("tool_calls")]
+
+
+def rewrite_history(msgs):
+    out = drop_exchange(msgs)
+    out[0] = {"role": "user",
+              "content": out[0]["content"]
+                         + " Previous attempt failed: FileNotFoundError."}
+    return out
+
+
+def new_user_turn(msgs, fault_kind="FileNotFoundError"):
+    out = [dict(m) for m in msgs]
+    out.append({"role": "user",
+                "content": "The tool call above failed with " + fault_kind
+                           + ". Keep the failed exchange in context, "
+                           + "then retry with a corrected path or report "
+                           + "the missing file."})
+    return out
+
+
+def validate(msgs):
+    calls = set()
+    for m in msgs:
+        for c in m.get("tool_calls", []):
+            calls.add(c["id"])
+    results = {m["tool_call_id"] for m in msgs if m["role"] == "tool"}
+    return {
+        "orphan_tool_results": sorted(results - calls),
+        "unanswered_tool_calls": sorted(calls - results),
+        "failed_exchange_kept": bool(results) and bool(calls),
+        "roles": " ".join(m["role"] for m in msgs),
+    }
+
+
+def approx_tokens(msgs):
+    return sum(len(str(m.get("content", ""))) // 4 + 8 for m in msgs)
+
+
+def demo():
+    base = failed_exchange()
+    builders = [
+        ("drop_exchange", drop_exchange),
+        ("rewrite_history", rewrite_history),
+        ("new_user_turn", new_user_turn),
+    ]
+    for name, build in builders:
+        msgs = build(base)
+        v = validate(msgs)
+        print("%-16s msgs=%d tokens=%d roles=[%s]"
+              % (name, len(msgs), approx_tokens(msgs), v["roles"]))
+        print("%-16s failed_exchange_kept=%s orphan=%s unanswered=%s"
+              % ("", v["failed_exchange_kept"],
+                 v["orphan_tool_results"], v["unanswered_tool_calls"]))
+
+
+if __name__ == "__main__":
+    demo()
+</code></pre>
+<pre><code>drop_exchange    msgs=1 tokens=18 roles=[user]
+                 failed_exchange_kept=False orphan=[] unanswered=[]
+rewrite_history  msgs=1 tokens=29 roles=[user]
+                 failed_exchange_kept=False orphan=[] unanswered=[]
+new_user_turn    msgs=4 tokens=89 roles=[user assistant tool user]
+                 failed_exchange_kept=True orphan=[] unanswered=[]
+</code></pre>
+<p>看第二行：<code>drop_exchange</code> 和 <code>rewrite_history</code> 的 orphan、unanswered 都是空的，校验"通过"，但 <code>failed_exchange_kept=False</code>。所以别把配对校验当恢复能力的证明。真要上生产，至少再补两件事：给 tool result 带上结构化的 <code>fault_kind</code>（论文里客户端拿到精确类型表现最好，这也省得让模型从自由文本里猜错误类别），以及对静默损坏单独做状态校验——Loud/Quiet 已经把话说死了，投递层救不了它，那得靠最终状态比对和外部断言。</p>
+
+<p>一个只动消息顺序就能拿到 10 个点以上成功率的改动，通常意味着框架把某件事想当然了。这次被想当然的是：错误信息"写了"，就等于"送达了"。</p>
+''',
+    'related': [('延伸阅读：BLA 与 Token 预算耗尽攻击的成本闸门', 'blog/bla-token-budget-exhaustion-2026/'), ('延伸阅读：aiXcompact-4B 与编程 Agent 的 Token 账单', 'blog/aixcompact-4b-context-compression-2026/')]
+},
 {
     'slug': 'aixcompact-4b-context-compression-2026',
     'category': 'ai',
