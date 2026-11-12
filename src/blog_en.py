@@ -6,6 +6,278 @@
 """
 
 ARTICLES_EN = {
+
+'bla-token-budget-exhaustion-2026': {
+    'tags': ['BLA', 'token budget exhaustion', 'economic DoS', 'agent security'],
+    'title': 'BLA inflates AI reverse-engineering token bills 300x: how to defend against budget exhaustion attacks | DevTools Blog',
+    'description': 'On 2026-11-10 QbitAI reported BLA, a project by an undergraduate at Sun Yat-sen University that inflates a 607-byte .asar archive to 16.93 MiB, raising the token cost of AI reverse engineering by 300x to 2800x through poisoning, quota saturation and misdirection. This post puts it back on the economic denial-of-service research line, explains why QPS rate limits, per-session token caps and LLM-as-judge monitors all miss it, contrasts the 2026-11-12 GitHub Trending entries microsoft/TokenEconomizer and OmniRoute, and ships a runnable stdlib-only cost gate for the tool layer (sources: QbitAI 2026-11-10; Ifeng test details; Beyond Max Tokens 2026-01; Clawdrain 2026-03; Unit 42 2026-07-10; GitHub Trending 2026-11-12).',
+    'keywords': 'what is BLA,token bill inflated 300x,how to defend against AI reverse engineering,REA reverse engineering tool protection,what is economic denial of service,how to detect abnormal agent token cost,how to fix token budget exhaustion attacks,LLM agent cost gate hands-on,Denial-of-Wallet defense,prompt injection cost amplification detection,how to limit agent tool call loops,SourceMap poisoning explained,asar header quota bypass,microsoft TokenEconomizer setup,how to detect token amplification attack,LLM agent budget guard step-by-step,reduce runaway agent cost tutorial,fix tool call loop',
+    'h1': 'BLA inflates AI reverse-engineering token bills 300x: how to defend against budget exhaustion attacks',
+    'summary': 'A 607-byte archive becomes 16.93 MiB after hardening, and the reverse-engineering agent pays 300x to 2800x more tokens. Seen as economic denial of service, the attack surface moves from content to path length: the output is correct, the input is legitimate, every step stays under its cap, and none of the three usual defenses notice. Includes a runnable stdlib-only cost gate for the tool layer.',
+    'body': '''
+<p>A 607-byte archive becomes 16.93 MiB after hardening. That is not a compression bug. Someone packed roughly 4,000 decoy entries into the .asar header, each with a very long path and very short content, so the index alone blows past the analyzer's default read limit. QbitAI reported on 2026-11-10 that the project, called BLA, is an MCP server plus CLI built by a third-year software engineering undergraduate at Sun Yat-sen University, with 3,900+ stars and 476 forks on GitHub. The author's internal tests put the token cost of reverse engineering at 300x to 2,800x the original; estimated across 14 repository examples, total tokens come to about 639.5x and total spend about 304.4x (test details republished by Ifeng, November 2026).</p>
+
+<p>Its target is REA, the "AI reverses everything" tool that collected 100k stars in a week. Treating this as a fun role reversal misses the point. BLA's three steps -- poison, exhaust the budget, induce misjudgment -- belong to the most uncomfortable research line of 2026: <b>the final answer can be entirely correct while the bill explodes anyway</b>.</p>
+
+<h2>The poison is evidence, not instructions</h2>
+<p>Bundled and minified web JavaScript often sits in a handful of lines. A SourceMap tells the debugger which original file and position each line maps to, sometimes including source text. For a reverse-engineering tool that is a ready-made signpost. BLA generates a format-valid map filled with invented source paths and code snippets, making an ordinary client-side routine look like it calls a hardware secure enclave, complete with a remote attestation endpoint and comments. Other decoys include fake credentials, fake diagnostics, and code branches that resemble authorization logic.</p>
+<p>The clever part is that it never asks the model to do anything disallowed. It only raises the density of evidence that looks worth following. REA's analyzer first extracts modules, functions and call relationships from the file; the coding agent then decides where to look and how to interpret the feature. Everything fed in is legitimate input. Of 13 before-and-after pairs, 7 errored out or were refused at the tested step, 2 returned partial results, 1 failed only on a specific query, and 3 showed no observed block. Not an automatic win, but easily enough to bend the cost curve.</p>
+
+<h2>Budget exhaustion is already an established attack class</h2>
+<p>The January 2026 paper "Beyond Max Tokens: Stealthy Resource Amplification via Tool Calling Chains in LLM Agents" (Nanyang Technological University, UIUC, HKUST, Shanghai Jiao Tong University) lays out the mechanism. A compromised MCP tool server does not change what the tool does; it edits only the text-visible fields the agent reads and adds a template-driven return policy that nudges the agent into repeated tool calls and ever-expanding context. Function signatures stay valid and the final answer stays correct and benign. The researchers even used Monte Carlo Tree Search to tune those text edits, maximizing cost while preserving task success. Across six models on standard tool-use benchmarks, individual trajectories passed 60,000 tokens, per-query cost rose by up to 658x, energy use by 100x to 560x, and GPU KV cache occupancy climbed from under 1% to between 35% and 74%, cutting performance roughly in half for other tenants on the same hardware.</p>
+<p>More followed. Clawdrain in March 2026 brought the same silent token exhaustion to coding agents. Unit 42's 2026-07-10 advisory classified RAG-poisoning-driven Denial-of-Wallet as RA-ICA, reporting that token-sink prompts embedded in PDF and XLSX metadata raise per-query consumption by about 1,300%. OWASP's 2026 reporting puts prompt-injection attempts up roughly 340% year over year, still the top risk for LLM applications. As TianPan's roundup of this line of work notes (2026-04-27), the trick is that every individual step sits inside its limit and only the sum exceeds it; the harness cooperates, because each step is compliant.</p>
+
+<h2>Why none of the three usual defenses catches it</h2>
+<ul>
+<li><b>QPS rate limits count requests, not cost</b>. One request might spend 0.0001 USD against a cached prompt, or 0.50 USD on an agent loop with subagents. Both count as one. Keep the rate below the nominal ceiling and you can still drain a monthly budget.</li>
+<li><b>A per-session token cap turns the cap into the attacker's target spend rate</b>. The attack adapts to consume exactly what the limit allows. Multiplied across thousands of poisoned requests, that ceiling becomes the maximum reliably extractable amount per request.</li>
+<li><b>Output monitoring is effectively blind</b>. Per the evaluation figures collected in the roundup above, LLM-as-judge style detection catches these attacks less than 3% of the time. There is no hallucinated tool call, no suspicious string, and the answer is correct. The thing that is wrong is the cost, and most monitoring schemas have no cost field at all.</li>
+</ul>
+<p>Read together, the conclusion is mildly counterintuitive. In this class of attack, cost is not an ops metric; it is the only visible symptom. That makes it a first-class observability signal, and it has to be metered <b>at the moment the tool call happens</b>, not at the end-of-month reconciliation.</p>
+
+<h2>On the 2026-11-12 Trending list, defenders took a different road</h2>
+<p>microsoft/TokenEconomizer, on GitHub Trending today, is a black-box cost plugin that explicitly leaves the agent's model, weights and code alone and works only through context, hooks, settings and a CLI. Its README reports 18.4% to 30.9% lower mean cost across five agent-model combinations on SWE-Bench, all 30 repository-by-combination cells cheaper, and 4 of 5 combinations improving Pass@1. Three mechanisms: micro-skills proposes repository facts every k=3 sessions (off by default, because proposing costs a model call); tool pruning removes a tool from agent settings after p=10 unused prompts across at least m=2 sessions, or s=5 unused sessions (on by default); loop guard first collects e=5 normally finished turns to learn the repository's usual turn, redirects only when judge confidence reaches c=0.7, at most r=1 redirect per turn, with a rule-based backstop when a churning turn exceeds b=2.5 times the usual length. It also states, carefully, that it never stops a turn itself.</p>
+<p>Do not mistake that for a shield against attacks. It optimizes ordinary waste: rediscovering the same fact, loading tool definitions nobody uses, getting stuck in a failure loop. Against adversarial waste it has two gaps. The loop guard's judge is itself a paid model call, so an attacker can shape the trajectory to look permanently one step from success and trigger repeated redirects. Tool pruning learns "this tool has gone unused for a long time", while a poisoned trajectory hammers exactly the tool that just became hyperactive. A cost-saving plugin and a cost circuit breaker are different things: one does efficiency, the other does shutdown. OmniRoute, also on today's list, claims 15% to 95% token savings with RTK+Caveman compression and quota-aware fallback over 375 providers -- again saving, not defending. Real defense needs a model-independent counter at the tool boundary.</p>
+
+<h2>Hands-on: a model-independent cost gate for the tool layer</h2>
+<p>The script below is stdlib only; <code>python budget_guard.py</code> runs it as-is. It watches four quantities: cumulative session spend, per-step spend, characters in the tool result, and repeats of an identical call. Cross any one and it returns BLOCK, and <b>the blocked step is not charged</b>, which matters when you report how much was saved.</p>
+<pre><code># budget_guard.py - stdlib only. Run: python budget_guard.py
+# A cost gate for tool-using agents. No API key needed for this demo.
+
+USD_PER_1M_INPUT = 0.10
+USD_PER_1M_OUTPUT = 0.50
+MAX_SESSION_USD = 0.02
+MAX_STEP_USD = 0.01
+MAX_TOOL_RESULT_CHARS = 6000
+REPEAT_LIMIT = 3
+
+
+def price(in_tok, out_tok):
+    return (in_tok * USD_PER_1M_INPUT + out_tok * USD_PER_1M_OUTPUT) / 1000000
+
+
+class CostGate:
+    def __init__(self):
+        self.spent = 0.0
+        self.calls = {}
+        self.steps = 0
+
+    def check(self, tool_name, args, result, in_tok, out_tok):
+        self.steps += 1
+        cost = price(in_tok, out_tok)
+        sig = (tool_name, repr(sorted(args.items())))
+        self.calls[sig] = self.calls.get(sig, 0) + 1
+        reasons = []
+        if len(result) > MAX_TOOL_RESULT_CHARS:
+            reasons.append("tool result %d chars exceeds cap %d"
+                           % (len(result), MAX_TOOL_RESULT_CHARS))
+        if cost > MAX_STEP_USD:
+            reasons.append("step cost %.6f exceeds cap %.6f"
+                           % (cost, MAX_STEP_USD))
+        if self.calls[sig] >= REPEAT_LIMIT:
+            reasons.append("repeated identical call %s x%d"
+                           % (tool_name, self.calls[sig]))
+        if self.spent + cost > MAX_SESSION_USD:
+            reasons.append("session spend %.6f + %.6f exceeds cap %.6f"
+                           % (self.spent, cost, MAX_SESSION_USD))
+        if reasons:
+            return "BLOCK", reasons, self.spent
+        self.spent += cost
+        return "OK", [], self.spent
+
+
+def scenario(title, steps):
+    gate = CostGate()
+    print("==", title)
+    for step in steps:
+        verdict, reasons, spent = gate.check(*step)
+        print("   step %d %-10s %-5s spent_usd=%.6f"
+              % (gate.steps, step[0], verdict, spent))
+        for r in reasons:
+            print("      reason:", r)
+        if verdict == "BLOCK":
+            print("   STOPPED; unspent budget usd=%.6f"
+                  % (MAX_SESSION_USD - spent))
+            return
+
+
+def demo():
+    normal = [
+        ("read_file", {"path": "src/app.py"}, "import os; app = create_app()", 1200, 200),
+        ("run_tests", {"cmd": "pytest -q"}, "3 passed", 1800, 150),
+        ("grep", {"pattern": "TODO"}, "2 matches", 2100, 120),
+    ]
+    scenario("normal trajectory", normal)
+
+    decoy = "// sourceMappingURL=hw/secure_enclave/attest.js.map "
+    oversized = [
+        ("read_file", {"path": "hw/bundle.js"}, decoy * 200, 9000, 1200),
+    ]
+    scenario("poisoned decoy SourceMap", oversized)
+
+    loop = [
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+        ("read_file", {"path": "hw/secure_enclave/attest.js"}, decoy, 2500, 300),
+    ]
+    scenario("agent stuck in a tool loop", loop)
+
+    slow = [("search_docs", {"q": "enclave attest %d" % i}, "no match", 40000, 2000)
+            for i in range(8)]
+    scenario("slow burn under the per-step cap", slow)
+
+
+if __name__ == "__main__":
+    demo()
+</code></pre>
+<p>The four scenarios produce this shape, which is what your logs should look like:</p>
+<pre><code>== normal trajectory
+   step 1 read_file  OK    spent_usd=0.000220
+   step 2 run_tests  OK    spent_usd=0.000475
+   step 3 grep       OK    spent_usd=0.000745
+== poisoned decoy SourceMap
+   step 1 read_file  BLOCK spent_usd=0.000000
+      reason: tool result 10400 chars exceeds cap 6000
+   STOPPED; unspent budget usd=0.020000
+== agent stuck in a tool loop
+   step 1 read_file  OK    spent_usd=0.000400
+   step 2 read_file  OK    spent_usd=0.000800
+   step 3 read_file  BLOCK spent_usd=0.000800
+      reason: repeated identical call read_file x3
+   STOPPED; unspent budget usd=0.019200
+== slow burn under the per-step cap
+   step 1 search_docs OK    spent_usd=0.005000
+   step 2 search_docs OK    spent_usd=0.010000
+   step 3 search_docs OK    spent_usd=0.015000
+   step 4 search_docs OK    spent_usd=0.020000
+   step 5 search_docs BLOCK spent_usd=0.020000
+      reason: session spend 0.020000 + 0.005000 exceeds cap 0.020000
+   STOPPED; unspent budget usd=0.000000
+</code></pre>
+<p>Three details worth carrying into production. Build the signature from (tool_name, normalized args), not the tool name alone, or deduplicating by name will kill legitimate multi-file reads. Apply the character cap to the <b>returned content</b> rather than the request, since the payload lives almost entirely in the result. Pair the session cap with an external hard limit such as a provider-side spend cap or a project budget; the gate is an early breaker, not a vault. And tune the 6,000-character and 0.02 USD thresholds against your own trajectory distribution instead of copying these.</p>
+
+<p>QbitAI's headline was about making the attacker's token bill jump 300x, which is satisfying to read. For anyone running agents in production, the line worth keeping is a different one: when the output is correct, the input is legitimate, and every step stays under its cap, the only thing that can tell you something went wrong is the curve drawn in tokens.</p>
+''',
+    'related': [('Read next: the same error in a different position makes the model stop fixing it', 'blog/tool-error-delivery-recovery-2026/'), ('Read next: auditing LLM serving cache poisoning', 'blog/llm-cache-poisoning-2026/')]
+},
+'tool-error-delivery-recovery-2026': {
+    'tags': ['tool-calling agent', 'error recovery', 'error delivery', 'agent evaluation'],
+    'title': 'The same error in a different position makes the model stop fixing it: a tool-calling agent recovery tutorial | DevTools Blog',
+    'description': 'arXiv:2611.11581 (2026-11-08) ran deterministic reruns across 13 open models from 3B to 70B: with the error text fixed byte-for-byte, changing only where it appears in the conversation flips the next action from retry to stop. This post breaks down the three delivery forms, the 14.2 point ToolMaze gain and the null result on Loud/Quiet, the trap where deleting the failed exchange makes pairing validation look perfectly clean, and connects it to Jiqizhixin 2026-11-12 coverage of tool-calling agent training data synthesis and the TokenEconomizer loop guard. Includes a runnable stdlib-only delivery layer.',
+    'keywords': 'tool-calling agent error recovery tutorial,same error model stops retrying,how to fix agent tool call failure,what is LLM error delivery,arXiv 2611.11581 explained,ToolMaze 14.2 point gain,Loud Quiet silent corruption detection,tool_call_id pairing validation trap,how to fix agent stopping too early,error retry strategy hands-on,NeurIPS 2026 tool calling data synthesis,CloudOpsBench 80 percent failures reasoning,TokenEconomizer loop guard config,how to fix LLM agent tool error recovery,tool error delivery tutorial step-by-step,reduce agent stopping failure',
+    'h1': 'The same error, a different position, and the model stops fixing it: error delivery in tool-calling agents',
+    'summary': 'arXiv:2611.11581 holds the error text fixed and changes only where it appears in the conversation. Across 13 models from 3B to 70B, deleting the failed exchange makes Llama stop outright, while appending a new user turn raises success on explicit ToolMaze errors by 10 to 14 points. Loud/Quiet, though, shows no gain at all on silent corruption. Includes a runnable delivery layer.',
+    'body': '''
+<p>Leave this error in the conversation verbatim and the model retries with a different path. Delete it and add only "the previous attempt failed" to the earlier message, and the Llama family just stops working. Same <code>FileNotFoundError: config/app.yaml</code>, same model, same temperature, same user intent. Only the position changed, and the next action changed with it.</p>
+
+<p>That is not folklore. arXiv:2611.11581, "Same Error, Different Recovery: How Delivery Changes LLM Agent Behavior" (Sunghyeun Woo, Javier Conde, Pedro Reviriego, posted 2026-11-08), turned it into a controlled experiment. Both studies fixed their plans before data collection, spanned 13 open models from 3B to 70B, and used exact deterministic reruns to compare the next action against subsequent task completion. The isolated variable is one most agent frameworks never model at all: <b>how the error is delivered to the model</b>.</p>
+
+<h2>What changed, and what did not</h2>
+<p>The error text did not change by a single character. What changed was placement, guidance, retained history and turn structure. In code that means three typical delivery forms: <b>drop the failed exchange</b> (erase the assistant's tool_calls together with the role=tool result, leaving the cleanest possible context), <b>rewrite history</b> (fold the failure into the previous user message), and <b>append a new user turn</b> (keep the whole failed exchange, then start a fresh turn telling the model something broke). The first one is especially common in tool-calling apps, because plenty of frameworks quietly strip failed turns while compacting context or resetting after an exception.</p>
+<p>The result: dropping the failed exchange produced what the paper calls a severe stopping failure in Llama models. Appending a new user turn avoided it and was non-inferior to history rewriting in pooled synthetic comparisons -- but the authors stress it was <b>not best for every model</b>. They implemented this form as an opt-in recovery layer inside a deterministic inference engine. On ToolMaze, success on explicit errors rose 14.2 points with 7-8B models and 10.5 points with 32-70B models.</p>
+<p>The negative result is the one I value most. Loud/Quiet has 24 multi-turn tasks mixing visible failures with silent corruption, scored by final-state agreement, and showed <b>no measurable gain</b>. Conversely, a client given the exact fault kind did better still. The paper's wording is deliberately restrained: delivery is a distinct factor in recovery, neither an engine-exclusive solution nor a universal retry policy. In plain terms, adding "please try again" only helps when the error is stated explicitly. If a tool returns wrong data without raising anything, this layer can do nothing.</p>
+
+<h2>Why position outweighs content</h2>
+<p>Message roles carry semantics. A failure the assistant wrote down is "my own record"; a failure appearing in a user turn is "a fact observed from outside". Delete the whole exchange and the next turn faces a breakpoint with no antecedent -- the model no longer knows which tool it called or with what arguments, and the cheapest action is to stop and report back to the user. Keeping the tool_calls and tool_call_id pairing is what lets it connect "which call blew up" to "which parameter to change next". That is also why retained history is isolated as its own variable in the paper: the few hundred tokens you saved bought away the causal chain.</p>
+<p>There is a related trap worth flagging: <b>a clean pairing check does not mean the information is still there</b>. Strip the failed exchange entirely and both orphan tool results and unanswered tool calls come back empty. Validation looks perfectly healthy, yet the model has forgotten what it just tried. A clean history and a complete state are different things; the hands-on script below prints that contrast directly.</p>
+
+<h2>Three other items today are about the same thing</h2>
+<p>Jiqizhixin posted a NeurIPS 2026 paper walkthrough on 2026-11-12, "From posing the question first to exploring first: rethinking training data synthesis for tool-calling agents" -- the training side is starting to add failure trajectories instead of writing the question first and filling in a canonical answer afterwards. Qwopus3.8-27B-Coder-Flash on ModelScope (2026-11-08) writes its workflow as read, reason, call tools, edit, test, <b>recover</b>, deliver, with recovery as an explicit stage rather than something hidden in a retry decorator. CloudOpsBench, reported by The Decoder on 2026-11-04, is blunter still: across 45 real AWS operations tasks the best model solved only 60%, and about 80% of failures came from misjudging task scope, failing to check all relevant services, or <b>stopping too early</b> -- the same disease as the stopping failure, relocated to cloud operations.</p>
+<p>The most interesting engineering counterpoint is microsoft/TokenEconomizer on today's GitHub Trending. Its loop guard waits for e=5 normally finished turns to learn the repository's usual turn, issues a short redirect only at judge confidence of at least 0.7, caps redirects at r=1 per turn, falls back to a rule when a churning turn exceeds b=2.5 times the usual length, and explicitly never stops a turn itself. One side studies how models stop on their own; the other designs a system that refuses to stop for you. Both are answering the same question: who gets to decide that a run is over.</p>
+
+<h2>Hands-on: make delivery a switchable layer</h2>
+<p>The script below is stdlib only; <code>python delivery.py</code> runs it as-is. It prints the messages built by all three strategies, the pairing checks and a token estimate in one pass. With a real endpoint, dropping the <code>build()</code> result straight into the request body gives you an A/B test without touching the agent's main loop.</p>
+<pre><code># delivery.py - stdlib only. Run: python delivery.py
+# Build and validate three ways of handing a failed tool call back to an agent.
+
+CALL_ID = "call_01"
+
+
+def failed_exchange():
+    return [
+        {"role": "user", "content": "Read config/app.yaml and print the port."},
+        {"role": "assistant", "content": "",
+         "tool_calls": [{"id": CALL_ID, "name": "read_file",
+                         "arguments": {"path": "config/app.yaml"}}]},
+        {"role": "tool", "tool_call_id": CALL_ID,
+         "content": "Error: FileNotFoundError: config/app.yaml"},
+    ]
+
+
+def drop_exchange(msgs):
+    return [m for m in msgs
+            if m["role"] != "tool" and not m.get("tool_calls")]
+
+
+def rewrite_history(msgs):
+    out = drop_exchange(msgs)
+    out[0] = {"role": "user",
+              "content": out[0]["content"]
+                         + " Previous attempt failed: FileNotFoundError."}
+    return out
+
+
+def new_user_turn(msgs, fault_kind="FileNotFoundError"):
+    out = [dict(m) for m in msgs]
+    out.append({"role": "user",
+                "content": "The tool call above failed with " + fault_kind
+                           + ". Keep the failed exchange in context, "
+                           + "then retry with a corrected path or report "
+                           + "the missing file."})
+    return out
+
+
+def validate(msgs):
+    calls = set()
+    for m in msgs:
+        for c in m.get("tool_calls", []):
+            calls.add(c["id"])
+    results = {m["tool_call_id"] for m in msgs if m["role"] == "tool"}
+    return {
+        "orphan_tool_results": sorted(results - calls),
+        "unanswered_tool_calls": sorted(calls - results),
+        "failed_exchange_kept": bool(results) and bool(calls),
+        "roles": " ".join(m["role"] for m in msgs),
+    }
+
+
+def approx_tokens(msgs):
+    return sum(len(str(m.get("content", ""))) // 4 + 8 for m in msgs)
+
+
+def demo():
+    base = failed_exchange()
+    builders = [
+        ("drop_exchange", drop_exchange),
+        ("rewrite_history", rewrite_history),
+        ("new_user_turn", new_user_turn),
+    ]
+    for name, build in builders:
+        msgs = build(base)
+        v = validate(msgs)
+        print("%-16s msgs=%d tokens=%d roles=[%s]"
+              % (name, len(msgs), approx_tokens(msgs), v["roles"]))
+        print("%-16s failed_exchange_kept=%s orphan=%s unanswered=%s"
+              % ("", v["failed_exchange_kept"],
+                 v["orphan_tool_results"], v["unanswered_tool_calls"]))
+
+
+if __name__ == "__main__":
+    demo()
+</code></pre>
+<pre><code>drop_exchange    msgs=1 tokens=18 roles=[user]
+                 failed_exchange_kept=False orphan=[] unanswered=[]
+rewrite_history  msgs=1 tokens=29 roles=[user]
+                 failed_exchange_kept=False orphan=[] unanswered=[]
+new_user_turn    msgs=4 tokens=89 roles=[user assistant tool user]
+                 failed_exchange_kept=True orphan=[] unanswered=[]
+</code></pre>
+<p>Look at the second line. Both <code>drop_exchange</code> and <code>rewrite_history</code> return empty orphan and unanswered lists -- validation "passes" -- while <code>failed_exchange_kept=False</code>. So do not treat a pairing check as proof of recovery capability. For production, add at least two more things: attach a structured <code>fault_kind</code> to the tool result (the paper found a client given the exact fault kind performed best, and it saves the model from guessing an error class out of free text), and validate state separately for silent corruption. Loud/Quiet settled that: the delivery layer cannot save you there, and final-state comparison plus external assertions are what will.</p>
+
+<p>A change to message ordering alone that buys more than 10 points of success usually means a framework took something for granted. This time what it took for granted was that writing an error down is the same as delivering it.</p>
+''',
+    'related': [('Read next: BLA, token budget exhaustion and the cost gate', 'blog/bla-token-budget-exhaustion-2026/'), ('Read next: aiXcompact-4B and the real token bill of coding agents', 'blog/aixcompact-4b-context-compression-2026/')]
+},
 'aixcompact-4b-context-compression-2026': {
     'tags': ['context compression', 'aiXcompact-4B', 'agent cost', 'model routing'],
     'title': 'aiXcompact-4B compresses context to 25.89%: how to price the token bill of a coding agent without losing money | DevTools Blog',
