@@ -49,6 +49,280 @@ def category_label(slug, lang):
 
 
 ARTICLES = [
+{
+    'slug': 'ai-code-audit-triage-2026',
+    'category': 'security',
+    'date': '2026-11-13',
+    'updated': '2026-11-13',
+    'tags': ['AI 代码审计', '漏洞分诊', 'SARIF', '安全左移'],
+    'title': '37966 个候选漏洞只修了 217 条：AI 代码审计的分诊瓶颈与 SARIF 基线闸门 | DevTools 博客',
+    'description': 'VulnCheck 2026-11-11 追踪报告显示，Anthropic 玻璃翼计划（Project Glasswing）运行七个月挖出 37966 条候选漏洞，披露台账标记为已修复的只有 217 条；最近两个月候选增加近 1.2 万条，修复只多 15 条。本文拆两套口径的漏斗、curl 收到 45 份报告后改规则的一线细节，对照阿里巴巴 open-code-review 与 OpenAI codex-security 的架构取舍，给出可运行的 SARIF 基线闸门脚本与增量扫描命令。',
+    'keywords': 'AI 代码审计,Project Glasswing 玻璃翼计划,37966 个候选漏洞,AI 找漏洞 修不过来,代码审计 降噪,SAST 误报率太高怎么办,SARIF 基线 增量扫描,codex-security 用法,open-code-review 实测,AI 漏洞分诊 优先级,如何降低代码扫描误报,如何做增量安全扫描,AI 生成补丁 采纳率,curl 漏洞报告 处理规则',
+    'h1': '37966 比 217：AI 代码审计真正卡在哪一环',
+    'summary': '玻璃翼计划七个月挖出 37966 条候选漏洞，公开台账只修了 217 条。瓶颈不在发现，在验证与采纳。两套口径的漏斗、curl 被 45 份报告淹没的细节，以及为什么 open-code-review 和 codex-security 都把确定性流程放在 LLM 前面。',
+    'body': '''
+<p>37966 条候选，217 条修复。这是 Anthropic 玻璃翼计划（Project Glasswing）上线七个月后的公开台账。数字来自 VulnCheck 2026-11-11 发布的追踪报告，量子位 2026-11-12 的报道把标题写得很直接：只管挖不管埋。</p>
+
+<p>算一下比值，0.57%。如果停在这里，结论很容易滑向「AI 找漏洞是营销」。但把 Anthropic 自己的口径也摊开，会看到另一件事——两套数字差了三个数量级，漏斗最窄的那一段位置却完全一样。</p>
+
+<h2>玻璃翼计划的 37966 与 217：两套口径，同一个瓶颈</h2>
+
+<p>玻璃翼计划 2026 年 4 月启动，Anthropic 承诺 1 亿美元模型使用额度加 400 万美元开源安全捐款，靠 Claude Mythos Preview 大规模挖关键软件和开源项目的漏洞。</p>
+
+<table>
+<thead><tr><th>阶段</th><th>条数</th><th>占候选</th><th>数据来源</th></tr></thead>
+<tbody>
+<tr><td>候选发现</td><td>37,966</td><td>100%</td><td>VulnCheck 2026-11-11</td></tr>
+<tr><td>外部专家已审核</td><td>6,376</td><td>16.8%</td><td>Anthropic 截至 2026-11-02</td></tr>
+<tr><td>判定有效</td><td>6,009</td><td>15.8%</td><td>同上</td></tr>
+<tr><td>已报告维护者</td><td>5,087</td><td>13.4%</td><td>同上</td></tr>
+<tr><td>上游已打补丁</td><td>629</td><td>1.66%</td><td>同上</td></tr>
+<tr><td>披露台账标记已修复</td><td>217</td><td>0.57%</td><td>VulnCheck</td></tr>
+</tbody>
+</table>
+
+<p>VulnCheck 数的是「台账里标记为已修复」，Anthropic 数的是「专家审核过且上游合了补丁」，两者不是同一件事，差 3 倍也正常。但两个口径都指向同一段：从 6009 条有效发现走到 629 个上游补丁，采纳率 10.5%。中间还躺着 419 条撤回、1654 条重复。</p>
+
+<p>再看增速。VulnCheck 记录最近两个月候选数增加近 1.2 万条，同期修复只多了 15 条。产能和消化能力已经不在一个量级上。2026 年 10 月 8 日 Anthropic 上线 OSS Scanner，让维护者主动报名、报告直发，本质是绕开自家审核队列——这个动作本身就是承认瓶颈在审核侧。</p>
+
+<h2>curl 的 45 份报告：一线维护者是怎么被淹的</h2>
+
+<p>2026 年 11 月初，curl 维护者 Daniel Stenberg 又收到 45 份来自 Anthropic 的漏洞报告。他此前在博客里的原话是「我们的目标是别被淹死」（We aim to not drown）。为此 curl 改了处理规则：低危、中危漏洞转到 GitHub 公开讨论，让社区一起审。</p>
+
+<p>目前已公开的 34 份里，19 份被判定不构成安全漏洞，6 份是低危。四分之三的报告没有产生安全价值，但每一份都要有人读 diff、翻历史、写回复。对一个核心维护者只有几个人的项目，这个成本是实打实的。</p>
+
+<p>反过来说，玻璃翼也不是没用。2026 年 9 月 Claude 在 curl 里挖出一个 use-after-free，满足特定条件时恶意服务器可以打到远程代码执行，Stenberg 称它是 curl 多年来最严重的漏洞之一。挖到一个这种级别的就够本了。</p>
+
+<p>问题在于：没人能提前知道 34 份报告里哪一份是它。这才是分诊（triage）的本质——不是找得多，是在有限人力下把值得看的那一条排到前面。</p>
+
+<h2>为什么验证比挖掘难一个数量级</h2>
+
+<p>挖掘是模式匹配：把代码和已知漏洞形态对齐，模型在这件事上已经很强。验证要回答三个问题——这个输入真的能到达这行代码吗？触发条件在当前部署形态下成立吗？后果是崩溃、信息泄露还是远程执行？</p>
+
+<p>三个问题都要跨文件读上下文、看配置、猜调用方。模型能说「这里可能有问题」，说不出「在你的生产环境里它会不会被触发」。而后者才是维护者愿意花两小时的前提。所以那些看起来很美的「AI 挖出 1724 个内核漏洞」，落地时都会撞上同一堵墙：验证人力是线性的，发现能力是指数的。</p>
+
+<h2>工具厂商已经在架构上认了这个账</h2>
+
+<p>2026-11-13 的 GitHub Trending 上，两个同类工具把答案直接写进了 README。</p>
+
+<p>阿里巴巴开源的 <code>open-code-review</code> 承认得很干脆：在 AACR-Bench（50 个热门开源仓库、200 个真实 PR、10 种语言，80 多位资深工程师交叉标注出 1505 条真值）上，用它和通用 agent（Claude Code）跑同一个底座模型，Precision 与 F1 明显更高、token 只花约九分之一、速度更快，但 Recall 更低——原文说的是「deliberate trade-off favoring precision over noise」，有意牺牲召回换精度。它做的事是把确定性工程放在前面：精确文件选择、按特征匹配规则的模板引擎、独立的位置校正模块和评论反思模块，LLM 只负责在一个已经被裁剪干净的上下文里做判断。</p>
+
+<p>OpenAI 的 <code>codex-security</code> 走另一条路：标准扫描之外加 <code>--mode deep</code> 重复扫描并把结果去重，把「已保存的扫描/发现」当状态来管理，给每个发现推荐 owner，还支持导入第三方扫描器的报告。这些全是分诊设施，不是发现设施。</p>
+
+<p>两边都在做同一件事：把「发现」当廉价品，把「收敛」当产品。</p>
+
+<h2>把指标换掉：从发现数到有效确认率</h2>
+
+<p>团队引入这类工具，第一个要改的往往不是工具，是 KPI。报告数、修复数都能刷，能反映真实价值的只有三个：每 100 条报告里人工确认为真的条数、确认后进入修复的比例、从报告到补丁的中位时长。</p>
+
+<p>玻璃翼公开数据里，前两个约 15.8% 和 12.4%。第二个数就是瓶颈本身。任何工具只要能把 12.4% 抬到 30%，价值都远大于把发现数翻倍。</p>
+
+<h2>实操一：增量扫描，只报这次改动引入的问题</h2>
+
+<p>让扫描结果可执行的第一步是基线化。codex-security 自带 diff 模式，直接扫分支差异：</p>
+
+<pre><code># 需要 Node.js 22.13+/24/26 与 Python 3.10+
+npm install --global @openai/codex-security
+cs login
+
+cs scan . --diff origin/main --max-time 15   # 只扫 origin/main..HEAD 的改动
+cs scan . --path src --path tests            # 限定目录
+cs scan . --mode deep                        # 重复扫描并去重，慢，召回高</code></pre>
+
+<p>它输出 Markdown 报告到终端给的 REPORT 路径，也能导出 SARIF / JSON / CSV 接 CI。SARIF 是关键，因为基线闸门只认这个格式。</p>
+
+<h2>实操二：SARIF 基线闸门，让旧账不阻塞新 PR</h2>
+
+<p>绝大多数团队卡在这一步：第一次全量扫描出几千条，告警一开，CI 永远红，两周后所有人学会点忽略。正确做法是只对「新增的高危」失败。下面这段纯标准库，可直接跑：</p>
+
+<pre><code>import hashlib, json, sys
+
+SEV = {"error": 3, "warning": 2, "note": 1}
+
+def fingerprint(res):
+    rule = res.get("ruleId") or "unknown"
+    loc = (res.get("locations") or [{}])[0].get("physicalLocation", {})
+    uri = loc.get("artifactLocation", {}).get("uri", "?")
+    line = loc.get("region", {}).get("startLine", 0)
+    anchor = line // 20          # 20 行一个桶，避免行号漂移造出假新增
+    return hashlib.sha1((rule + "|" + uri + "|" + str(anchor)).encode("utf-8")).hexdigest()[:16]
+
+def collect(path):
+    doc = json.load(open(path, encoding="utf-8"))
+    seen, raw = {}, 0
+    for run in doc.get("runs", []):
+        for res in run.get("results", []):
+            raw += 1
+            fp = fingerprint(res)
+            lvl = (res.get("level") or "warning").lower()
+            if seen.get(fp) is None or SEV.get(lvl, 2) &gt; SEV.get(seen[fp], 2):
+                seen[fp] = lvl
+    return seen, raw
+
+cur, raw = collect(sys.argv[1])
+base = collect(sys.argv[2])[0] if len(sys.argv) &gt; 2 else {}
+fresh = {k: v for k, v in cur.items() if k not in base}
+blocking = [k for k, v in fresh.items() if SEV.get(v, 2) &gt;= SEV["error"]]
+print("raw=%d unique=%d baseline=%d new=%d blocking=%d" % (raw, len(cur), len(base), len(fresh), len(blocking)))
+sys.exit(1 if blocking else 0)</code></pre>
+
+<p>拿两个构造的 SARIF 跑（基线 3 条，当前 6 条，其中 1 条是同一规则同一文件第 45 行——和基线的 42 行落在同一个 20 行桶里）：</p>
+
+<pre><code>$ python sarif_gate.py cur.sarif base.sarif
+raw=6 unique=5 baseline=3 new=2 blocking=1
+$ echo $?
+1</code></pre>
+
+<p>6 条原始发现被压成 5 条，行号漂移没被算成新问题，最后只有 1 条真正的新增高危把流水线拦下来。这就是「收敛」的具体手感：把 100% 的噪声变成 1 条待办。</p>
+
+<h2>实操三：让 agent 自己审，别让它自己找</h2>
+
+<p>open-code-review 给了另一种分工。它默认只读 git diff，把变更文件按相关度打包成独立子任务，每个包跑一个 agent：</p>
+
+<pre><code>npm install -g @alibaba-group/open-code-review   # 需要 Git &gt;= 2.41
+ocr config provider
+ocr review --from main --to feat/xxx --format json --output result.json
+ocr delegate preview     # 委托模式：不配 LLM，交给宿主 agent 自己审</code></pre>
+
+<p>注意最后一行的设计意图：它允许你把「审」这个动作外包给你已经付费的编码 agent，自己不配 key。这在成本上很划算，代价是结果一致性取决于宿主 agent 的水平。选工具时想清楚你要的是「稳定的规则工厂」还是「一次性的深度审阅」，这两件事不该用同一个指标衡量。</p>
+
+<h2>落地清单</h2>
+
+<ul>
+<li>先量三个数：有效确认率、采纳率、报告到补丁的中位时长。没有这三个数，讨论「AI 审计有没有用」都是空的。</li>
+<li>全量扫描只跑一次用来建基线，之后 PR 只跑 diff。</li>
+<li>只有新增的 error 级发现能红，warning 进周报不进流水线。</li>
+<li>去重指纹绑规则 + 文件 + 行号桶，别绑精确行号。</li>
+<li>补丁由 AI 生成可以，合入必须有人类 reviewer 签字——AI 很擅长加东西，不擅长删东西。</li>
+</ul>
+
+<p>玻璃翼这七个月最有价值的产出，可能不是那 217 条修复，而是把一个长期被忽略的事实摆到了台面上：AI 把发现成本压到接近零之后，瓶颈会瞬间转移到人的判断上。谁先把分诊做对，谁才真正吃到了这波红利。</p>
+''',
+    'related': [('延伸阅读：AI 自主漏洞挖掘流水线跑完 1724 个内核漏洞之后', 'blog/openai-autonomous-vuln-discovery-2026/'), ('延伸阅读：把编译器变成守门人，Lean 验证能证明什么', 'blog/alphaproof-code-lean-verification-2026/')],
+},
+{
+    'slug': 'modern-web-guidance-agent-2026',
+    'category': 'web',
+    'date': '2026-11-13',
+    'updated': '2026-11-13',
+    'tags': ['前端工程', 'Coding Agent', 'Web 平台', '浏览器兼容'],
+    'title': 'Agent 写的前端停在 2015 年：Modern Web Guidance 把 Web 规范做成可检索的 skill | DevTools 博客',
+    'description': '2026-11-13 GoogleChrome/modern-web-guidance-src 冲上 GitHub Trending 第二，单日 1875 星：250 个现代 Web 特性、203 篇场景指南，由 Chrome、Edge、Firefox 与 MDN 团队联合维护，以 search / retrieve 两段式检索注入 agent 上下文。本文拆它为什么不做微调、Origin Trial 与 volatile 特性为什么必须显式门控、.mwgrc 怎么配，并给一个只看 diff 的遗留用法检查脚本。',
+    'keywords': 'Modern Web Guidance,modern-web-guidance 用法,Coding Agent 写前端代码过时,AI 生成前端代码 现代化,现代 CSS 特性 清单,Baseline 浏览器兼容 数据,Origin Trial 是什么,mwgrc 配置,legacy-scan 用法,如何让 AI 写现代前端,dialog 元素 模态框 替代方案,webmcp 是什么,内置 AI API Summarizer Translator,view transitions 用法',
+    'h1': 'Agent 写的前端代码，语法是 2026 的，习惯是 2015 的',
+    'summary': 'Google 联合 Edge、Firefox、MDN 做了一套给 coding agent 用的 Web 技能包：250 个特性、203 篇指南，靠 search/retrieve 把规范检索进上下文，而不是烤进权重。默认关掉实验特性这个设计，比内容本身更值得抄。',
+    'body': '''
+<p>让 coding agent 写一个模态框。十次里有八次，你会拿到一个绝对定位的 div、一段手写的 Tab 键 focus trap、再加一行给 body 加 overflow 的 JS。<code>&lt;dialog&gt;</code> 加 <code>showModal()</code> 加 <code>::backdrop</code> 就够了，焦点管理、Esc 关闭、顶层渲染层全是浏览器给的。</p>
+
+<p>这不是模型笨。它的训练语料里 2015 到 2021 年的前端代码占绝对多数，而「四十行 div 拼模态框」在网上出现的次数，比正确用 dialog 的写法多两个数量级。采样跟着频率走，输出就跟着旧习惯走。你越催它「快点给代码」，它越会退回自己见过最多的那个版本。</p>
+
+<h2>今天冲上 Trending 的不是模型，是一份规范速查表</h2>
+
+<p>2026-11-13 的 GitHub Trending 第二名是 <code>GoogleChrome/modern-web-guidance-src</code>，单日 1875 星，总星 4100。它不是框架，不是模型，是一套给 coding agent 用的「技能」：250 个现代 Web 特性、203 篇按真实开发场景组织的指南，Chrome、Edge、Firefox 和 MDN 团队联合维护。</p>
+
+<p>分布很说明问题：CSS 与布局 140 个特性，HTML 与 DOM 36 个，JavaScript 与 API 74 个。指南按 accessibility、css、forms、performance、security、wasm、webmcp 这类目录归档，正文是 Markdown，路径形如 <code>skills/modern-web-guidance/guides/ui-components/navigation-drawer.md</code>。</p>
+
+<h2>为什么是检索注入，不是微调</h2>
+
+<p>Web 平台规范按周更新，模型权重按月甚至按季度更新。把新知识烤进权重永远慢半拍，而且 203 篇指南全塞进上下文，token 账单先炸，注意力也会被稀释——模型会挑最容易的那部分用。</p>
+
+<p>所以它的接口只有两个动词：<code>search</code> 做召回，<code>retrieve</code> 按 ID 取单篇。README 的说法是把「针对性的、专家策展的指南」直接放进 agent 的上下文窗口。指南本身经过评估剪裁，删掉模型已经会的最小公分母内容，只留「生产级实现密度」。</p>
+
+<p>这点差别很关键。知道 <code>content-visibility</code> 存在，和知道该给列表容器加 <code>content-visibility: auto</code> 加 <code>contain-intrinsic-size</code> 才能避免滚动条抖动，是两件事。前者模型都有，后者才是它经常写错的。</p>
+
+<h2>Origin Trial 与 volatile：把赌实验特性的决定权留给人</h2>
+
+<p>这是我认为整套东西里最值得抄的设计。指南分三档：稳定特性直接可检索；Origin Trial 阶段（要注册令牌才能用的实验中 API）和「不稳定特性」（近三个月内只在单一引擎落地的）可以被 search 搜到，但 retrieve 时会被拦住，除非开发者显式打开开关。</p>
+
+<pre><code>npx modern-web-guidance@latest set-allow-origin-trials
+npx modern-web-guidance@latest set-allow-volatile-features</code></pre>
+
+<p>两条命令对应项目根目录（或 <code>~/.mwgrc</code>）里的 <code>allowOriginTrials</code> 与 <code>allowVolatileFeatures</code>，可以提交进仓库给团队共享。默认关闭这件事本身就是一个判断：agent 的默认行为应当保守，用实验特性必须是人的决定，不能是模型觉得酷。</p>
+
+<p>细节也做得实在。<code>fetchLater()</code> 有 64KB 载荷配额，macOS 的滚动条行为和别的平台不一样，这些写进「陷阱」条目；降级方案要求优先用 50 行以内的场景化代码或条件加载的 polyfill，而不是拉一个重包。这类东西 API 文档不会写。</p>
+
+<h2>另一条线：Web 也在向 agent 暴露接口</h2>
+
+<p>指南目录里有两类条目值得单独看。<code>built-in-ai</code> 讲浏览器内置模型（Summarizer、Translator、LanguageModel、语言检测），<code>security</code> 里有 Passkeys、客户端加密、数字签名、Trusted Types、本地网络访问；而 <code>webmcp</code> 讲的是反方向——把网页能力用声明式表单属性或命令式 JS 工具暴露给 agent。</p>
+
+<p>合起来看，Chrome 团队在做的是一个双向接口：agent 消费 Web 规范，网页也向 agent 暴露能力。对做工具站的人是新的分发面，你的工具不必等到有人打开页面，可以先被 agent 调用。这条线目前还很早，但方向比「再做一个 AI 聊天框」清楚得多。</p>
+
+<h2>上手：三条命令 + 一次遗留扫描</h2>
+
+<pre><code>npx modern-web-guidance@latest install
+npx modern-web-guidance@latest search "animate a dialog modal backdrop"
+npx modern-web-guidance@latest retrieve "animate-to-from-top-layer"
+npx modern-web-guidance@latest legacy-scan .</code></pre>
+
+<p><code>install</code> 跑交互向导，把技能接到你的 agent 上；<code>search</code> 只回 ID 和摘要，<code>retrieve</code> 才给正文——两段式的好处是召回阶段便宜，注入阶段精准。<code>legacy-scan</code> 是整库扫，告诉你哪些地方还在用旧写法。</p>
+
+<h2>实操：只看这次 PR 的遗留检查</h2>
+
+<p>整库扫在 CI 里不好用，历史债会把每次构建都染红。我把逻辑改成只看改动，纯标准库，不联网：</p>
+
+<pre><code>import subprocess, sys
+from pathlib import Path
+
+RULES = [
+    ("document.write", "prefer DOM APIs or a template element"),
+    ("$(", "querySelector / querySelectorAll"),
+    ("addEventListener('scroll'", "scroll-driven animations or IntersectionObserver"),
+    (".innerHTML =", "setHTMLUnsafe or explicit DOM nodes"),
+    ("offsetHeight", "content-visibility or a ResizeObserver"),
+]
+EXTS = {".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".vue", ".svelte"}
+
+def targets(argv):
+    if argv:
+        files = []
+        for raw in argv:
+            p = Path(raw)
+            files += [f for f in p.rglob("*") if f.suffix in EXTS] if p.is_dir() else [p]
+        return sorted(set(files))
+    out = subprocess.run(["git", "diff", "--name-only", "--diff-filter=ACMR", "origin/main...HEAD"],
+                         capture_output=True, text=True).stdout
+    return [Path(x) for x in out.split(chr(10)) if Path(x).suffix in EXTS]
+
+hits, per_file = 0, {}
+for f in targets(sys.argv[1:]):
+    for no, line in enumerate(f.read_text(encoding="utf-8", errors="replace").split(chr(10)), 1):
+        for snip, fix in RULES:
+            if snip in line:
+                hits += 1
+                per_file[str(f)] = per_file.get(str(f), 0) + 1
+                print("%s:%d  %s -&gt; %s" % (f, no, snip, fix))
+print("legacy_hits=%d files=%d" % (hits, len(per_file)))
+for name, n in sorted(per_file.items(), key=lambda kv: -kv[1])[:3]:
+    print("  top  %-40s %d" % (name, n))
+sys.exit(1 if hits else 0)</code></pre>
+
+<p>拿本仓库的 <code>src/js</code> 跑一遍：</p>
+
+<pre><code>$ python legacy_diff.py src/js
+...
+legacy_hits=216 files=23
+  top  src/js/altimeter.js                       48
+  top  src/js/id-tools.js                        24
+  top  src/js/base-tools.js                      20</code></pre>
+
+<p>216 处命中，23 个文件。然后我翻了明细——九成是 <code>.innerHTML =</code>，那是我自己的模板渲染方式，不是遗留问题。规则会误报，判断要看上下文。</p>
+
+<p>这恰好解释了 Google 为什么不做规则集而做检索。规则只能匹配模式，能不能换成现代 API，得看这段代码在什么上下文里、要兼容哪些浏览器。机械规则给不了这个判断，一个带着准确规范的 agent 可以。</p>
+
+<h2>怎么用才不亏</h2>
+
+<ul>
+<li>先装再说：<code>npx modern-web-guidance@latest install</code>，成本是一次交互，收益是后面所有前端生成都少返工。</li>
+<li>把 <code>.mwgrc</code> 提交进仓库。默认不开实验特性，要开就在 PR 里单独说明。</li>
+<li>不要在 prompt 里手写一堆「请用现代 CSS」，让检索去拿。手写清单会过期，检索不会。</li>
+<li>CI 只查 diff，别整库扫，否则历史债会让你在第三周关掉这条流水线。</li>
+<li>拿一份自己的项目试 <code>legacy-scan</code>，命中率高于三成的规则基本是噪音，直接删掉。</li>
+</ul>
+
+<p>这份仓库真正卖的不是那 250 个特性清单，是一个工程立场：知识会过期，所以别烤进权重；实验特性有风险，所以默认关掉让人来决定。把这两条抄进自己的 agent 工作流，比记 API 有用得多。</p>
+''',
+    'related': [('延伸阅读：agent-browser 与浏览器自动化的三种分工', 'blog/agent-browser-ai-2026/'), ('延伸阅读：Agent Skills 跨代理标准与 SKILL.md 的两个坑', 'blog/agent-skills-standard-2026/')],
+},
 
 {
     'slug': 'bla-token-budget-exhaustion-2026',

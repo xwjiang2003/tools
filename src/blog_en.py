@@ -6,6 +6,274 @@
 """
 
 ARTICLES_EN = {
+'ai-code-audit-triage-2026': {
+    'tags': ["AI code audit", "vulnerability triage", "SARIF", "shift left"],
+    'title': "37,966 candidate vulnerabilities, 217 fixed: where AI code audit actually stalls | DevTools Blog",
+    'description': "A VulnCheck report published on 2026-11-11 tracked Anthropic's Project Glasswing for seven months: 37,966 candidate vulnerabilities found, 217 recorded as fixed. Candidates grew by almost 12,000 in the last two months while fixes grew by 15. This post walks the two counting standards, the curl backlog in detail, the architectural trade-offs in Alibaba's open-code-review and OpenAI's codex-security, and ships a runnable SARIF baseline gate plus incremental scan commands.",
+    'keywords': "ai code review triage,Project Glasswing 37966 findings,why ai found vulnerabilities are not fixed,reduce sast false positives,how to add incremental security scanning,sarif baseline gate,sarif diff scanning tutorial,codex-security cli usage,open-code-review benchmark,ai generated patch adoption rate,curl security report backlog,how to triage ai security findings,security scanning noise reduction,prioritize vulnerabilities with limited engineers",
+    'h1': "37,966 against 217: where AI code audit actually stalls",
+    'summary': "Glasswing found 37,966 candidate vulnerabilities in seven months and the public ledger shows 217 fixes. The bottleneck is verification and adoption, not discovery. Two counting standards, the curl backlog, and why both open-code-review and codex-security put deterministic plumbing ahead of the LLM.",
+    'body': '''
+<p>37,966 candidates. 217 fixes. That is the public ledger for Anthropic's Project Glasswing seven months in, per a VulnCheck tracking report published 2026-11-11. Coverage of it ran the next day with a blunt headline: they dig but they do not bury.</p>
+
+<p>That works out to 0.57%. Stop there and the takeaway is easy: AI vulnerability hunting is marketing. Open up Anthropic's own numbers instead and a different picture shows up. The two standards differ by a factor of three, and the narrowest point of the funnel sits in exactly the same place.</p>
+
+<h2>The 37,966 and the 217: two ledgers, one bottleneck</h2>
+
+<p>Glasswing launched in April 2026 with $100 million in model credits and $4 million in open source security funding, aimed at running Claude Mythos Preview across critical software and open source projects at scale.</p>
+
+<table>
+<thead><tr><th>Stage</th><th>Count</th><th>Share of candidates</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>Candidates found</td><td>37,966</td><td>100%</td><td>VulnCheck, 2026-11-11</td></tr>
+<tr><td>Reviewed by outside experts</td><td>6,376</td><td>16.8%</td><td>Anthropic, as of 2026-11-02</td></tr>
+<tr><td>Judged valid</td><td>6,009</td><td>15.8%</td><td>same</td></tr>
+<tr><td>Reported to maintainers</td><td>5,087</td><td>13.4%</td><td>same</td></tr>
+<tr><td>Patched upstream</td><td>629</td><td>1.66%</td><td>same</td></tr>
+<tr><td>Marked fixed in the ledger</td><td>217</td><td>0.57%</td><td>VulnCheck</td></tr>
+</tbody>
+</table>
+
+<p>VulnCheck counts entries marked fixed. Anthropic counts findings that passed outside review and landed a patch upstream. Different definitions, so a 3x gap is expected. Both agree on the squeeze: from 6,009 valid findings to 629 upstream patches is a 10.5% adoption rate, with 419 retractions and 1,654 duplicates sitting in between.</p>
+
+<p>Now the rate of change. VulnCheck logged almost 12,000 new candidates in the last two months; fixes went up by 15. Supply and digestion are no longer in the same unit. On 2026-10-08 Anthropic shipped OSS Scanner so maintainers could request a scan and receive reports directly, which sidesteps the review queue entirely. That move is an admission about where the queue is.</p>
+
+<h2>curl got 45 reports. Here is what that costs</h2>
+
+<p>In early November 2026, curl maintainer Daniel Stenberg received another 45 vulnerability reports from Anthropic. He had already written on his blog that the goal was, in his words, to not drown. curl responded by changing its process: low and medium severity reports now get discussed publicly on GitHub so the wider community can help review.</p>
+
+<p>Of the 34 reports published so far, 19 were judged not to be security issues and 6 were low severity. Three quarters produced no security value, and every single one still needed a person to read a diff, dig through history and write a reply. For a project with a handful of core maintainers, that bill is real.</p>
+
+<p>Which is not to say Glasswing is useless. In September 2026 Claude found a use-after-free in curl that, under specific conditions, let a malicious server reach remote code execution. Stenberg called it one of the most serious curl bugs in years. One finding of that calibre pays for a lot of noise.</p>
+
+<p>The problem is nobody knows in advance which of the 34 is the one. That is what triage means: not finding more, but spending scarce human attention on the entry that deserves it.</p>
+
+<h2>Why verification is an order of magnitude harder than discovery</h2>
+
+<p>Discovery is pattern matching. Take code, line it up against known vulnerability shapes. Models are already good at this. Verification has to answer three questions. Can this input actually reach that line? Do the preconditions hold in the deployment as shipped? And is the impact a crash, a leak, or remote execution?</p>
+
+<p>All three require reading across files, checking configuration, and guessing at callers. A model can say there might be a problem here. It cannot say whether your production deployment will trigger it. That second sentence is the precondition for a maintainer spending two hours.</p>
+
+<p>So the impressive headline numbers, 1,724 kernel bugs in one run and the like, all hit the same wall on contact. Verification capacity scales linearly. Discovery does not.</p>
+
+<h2>The tool vendors already priced this in</h2>
+
+<p>Two comparable tools on the GitHub Trending page for 2026-11-13 put the answer straight into their READMEs.</p>
+
+<p>Alibaba's <code>open-code-review</code> is blunt about it. On AACR-Bench, built from 50 popular open source repositories, 200 real pull requests and 10 languages with 1,505 ground truth issues cross-labelled by 80-plus senior engineers, it beats a general agent such as Claude Code on the same base model: higher precision and F1, roughly one ninth the tokens, faster reviews, and lower recall. The README calls that a deliberate trade-off favouring precision over noise. The architecture explains how: deterministic file selection, a template engine that matches rules by file characteristics, a separate comment-anchoring module and a reflection pass, with the LLM judging inside a context that has already been cleaned up.</p>
+
+<p>OpenAI's <code>codex-security</code> goes the other way. Beyond a standard scan it offers <code>--mode deep</code>, which repeats the scan and deduplicates; it treats saved scans and findings as state; it suggests an owner per finding; it imports output from third party scanners. All of that is triage machinery, none of it is discovery machinery.</p>
+
+<p>Both are making the same bet: discovery is a commodity, convergence is the product.</p>
+
+<h2>Change the metric before you change the tool</h2>
+
+<p>The first thing to fix in a team adopting these tools is usually the KPI, not the toolchain. Report counts and fix counts can both be gamed. Three numbers carry actual signal: how many reports out of 100 a human confirms as real, what share of confirmed findings reach a fix, and the median time from report to patch.</p>
+
+<p>On Glasswing's public numbers the first two are roughly 15.8% and 12.4%. The second one is the bottleneck. A tool that moves 12.4% to 30% is worth far more than one that doubles discoveries.</p>
+
+<h2>Step 1: incremental scans that only report what this change introduced</h2>
+
+<p>Baseline first, otherwise nothing downstream works. codex-security scans branch diffs directly:</p>
+
+<pre><code># requires Node.js 22.13+/24/26 and Python 3.10+
+npm install --global @openai/codex-security
+cs login
+
+cs scan . --diff origin/main --max-time 15   # only origin/main..HEAD
+cs scan . --path src --path tests            # restrict scope
+cs scan . --mode deep                        # repeat and dedupe, slower, higher recall</code></pre>
+
+<p>It prints a Markdown report at the REPORT path shown in the terminal, and exports SARIF, JSON or CSV for CI. SARIF is the one that matters, because a baseline gate speaks that format.</p>
+
+<h2>Step 2: a SARIF baseline gate so old debt never blocks a new PR</h2>
+
+<p>Most teams stall right here. The first full scan returns thousands of findings, alerts get switched on, CI is permanently red, and within two weeks everyone has learned to click ignore. Gate only on new high severity findings instead. Pure standard library, runs as is:</p>
+
+<pre><code>import hashlib, json, sys
+
+SEV = {"error": 3, "warning": 2, "note": 1}
+
+def fingerprint(res):
+    rule = res.get("ruleId") or "unknown"
+    loc = (res.get("locations") or [{}])[0].get("physicalLocation", {})
+    uri = loc.get("artifactLocation", {}).get("uri", "?")
+    line = loc.get("region", {}).get("startLine", 0)
+    anchor = line // 20          # 20-line buckets, so shifted lines do not look new
+    return hashlib.sha1((rule + "|" + uri + "|" + str(anchor)).encode("utf-8")).hexdigest()[:16]
+
+def collect(path):
+    doc = json.load(open(path, encoding="utf-8"))
+    seen, raw = {}, 0
+    for run in doc.get("runs", []):
+        for res in run.get("results", []):
+            raw += 1
+            fp = fingerprint(res)
+            lvl = (res.get("level") or "warning").lower()
+            if seen.get(fp) is None or SEV.get(lvl, 2) &gt; SEV.get(seen[fp], 2):
+                seen[fp] = lvl
+    return seen, raw
+
+cur, raw = collect(sys.argv[1])
+base = collect(sys.argv[2])[0] if len(sys.argv) &gt; 2 else {}
+fresh = {k: v for k, v in cur.items() if k not in base}
+blocking = [k for k, v in fresh.items() if SEV.get(v, 2) &gt;= SEV["error"]]
+print("raw=%d unique=%d baseline=%d new=%d blocking=%d" % (raw, len(cur), len(base), len(fresh), len(blocking)))
+sys.exit(1 if blocking else 0)</code></pre>
+
+<p>Run it against two synthetic SARIF files: 3 findings of baseline, 6 of current, one of which repeats a rule on the same file at line 45 while the baseline has it at line 42, which lands in the same bucket:</p>
+
+<pre><code>$ python sarif_gate.py cur.sarif base.sarif
+raw=6 unique=5 baseline=3 new=2 blocking=1
+$ echo $?
+1</code></pre>
+
+<p>Six raw findings collapse to five, a shifted line does not masquerade as a new problem, and exactly one genuinely new high severity finding fails the pipeline. That is what convergence feels like in practice: 100% of the noise turned into one ticket.</p>
+
+<h2>Step 3: let the agent review, just do not let it hunt</h2>
+
+<p>open-code-review proposes a different division of labour. It reads only the git diff by default, packs changed files into independent sub-tasks by relevance, and runs one agent per pack:</p>
+
+<pre><code>npm install -g @alibaba-group/open-code-review   # needs Git &gt;= 2.41
+ocr config provider
+ocr review --from main --to feat/xxx --format json --output result.json
+ocr delegate preview     # delegation mode: no LLM configured, the host agent reviews</code></pre>
+
+<p>That last line is the interesting design decision. It lets you outsource the reviewing to the coding agent you already pay for, without configuring a key. Cheap to run, at the cost of consistency that now depends on the host agent. Decide up front whether you want a stable rule factory or a one-off deep review, because those two should not be measured with the same number.</p>
+
+<h2>Checklist</h2>
+
+<ul>
+<li>Measure three numbers first: confirmation rate, adoption rate, median report-to-patch time. Without them the debate about whether AI audit works is empty.</li>
+<li>Run a full scan once to build the baseline. After that, PRs scan diffs only.</li>
+<li>Only new error-level findings can fail the build. Warnings go to a weekly digest, not the pipeline.</li>
+<li>Bind the dedup fingerprint to rule, file and a line bucket, never to an exact line number.</li>
+<li>AI may draft the patch. A human reviewer signs it. Models are good at adding things and bad at removing them.</li>
+</ul>
+
+<p>The most useful output of these seven months may not be the 217 fixes. It is the fact now sitting in plain sight: once discovery cost falls to near zero, the bottleneck moves instantly to human judgement. Whoever gets triage right collects the value.</p>
+''',
+    'related': [("Read next: after an autonomous pipeline ran 1,724 kernel bugs", "blog/openai-autonomous-vuln-discovery-2026/"), ("Read next: turning a compiler into a gatekeeper, and what Lean can prove", "blog/alphaproof-code-lean-verification-2026/")],
+},
+'modern-web-guidance-agent-2026': {
+    'tags': ["frontend engineering", "coding agents", "web platform", "browser support"],
+    'title': "Your agent writes 2026 syntax with 2015 habits: inside Modern Web Guidance | DevTools Blog",
+    'description': "GoogleChrome/modern-web-guidance-src hit number two on GitHub Trending on 2026-11-13 with 1,875 stars in a day: 250 modern web features, 203 scenario guides, maintained by Chrome, Edge, Firefox and MDN, injected into agent context through a two-stage search and retrieve CLI. This post explains why it is retrieval instead of fine-tuning, why Origin Trial and volatile features are gated behind explicit switches, how .mwgrc works, and ships a diff-only legacy pattern check.",
+    'keywords': "Modern Web Guidance,modern-web-guidance tutorial,why ai writes outdated frontend code,ai generated frontend modernization,baseline browser support data,what is an origin trial,modern-web-guidance mwgrc,legacy-scan in ci,how to make a coding agent write modern css,dialog element instead of modal div,webmcp explained,built-in ai summarizer translator api,view transitions example,reduce javascript for layout",
+    'h1': "Your agent writes 2026 syntax with 2015 habits",
+    'summary': "Google, Edge, Firefox and MDN shipped a skill pack for coding agents: 250 features, 203 guides, retrieved into context instead of baked into weights. The part worth copying is not the content, it is the default-off gate on experimental APIs.",
+    'body': '''
+<p>Ask a coding agent for a modal. Eight times out of ten you get an absolutely positioned div, a hand-rolled Tab key focus trap, and one line of JavaScript that sets overflow on the body. A <code>&lt;dialog&gt;</code> element with <code>showModal()</code> and <code>::backdrop</code> would do the whole job, and focus management, Escape handling and the top layer come from the browser.</p>
+
+<p>The model is not being stupid. Frontend code written between 2015 and 2021 dominates its training corpus, and the forty-line div version appears on the public web two orders of magnitude more often than the correct dialog version. Sampling follows frequency. Output follows old habits. The harder you push for code right now, the more likely it is to fall back on the version it has seen most.</p>
+
+<h2>What hit Trending today is a spec cheat sheet, not a model</h2>
+
+<p>Number two on GitHub Trending for 2026-11-13 is <code>GoogleChrome/modern-web-guidance-src</code>, with 1,875 stars in a day and 4,100 total. It is not a framework and not a model. It is a set of skills for coding agents: 250 modern web features and 203 guides organised around real development tasks, maintained jointly by the Chrome, Edge, Firefox and MDN teams.</p>
+
+<p>The distribution tells you what they think is broken. CSS and layout account for 140 features, HTML and DOM for 36, JavaScript and APIs for 74. Guides live under categories such as accessibility, css, forms, performance, security, wasm and webmcp, written as Markdown at paths like <code>skills/modern-web-guidance/guides/ui-components/navigation-drawer.md</code>.</p>
+
+<h2>Why retrieval injection instead of fine-tuning</h2>
+
+<p>The web platform ships weekly. Model weights ship monthly at best. Baking new knowledge into weights is permanently half a step behind, and stuffing 203 guides into the context window blows the token bill before it helps, while diluting attention until the model uses whichever part is easiest.</p>
+
+<p>So the interface only has two verbs. <code>search</code> handles recall, <code>retrieve</code> fetches a single guide by ID. The README describes the goal as returning targeted, expert-curated guidelines directly into the agent context window. The guides themselves were pruned during evaluation to strip the lowest common denominator content the model already knows, leaving implementation density that reads like production code.</p>
+
+<p>That distinction matters. Knowing that <code>content-visibility</code> exists is not the same as knowing to pair <code>content-visibility: auto</code> with <code>contain-intrinsic-size</code> on a list container so the scrollbar does not jump. Models have the first. They routinely get the second wrong.</p>
+
+<h2>Origin Trial and volatile: leaving the experimental bet to a human</h2>
+
+<p>This is the design most worth stealing. Guides come in three tiers. Stable features are retrievable immediately. Origin Trial features, meaning experimental APIs behind a registration token, and volatile features, meaning anything that shipped in a single engine within the last three months, can still be found by <code>search</code>, but <code>retrieve</code> refuses to serve them unless the developer flips a switch.</p>
+
+<pre><code>npx modern-web-guidance@latest set-allow-origin-trials
+npx modern-web-guidance@latest set-allow-volatile-features</code></pre>
+
+<p>The two commands write <code>allowOriginTrials</code> and <code>allowVolatileFeatures</code> into <code>.mwgrc</code> at the project root, or into <code>~/.mwgrc</code>, and the project file can be committed so the whole team shares it. Defaulting to off is itself an opinion: an agent should behave conservatively unless a person decides otherwise. Shipping an experimental API should never be a model's aesthetic choice.</p>
+
+<p>The small details are solid too. <code>fetchLater()</code> has a 64KB payload quota. Scrollbar behaviour on macOS differs from everywhere else. Both are written down as traps. Degradation guidance prefers scenario-specific code under fifty lines or a conditionally loaded polyfill over pulling in a heavy package. API documentation does not tell you any of that.</p>
+
+<h2>The other direction: the web exposing itself to agents</h2>
+
+<p>Two categories in the guide index deserve separate attention. <code>built-in-ai</code> covers models shipped in the browser: Summarizer, Translator, LanguageModel, language detection. <code>security</code> covers Passkeys, client-side encryption, digital signatures, Trusted Types and local network access. Then <code>webmcp</code> points the other way, exposing page capabilities to agents through declarative form attributes or imperative JavaScript tools.</p>
+
+<p>Taken together, the Chrome team is building a two-way interface. Agents consume the web platform, and pages advertise their capabilities to agents. For anyone running a tool site that is a new distribution surface: your tool does not have to wait for a human to open the page, it can be called first. Early days, but a clearer direction than shipping another chat box.</p>
+
+<h2>Getting started: three commands and one legacy scan</h2>
+
+<pre><code>npx modern-web-guidance@latest install
+npx modern-web-guidance@latest search "animate a dialog modal backdrop"
+npx modern-web-guidance@latest retrieve "animate-to-from-top-layer"
+npx modern-web-guidance@latest legacy-scan .</code></pre>
+
+<p><code>install</code> runs an interactive wizard that wires the skill into your agent. <code>search</code> returns IDs and summaries, <code>retrieve</code> returns the body, which keeps recall cheap and injection precise. <code>legacy-scan</code> sweeps the whole repository for patterns you have stopped needing.</p>
+
+<h2>In practice: a diff-only legacy check</h2>
+
+<p>A whole-repository sweep is useless in CI, because historic debt paints every build red. Here is the same idea restricted to the current change, standard library only, no network:</p>
+
+<pre><code>import subprocess, sys
+from pathlib import Path
+
+RULES = [
+    ("document.write", "prefer DOM APIs or a template element"),
+    ("$(", "querySelector / querySelectorAll"),
+    ("addEventListener('scroll'", "scroll-driven animations or IntersectionObserver"),
+    (".innerHTML =", "setHTMLUnsafe or explicit DOM nodes"),
+    ("offsetHeight", "content-visibility or a ResizeObserver"),
+]
+EXTS = {".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".vue", ".svelte"}
+
+def targets(argv):
+    if argv:
+        files = []
+        for raw in argv:
+            p = Path(raw)
+            files += [f for f in p.rglob("*") if f.suffix in EXTS] if p.is_dir() else [p]
+        return sorted(set(files))
+    out = subprocess.run(["git", "diff", "--name-only", "--diff-filter=ACMR", "origin/main...HEAD"],
+                         capture_output=True, text=True).stdout
+    return [Path(x) for x in out.split(chr(10)) if Path(x).suffix in EXTS]
+
+hits, per_file = 0, {}
+for f in targets(sys.argv[1:]):
+    for no, line in enumerate(f.read_text(encoding="utf-8", errors="replace").split(chr(10)), 1):
+        for snip, fix in RULES:
+            if snip in line:
+                hits += 1
+                per_file[str(f)] = per_file.get(str(f), 0) + 1
+                print("%s:%d  %s -&gt; %s" % (f, no, snip, fix))
+print("legacy_hits=%d files=%d" % (hits, len(per_file)))
+for name, n in sorted(per_file.items(), key=lambda kv: -kv[1])[:3]:
+    print("  top  %-40s %d" % (name, n))
+sys.exit(1 if hits else 0)</code></pre>
+
+<p>Pointed at this site's own <code>src/js</code> directory:</p>
+
+<pre><code>$ python legacy_diff.py src/js
+...
+legacy_hits=216 files=23
+  top  src/js/altimeter.js                       48
+  top  src/js/id-tools.js                        24
+  top  src/js/base-tools.js                      20</code></pre>
+
+<p>216 hits across 23 files. Then I read the details: nine out of ten are <code>.innerHTML =</code>, which is how my own templates render, not a legacy problem. Rules generate false positives. Judgement needs context.</p>
+
+<p>Which is exactly why Google shipped retrieval rather than a rule set. Rules match patterns. Whether a pattern can be replaced by a modern API depends on what the code is doing and which browsers it must support. Mechanical rules cannot answer that. An agent holding an accurate spec can.</p>
+
+<h2>How to get value out of it</h2>
+
+<ul>
+<li>Install it: <code>npx modern-web-guidance@latest install</code>. One interactive pass, less rework on every frontend generation afterwards.</li>
+<li>Commit <code>.mwgrc</code> to the repository. Experimental features stay off unless a PR says why it needs them.</li>
+<li>Stop hand-writing modern CSS instructions in prompts. Let retrieval fetch them. Hand-written checklists rot, retrieval does not.</li>
+<li>In CI, check the diff only. A full sweep means you disable the job by week three.</li>
+<li>Run <code>legacy-scan</code> once on your own project. Any rule that fires on more than thirty percent of files is noise, delete it.</li>
+</ul>
+
+<p>What this repository really offers is not the list of 250 features but a stance: knowledge expires, so do not bake it into weights; experimental features carry risk, so keep them off and let a human decide. Copy those two ideas into your own agent workflow and you will get more out of them than memorising APIs.</p>
+''',
+    'related': [("Read next: agent-browser and the three divisions of browser automation", "blog/agent-browser-ai-2026/"), ("Read next: the Agent Skills cross-agent standard and two SKILL.md traps", "blog/agent-skills-standard-2026/")],
+},
 
 'bla-token-budget-exhaustion-2026': {
     'tags': ['BLA', 'token budget exhaustion', 'economic DoS', 'agent security'],
