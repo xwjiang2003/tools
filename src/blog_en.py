@@ -6,6 +6,310 @@
 """
 
 ARTICLES_EN = {
+'deepseek-app-api-tool-orchestration-2026': {
+    'tags': ["DeepSeek API", "tool calling", "speech API", "cost modeling"],
+    'title': "DeepSeek opened its whole app toolkit as an API, then quietly ate your temperature | DevTools Blog",
+    'description': "On 2026-11-13 DeepSeek exposed the machinery behind its consumer app: server-side web search, deep thinking search, URL reading, file parsing, plus standalone Search, Fetch, OCR, ASR and TTS endpoints under /v1/tools/. ASR lands at about 0.39 CNY per hour after the launch discount. This post covers the two integration layers, why the documented ignore-list makes temperature=0 regression tests meaningless, why max_tokens is a per-step ceiling rather than a per-turn one, and ships a request guard plus a cost model you can run.",
+    'keywords': "deepseek app api,deepseek-flash tool calling,deepseek_web_search temperature ignored,why temperature has no effect deepseek,deepseek asr api tutorial,deepseek tts websocket streaming,deepseek_read_url example,replicate deepseek app,deepseek api pricing per hour audio,deep thinking search tutorial,responses api compatible deepseek,tool call billing model,chat-demo self host,how to reduce deepseek api cost,build a voice assistant with llm",
+    'h1': "DeepSeek broke its app into blocks: five endpoints, and one parameter that quietly disappears",
+    'summary': "On 13 November DeepSeek put the search, URL reading, file parsing and speech features of its consumer app on the public API: five standalone endpoints plus server-side tool switches on three protocols. The part worth reading twice is the documented ignore-list. Turn on server-side search and temperature, top_p and seed stop applying, silently.",
+    'body': '''
+<p>On the evening of 13 November, DeepSeek moved the machinery behind its consumer app onto the public API: web search, deep thinking search, URL reading, file parsing, OCR, speech-to-text and text-to-speech. The line everyone screenshotted was that a developer can now rebuild the DeepSeek app one to one. The companion front end went up as an MIT project, runs on Node 22.12 or newer, and imports chat history exported from the consumer app.</p>
+
+<p>There is a less quotable sentence in the docs. Enable deepseek_web_search and the temperature you sent no longer applies. For anyone running evals or structured extraction, that matters more than five new endpoints.</p>
+
+<h2>Five standalone endpoints, with the numbers</h2>
+
+<table>
+<thead><tr><th>Capability</th><th>Endpoint</th><th>Hard limits</th><th>Peak price</th></tr></thead>
+<tbody>
+<tr><td>Web search</td><td>POST /v1/tools/search</td><td>100 req/s, supports site: and -site:, no image search yet</td><td>$0.75 per 1,000 successful calls</td></tr>
+<tr><td>Page fetch</td><td>POST /v1/tools/fetch</td><td>25 req/s, returns single-page Markdown</td><td>$0.75 per 1,000 successful calls</td></tr>
+<tr><td>OCR</td><td>POST /v1/tools/ocr</td><td>100 MB per file, 1,000 pages max, page-by-page, not stored in the Files API</td><td>$0.225 per 1,000 pages</td></tr>
+<tr><td>ASR</td><td>POST /v1/tools/asr</td><td>120 seconds and 8 MB per file, 16-bit PCM WAV or Ogg Opus only, 21 languages auto-detected</td><td>$0.116 per hour, $0.058 during the launch discount</td></tr>
+<tr><td>TTS</td><td>POST /v1/tools/tts or WebSocket on the same path</td><td>10,000 characters per request, 10 languages, two voices: stella and tide</td><td>$0.45 per 10,000 characters, $0.225 discounted</td></tr>
+<tr><td>Model</td><td>deepseek-flash (V4.1-Flash-1017)</td><td>1M context, 384K output, vision input, concurrency 2,500</td><td>$0.30/M input ($0.006 cached), $1.20/M output</td></tr>
+</tbody>
+</table>
+
+<p>Search and fetch bill only on success with usable content, so failed calls and empty results are free. Off-peak model pricing is half.</p>
+
+<p>The ASR row hides the actual work. Pricing is per hour, the endpoint stops at 120 seconds. One hour of audio becomes 30 segments and 30 requests, and you still have to stitch 30 relative timestamps into an absolute timeline. There is no long-audio endpoint, so the slicing logic is yours to write.</p>
+
+<h2>Two integration layers: let the server turn the screws, or turn them yourself</h2>
+
+<p>The first layer declares tools inside a chat request and lets the server run the loop. All three protocols accept the same tool names on deepseek-flash:</p>
+
+<pre><code>import requests
+
+payload = {
+    "model": "deepseek-flash",
+    "thinking": {"type": "enabled"},
+    "tools": [{"type": "deepseek_web_search"}, {"type": "deepseek_read_url"}],
+    "safety_check": {"level": "high"},
+    "messages": [{"role": "user", "content": "new papers on KV cache compression last week"}],
+    "stream": True,
+}
+r = requests.post(
+    "https://api.deepseek.com/chat/completions",
+    headers={"Authorization": "Bearer " + API_KEY},
+    json=payload,
+    stream=True,
+    timeout=120,
+)
+for line in r.iter_lines():
+    if line:
+        print(line.decode("utf-8"))</code></pre>
+
+<p>With thinking off, deepseek_web_search is ordinary cited search. With thinking on it becomes deep thinking search: the model decides what to search and which page to open across multiple reasoning steps, up to roughly 20 automatic searches and page reads in a single turn. deepseek_read_url works differently. It scans the latest user message for up to 10 links, fetches them server-side, and returns the page payload inside a signature field that the client passes back untouched. No crawler of your own.</p>
+
+<p>What comes back is not a string. It is a stream of typed blocks: thinking, server_tool_use, web_search_tool_result, web_fetch_tool_result, text with citation markers, and a refusal stop reason when the safety filter trips. The client renders and echoes.</p>
+
+<p>The second layer is the five endpoints under /v1/tools/, with the loop written by you. The cases that call for it are specific: reusing retrieved pages across turns, persisting fetched text, swapping search providers for an A/B, running reproducible regressions in CI. Server-side orchestration saves you the loop code and takes away control, including the control listed in the next table.</p>
+
+<h2>The parameters that disappear</h2>
+
+<table>
+<thead><tr><th>Protocol</th><th>Fields ignored once server tools are on</th></tr></thead>
+<tbody>
+<tr><td>Chat Completions</td><td>temperature, top_p, frequency_penalty, presence_penalty, stop, seed, n, preserve_thinking, parallel_tool_calls</td></tr>
+<tr><td>Messages</td><td>All of the above plus top_k, stop_sequences, thinking.budget_tokens, tool_choice.disable_parallel_tool_use, metadata (except user_id)</td></tr>
+<tr><td>Responses</td><td>temperature, top_p, reasoning.summary, text.verbosity, include, max_tool_calls, truncation, metadata, parallel_tool_calls, store</td></tr>
+</tbody>
+</table>
+
+<p>The consequence is not a slightly worse result. The meaning of the request changes. temperature=0 used to mean the same input yields the same output, which is the premise of regression tests, structured extraction and controlled comparisons. Turn on search and the premise is gone, while the request still returns 200 and the logs look clean. A score that drifts in your eval may just be a different sampling regime.</p>
+
+<p>A second trap sits on max_tokens. It caps the output of each inference step, not the turn. A deep thinking search turn can run a dozen steps, so real output can be an order of magnitude above the number you configured. Capacity planning on max_tokens will underestimate the bill by roughly that factor.</p>
+
+<p>A third conflict is practical. Serving an application to the public means turning on safety_check, and that switch overrides temperature and top_p as well. Compliance and output control collide on the same flag.</p>
+
+<p>None of this is a bug. Once the server owns the tool loop, you cannot sit inside that loop tuning temperature, because the loop is no longer one you can see. The mental model has to change: a request with server-side tools is a service call, not a function call.</p>
+
+<h2>Step one: catch the dropped fields before the request leaves</h2>
+
+<p>Standard library only, wired in front of your SDK as a pre-flight guard. It exits non-zero so CI fails:</p>
+
+<pre><code>IGNORED = {
+    "chat": {"temperature", "top_p", "frequency_penalty", "presence_penalty",
+             "stop", "seed", "n", "preserve_thinking", "parallel_tool_calls"},
+    "messages": {"temperature", "top_p", "top_k", "stop_sequences",
+                 "thinking.budget_tokens", "tool_choice.disable_parallel_tool_use", "metadata"},
+    "responses": {"temperature", "top_p", "max_tool_calls", "truncation", "store", "metadata"},
+}
+SERVER_TOOLS = {"deepseek_web_search", "deepseek_read_url"}
+
+
+def audit(payload, proto="chat"):
+    tools = {t.get("type") for t in payload.get("tools", []) if isinstance(t, dict)}
+    hijack = bool(tools &amp; SERVER_TOOLS) or payload.get("safety_check") or payload.get("title")
+    if not hijack:
+        return [], []
+    dropped = sorted(k for k in payload if k in IGNORED[proto])
+    return dropped, sorted(tools &amp; SERVER_TOOLS)
+
+
+body = {
+    "model": "deepseek-flash",
+    "temperature": 0.0,
+    "top_p": 0.9,
+    "seed": 42,
+    "tools": [{"type": "deepseek_web_search"}],
+    "messages": [{"role": "user", "content": "what happened in AI this week"}],
+}
+dropped, tools = audit(body, "chat")
+print("server tools:", ", ".join(tools) or "none")
+print("silently ignored:", ", ".join(dropped) or "none")</code></pre>
+
+<p>Which prints this and exits 1:</p>
+
+<pre><code>server tools: deepseek_web_search
+silently ignored: seed, temperature, top_p</code></pre>
+
+<p>Wire it into the eval pipeline so a payload containing both deepseek_web_search and temperature fails the build. It forces the author to pick a side: reproducible, or able to search. Not both.</p>
+
+<h2>Step two: a cost model that reconciles</h2>
+
+<p>A support-bot shape: 3,000 turns a day, one search per turn, 6,500 cumulative input tokens and 500 output tokens per turn, 38 percent prefix cache hit rate. Standard library, nothing to install:</p>
+
+<pre><code>M = 1_000_000
+P = {"in_miss": 0.30, "in_hit": 0.006, "out": 1.20}
+T = {"search": 0.75}
+
+
+def daily(turns=3000, in_tok=6500, out_tok=500, hit=0.38, searches=1.0):
+    cost_in = turns * (in_tok * (1 - hit) * P["in_miss"] + in_tok * hit * P["in_hit"]) / M
+    cost_out = turns * out_tok * P["out"] / M
+    cost_tool = turns * searches * T["search"] / 1000
+    return cost_in, cost_out, cost_tool
+
+
+for hit in (0.0, 0.38):
+    a, b, c = daily(hit=hit)
+    tot = a + b + c
+    print("hit %4.0f%%  in $%6.2f  out $%6.2f  search $%6.2f  day $%6.2f  month $%7.2f"
+          % (hit * 100, a, b, c, tot, tot * 30))</code></pre>
+
+<p>Output:</p>
+
+<pre><code>hit    0%  in $  5.85  out $  1.80  search $  2.25  day $  9.90  month $ 297.00
+hit   38%  in $  3.67  out $  1.80  search $  2.25  day $  7.72  month $ 231.64
+
+mix at 38%: input 48% / output 23% / search 29%
+per turn: $0.0026
+one search ($0.00075) equals 125,000 cached input tokens</code></pre>
+
+<p>Two takeaways. Cached input at $0.006/M against $0.30/M uncached is a 50x spread, so keeping the system prompt and tool definitions stable at the front of the request is the highest-leverage change available here; 38 percent hit rate already shaves a fifth off the bill. Search is 29 percent of spend, and one search costs the same as 125,000 cached tokens. That is out of proportion to what it does, so rate-limit it in your own code instead of letting the model decide whether to search.</p>
+
+<h2>Before shipping</h2>
+
+<ul>
+<li>Slice long audio yourself. The 120-second and 8 MB caps are hard, and the segmenter is your code to write.</li>
+<li>The discount is temporary. 0.39 CNY per hour is the half-price number; at list it doubles. Do not bake it into a margin model.</li>
+<li>Use the WebSocket endpoint for TTS. One-shot HTTP on long text produces an ugly time-to-first-byte.</li>
+<li>Two voices only, stella and tide, across 10 languages. A multi-speaker podcast needs another layer on top.</li>
+<li>The demo front end is MIT, but it keeps the API key in localStorage and conversations in IndexedDB. Shipping it as a production client means rebuilding key custody.</li>
+</ul>
+
+<p>The subtext of the announcement is not five new endpoints. It is a model vendor selling application-layer glue. Search, parsing and speech used to be dirty work every team rewrote; now it costs five CNY per thousand calls. You trade time for the right to interpret what your request means. Whether that trade is good depends on one question: does your product need reproducibility, or speed.</p>
+''',
+    'related': [("Read next: the other way to chain retrieval and speech, with a 27B model as judge", "blog/qwen-3-8-27b-laptop-judge-2026/"), ("Read next: how much multi-turn semantic caching actually saves", "blog/multi-turn-semantic-caching-2026/")],
+},
+'minimax-h3-image-135gb-2026': {
+    'tags': ["open-weight image models", "MiniMax", "VRAM math", "model licensing"],
+    'title': "What open 4K image generation really costs: H3-Image ships 135 GB, six steps, and a licence that excludes the US | DevTools Blog",
+    'description': "MiniMax released H3-Image weights on 2026-11-10: a 33.1B dense DiT that samples in six steps with no CFG and outputs 4096x4096, about 16 megapixels, with up to 16 reference images. It also weighs 135 GB in BF16, keeps its 66.7 GB text encoder in a different repository, and its community licence excludes the US, EU, UK and South Korea. This post does the latent token math, the quantisation numbers and the break-even between rented GPUs and the API, with runnable scripts.",
+    'keywords': "minimax h3-image,open weight image model 4k,16mp image generation,33.1b dit,h3-image vram requirements,h3-image local deployment tutorial,comfyui 4k image generation,sglang image generation server,minimax licence commercial use,how to download h3-image,text encoder separate download,cost per image open model,4096x4096 how many gpus,no negative prompt,open image model vs flux",
+    'h1': "135 GB of open 4K generation: H3-Image runs, but do the math first",
+    'summary': "A 33.1B dense DiT, six steps, no CFG, native 4096x4096. MiniMax put the weights out and the bill is 135 GB in BF16, a text encoder in another repo, and a licence that excludes the US and the EU. Work out the latent sequence, the quantised footprint and the break-even before pulling those 135 gigabytes.",
+    'body': '''
+<p>Late on 10 November, MiniMax pushed H3-Image weights to Hugging Face. A 33.1B dense DiT, six sampling steps, no CFG, native 4096x4096. The official claim is ten seconds per image at roughly five times the speed of comparable resolution on the market. Coverage two days later put a number on it: about two tenths of a yuan per image.</p>
+
+<p>Then you open the file list. DiT 66.28 GB, text encoder 66.71 GB, VAE 2.34 GB. Call it 135 GB. That number decides what this post is about. Not how good the output looks, but who can actually run it.</p>
+
+<h2>The text encoder is bigger than the image model, and that is deliberate</h2>
+
+<p>H3-Image reuses the Qwen3-VL encoder from MiniMax-H3, about 33.4B parameters, and the DiT reads hidden states from its 50th layer. Why put a vision-language model in the text-encoder slot: orthographic CAD views, exploded mechanical assemblies, an exam paper full of integrals. Those tasks need spatial and physical common sense, not just prompt parsing. The parameters earn their keep.</p>
+
+<p>The cost lands in engineering. The encoder lives in the MiniMax-H3 repository under text_encoder, 66.71 GB on its own. model_index.json points there, so downloading H3-Image alone produces a model that will not load. That is not a broken path, it is the design. SGLang cookbook counts 135 GB in total, the vLLM recipe 127 GB, and the difference is whether the 17.9 GB NVFP4 prompt expander, MiniMax-H3-Image-PE, stays resident.</p>
+
+<h2>How many tokens is 16 megapixels</h2>
+
+<p>The VAE downsamples 16x, so 4096x4096 becomes a 256x256 latent. Patchify by 2x2 and you get 128x128, which is 16,384 tokens, each covering 32x32 pixels. For scale: 1024x1024 is 1,024 tokens, 2048x2048 is 4,096. The sequence is 16 times longer.</p>
+
+<p>Dense single-stream DiT, no MoE sparsity, all 50 layers engaged. If attention scaled squarely on a sequence 16 times longer, the cost would be 256 times, not 16. Two other numbers pull it back: six steps, no CFG.</p>
+
+<p>A typical SDXL-class pipeline runs 30 steps with two forward passes each, conditional and unconditional, so 60 NFEs. H3-Image runs 6. Sixty against six, a tenfold gap, and that is where ten seconds for 4K comes from. Not a small model. A short path.</p>
+
+<h2>Six steps without CFG is a constraint, not a default</h2>
+
+<p>The model card is blunt: num_inference_steps may be omitted or equal 6, guidance_scale may be omitted or equal 1, anything else returns an error. negative_prompt is unsupported and rejected.</p>
+
+<p>Together those three rules remove your ability to exclude. No watermark, no extra fingers, no garbled text, all of that has to go into a positive description now instead of a negative list. For industrial asset generation that is a real loss of control. For creative work it hurts less, since the pitch of this model is that many of those defects never get drawn.</p>
+
+<p>There is a knock-on effect. A model distilled to six steps is more sensitive to prompt length and structure. MiniMax asks for a full English description capped at 4,096 tokens, and short prompts get expanded by the PE model. Run locally without PE and the work of writing long, specific prompts becomes yours. That is a habit change, not a tuning problem.</p>
+
+<h2>The licence deserves a look before the VRAM does</h2>
+
+<p>It is the MiniMax-H3-Image Community License Agreement, not an OSI licence. Three clauses matter:</p>
+
+<ul>
+<li>Territory: the United States, European Union, United Kingdom and South Korea are excluded. The text says use in those regions is not authorised.</li>
+<li>Revenue: more than one million US dollars annualised, or offering hosted services to third parties, requires separate written authorisation.</li>
+<li>Attribution: commercial products must display MiniMax-H3-Image in the interface.</li>
+</ul>
+
+<p>The second clause is the one that catches SaaS teams. Wrap the model in an API and sell access, and even below the revenue threshold the hosted-services language already applies. This is not a clause that reads like a risk. It is a stated boundary of the grant.</p>
+
+<h2>Step one: finish the math before the download</h2>
+
+<p>Standard library, no dependencies. It prints the latent sequence lengths, the quantised footprint and the break-even between two rental models. The numbers come from the model card and public list prices, so swap in your own:</p>
+
+<pre><code>VAE_DOWN, PATCH = 16, 2
+DIT_B, ENC_B = 33.1, 33.4
+VRAM = {"bf16": 2.0, "fp8": 1.0, "nvfp4": 0.55}
+
+
+def seq_tokens(w, h):
+    return (w // VAE_DOWN // PATCH) * (h // VAE_DOWN // PATCH)
+
+
+for w, h in [(1024, 1024), (2048, 2048), (4096, 4096), (6272, 2688)]:
+    print("%5dx%-4d %8.1f MP  latent %6d token  %3d x" %
+          (w, h, w * h / 1e6, seq_tokens(w, h), seq_tokens(w, h) // 1024))
+
+for q, bpp in VRAM.items():
+    total = DIT_B * bpp + ENC_B * bpp + 2.34
+    print("%-6s total %6.1f GB  on one 80GB card: %s" %
+          (q, total, "fits" if total &lt; 78 else "does not fit"))</code></pre>
+
+<p>Output, trimmed:</p>
+
+<pre><code> 4096x4096   16.8 MP  latent  16384 token   16 x
+ 6272x2688   16.9 MP  latent  16464 token   16 x
+bf16   total  135.3 GB  on one 80GB card: does not fit
+fp8    total   68.8 GB  on one 80GB card: fits
+nvfp4  total   38.9 GB  on one 80GB card: fits</code></pre>
+
+<p>FP8 is the practical route today. At 68.8 GB it sits inside the 78 GB safety line with little room for KV and activations, so a 16K latent sequence needs watching. NVFP4 leaves far more headroom at the cost of precision and community tooling.</p>
+
+<h2>Step two: two rental models, opposite conclusions</h2>
+
+<pre><code>API = 0.06879          # per 4K image on the API
+RATE = 5.50            # 2x H100 on demand, per hour
+SEC_PER_IMAGE = 10     # official 4K latency
+UTIL = 0.55            # real utilisation after load, queue and tuning
+
+for n in (900, 3000, 12000):
+    hours = n * SEC_PER_IMAGE / 3600 / UTIL
+    print("%6d img/mo  API $%8.2f  local %5.1f gpu-hr $%8.2f" %
+          (n, n * API, hours, hours * RATE))
+
+print("resident: $%.0f/mo, break-even at %d images" % (730 * RATE, 730 * RATE / API))</code></pre>
+
+<p>Output:</p>
+
+<pre><code>   900 img/mo  API $   61.91  local   4.5 gpu-hr $   25.00
+  3000 img/mo  API $  206.37  local  15.2 gpu-hr $   83.33
+ 12000 img/mo  API $  825.48  local  60.6 gpu-hr $  333.33
+resident: $4015/mo, break-even at 58366 images</code></pre>
+
+<p>For batch work, local wins at every volume: 4.5 GPU-hours and 25 dollars against 62 dollars for 900 API images. For a resident service you need 1,945 images a day before the rented hardware pays for itself, and most teams never get there. One model, two accounting models, two opposite answers. This is the part such write-ups usually smooth over.</p>
+
+<p>One hidden cost is not in the model: the 135 GB download and cold start. On-demand GPUs mean pulling weights on every launch unless you bake an image, and that can flip the batch case entirely, especially for a job that runs once a week.</p>
+
+<h2>The download and serve commands that actually work</h2>
+
+<p>The model card recommends SGLang, vLLM-Omni, diffusers and ComfyUI. Step one is two repositories, step two is serving:</p>
+
+<pre><code>from huggingface_hub import snapshot_download
+
+snapshot_download("MiniMaxAI/MiniMax-H3-Image", local_dir="h3-image")
+snapshot_download("MiniMaxAI/MiniMax-H3", local_dir="h3-image",
+                  allow_patterns=["text_encoder/&#42;"])
+du -sh h3-image    # expect ~130GB; 68GB means the encoder is missing</code></pre>
+
+<p>SGLang has the shortest command, and the only multi-GPU example in the card:</p>
+
+<pre><code>pip install -U sglang
+
+sglang serve --model-path MiniMaxAI/MiniMax-H3-Image --host 0.0.0.0 --port 30000 --warmup-mode off
+
+# BF16 does not fit on one card; sequence-parallel across four
+sglang serve --model-path MiniMaxAI/MiniMax-H3-Image --host 0.0.0.0 --port 30000 --warmup-mode off --num-gpus 4 --ulysses-degree 4</code></pre>
+
+<p>--ulysses-degree is sequence parallelism: the 16K latent sequence is split across four cards, each holding a full copy of the weights and a different slice of tokens. On long sequences that beats tensor parallelism. If you want 4K on a single 80 GB card, take FP8 or the Comfy-Org repack and accept the precision loss and version lag.</p>
+
+<h2>When not to self-host</h2>
+
+<p>Under two thousand images a month, or a one-off campaign batch, call the API. At 0.069 dollars an image, two thousand costs 138 dollars, an order of magnitude below the fixed cost of rented hardware, with no 135 GB download and no week of tuning.</p>
+
+<p>If you need negative prompts for tight exclusion, this model cannot do it. Do not force it. If you plan to resell the capability to customers in the US or the EU, talk to MiniMax about a licence before you write code.</p>
+
+<p>Everyone else, the ones with GPUs, volume, and a need for a base they can modify, this is about the only open option that outputs 16 megapixels directly. A 33.1B dense transformer, six steps, no CFG. That combination is not a parameter race. It is inference cost pushed down to something commercially usable. The weights are open. What you are buying is time.</p>
+''',
+    'related': [("Read next: after a 3T open release, how the 1M-context KV cache adds up", "blog/kimi-k3-pro-1m-context-2026/"), ("Read next: the people who fit a 284B MoE onto consumer hardware", "blog/local-moe-serving-freetoken-colibri-2026/")],
+},
 'ai-code-audit-triage-2026': {
     'tags': ["AI code audit", "vulnerability triage", "SARIF", "shift left"],
     'title': "37,966 candidate vulnerabilities, 217 fixed: where AI code audit actually stalls | DevTools Blog",
