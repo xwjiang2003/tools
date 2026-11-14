@@ -50,6 +50,319 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'deepseek-app-api-tool-orchestration-2026',
+    'category': 'tooling',
+    'date': '2026-11-14',
+    'updated': '2026-11-14',
+    'tags': ['DeepSeek API', '工具调用', '语音接口', '成本模型'],
+    'title': 'DeepSeek 开放全家桶 API：5 个独立端点、被静默丢弃的 temperature，与一份能对账的成本模型 | DevTools 博客',
+    'description': 'DeepSeek 2026-11-13 晚把官方 App 的搜索、读链接、文件解析、OCR、ASR、TTS 全部开放成 API，deepseek-flash 支持 deepseek_web_search 与 deepseek_read_url 服务端工具，另有 /v1/tools/ 五个独立端点，ASR 折后 0.39 元/小时。本文拆两条集成路线的取舍、官方文档里那张「被忽略参数」表为什么会让 temperature=0 的回归测试失效、max_tokens 为何不是整轮上限，并给出可运行的参数守卫脚本与成本模型。',
+    'keywords': 'DeepSeek 全家桶 API,deepseek-flash 怎么用,deepseek_web_search 参数,temperature 不生效 怎么办,DeepSeek ASR 接口 怎么调用,DeepSeek TTS WebSocket 流式,deepseek_read_url 用法,1:1 复刻 DeepSeek App,DeepSeek API 价格 一小时语音多少钱,deepseek 深度思考搜索 教程,Responses API 兼容 DeepSeek,工具调用 计费 怎么算,chat-demo 部署,如何降低 DeepSeek API 成本,LLM 语音助手 自建',
+    'h1': 'DeepSeek 把 App 拆成积木：5 个端点，和一个被悄悄吃掉的参数',
+    'summary': '11 月 13 日晚 DeepSeek 把官方 App 的搜索、读链接、文件解析、语音全放上了 API，五个独立端点加三条协议的工具开关。真正需要小心的是文档里那张表：开了服务端工具，temperature、top_p、seed 会被静默忽略。附参数守卫脚本与成本模型。',
+    'body': '''
+<p>11 月 13 日晚上，DeepSeek 把自家 App 背后的能力全搬到了 API 上：联网搜索、深度思考搜索、读链接、文件解析、OCR、语音识别、语音合成。公告里那句「甚至可以 1:1 复刻出完整的 DeepSeek App」被截图转了一整天，配套的 chat-demo 直接开源成 MIT，Node 22.12 以上能跑，静态托管在 cdn.deepseek.com/chat-demo，还能导入从 App 导出的历史对话 ZIP。</p>
+
+<p>但官方文档里有一行容易被跳过的小字：只要你开了 deepseek_web_search，你传的 temperature 就不再生效。对做评测和结构化抽取的人来说，这件事比多开放五个端点重要得多。</p>
+
+<h2>五个独立端点，价格摊开看</h2>
+
+<table>
+<thead><tr><th>能力</th><th>端点</th><th>硬限制</th><th>价格（高峰）</th></tr></thead>
+<tbody>
+<tr><td>联网搜索</td><td>POST /v1/tools/search</td><td>100 请求/秒，支持 site: 与 -site:，暂不支持图片搜索</td><td>每千次成功调用 $0.75</td></tr>
+<tr><td>网页抓取</td><td>POST /v1/tools/fetch</td><td>25 请求/秒，返回单页 Markdown</td><td>每千次成功调用 $0.75</td></tr>
+<tr><td>OCR</td><td>POST /v1/tools/ocr</td><td>单文件 100MB、最多 1000 页，逐页返回，不入 Files API</td><td>每千页 $0.225</td></tr>
+<tr><td>语音识别</td><td>POST /v1/tools/asr</td><td>单文件 120 秒、8MB，只收 16-bit PCM WAV 与 Ogg Opus，21 语种自动判别</td><td>每小时 $0.116，五折后 $0.058</td></tr>
+<tr><td>语音合成</td><td>POST /v1/tools/tts 或同路径 WebSocket</td><td>单请求 1 万字符，10 语种，两个音色 stella / tide</td><td>每万字符 $0.45，五折后 $0.225</td></tr>
+<tr><td>模型</td><td>deepseek-flash（V4.1-Flash-1017）</td><td>100 万上下文、38.4 万输出、视觉输入、并发 2500</td><td>输入 $0.30/M（命中缓存 $0.006），输出 $1.20/M</td></tr>
+</tbody>
+</table>
+
+<p>搜索和抓取只在「成功且有可用内容」时计费，失败不计费，这点比很多搜索 API 实在。非高峰时段模型费再打五折。</p>
+
+<p>ASR 那一行藏着真正的工程量：定价按小时，接口按 120 秒卡。一小时录音等于 30 个片段、30 次请求，还得自己把每段的相对时间戳拼成绝对时间轴。官方没给长音频接口，这段切片逻辑是要你自己写的。</p>
+
+<h2>两条集成路：让服务端拧螺丝，还是自己拧</h2>
+
+<p>第一条是把工具声明丢进对话请求，剩下的服务端做。三条协议都支持，deepseek-flash 是同一套工具名：</p>
+
+<pre><code>import requests
+
+payload = {
+    "model": "deepseek-flash",
+    "thinking": {"type": "enabled"},
+    "tools": [{"type": "deepseek_web_search"}, {"type": "deepseek_read_url"}],
+    "safety_check": {"level": "high"},
+    "messages": [{"role": "user", "content": "上周 arXiv 上关于 KV 缓存压缩的新论文"}],
+    "stream": True,
+}
+r = requests.post(
+    "https://api.deepseek.com/chat/completions",
+    headers={"Authorization": "Bearer " + API_KEY},
+    json=payload,
+    stream=True,
+    timeout=120,
+)
+for line in r.iter_lines():
+    if line:
+        print(line.decode("utf-8"))</code></pre>
+
+<p>thinking 关着时，deepseek_web_search 就是普通联网搜索，带引用作答；thinking 开着就变成深度思考搜索，模型在多步推理里自己决定搜什么、读哪一页，单轮最多约 20 次自主搜索与读页。deepseek_read_url 是另一套逻辑：它扫最新一条用户消息里的链接，最多 10 个，服务端抓完把页面内容塞进 signature 字段，客户端原样回传即可，不用自己养爬虫。</p>
+
+<p>返回的不是一段字符串，是结构化 block：thinking、server_tool_use、web_search_tool_result、web_fetch_tool_result、带引用标记的 text，命中风控还有 refusal 停止。前端要做的事只剩渲染和回传。</p>
+
+<p>第二条是 /v1/tools/ 下五个独立端点，工具循环自己写。选这条的场合很具体：要在多轮请求间复用检索结果、要把抓到的原文落库、要换检索源做 A/B、要在 CI 里跑可复现的回归。服务端编排省下的是循环代码，拿走的是控制权，包括下面这张表里的东西。</p>
+
+<h2>被静默吃掉的参数</h2>
+
+<table>
+<thead><tr><th>协议</th><th>开启服务端工具后被忽略的字段</th></tr></thead>
+<tbody>
+<tr><td>Chat Completions</td><td>temperature、top_p、frequency_penalty、presence_penalty、stop、seed、n、preserve_thinking、parallel_tool_calls</td></tr>
+<tr><td>Messages</td><td>上面全部，外加 top_k、stop_sequences、thinking.budget_tokens、tool_choice.disable_parallel_tool_use、metadata（user_id 除外）</td></tr>
+<tr><td>Responses</td><td>temperature、top_p、reasoning.summary、text.verbosity、include、max_tool_calls、truncation、metadata、parallel_tool_calls、store</td></tr>
+</tbody>
+</table>
+
+<p>后果不是「效果差一点」，是请求语义变了。temperature=0 原本意味着同一输入给同一输出，这是回归测试、结构化抽取、A/B 对照的前提。现在只要打开搜索，前提就没了，而请求不报错，日志里也看不出异常。评测里看到的分数波动，可能只是采样参数换了一套。</p>
+
+<p>第二个坑藏在 max_tokens 上：它限制的是单步推理的输出，不是整轮。一轮深度思考搜索可能跑十几步，实际输出 token 可以是这个数字的十几倍。拿 max_tokens 做容量规划，账单会估低一个数量级。</p>
+
+<p>第三个矛盾更现实：对外提供应用服务时官方要求开 safety_check，而开它同样覆盖 temperature 和 top_p。合规要求和可控输出，撞在同一个开关上。</p>
+
+<p>这三条都不是 bug。服务端接管了工具循环，就不可能再让你在环里调温度，因为环已经不是你能看见的那个环。写代码的人得接受一个事实：带服务端工具的请求是「服务」，不是「函数」。</p>
+
+<h2>实操一：发请求前把会被丢弃的字段挑出来</h2>
+
+<p>纯标准库，接在 SDK 前面当守卫，命中就退出码 1，CI 能拦：</p>
+
+<pre><code>IGNORED = {
+    "chat": {"temperature", "top_p", "frequency_penalty", "presence_penalty",
+             "stop", "seed", "n", "preserve_thinking", "parallel_tool_calls"},
+    "messages": {"temperature", "top_p", "top_k", "stop_sequences",
+                 "thinking.budget_tokens", "tool_choice.disable_parallel_tool_use", "metadata"},
+    "responses": {"temperature", "top_p", "max_tool_calls", "truncation", "store", "metadata"},
+}
+SERVER_TOOLS = {"deepseek_web_search", "deepseek_read_url"}
+
+
+def audit(payload, proto="chat"):
+    tools = {t.get("type") for t in payload.get("tools", []) if isinstance(t, dict)}
+    hijack = bool(tools &amp; SERVER_TOOLS) or payload.get("safety_check") or payload.get("title")
+    if not hijack:
+        return [], []
+    dropped = sorted(k for k in payload if k in IGNORED[proto])
+    return dropped, sorted(tools &amp; SERVER_TOOLS)
+
+
+body = {
+    "model": "deepseek-flash",
+    "temperature": 0.0,
+    "top_p": 0.9,
+    "seed": 42,
+    "tools": [{"type": "deepseek_web_search"}],
+    "messages": [{"role": "user", "content": "本周 AI 圈发生了什么"}],
+}
+dropped, tools = audit(body, "chat")
+print("服务端工具:", ", ".join(tools) or "无")
+print("被静默忽略:", ", ".join(dropped) or "无")</code></pre>
+
+<p>跑出来是这样，退出码 1：</p>
+
+<pre><code>服务端工具: deepseek_web_search
+被静默忽略: seed, temperature, top_p
+结果: 请求语义已改变，确定性测试不可复现</code></pre>
+
+<p>接进评测流水线的用法：payload 里同时出现 deepseek_web_search 和 temperature 就直接失败，逼作者显式选边，要么可复现，要么能联网，不能两个都要。</p>
+
+<h2>实操二：一份能对账的成本模型</h2>
+
+<p>按一个客服场景估：每天 3000 轮，每轮 1 次搜索，多步累计输入 6500 token、输出 500 token，前缀缓存命中率 38%。纯标准库，不装任何东西：</p>
+
+<pre><code>M = 1_000_000
+P = {"in_miss": 0.30, "in_hit": 0.006, "out": 1.20}
+T = {"search": 0.75}
+
+
+def daily(turns=3000, in_tok=6500, out_tok=500, hit=0.38, searches=1.0):
+    cost_in = turns * (in_tok * (1 - hit) * P["in_miss"] + in_tok * hit * P["in_hit"]) / M
+    cost_out = turns * out_tok * P["out"] / M
+    cost_tool = turns * searches * T["search"] / 1000
+    return cost_in, cost_out, cost_tool
+
+
+for hit in (0.0, 0.38):
+    a, b, c = daily(hit=hit)
+    tot = a + b + c
+    print("命中率 %4.0f%%  输入 $%6.2f  输出 $%6.2f  搜索 $%6.2f  日合计 $%6.2f  月合计 $%7.2f"
+          % (hit * 100, a, b, c, tot, tot * 30))</code></pre>
+
+<p>输出：</p>
+
+<pre><code>命中率    0%  输入 $  5.85  输出 $  1.80  搜索 $  2.25  日合计 $  9.90  月合计 $ 297.00
+命中率   38%  输入 $  3.67  输出 $  1.80  搜索 $  2.25  日合计 $  7.72  月合计 $ 231.64
+
+成本结构（命中率 38%）: 输入 48% / 输出 23% / 搜索 29%
+每轮均价: $0.0026  ≈ 人民币 0.02 元
+搜索单次成本 $0.0008，等于 125000 个缓存命中输入 token 的钱</code></pre>
+
+<p>两个结论。缓存命中 $0.006/M 与未命中 $0.30/M 差 50 倍，把 system prompt 和工具定义固定在请求最前面，是这套 API 上性价比最高的一次改造，38% 命中就砍掉两成账单。搜索费占 29%，而一次搜索的 $0.00075 相当于 12.5 万个缓存命中 token，它贵得不成比例，值得在业务侧限流，别把「要不要搜」全交给模型判断。</p>
+
+<h2>要上线，这几条先写进设计文档</h2>
+
+<ul>
+<li>长音频先切。120 秒 8MB 是硬限制，切片脚本是必写项，别指望服务端替你处理。</li>
+<li>五折是限时优惠。0.39 元/小时是按五折算的，恢复原价 0.78，毛利模型别把折后价写死。</li>
+<li>TTS 走 WebSocket。长文本用 HTTP 一次性返回，首字节延迟很难看，流式端点做增量输出。</li>
+<li>语音只有两个音色，stella 女声、tide 男声。做多角色播客这接口不够，得自己叠层。</li>
+<li>官方 demo 是 MIT，但 key 存 localStorage、会话存 IndexedDB。直接拿去做生产前端，密钥托管要重做。</li>
+</ul>
+
+<p>这次公告的潜台词不是「多了五个接口」，是模型公司开始卖应用层的胶水。搜索、解析、语音这些过去每个团队各写一遍的脏活，被压到每千次 5 块钱。省下的是时间，付出的是把请求语义的解释权交出去。换不换，看你做的产品是要可复现，还是要快。</p>
+''',
+    'related': [('延伸阅读：把检索与语音拼成链路的另一条路，本地跑 27B 当裁判', 'blog/qwen-3-8-27b-laptop-judge-2026/'), ('延伸阅读：多轮对话的语义缓存，能省掉多少重复生成', 'blog/multi-turn-semantic-caching-2026/')],
+},
+{
+    'slug': 'minimax-h3-image-135gb-2026',
+    'category': 'ai',
+    'date': '2026-11-14',
+    'updated': '2026-11-14',
+    'tags': ['开源生图', 'MiniMax', '显存算账', '模型许可'],
+    'title': '开源 4K 生图的真实成本：H3-Image 的 135GB、6 步采样，和一张排除美国的许可证 | DevTools 博客',
+    'description': 'MiniMax 2026-11-10 开源 H3-Image：33.1B 稠密 DiT、6 步采样、不跑 CFG，直接出 4096x4096 约 16MP，最多 16 张参考图。但 BF16 全量 135GB，文本编码器 66.7GB 在另一个仓库，许可证还把美国、欧盟、英国、韩国排除在外。本文算清 latent 序列长度、量化后的显存、两种租法的盈亏线，并给出可运行的估算脚本与 SGLang 部署命令。',
+    'keywords': 'MiniMax H3-Image,开源生图模型 4K,16MP 图像生成,33.1B DiT,4K 生图 显存要求,H3-Image 本地部署 教程,ComfyUI 部署 4K 出图,SGLang 图像生成 服务,MiniMax 许可证 商用,H3-Image 怎么下载,文本编码器 单独下载,开源生图 一张多少钱,4096x4096 生成 需要几张卡,negative prompt 不支持,开源 图像模型 对比 FLUX',
+    'h1': '135GB 的开源 4K 生图：H3-Image 能跑，但你得先把账算清',
+    'summary': '33.1B 稠密 DiT、6 步、无 CFG、原生 4096x4096，MiniMax 把 H3-Image 的权重放了出来。代价是 BF16 全量 135GB、编码器在另一个仓库、许可证排除美国与欧盟。算清 latent 序列、量化路线和两种租法的盈亏线，再决定要不要下这 135GB。',
+    'body': '''
+<p>11 月 10 日深夜，MiniMax 把 H3-Image 的权重放上了 Hugging Face。33.1B 参数的稠密 DiT，6 步采样，不跑 CFG，直接出 4096x4096。官方口径是 10 秒一张，比同分辨率的主流水平快约 5 倍。量子位 11 月 12 日的实测文章标题更直白：一张两毛。</p>
+
+<p>然后打开文件列表：DiT 66.28GB，文本编码器 66.71GB，VAE 2.34GB。合计 135GB。这个数字决定了该写什么，不是「效果多好」，是「谁能跑起来」。</p>
+
+<h2>文本编码器比图像模型还大，这是设计不是事故</h2>
+
+<p>H3-Image 的文本编码器直接复用 MiniMax-H3 的 Qwen3-VL encoder，约 33.4B 参数，DiT 读它第 50 层的 hidden state。为什么拿视觉语言模型当文本编码器：CAD 三视图、机械爆炸图、带积分的试卷，这些任务要的不是「理解提示词」，是理解空间和物理常识。参数堆在这里是有回报的。</p>
+
+<p>代价落在工程上。编码器不在主仓，在 MiniMax-H3 的 text_encoder 目录下，独立 66.71GB。model_index.json 指向那边，所以只下 H3-Image 跑不起来，这不是配错路径，是设计如此。SGLang 的 cookbook 把总量算作 135GB，vLLM 的配方算 127GB，差的是提示词扩展模型 MiniMax-H3-Image-PE 那 17.9GB（NVFP4）是否常驻。</p>
+
+<h2>16MP 到底是多少 token</h2>
+
+<p>VAE 做 16 倍下采样，4096x4096 变成 256x256 latent；再按 2x2 patchify，得到 128x128 共 16384 个 token，每个 token 覆盖 32x32 像素。对比一下：1024x1024 只有 1024 token，2048x2048 是 4096 token。序列长了 16 倍。</p>
+
+<p>稠密单流 DiT，没有 MoE 稀疏，50 层全部参数上阵。16 倍的序列长度如果按注意力平方算，成本不是 16 倍而是 256 倍。真正把它压回来的是另外两个数字：6 步、无 CFG。</p>
+
+<p>常见的 SDXL 级流程是 30 步，每步 cond 与 uncond 各跑一次前向，合计 60 NFE。H3-Image 是 6 NFE。60 比 6，十倍差距，这才是「10 秒出 4K」的算术来源，不是模型小，是路径短。</p>
+
+<h2>6 步无 CFG 不是默认值，是硬约束</h2>
+
+<p>模型卡写得很清楚：num_inference_steps 只能省略或等于 6，guidance_scale 只能省略或等于 1，其他值直接报错。negative_prompt 不支持，传了会被拒。</p>
+
+<p>这三条合起来意味着你失去了「排除」的表达能力。想要画面里没有水印、没有多余手指、没有乱码文字，只能靠正向描述往里写，不能像以前那样往 negative 里塞。对工业出图这是实打实的控制力下降，对创意出图反而没那么疼，H3-Image 的卖点本来就是把 AI 味压下去，很多瑕疵它自己就不画。</p>
+
+<p>还有个连带效应：蒸馏到 6 步的模型，对提示词长度和结构更敏感。官方要求英文整图描述，截断在 4096 token，短提示词会走 PE 自动扩写。本地部署不带 PE，就得自己把提示词写长、写具体，这是使用习惯上的迁移成本，调参绕不过去。</p>
+
+<h2>许可证比显存更值得先看</h2>
+
+<p>MiniMax-H3-Image Community License Agreement，不是 OSI 开源许可。三条要记住：</p>
+
+<ul>
+<li>地域：美国、欧盟、英国、韩国被排除在外，协议原文写的是这些地区的使用「未获授权」。</li>
+<li>收入：年化收入超过 100 万美元，或对外提供托管服务，需要另行书面授权。</li>
+<li>标识：商用产品界面必须显示 MiniMax-H3-Image。</li>
+</ul>
+
+<p>第二条对做 SaaS 的团队最要命。你把模型包一层 API 卖出去，哪怕年收入没到 100 万美元，「hosted services to third parties」这一条也已经踩上了。这不是读起来像风险的条款，是明确的授权边界。</p>
+
+<h2>实操一：下载之前先把账算完</h2>
+
+<p>纯标准库，把序列长度、量化后的权重体积、两种租法下的盈亏线一次算清。参数从模型卡和公开报价抄的，改数字就能算自己的场景：</p>
+
+<pre><code>VAE_DOWN, PATCH = 16, 2
+DIT_B, ENC_B = 33.1, 33.4
+VRAM = {"bf16": 2.0, "fp8": 1.0, "nvfp4": 0.55}
+
+
+def seq_tokens(w, h):
+    return (w // VAE_DOWN // PATCH) * (h // VAE_DOWN // PATCH)
+
+
+for w, h in [(1024, 1024), (2048, 2048), (4096, 4096), (6272, 2688)]:
+    print("%5dx%-4d %8.1f MP  latent %6d token  %3d 倍" %
+          (w, h, w * h / 1e6, seq_tokens(w, h), seq_tokens(w, h) // 1024))
+
+for q, bpp in VRAM.items():
+    total = DIT_B * bpp + ENC_B * bpp + 2.34
+    print("%-6s 合计 %6.1f GB  单卡 80GB: %s" %
+          (q, total, "放得下" if total &lt; 78 else "放不下"))</code></pre>
+
+<p>输出（节选）：</p>
+
+<pre><code> 4096x4096   16.8 MP  latent  16384 token   16 倍
+ 6272x2688   16.9 MP  latent  16464 token   16 倍
+bf16   合计  135.3 GB  单卡 80GB: 放不下
+fp8    合计   68.8 GB  单卡 80GB: 放得下
+nvfp4  合计   38.9 GB  单卡 80GB: 放得下</code></pre>
+
+<p>FP8 是当下最现实的一条路：68.8GB 卡在 78GB 的安全线内，留不下多少 KV 和激活余量，16K 的 latent 序列实际跑起来要盯着显存。NVFP4 留出的空间大得多，代价是精度和社区支持。</p>
+
+<h2>实操二：两种租法，结论完全相反</h2>
+
+<pre><code>API = 0.06879          # 每张 4K 的 API 价，美元
+RATE = 5.50            # 2 卡 H100 按需每小时
+SEC_PER_IMAGE = 10     # 官方 4K 出图时间
+UTIL = 0.55            # 装载、排队、调参后的真实利用率
+
+for n in (900, 3000, 12000):
+    hours = n * SEC_PER_IMAGE / 3600 / UTIL
+    print("%6d 张/月  API $%8.2f  本地 %5.1f 机时 $%8.2f" %
+          (n, n * API, hours, hours * RATE))
+
+print("常驻：$%.0f/月，对应 %d 张才打平" % (730 * RATE, 730 * RATE / API))</code></pre>
+
+<p>输出：</p>
+
+<pre><code>   900 张/月  API $   61.91  本地   4.5 机时 $   25.00
+  3000 张/月  API $  206.37  本地  15.2 机时 $   83.33
+ 12000 张/月  API $  825.48  本地  60.6 机时 $  333.33
+常驻：$4015/月，对应 58366 张才打平</code></pre>
+
+<p>跑批的话本地任何量级都便宜，4.5 个机时 25 美元，比 900 张 API 的 62 美元便宜一半多。做常驻服务就得每天出 1945 张才回本，绝大多数团队到不了这个量。同一个模型，两种算法，两个相反的结论，这是这类文章最容易糊过去的地方。</p>
+
+<p>还有一个隐性成本没进模型：135GB 的下载和冷启动。按需租卡每次拉起都要重新拉权重，除非你把镜像烤好。这一条能把跑批的账翻过来，尤其是那种一周只跑一次的项目。</p>
+
+<h2>真实的下载与服务命令</h2>
+
+<p>官方推荐的框架是 SGLang、vLLM-Omni、diffusers、ComfyUI 四条路。第一步是两个仓库都得下，第二步才谈服务：</p>
+
+<pre><code>from huggingface_hub import snapshot_download
+
+snapshot_download("MiniMaxAI/MiniMax-H3-Image", local_dir="h3-image")
+snapshot_download("MiniMaxAI/MiniMax-H3", local_dir="h3-image",
+                  allow_patterns=["text_encoder/&#42;"])
+du -sh h3-image    # 预期 130GB 上下，只有 68GB 说明编码器没下</code></pre>
+
+<p>SGLang 的命令最短，也是模型卡里唯一给了多卡示例的：</p>
+
+<pre><code>pip install -U sglang
+
+sglang serve --model-path MiniMaxAI/MiniMax-H3-Image --host 0.0.0.0 --port 30000 --warmup-mode off
+
+# 单卡放不下 BF16，序列并行切 4 张
+sglang serve --model-path MiniMaxAI/MiniMax-H3-Image --host 0.0.0.0 --port 30000 --warmup-mode off --num-gpus 4 --ulysses-degree 4</code></pre>
+
+<p>--ulysses-degree 是序列并行，把 16K 的 latent 序列切到 4 张卡上。在长序列场景它比张量并行更划算，因为每张卡留的是同一份权重、不同的 token 分片。想要 4K 又只有一张 80GB 卡，走 FP8 或 Comfy-Org 的重打包版本，代价是精度损失和版本跟随滞后。</p>
+
+<h2>什么情况下别自建</h2>
+
+<p>月出图不到两千张、或者只需要「生成一批营销图」的团队，直接调 API。一张 0.069 美元，两千张 138 美元，比租卡的固定成本低一个数量级，还省掉 135GB 的下载和一周调参。</p>
+
+<p>需要 negative prompt 做精细排除的，这个模型给不了，别硬上。要把能力转售给美国或欧盟客户的，先谈授权，别先写代码。</p>
+
+<p>剩下的人，有卡、有量、需要一个能改的底座，这大概是目前开源里唯一能直接出 16MP 的选择。33.1B 稠密、6 步、无 CFG，这套组合不是参数竞赛的产物，是把推理成本压到能商用的产物。开源的是权重，卖的是时间。</p>
+''',
+    'related': [('延伸阅读：3 万亿参数开源之后，1M 上下文的 KV 缓存怎么算', 'blog/kimi-k3-pro-1m-context-2026/'), ('延伸阅读：把 284B MoE 塞进消费级硬件的那批人', 'blog/local-moe-serving-freetoken-colibri-2026/')],
+},
+{
     'slug': 'ai-code-audit-triage-2026',
     'category': 'security',
     'date': '2026-11-13',
