@@ -112,6 +112,16 @@ MODULES = [
             ('m06-l06', '综合毕业项目：高并发短链接服务（完整实现）'),
         ],
     },
+    {
+        'id': 'm07',
+        'name': '进阶专题：Redis 与 Kafka 的硬问题',
+        'phase': '进阶',
+        'goal': '用可量化判据定位缓存击穿、缓存一致性与消息重复消费，并按代价选择工程方案',
+        'lessons': [
+            ('m07-l01', '缓存击穿、一致性、重复消费：Redis + Kafka 的三个硬问题'),
+        ],
+    },
+
 ]
 
 # 英文版课程模块（仅已翻译/可用语言。标题与模块描述为英文讲义/大纲对应翻译）
@@ -205,9 +215,19 @@ MODULES_EN = [
             ('m06-l06', 'Capstone Project: A High-Concurrency Short-URL Service'),
         ],
     },
+    {
+        'id': 'm07',
+        'name': 'Deep-Dive Topics: Hard Problems with Redis and Kafka',
+        'phase': 'Advanced',
+        'goal': 'Locate cache breakdown, cache consistency and duplicate consumption with measurable criteria, then pick the fix by cost',
+        'lessons': [
+            ('m07-l01', 'Cache Breakdown, Consistency and Duplicate Consumption: Three Hard Problems with Redis + Kafka'),
+        ],
+    },
+
 ]
 
-# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 41 集）。
+# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 42 集）。
 # 批量转换 + 构建后自动全量。
 PUBLISHED = (
     'm01-l01', 'm01-l02', 'm01-l03', 'm01-l04', 'm01-l05', 'm01-l06',
@@ -223,9 +243,10 @@ PUBLISHED = (
     'm06-l04',
     'm06-l05',
     'm06-l06',
+    'm07-l01',
 )
 
-# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-13 核对 41 集）
+# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-14 核对 42 集）
 VIDEO = {
     'm01-l01': 'https://www.bilibili.com/video/BV1CNa36HET6',
     'm01-l02': 'https://www.bilibili.com/video/BV19yaG6kEfi',
@@ -268,6 +289,7 @@ VIDEO = {
     'm06-l04': 'https://www.bilibili.com/video/BV1NtWM68EwY',
     'm06-l05': 'https://www.bilibili.com/video/BV1qKW963EnY',
     'm06-l06': 'https://www.bilibili.com/video/BV1NEWi6gEiq',
+    'm07-l01': 'https://www.bilibili.com/video/BV1gisV6pEJS',
 }
 
 # 中心页文案（按语言）
