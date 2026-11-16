@@ -48,7 +48,283 @@ def category_label(slug, lang):
     return slug
 
 
-ARTICLES = [
+ARTICLES = [{
+    'slug': 'qwen4-max-cost-per-task-2026',
+    'category': 'ai',
+    'date': '2026-11-16',
+    'updated': '2026-11-16',
+    'tags': ['Qwen4', '成本优化', '前缀缓存', 'MoE'],
+    'title': 'Qwen4-Max 单任务省 58%：67% 来自想得更短，33% 来自价目表 | DevTools 博客',
+    'description': '阿里 2026-11-16 发布 Qwen4-Max：2.4T 总参数、每 token 激活 71B、1M 上下文，缓存命中价降到每百万 token 0.5 元，官方称单任务成本降 58%。本文用对数平均把降幅拆成 token 效率与单价两个因子（Terminal-Bench 上 67%/33%，Work360 上 32%/68%），解释 QSA 与 GDN 为什么能让模型少想一半 token 还多拿 25% 的分，并给出两个可运行脚本：成本拆解与 prompt 前缀缓存审计（实测 0.7% 到 99.4%）。',
+    'keywords': 'Qwen4-Max, Qwen4 发布, 单任务成本 降低, 缓存命中 价格, prompt 前缀缓存, prefix caching 教程, Agent 成本优化, Terminal-Bench 4.0, QSA 稀疏注意力, MoE 激活参数, 如何降低 agent token 消耗, 大模型 API 省钱, 千问 API 计费, 如何让 prompt 命中缓存, LLM 推理成本 计算, agent 长会话 成本',
+    'h1': '把 -58% 拆开：Qwen4-Max 省下的钱，三分之二不在价目表上',
+    'summary': 'Terminal-Bench 4.0 同一次尝试：289K token 拿 38.9 分，换成 151K token 拿 48.5 分。官方说单任务便宜 58%。把降幅按对数平均拆成两个因子会发现，coding 场景里 67% 的降幅来自模型想得更短，Work360 场景里 68% 来自价目表——两个完全不同的故事。附成本拆解与前缀缓存审计两段可运行脚本。',
+    'body': '''
+<p>先看一组对照。Terminal-Bench 4.0、Xhigh 档、单次尝试：Qwen3.8-Max 平均烧 289K token 拿 38.9 分；Qwen4-Max 烧 151K token 拿 48.5 分。token 少了 48%，分数高了 25%。</p>
+
+<p>11 月 16 日阿里发布的 Qwen4-Max 是 2.4T 总参数、每 token 激活 71B 的稀疏 MoE，另挂 328B 的 N-gram Embedding 参数，原生视觉、百万 token 上下文。官方口径：Work360 上单任务平均费用从 26.58 元降到 11.16 元（英文博客给的是 $4.43 到 $1.67），缓存命中价压到每百万 token 0.5 元（据千问官方博客与量子位 2026-11-16 报道）。</p>
+
+<p>「便宜 58%」听起来像一句营销。但它其实是可以拆的，而且拆开之后两半的性质完全不同——一半写在模型里，一半写在价目表上。分不清这两者，就会把明年的预算建在一个会消失的假设上。</p>
+
+<h2>一、QSA 与 GDN：为什么「想得少」还能「答得对」</h2>
+
+<p>Qwen4 的架构改动集中在三处（据官方博客，2026-11-16）：</p>
+
+<ul>
+<li><b>GDN + QSA</b>：每四层里，三层是 Gated DeltaNet，把历史压进一个固定大小的状态；剩下那一层是 Qwen Sparse Attention（QSA），用一个轻量索引器以 block 为粒度挑出值得看的上下文。叠起来的效果是：长序列上注意力开销和索引开销都不再线性增长。</li>
+<li><b>Gated Residual</b>：残差流拆成四条并行分支，读写各带门控。官方把它算作训练稳定性的功劳——2.4T 规模全程没有 loss spike。</li>
+<li><b>N-gram Embedding</b>：在第二层按局部上下文查表，补一份局部 token 模式的表示，用很小的额外算力换容量。</li>
+</ul>
+
+<p>结果值得单独拎出来看：每个 token 激活的参数比上一代少 25%，而内部评测里知识、代码、问答、STEM 四类的 BPB 反而降了 5–13%。</p>
+
+<p>这件事比榜单名次重要。BPB 降、激活参数降、token 用量降，三件事同时发生，说明它不是「拿更多算力换分数」，而是把同样长度的上下文压得更狠。QSA 那个 block 级索引器是关键：它不做事后低秩近似，而是先决定「哪些块值得看」再看。省下来的不只是 FLOPs，还有那些本来会被模型拿去反复自我怀疑、来回改口的 token——这部分才是推理账单上的大头。</p>
+
+<h2>二、把 -58% 拆成两个因子</h2>
+
+<p>cost per task ≈ 单次尝试的 token 数 × 每 token 的混合单价 × 尝试次数。第三项没有公开数据，先假设不变；剩下的用对数平均分解就能把两边的贡献量分开。</p>
+
+<pre><code>import math
+
+# Official figures, 2026-11-16: Terminal-Bench 4.0 at Xhigh, per attempt.
+TOK_BEFORE, TOK_AFTER = 289_000, 151_000
+COST_BEFORE, COST_AFTER = 4.43, 1.67
+
+tok_r = TOK_AFTER / TOK_BEFORE
+cost_r = COST_AFTER / COST_BEFORE
+price_r = cost_r / tok_r
+w_tok = math.log(tok_r) / (math.log(tok_r) + math.log(price_r))
+print("token %.3f  price %.3f  cost %.3f" % (tok_r, price_r, cost_r))
+print("drop from tokens: %.0f%%  from price: %.0f%%" % (w_tok*100, (1-w_tok)*100))
+
+# Work360 only publishes the Xhigh token ratio (-24%) and the cost pair in CNY.
+tok_r, cost_r = 0.76, 11.16 / 26.58
+price_r = cost_r / tok_r
+w_tok = math.log(tok_r) / (math.log(tok_r) + math.log(price_r))
+print("token %.3f  price %.3f  cost %.3f" % (tok_r, price_r, cost_r))
+print("drop from tokens: %.0f%%  from price: %.0f%%" % (w_tok*100, (1-w_tok)*100))
+</code></pre>
+
+<p>实跑输出：</p>
+
+<pre><code>token 0.522  price 0.721  cost 0.377
+drop from tokens: 67%  from price: 33%
+token 0.760  price 0.552  cost 0.420
+drop from tokens: 32%  from price: 68%
+</code></pre>
+
+<p>读法：Terminal-Bench 上 token 因子 0.522、价格因子 0.721，乘起来 0.377，单次尝试成本降到 37.7%。降幅里 67% 来自「想得更短」，33% 来自「单价更低」。换成 Work360，比例就翻过来了——token 只降 24%，价格得独自扛下 68% 的降幅。</p>
+
+<p>所以那句「便宜 58%」值不值，取决于你在跑什么。跑 coding agent，价值主要来自模型的思考效率，这部分是硬的；跑通用工作流，价值主要来自价目表，而价目表是会被抹平的。同一天 The Decoder 报道 Gemini 4 Carbon 拿下 MathArena 第一、代价是比 GPT-6.1 Sol 贵 15 倍——竞争已经不在「谁更聪明」，而在「同样一件事谁更便宜」。</p>
+
+<h2>三、0.5 元/百万 token 不是折扣券，是条件优惠</h2>
+
+<p>缓存命中价的前提很硬：请求前缀（token 序列）要命中已有的 KV 缓存。前缀里任何一个字节变了，后面的全部重算。</p>
+
+<p>而 agent 循环里最常见的三种写法，恰好每轮都在动前缀：把 <code>datetime.now()</code> 塞进 system prompt；工具列表从 set 里迭代出来、顺序随机；把「最近 N 轮记忆」拼在 system 前面，每轮变长一次。你以为在省钱，实际每次都是冷启动。</p>
+
+<pre><code>import json, datetime as dt
+
+STATIC = "You are a code review agent. Rules: cite file:line, never invent APIs. " * 40
+TOOLS = ["read_file", "grep", "run_tests", "git_diff", "post_comment"]
+
+def naive(i):
+    head = f"You are a code review agent. Time: {dt.datetime.now().isoformat()}."
+    tools = list(TOOLS)
+    tools.reverse() if i % 2 else None
+    mem = json.dumps({"recent": [f"turn {j}" for j in range(i + 1)]})
+    return mem + " " + head + " " + ",".join(tools) + " " + STATIC + chr(10) + f"review commit {i}"
+
+def stable(i):
+    head = "You are a code review agent. Rules: cite file:line, never invent APIs."
+    tail = json.dumps({"now": "REPLACED_AT_CALL_TIME", "turn": i}, sort_keys=True)
+    return head + " tools: " + ",".join(sorted(TOOLS)) + " " + STATIC + chr(10) + tail + f" review commit {i}"
+
+def lcp(a, b):
+    n = 0
+    for x, y in zip(a, b):
+        if x != y: break
+        n += 1
+    return n
+
+for name, build in (("naive", naive), ("stable", stable)):
+    reqs = [build(i) for i in range(6)]
+    pre = [lcp(reqs[k-1], reqs[k]) for k in range(1, 6)]
+    print(name, "len", len(reqs[0]), "lcp", pre, "cacheable %.1f%%" % (min(pre)/len(reqs[0])*100))
+</code></pre>
+
+<p>实跑输出（同一份约 3KB 的系统提示，连发 6 次）：</p>
+
+<pre><code>naive len 2989 lcp [20, 30, 40, 50, 60] cacheable 0.7%
+stable len 3025 lcp [3007, 3007, 3007, 3007, 3007] cacheable 99.4%
+</code></pre>
+
+<p>naive 的公共前缀只有 20、30、40 个字符——时间戳的秒数每轮多一位数字，公共前缀就整体往前挪一格，命中率 0.7%，等于没有缓存。stable 把易变字段全部推到尾部（连「当前时间」都只留占位符，真实值放在 user 消息里），公共前缀 3007 字符，命中 99.4%。</p>
+
+<p>把 99.4% 代进你自己的价目表：输入侧成本 = 未命中 token 数 × 原价 + 命中 token 数 × 0.5 元/百万。命中率从 0 抬到 95%，输入成本基本就是「0.5 元 + 5% 原价」。这个杠杆比换代模型快得多，也不依赖供应商降价。</p>
+
+<h2>四、四个容易踩的坑</h2>
+
+<ul>
+<li><b>自家评测就是自家评测。</b>52.69 的 Work360、46.7 的 ALE 都是千问内部口径；CodeArena 的 Webdev 第 6 是第三方盲测，含金量高，但那只覆盖前端。</li>
+<li><b>竞品权重不对等。</b>官方自己在脚注里注明 GLM-5.3、Kimi-K3.1-Pro 是后训练权重，与 Base 直接比不严谨。看榜单先看脚注。</li>
+<li><b>百万上下文不是免费。</b>QSA 是 block 稀疏，斜率低不等于零。塞满 1M 依然拖 prefill，只是比全注意力便宜。</li>
+<li><b>缓存有存活期。</b>多数厂商的 KV 缓存按分钟到小时过期，跨小时的 agent 任务要靠持久化会话，而不是靠 prompt 里写一句「请记住」。</li>
+</ul>
+
+<p>这次真正的工程信号不是榜单第几，而是「思考效率」被摆到了和分数并列的位置。Terminal-Bench 上 token 砍掉一半、分数还涨 25%，说明推理长度是可以被架构压出来的——不用再靠 prompt 里反复求它「简短一点、别啰嗦」。对做 agent 的人来说，这比多两分有用。</p>
+''',
+    'related': [('延伸阅读：KV 缓存压缩，长上下文省显存的那条路', 'blog/kv-cache-compression-long-context-2026/'), ('延伸阅读：另一台 120B-A12B 的 MoE，部署与显存账本', 'blog/nemotron-3-super-2026/')]
+},
+{
+    'slug': 'ai-slop-papers-doi-gate-2026',
+    'category': 'security',
+    'date': '2026-11-16',
+    'updated': '2026-11-16',
+    'tags': ['学术诚信', '数据污染', 'DOI 校验', 'RAG'],
+    'title': '同一篇论文换了三个作者：给文献管道加一道 DOI 闸门 | DevTools 博客',
+    'description': 'Times Higher Education 2026-11-09 调查发现，三本 2026 年才注册域名的新刊在批量发表 AI 生成的垃圾论文，署名包括 Hinton、LeCun、李飞飞、Manning、吴恩达等，被点名的学者全部否认。本文梳理「生成成本趋零 → 索引收录 → 引用 → 回流训练语料」的污染链路，并给出一段可运行的 DOI 风险检查脚本（Crossref deposit 时间差、参考文献数、出版商 DOI 存量、DOAJ 收录），四组真实样本实测 0/30/10/60 分，可直接接进 CI 拦住文献库合并。',
+    'keywords': 'AI 垃圾论文, 假期刊 检测, paper mill, 掠夺性期刊, DOI 校验, Crossref API 教程, Google Scholar 索引污染, 训练数据 污染, 如何识别 假论文, 文献 RAG 数据清洗, ORCID 核验, DOAJ 查询, 论文署名 造假, 学术搜索引擎 过滤, 引用图谱 投毒, 学术不端 自查',
+    'h1': '同一篇论文换了三个作者：AI 垃圾论文怎么污染你的检索与语料',
+    'summary': '哥德堡大学教授 Alan Said 收到 Google Scholar 推送：他「发表」了一篇自己没写过的论文。他去投诉，文章没消失，作者从 Said 换成别人，两天后又换了一次。对这类期刊来说，内容不重要，挂在上面的名字才重要。真正把危害放大的下游环节是索引，以及从索引里爬走的那批训练语料。',
+    'body': '''
+<p>哥德堡大学计算机科学教授 Alan Said 收到一条 Google Scholar 推送：他有一篇新论文发表了。题目跟他「AI 与可持续性」的方向对得上，署名也确实是他。问题是，他没写过。</p>
+
+<p>他去投诉。域名注册商回话说文章已删除。文章没消失——作者从 Said 换成了另一个人。两天后又换了一次。同一篇论文，先后挂在三个不同的人名下（据 Times Higher Education 2026-11-09 的调查，机器之心 2026-11-16 转述）。</p>
+
+<p>这个细节比任何一篇论文的内容都说明问题：对这类期刊来说，正文不重要，挂在上面的名字才重要。名字可以随时替换，像商品页面换一张模特图。</p>
+
+<h2>一、三本「兄弟期刊」，一套借来的学术背书</h2>
+
+<p>THE 顺着这条线挖出三本刊：American International Journal of Research and Innovation（AIJRI）、American Journal of Advanced Multidisciplinary Research and Innovation（AJAMRI）、American Journal For Multidisciplinary Research（AJFMR）。共同点很扎眼：</p>
+
+<ul>
+<li>域名都是 2026 年才注册，网站上却挂着「数年前」的过刊存档；</li>
+<li>主编栏写同一个名字 Denish Brown，联系方式是一个美国区号的 WhatsApp 号码；</li>
+<li>明码标价：AIJRI 与 AJAMRI 对「五位及以上非印度籍作者」收 200 美元，AJFMR 对 1 到 4 位作者收 80 美元、5 位及以上只收 10 美元；</li>
+<li>署名名单是 AI 圈全明星：Hinton、LeCun、Bengio、李飞飞、Christopher Manning、Michael I. Jordan、吴恩达、Stuart Russell。</li>
+</ul>
+
+<p>被点名的人一致否认。斯坦福的 Jure Leskovec 对 THE 说：他没有写、没有投稿、没有授权，收到邮件之前甚至不知道这篇论文存在。编委会也一样——弗吉尼亚联邦大学的博士后 Kanakaraju Manupati 发现自己被列进编委，「刚去看了期刊网站，很惊讶」。</p>
+
+<p>Manning 的回应更直接：他此前已经见过两篇挂他名字的假论文，一篇发在《International Journal of Computer Vision and AI Applications》（名字明显在蹭 IJCV），另一篇让他这个 NLP 学者「发表」在了临床医学期刊上。这两本还不在 THE 查的三本之列——说明这不是一个团伙的事。</p>
+
+<h2>二、为什么是现在：生成成本趋零，补上了唯一的短板</h2>
+
+<p>掠夺性期刊的老问题是「看起来不像正经期刊」：排版糙、编委假、文章一眼假，稍微有点经验的人都能看出不对。生成式模型把这块补上了——几分钟就能批量产出格式规范、引文齐全、读起来言之有物的论文。</p>
+
+<p>这套玩法也不是新的。2023 年 12 月，雅典经济与商业大学的 Diomidis Spinellis 就遇到过同样的冒名，文章发在 Global International Journal of Innovative Research，还配了一个有效 DOI。他没停在澄清，而是把整个网站爬下来做分析，2025 年在 Research Integrity and Peer Review 发了案例研究（DOI 10.1186/s41073-025-00165-z）：引文数最少的 53 篇里，至少 48 篇看起来是 AI 生成的，Turnitin 给出的 AI 概率在多篇上高达 100%。他的分类是三类——期刊自己生成、冒用学者姓名的「虚假署名论文」；作者花钱买署名的「购买署名论文」；真正的研究反而是少数。</p>
+
+<h2>三、真正的漏洞在下游：索引</h2>
+
+<p>Said 之所以会发现，恰恰是因为 Google Scholar 把这篇收进了他的个人主页，还主动推送。一旦进了索引，事情就开始滚：出现在检索结果里，出现在作者的学术档案里，被别的论文引用。Spinellis 那篇冒名文章发表几个月就收了 3 次引用。</p>
+
+<p>对做 AI 的人，还有一层更隐蔽的：大量训练语料来自爬取的学术文献。AI 生成的垃圾论文挂上真学者名字、进了索引，就可能回流进下一代模型的预训练数据，形成「AI 生成 → AI 收录 → 被 AI 学」的闭环。Manning 在 X 上那句话说的就是这个：「最要紧的是别让它们被索引！拜托了，Google Scholar。」</p>
+
+<p>所以这类污染对你不是学术圈的八卦。只要你做过下面任意一件事，它就是你的问题：给团队搭文献 RAG；做论文推荐或查新；用 arXiv 加 Crossref 元数据微调；把 Scholar 搜索结果包成 agent 的工具。</p>
+
+<h2>四、给文献管道加一道 DOI 闸门</h2>
+
+<p>思路很简单：别相信「署名 + 期刊名 + 年份」这三个字段，去问注册机构。Crossref 的 deposit 记录里有几个字段恰好对批量伪造很敏感——DOI 注册时间与「发表年份」的差、参考文献数、出版商在 Crossref 的存量规模、期刊 ISSN 是否在 DOAJ。</p>
+
+<pre><code>"""doi_guard.py - flag fabricated-journal papers before they enter a pipeline."""
+import json, sys, urllib.parse, urllib.request
+from datetime import date
+
+UA = {"User-Agent": "doi-guard/1.0 (mailto:you@example.com)"}
+
+def get(url):
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception:
+        return None
+
+def ymd(d):
+    if not d or not d.get("date-parts"):
+        return None
+    return date(*(list(d["date-parts"][0]) + [1, 1])[:3])
+
+def check(doi):
+    m = (get("https://api.crossref.org/works/" + urllib.parse.quote(doi)) or {}).get("message")
+    if not m:
+        return 60, ["QUARANTINE", "no resolvable Crossref deposit for this DOI"]
+    score, flags = 0, []
+    pub, cre = ymd(m.get("published")), ymd(m.get("created"))
+    if pub and cre:
+        lag = (cre - pub).days
+        if lag > 730:
+            score += 30; flags.append("backfilled archive: DOI deposited %d days after claimed date" % lag)
+        elif lag > 180:
+            score += 15; flags.append("slow deposit: %d days" % lag)
+    if m.get("references-count", 0) == 0 and m.get("type") == "journal-article":
+        score += 20; flags.append("zero references on a journal article")
+    total = ((get("https://api.crossref.org/members/%s" % m.get("member")) or {})
+             .get("message", {}).get("counts", {}).get("total-dois", 0))
+    if total and total &lt; 100:
+        score += 10; flags.append("publisher holds only %d DOIs in total" % total)
+    issns = m.get("ISSN") or []
+    listed = any((get("https://doaj.org/api/search/journals/issn%%3A%s" % i) or {}).get("total", 0) > 0
+                 for i in issns)
+    if issns and not listed:
+        score += 10; flags.append("ISSN missing from DOAJ")
+    if not m.get("container-title"):
+        score += 15; flags.append("no journal name on the DOI")
+    verdict = "QUARANTINE" if score >= 40 else "REVIEW" if score >= 20 else "KEEP"
+    return score, [verdict, "%s / %s" % (m.get("publisher"), (m.get("container-title") or ["?"])[0])] + flags
+
+bad = 0
+for doi in sys.argv[1:]:
+    score, out = check(doi)
+    bad += score >= 40
+    print("[%3d] %-28s %s" % (score, doi[:28], out[0]))
+    for line in out[1:]:
+        print("       " + line)
+sys.exit(1 if bad else 0)
+</code></pre>
+
+<p>四组样本实跑（2026-11-16，直接请求 api.crossref.org 与 doaj.org）：</p>
+
+<pre><code>[  0] 10.1186/s41073-025-00165-z   KEEP
+       Springer Science and Business Media LLC / Research Integrity and Peer Review
+[ 30] 10.2139/ssrn.5406042         REVIEW
+       Elsevier BV / ?
+       slow deposit: 250 days
+       no journal name on the DOI
+[ 10] 10.1002/cem.3383             KEEP
+       Wiley / Journal of Chemometrics
+       ISSN missing from DOAJ
+[ 60] 10.99999/aijri.2026.4417     QUARANTINE
+       no resolvable Crossref deposit for this DOI
+exit=1
+</code></pre>
+
+<p>读法值得展开，因为这几个分数本身就说明了启发式判断的脾气。Spinellis 那篇是干净对照，0 分。SSRN 那篇被判 REVIEW，理由有两个——「发表」到 DOI 注册隔了 250 天，以及没有期刊名；但这正是预印本的正常特征，不是造假，所以它落在 REVIEW 而不是 QUARANTINE。Wiley 的订阅制期刊只在 DOAJ 一项扣了 10 分，而订阅制期刊不进 DOAJ 本来就是常态。最后那个我随手编的 10.99999 前缀，60 分——Crossref 里根本没有这条 deposit 记录，而假期刊恰恰极少真的去注册 DOI。</p>
+
+<h2>五、接进 CI，让它挡住而不是提醒</h2>
+
+<p>脚本最后的 <code>sys.exit(1)</code> 是为 CI 准备的。把文献库里的 DOI 列成 <code>refs.txt</code>，挂到 PR 检查上：</p>
+
+<pre><code>python doi_guard.py $(cat refs.txt); echo "exit=$?"
+# exit=1 时阻断合并</code></pre>
+
+<p>新增的引用条目一旦命中 QUARANTINE 就拦住合并，比事后从语料里往回捞便宜太多。如果你跑的是文献 RAG，同一段逻辑可以放在 ingest 阶段，把 REVIEW 的条目单独落到人工队列，别直接进向量库——向量库最难做的事就是「按来源撤回」。</p>
+
+<h2>六、这套判据的能力边界</h2>
+
+<ul>
+<li><b>Crossref 里没有，不等于造假。</b>预印本、技术报告、非英语本地刊、灰色文献都可能查不到。60 分只代表「这条记录无法验证」，不是判决。</li>
+<li><b>DOAJ 不覆盖全部正规开放获取期刊。</b>订阅制期刊更不会在里面。它是加分项，不是门槛。</li>
+<li><b>反向也成立。</b>伪造者完全可以交年费注册一个 Crossref member，拿到真 DOI。所以分数只负责让你多看两眼。</li>
+<li><b>补两个低成本动作。</b>投稿前用 Think.Check.Submit 那张清单核 ISSN、DOAJ、独立索引；引用或审稿前用 ORCID 反查作者是否真的认领了这篇。</li>
+</ul>
+
+<p>最后留在脑子里的是那个不对称：生成一篇假论文的成本已经趋近于零，澄清一篇假论文的成本全落在被冒名的人身上。Said 投诉之后，论文换了作者继续挂着；Leskovec 是记者发邮件才知道自己「发表」了东西。你没法替他们澄清，但至少可以别让自己的管道成为那条「让它被索引、被引用、被学进去」的路径。</p>
+''',
+    'related': [('延伸阅读：AI 记忆投毒，同一套「输入不可信」的问题', 'blog/ai-memory-poisoning-2026/'), ('延伸阅读：AI 生成的漏洞报告洪水，人工 triage 怎么不淹', 'blog/ai-code-audit-triage-2026/')]
+},
+
+
 {
     'slug': 'on-device-35b-moe-phone-2026',
     'category': 'ai',

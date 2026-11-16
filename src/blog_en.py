@@ -6,6 +6,274 @@
 """
 
 ARTICLES_EN = {
+'qwen4-max-cost-per-task-2026': {
+    'tags': ["Qwen4", "cost engineering", "prefix cache", "MoE"],
+    'title': "Qwen4-Max cut cost per task by 58 percent: 67 percent of that came from shorter thinking, 33 percent from the price list | DevTools Blog",
+    'description': "Alibaba shipped Qwen4-Max on 2026-11-16: a 2.4T-parameter sparse MoE that activates 71B per token, native vision, a one-million-token window, cached input at CNY 0.5 per million tokens, and an official 58 percent drop in cost per task. Split that drop with a log-mean decomposition and the two halves turn out to be different things: on Terminal-Bench 4.0, 67 percent of the saving comes from the model spending fewer tokens per attempt; on Work360, 68 percent comes from the price list. Includes two scripts you can run: a cost decomposition and a prefix-cache audit that measured 0.7 percent versus 99.4 percent cacheable prefix.",
+    'keywords': "Qwen4-Max, Qwen4 release, cost per task, cached input pricing, prompt prefix cache, prefix caching tutorial, agent cost optimization, Terminal-Bench 4.0, Qwen Sparse Attention, MoE activated parameters, how to reduce agent token usage, cut LLM API cost, Qwen API pricing, make prompts hit the cache, LLM inference cost model, long-running agent cost",
+    'h1': "Take the 58 percent apart: most of what Qwen4-Max saves is not on the price list",
+    'summary': "Same benchmark, same effort setting, one attempt: 289K tokens for 38.9 points becomes 151K tokens for 48.5 points. The vendor says cost per task fell 58 percent. Decompose it and 67 percent of the drop on a coding benchmark comes from the model thinking less, while on a general work benchmark 68 percent comes from the price list. Two different stories behind one number.",
+    'body': '''
+<p>Start with a pair of numbers. Terminal-Bench 4.0, Xhigh effort, per attempt: Qwen3.8-Max averaged 289K tokens for 38.9 points. Qwen4-Max averages 151K tokens for 48.5 points. Forty-eight percent fewer tokens, twenty-five percent more score.</p>
+
+<p>Qwen4-Max, released on 2026-11-16, is a sparse MoE with 2.4 trillion total parameters that activates 71B per token, plus 328B of n-gram embedding parameters, native vision and a one-million-token window. The official line: average cost per task on Work360 fell from CNY 26.58 to CNY 11.16, or from 4.43 to 1.67 dollars in the English blog post, and cached input now costs CNY 0.5 per million tokens (Qwen blog and QbitAI, 2026-11-16).</p>
+
+<p>Cheaper by 58 percent reads like marketing. But the number decomposes, and the two halves are not the same kind of thing. One lives in the model. The other lives in a price list, and price lists get matched within a year. Confusing them is how you build next year's budget on an assumption that evaporates.</p>
+
+<h2>What QSA and GDN actually buy you</h2>
+
+<p>Three architectural changes, per the official blog:</p>
+
+<ul>
+<li><strong>GDN plus QSA.</strong> Three of every four layers are Gated DeltaNet, compressing history into a fixed-size state. The fourth is Qwen Sparse Attention, where a lightweight indexer picks relevant context at block granularity. Together, attention and indexing stop growing linearly with sequence length.</li>
+<li><strong>Gated residual.</strong> The residual stream splits into four parallel branches with dynamic read and write gates. Qwen credits this for training stability: no loss spikes across a 2.4T-parameter run.</li>
+<li><strong>N-gram embedding.</strong> A lookup at layer two adds representations of local token patterns, buying capacity for very little extra compute.</li>
+</ul>
+
+<p>The result deserves its own paragraph: 25 percent fewer activated parameters per token, while bits-per-byte on knowledge, code, QA and STEM dropped 5 to 13 percent against the previous generation.</p>
+
+<p>That matters more than any leaderboard position. Lower BPB, fewer activated parameters and fewer tokens per attempt happening at once is not a model buying score with compute. It is a model compressing the same context harder. The block-level indexer in QSA is the interesting part: it does not approximate attention after the fact, it decides which blocks are worth reading before reading them. What that saves is not only FLOPs but the tokens a model would otherwise spend second-guessing itself, revising an answer three times before committing. That loop is where inference bills come from.</p>
+
+<h2>Decomposing the 58 percent</h2>
+
+<p>Cost per task is roughly tokens per attempt times blended price per token times number of attempts. The third factor is not published, so hold it constant and use a log-mean split to separate the other two.</p>
+
+<pre><code>import math
+
+# Official figures, 2026-11-16: Terminal-Bench 4.0 at Xhigh, per attempt.
+TOK_BEFORE, TOK_AFTER = 289_000, 151_000
+COST_BEFORE, COST_AFTER = 4.43, 1.67
+
+tok_r = TOK_AFTER / TOK_BEFORE
+cost_r = COST_AFTER / COST_BEFORE
+price_r = cost_r / tok_r
+w_tok = math.log(tok_r) / (math.log(tok_r) + math.log(price_r))
+print("token %.3f  price %.3f  cost %.3f" % (tok_r, price_r, cost_r))
+print("drop from tokens: %.0f%%  from price: %.0f%%" % (w_tok*100, (1-w_tok)*100))
+
+# Work360 only publishes the Xhigh token ratio (-24%) and the cost pair in CNY.
+tok_r, cost_r = 0.76, 11.16 / 26.58
+price_r = cost_r / tok_r
+w_tok = math.log(tok_r) / (math.log(tok_r) + math.log(price_r))
+print("token %.3f  price %.3f  cost %.3f" % (tok_r, price_r, cost_r))
+print("drop from tokens: %.0f%%  from price: %.0f%%" % (w_tok*100, (1-w_tok)*100))
+</code></pre>
+
+<p>Output on a clean run:</p>
+
+<pre><code>token 0.522  price 0.721  cost 0.377
+drop from tokens: 67%  from price: 33%
+token 0.760  price 0.552  cost 0.420
+drop from tokens: 32%  from price: 68%
+</code></pre>
+
+<p>On Terminal-Bench the token factor is 0.522 and the price factor 0.721, so a single attempt costs 37.7 percent of what it did. Two thirds of that saving came from shorter thinking, one third from a lower unit price. On Work360 the ratio inverts: tokens only fell 24 percent, so price carries 68 percent of the drop.</p>
+
+<p>So whether 58 percent is worth anything depends on what you run. For a coding agent, most of the value is the model spending fewer tokens to reach a better answer, and that part is durable. For general workflows, most of the value is a price list, and price lists are the first thing a competitor matches. The Decoder reported on the same day that Gemini 4 Carbon took the MathArena crown at fifteen times the cost of GPT-6.1 Sol, which tells you where the competition actually is now: not who is smarter, but who is cheaper at the same job.</p>
+
+<h2>The 0.5 yuan cache price is conditional, not a coupon</h2>
+
+<p>Cached input pricing has a hard precondition: the request prefix, as a token sequence, has to hit a live KV cache entry. Change one byte in the prefix and everything after it is recomputed at full price.</p>
+
+<p>The three most common agent-loop habits each break the prefix on every call: putting <code>datetime.now()</code> into the system prompt; iterating a tool list out of a set, so the order drifts; prepending a growing block of recent memory. You think you are saving money. Every call is a cold start.</p>
+
+<pre><code>import json, datetime as dt
+
+STATIC = "You are a code review agent. Rules: cite file:line, never invent APIs. " * 40
+TOOLS = ["read_file", "grep", "run_tests", "git_diff", "post_comment"]
+
+def naive(i):
+    head = f"You are a code review agent. Time: {dt.datetime.now().isoformat()}."
+    tools = list(TOOLS)
+    tools.reverse() if i % 2 else None
+    mem = json.dumps({"recent": [f"turn {j}" for j in range(i + 1)]})
+    return mem + " " + head + " " + ",".join(tools) + " " + STATIC + chr(10) + f"review commit {i}"
+
+def stable(i):
+    head = "You are a code review agent. Rules: cite file:line, never invent APIs."
+    tail = json.dumps({"now": "REPLACED_AT_CALL_TIME", "turn": i}, sort_keys=True)
+    return head + " tools: " + ",".join(sorted(TOOLS)) + " " + STATIC + chr(10) + tail + f" review commit {i}"
+
+def lcp(a, b):
+    n = 0
+    for x, y in zip(a, b):
+        if x != y: break
+        n += 1
+    return n
+
+for name, build in (("naive", naive), ("stable", stable)):
+    reqs = [build(i) for i in range(6)]
+    pre = [lcp(reqs[k-1], reqs[k]) for k in range(1, 6)]
+    print(name, "len", len(reqs[0]), "lcp", pre, "cacheable %.1f%%" % (min(pre)/len(reqs[0])*100))
+</code></pre>
+
+<p>Six calls against the same 3KB system prompt:</p>
+
+<pre><code>naive len 2989 lcp [20, 30, 40, 50, 60] cacheable 0.7%
+stable len 3025 lcp [3007, 3007, 3007, 3007, 3007] cacheable 99.4%
+</code></pre>
+
+<p>The naive version shares a 20, 30, 40 character prefix, growing by ten each call because the timestamp gains a digit and pushes everything right. Cache hit rate: 0.7 percent, which is to say none. The stable version moves every volatile field to the tail, down to leaving the clock as a placeholder and setting the real value in the user message, and shares 3007 characters. 99.4 percent.</p>
+
+<p>Plug 99.4 into your own price table: input cost is uncached tokens at list price plus cached tokens at 0.5 yuan per million. Take the hit rate from 0 to 95 percent and input cost collapses to roughly the cache price plus five percent of list. That lever is faster than waiting for a new model and it does not depend on a vendor cutting anything.</p>
+
+<h2>Four things the announcement does not say</h2>
+
+<ul>
+<li><strong>In-house numbers are in-house.</strong> Work360 at 52.69 and ALE at 46.7 are Qwen's own harness. The CodeArena sixth place is third-party blind testing, which is worth more, but it only covers front-end work.</li>
+<li><strong>The comparison checkpoints are not equals.</strong> The footnotes admit GLM-5.3 and Kimi-K3.1-Pro are post-trained weights being plotted against base models. Read footnotes before rankings.</li>
+<li><strong>A million tokens is not free.</strong> QSA is block sparse, so the slope is lower, not zero. Filling the window still drags prefill.</li>
+<li><strong>Caches expire.</strong> Most providers keep KV cache for minutes to hours. A multi-hour agent run needs a persistent session, not a line in the prompt asking the model to remember.</li>
+</ul>
+
+<p>The real signal here is not the leaderboard. It is that thinking efficiency got promoted to the same tier as accuracy. Halving tokens per attempt while adding 25 percent on the score means reasoning length is something architecture can compress, instead of something you beg for in a system prompt. For anyone running agents at scale, that is worth more than two points.</p>
+''',
+    'related': [("Read next: compressing the KV cache when context gets long", "blog/kv-cache-compression-long-context-2026/"), ("Read next: another 120B-A12B MoE and its memory ledger", "blog/nemotron-3-super-2026/")],
+},
+'ai-slop-papers-doi-gate-2026': {
+    'tags': ["research integrity", "data poisoning", "DOI verification", "RAG pipelines"],
+    'title': "One paper, three different authors: putting a DOI gate in front of your literature pipeline | DevTools Blog",
+    'description': "A Times Higher Education investigation published on 2026-11-09 found three journals registered in 2026 publishing AI-generated slop under the names of Hinton, LeCun, Li Fei-Fei, Christopher Manning, Andrew Ng and others, all of whom deny writing it. One paper was reassigned from a complaining professor to a stranger, then to a third name two days later. This post traces the contamination path from near-zero generation cost to search indexing to training corpora, and ships a runnable DOI risk check built on Crossref deposit timing, reference counts, publisher size and DOAJ listing. Four real samples scored 0, 30, 10 and 60, and the script exits non-zero so CI can block the merge.",
+    'keywords': "AI slop papers, fake journal detection, paper mill, predatory journals, DOI verification, Crossref API tutorial, Google Scholar index pollution, training data contamination, how to spot a fake paper, literature RAG data cleaning, ORCID verification, DOAJ lookup, fabricated authorship, academic search filtering, citation graph poisoning, research integrity check",
+    'h1': "One paper, three authors: how AI slop papers reach your retrieval pipeline",
+    'summary': "Alan Said, a professor at the University of Gothenburg, got a Google Scholar alert about a paper he had never written. He complained; the paper stayed up and the author name changed to someone else, then changed again two days later. For journals like these, the content is irrelevant and the name on top is the product. The damage happens downstream, at the index, and in whatever corpus gets scraped from it.",
+    'body': '''
+<p>Alan Said, a computer science professor at the University of Gothenburg, received a Google Scholar alert: he had published a new paper. The title fit his work on AI and sustainability. The byline was his. He had not written it.</p>
+
+<p>He complained. The domain registrar said the article had been removed. It had not. The author name changed from Said to someone else, and two days later it changed again. One paper, three names in sequence, according to a Times Higher Education investigation published 2026-11-09 and summarized by Synced on 2026-11-16.</p>
+
+<p>That detail says more than any of the papers do. For these journals the body text is decoration. The name on top is the product, and a name can be swapped like a model photo on a product page.</p>
+
+<h2>Three sibling journals with borrowed credentials</h2>
+
+<p>THE followed the thread to three titles: the American International Journal of Research and Innovation (AIJRI), the American Journal of Advanced Multidisciplinary Research and Innovation (AJAMRI), and the American Journal For Multidisciplinary Research (AJFMR). The shared traits are not subtle:</p>
+
+<ul>
+<li>All three domains were registered in 2026, yet the sites host archives of papers supposedly published years earlier.</li>
+<li>All three list the same editor-in-chief, Denish Brown, reachable through a US-numbered WhatsApp account.</li>
+<li>The fee schedule is public: AIJRI and AJAMRI charge 200 dollars for papers with five or more non-Indian authors, while AJFMR charges 80 dollars for one to four authors and 10 dollars for five or more.</li>
+<li>The bylines read like an AI hall of fame: Hinton, LeCun, Bengio, Li Fei-Fei, Christopher Manning, Michael I. Jordan, Andrew Ng, Stuart Russell.</li>
+</ul>
+
+<p>Everyone named denies it. Jure Leskovec of Stanford told THE that he did not write the paper, did not submit it, did not authorize his name, and had no idea it existed until the reporter emailed. The editorial boards are just as fabricated: Kanakaraju Manupati, a postdoc at Virginia Commonwealth University, found himself listed and said he had never heard of the journal.</p>
+
+<p>Manning had seen two papers under his name before, one in the International Journal of Computer Vision and AI Applications, a title clearly trading on IJCV, and another that had an NLP researcher publishing in a clinical medicine journal. Neither is among the three THE investigated, which means this is not one operation.</p>
+
+<h2>Why now: generation cost hit zero and closed the only gap</h2>
+
+<p>Predatory journals always had one weakness: they did not look like real journals. Sloppy typesetting, fake editorial boards, papers that read like they were written in an afternoon. Generative models remove that weakness. A few minutes produces a paper with correct formatting, plausible citations, and paragraphs that hold together at a glance.</p>
+
+<p>The play itself is old. In December 2023, Diomidis Spinellis at Athens University of Economics and Business found a paper under his name in the Global International Journal of Innovative Research, complete with a valid DOI. He did not stop at a denial. He crawled the whole site and published a case study in Research Integrity and Peer Review in 2025 (DOI 10.1186/s41073-025-00165-z): of the 53 least-cited articles, at least 48 looked AI-generated, with Turnitin assigning a 100 percent AI probability to several. His taxonomy has three buckets: fake-attribution papers the journal generated itself using real scholars' names, purchased-authorship papers where authors paid for a byline, and a minority of actual research.</p>
+
+<h2>The real hole is downstream: indexing</h2>
+
+<p>Said only found out because Scholar pulled the paper into his profile and pushed it to him. Once a paper is indexed, the cascade starts. It surfaces in search, it sits in an author's academic record, and other papers cite it. Spinellis's fake paper collected three citations within months.</p>
+
+<p>For anyone building AI systems there is a second layer. A large share of training data comes from crawled academic literature. Slop papers with real names attached, sitting in an index, can flow back into the next generation of pretraining corpora. Generated by a model, indexed by a search engine, learned by the next model. Manning's line on X was exactly this: the most important thing is to make sure they do not get indexed, please, Google Scholar.</p>
+
+<p>So this is not academic gossip. If you have done any of the following, it is your problem: built a literature RAG for a team, run paper recommendations or novelty search, fine-tuned on arXiv plus Crossref metadata, or wrapped Scholar results as an agent tool.</p>
+
+<h2>A DOI gate for the pipeline</h2>
+
+<p>The idea is to stop trusting the triple of name, journal title and year, and ask a registrar instead. Crossref deposit records carry several fields that are unusually sensitive to bulk fabrication: the gap between DOI registration and the claimed publication date, the reference count, how many DOIs the publisher holds in total, and whether the journal ISSN appears in DOAJ.</p>
+
+<pre><code>"""doi_guard.py - flag fabricated-journal papers before they enter a pipeline."""
+import json, sys, urllib.parse, urllib.request
+from datetime import date
+
+UA = {"User-Agent": "doi-guard/1.0 (mailto:you@example.com)"}
+
+def get(url):
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception:
+        return None
+
+def ymd(d):
+    if not d or not d.get("date-parts"):
+        return None
+    return date(*(list(d["date-parts"][0]) + [1, 1])[:3])
+
+def check(doi):
+    m = (get("https://api.crossref.org/works/" + urllib.parse.quote(doi)) or {}).get("message")
+    if not m:
+        return 60, ["QUARANTINE", "no resolvable Crossref deposit for this DOI"]
+    score, flags = 0, []
+    pub, cre = ymd(m.get("published")), ymd(m.get("created"))
+    if pub and cre:
+        lag = (cre - pub).days
+        if lag > 730:
+            score += 30; flags.append("backfilled archive: DOI deposited %d days after claimed date" % lag)
+        elif lag > 180:
+            score += 15; flags.append("slow deposit: %d days" % lag)
+    if m.get("references-count", 0) == 0 and m.get("type") == "journal-article":
+        score += 20; flags.append("zero references on a journal article")
+    total = ((get("https://api.crossref.org/members/%s" % m.get("member")) or {})
+             .get("message", {}).get("counts", {}).get("total-dois", 0))
+    if total and total &lt; 100:
+        score += 10; flags.append("publisher holds only %d DOIs in total" % total)
+    issns = m.get("ISSN") or []
+    listed = any((get("https://doaj.org/api/search/journals/issn%%3A%s" % i) or {}).get("total", 0) > 0
+                 for i in issns)
+    if issns and not listed:
+        score += 10; flags.append("ISSN missing from DOAJ")
+    if not m.get("container-title"):
+        score += 15; flags.append("no journal name on the DOI")
+    verdict = "QUARANTINE" if score >= 40 else "REVIEW" if score >= 20 else "KEEP"
+    return score, [verdict, "%s / %s" % (m.get("publisher"), (m.get("container-title") or ["?"])[0])] + flags
+
+bad = 0
+for doi in sys.argv[1:]:
+    score, out = check(doi)
+    bad += score >= 40
+    print("[%3d] %-28s %s" % (score, doi[:28], out[0]))
+    for line in out[1:]:
+        print("       " + line)
+sys.exit(1 if bad else 0)
+</code></pre>
+
+<p>Four samples, run live against api.crossref.org and doaj.org on 2026-11-16:</p>
+
+<pre><code>[  0] 10.1186/s41073-025-00165-z   KEEP
+       Springer Science and Business Media LLC / Research Integrity and Peer Review
+[ 30] 10.2139/ssrn.5406042         REVIEW
+       Elsevier BV / ?
+       slow deposit: 250 days
+       no journal name on the DOI
+[ 10] 10.1002/cem.3383             KEEP
+       Wiley / Journal of Chemometrics
+       ISSN missing from DOAJ
+[ 60] 10.99999/aijri.2026.4417     QUARANTINE
+       no resolvable Crossref deposit for this DOI
+exit=1
+</code></pre>
+
+<p>Those scores are worth reading closely, because they show what a heuristic can and cannot do. The Spinellis paper is a clean control at zero. The SSRN preprint lands on REVIEW for two reasons, a 250-day gap between publication and DOI deposit and no journal name, which are perfectly normal properties of a preprint rather than signs of fraud, and the scoring lands it on review rather than quarantine accordingly. The Wiley subscription journal loses ten points only on the DOAJ check, which is expected since subscription journals are not in DOAJ. The last one, a DOI prefix I made up, scores 60 because there is no Crossref deposit at all, and fake journals rarely bother to register one.</p>
+
+<h2>Wire it into CI so it blocks instead of warns</h2>
+
+<p>The <code>sys.exit(1)</code> at the end exists for CI. Keep the DOIs your literature base cites in <code>refs.txt</code> and run it as a check:</p>
+
+<pre><code>python doi_guard.py $(cat refs.txt); echo "exit=$?"
+# a non-zero exit blocks the merge</code></pre>
+
+<p>A new citation that lands on QUARANTINE blocks the merge, which is far cheaper than fishing it back out of a corpus later. If you run literature RAG, put the same logic in the ingest step and route REVIEW items to a human queue instead of the vector index. Retracting by source is the one operation a vector store is worst at.</p>
+
+<h2>Where this stops working</h2>
+
+<ul>
+<li><strong>Missing from Crossref is not fraud.</strong> Preprints, technical reports, non-English regional journals and grey literature all go missing. A 60 means the record cannot be verified, not that it is fake.</li>
+<li><strong>DOAJ does not cover every legitimate open access journal,</strong> and covers no subscription journal at all. Treat it as a bonus signal, not a gate.</li>
+<li><strong>The reverse also holds.</strong> A fabricator can pay the annual fee, become a Crossref member and get real DOIs. The score buys you a second look, nothing more.</li>
+<li><strong>Two cheap additions.</strong> Before submitting anywhere, run the Think.Check.Submit checklist against the ISSN, DOAJ and index status. Before citing or reviewing, look the author up in ORCID and see whether they actually claim the paper.</li>
+</ul>
+
+<p>What stays with me is the asymmetry. Generating a fake paper now costs approximately nothing, and clearing one costs the person whose name was used. Said complained and the paper kept its place under a different name. Leskovec found out from a reporter. You cannot clear their names for them, but you can decline to be the pipeline that gets those papers indexed, cited and eventually learned.</p>
+''',
+    'related': [("Read next: memory poisoning in AI assistants, the same distrust of inputs", "blog/ai-memory-poisoning-2026/"), ("Read next: when AI-generated bug reports flood human triage", "blog/ai-code-audit-triage-2026/")],
+},
+
 'on-device-35b-moe-phone-2026': {
     'tags': ["on-device inference", "MoE", "quantization", "bandwidth"],
     'title': "A 16 GB phone runs a 35B MoE: 5 GiB peak, 14.179 tok/s, and the flash bandwidth hiding behind that number | DevTools Blog",
