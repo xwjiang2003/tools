@@ -4,11 +4,11 @@
 与博客同哲学：正文以 HTML 片段烘焙进静态页（正文数据在 course_lessons.py，
 由仓库根目录 convert_lessons.py 从本地讲义 Markdown 生成），不依赖 JS 注入。
 
-多语言：zh（全部 41 课）+ en（已翻译的课，lessons-en 目录）。页面由
+多语言：zh（全部 43 课）+ en（已翻译的课，lessons-en 目录）。页面由
 build.py 生成对应语言版本；hreflang / 语言切换器由 build.py 的 apply_common 处理。
 
 板块结构：
-  go-course/              课程中心页（6 模块 × 41 课导航 + 课程简介）
+  go-course/              课程中心页（8 模块 × 43 课导航 + 课程简介）
   go-course/<slug>/       单课图文页（学习目标 / 讲解 / 高亮代码 / 避坑 / 练习折叠 / 小结）
   en/go-course/ 等语言前缀同理
 """
@@ -121,6 +121,15 @@ MODULES = [
             ('m07-l01', '缓存击穿、一致性、重复消费：Redis + Kafka 的三个硬问题'),
         ],
     },
+    {
+        'id': 'm08',
+        'name': '微服务与 RPC 生产化',
+        'phase': '进阶',
+        'goal': '把一次跨服务调用拆成可核算的时间预算，用超时、取消、重试与连接复用把尾延迟和数据放大控制在可接受范围',
+        'lessons': [
+            ('m08-l01', 'gRPC 生产化：一次请求串四个服务，最慢的把整条链拖死'),
+        ],
+    },
 
 ]
 
@@ -224,10 +233,19 @@ MODULES_EN = [
             ('m07-l01', 'Cache Breakdown, Consistency and Duplicate Consumption: Three Hard Problems with Redis + Kafka'),
         ],
     },
+    {
+        'id': 'm08',
+        'name': 'Microservices and RPC in Production',
+        'phase': 'Advanced',
+        'goal': 'Break a cross-service call into an accountable time budget and control tail latency and amplification with deadlines, cancellation, retry and connection reuse',
+        'lessons': [
+            ('m08-l01', 'gRPC in Production: One Request, Four Services, and the Slowest Link Dragging the Chain'),
+        ],
+    },
 
 ]
 
-# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 42 集）。
+# 已发布图文页：跟随 B 站视频进度（空间合集「Go语言从入门到精通」已更 43 集）。
 # 批量转换 + 构建后自动全量。
 PUBLISHED = (
     'm01-l01', 'm01-l02', 'm01-l03', 'm01-l04', 'm01-l05', 'm01-l06',
@@ -244,9 +262,10 @@ PUBLISHED = (
     'm06-l05',
     'm06-l06',
     'm07-l01',
+    'm08-l01',
 )
 
-# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-14 核对 42 集）
+# 配套视频（B 站链接，来自 UP 主 jxw_go 空间合集，2026-11-17 核对 43 集）
 VIDEO = {
     'm01-l01': 'https://www.bilibili.com/video/BV1CNa36HET6',
     'm01-l02': 'https://www.bilibili.com/video/BV19yaG6kEfi',
@@ -290,30 +309,31 @@ VIDEO = {
     'm06-l05': 'https://www.bilibili.com/video/BV1qKW963EnY',
     'm06-l06': 'https://www.bilibili.com/video/BV1NEWi6gEiq',
     'm07-l01': 'https://www.bilibili.com/video/BV1gisV6pEJS',
+    'm08-l01': 'https://www.bilibili.com/video/BV1josu6pE1K',
 }
 
 # 中心页文案（按语言）
 COURSE_TEXT = {
     'zh': {
-        'index_title': 'Go 语言从入门到精通：6 大模块 41 课图文教程 | DevTools',
+        'index_title': 'Go 语言从入门到精通：8 大模块 43 课图文教程 | DevTools',
         'index_desc': (
-            '零基础到高级工程实践的 Go 完整学习路线：6 大模块 41 课，每课含学习目标、'
+            '零基础到高级工程实践的 Go 完整学习路线：8 大模块 43 课，每课含学习目标、'
             '知识讲解、可运行示例代码、常见错误避坑、最佳实践与练习题，配套 B 站视频课程。'
         ),
         'index_kw': 'Go教程,Go语言入门,Go并发,Go工程化,Go性能优化,Go云原生,Go课程',
         'h1': 'Go 语言从入门到精通',
-        'lead': '零基础到高级工程实践 · 6 大模块 41 课 · 每课：目标 / 讲解 / 可运行代码 / 避坑 / 练习',
+        'lead': '零基础到高级工程实践 · 8 大模块 43 课 · 每课：目标 / 讲解 / 可运行代码 / 避坑 / 练习',
     },
     'en': {
-        'index_title': 'Go from Zero to Pro: 41-Lesson Illustrated Tutorial in 6 Modules | DevTools',
+        'index_title': 'Go from Zero to Pro: 43-Lesson Illustrated Tutorial in 8 Modules | DevTools',
         'index_desc': (
-            'A complete Go learning path from zero to advanced engineering practice: 6 modules, 41 lessons, '
+            'A complete Go learning path from zero to advanced engineering practice: 8 modules, 43 lessons, '
             'each with learning objectives, explanations, runnable example code, common-mistake pitfalls, '
             'best practices and exercises, paired with a Bilibili video course.'
         ),
         'index_kw': 'Go tutorial,Learn Go,Go concurrency,Go engineering,Go performance,Go cloud-native,Go course',
         'h1': 'Go from Zero to Pro',
-        'lead': 'Zero to advanced engineering practice · 6 modules · 41 lessons · each: objectives / explanations / runnable code / pitfalls / exercises',
+        'lead': 'Zero to advanced engineering practice · 8 modules · 43 lessons · each: objectives / explanations / runnable code / pitfalls / exercises',
     },
 }
 
