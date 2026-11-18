@@ -50,6 +50,398 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': "java4shell-openjdk-base64-rce-2026",
+    'category': "security",
+    'date': "2026-11-18",
+    'updated': "2026-11-18",
+    'tags': ["Java 安全", "OpenJDK", "漏洞分析", "内存安全"],
+    'title': "Java4Shell（CVE-2026-114938）：OpenJDK 的 Base64 解码器会多写 62 字节，CVSS 9.2 | DevTools 博客",
+    'description': "OpenJDK 的 x86-64 Base64 intrinsic 在处理退化尾部时把 output_len 减成负数，bzhiq 拿到 -1 后返回全 1 掩码，evmovdqub 于是写满 64 字节，越界 62 字节。CVE-2026-114938，CVSS 4.0 打 9.2，影响 17.0.6 起的 OpenJDK 与 Corretto/Temurin/Zulu 等全部发行版，但只在带 AVX-512 VBMI 的 x86-64 上触发。本文用纯 Python 复现那次掩码下溢（六种退化尾部逐行给出越界量），给出可在本机跑的 Java 触发器与真实输出，讲清为什么 nginx 缓冲请求体不是通用缓解，以及打补丁前必须同时核对版本与硬件两个条件。",
+    'keywords': "Java4Shell, CVE-2026-114938, OpenJDK 漏洞, OpenJDK Base64 漏洞, Java 远程代码执行, Java RCE 如何修复, 如何检测 Java4Shell, Base64 解码 越界写, AVX-512 VBMI, bzhiq 下溢, evmovdqub, HotSpot intrinsic, Keycloak 漏洞 修复, Jenkins 漏洞 修复, Confluence 漏洞, 如何自查服务器是否受影响, JDK 17.0.6 漏洞, UseBASE64Intrinsics, UseAVX=2 缓解, java base64 vulnerability",
+    'h1': "64 个 A 加一个等号：OpenJDK 的 Base64 快路径把 62 字节写到了缓冲区外",
+    'summary': "一个 65 字节的畸形输入，让 OpenJDK 的 Base64 intrinsic 把 50 字节的缓冲区写到了偏移 111。根因是 output_len 被 padding 减成 -1，bzhiq 拿到负数按无符号解释后返回全 1 掩码。本文复现这次下溢、给出真实触发结果，并说明为什么版本号和硬件必须一起查。",
+    'body': '''<p>把下面这一行喂给 OpenJDK 的 Base64 解码器，某些 x86-64 服务器上会在抛出 IllegalArgumentException 之前，往堆里多写 62 个字节：</p>
+
+<pre><code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</code></pre>
+
+<p>64 个 A 加一个等号。缓冲区按 50 字节分配，写入从偏移 48 开始，一路盖到 111。异常照样抛，栈照样干净，只是旁边那块内存已经不是原来的内容了。这就是 Java4Shell，CVE-2026-114938，CVSS 4.0 打了 9.2。</p>
+
+<p>披露方是安全团队 Calif（lcamtuf 那一挂的人），2026-11-18 早上公开，OpenAI 总裁 Greg Brockman 当天在 X 上转推点名 GPT-6 Cyber —— 这个漏洞是用它找出来的。同一时间 Hacker News 上这条排到第三，983 分。国内新智元也在 11-18 早上跟进。</p>
+
+<h2>一、先确认自己在不在靶子上：两个条件缺一不可</h2>
+
+<p>受影响的是 OpenJDK HotSpot 里 x86-64 的 Base64 intrinsic，也就是 C2 JIT 把 java.util.Base64 的解码热路径编译成 AVX-512 VBMI 加速代码的那一段。所以判定要同时满足：</p>
+
+<ul>
+<li><strong>版本</strong>：OpenJDK 17.0.6 及更新。Oracle 在同一批补丁里列出的受影响版本是 8u511b33-perf、17.0.21.0.3、21.0.13.0.3、25.0.5.0.3、27.0.1.0.3。Corretto、Temurin、Zulu、Liberica、SapMachine、Microsoft Build、GraalVM for JDK 全部继承。</li>
+<li><strong>硬件</strong>：x86-64 且带 AVX-512 VBMI，也就是 Intel Ice Lake 之后的 Xeon、AMD Zen 4 之后的 EPYC 和 Ryzen。ARM64 上根本没有这段汇编，不受影响。</li>
+</ul>
+
+<p>我这里正好有个踩在版本线上的 JDK：17.0.6。Calif 给的独立触发器长这样，所有写入都落在真实的 4096 字节数组内，触发本身不破坏任何东西：</p>
+
+<pre><code>import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+
+public final class Base64Trigger {
+    private static volatile int sink;
+
+    public static void main(String[] args) {
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] valid = "A".repeat(64).getBytes(StandardCharsets.US_ASCII);
+        byte[] malformed = ("A".repeat(64) + "=").getBytes(StandardCharsets.US_ASCII);
+        byte[] target = new byte[4096];
+
+        for (int i = 0; i &lt; 200_000; i++) {
+            sink += decoder.decode(valid, target);
+        }
+
+        Arrays.fill(target, (byte) 0x5a);
+        boolean rejected = false;
+        try {
+            decoder.decode(malformed, target);
+        } catch (IllegalArgumentException expected) {
+            rejected = true;
+        }
+
+        int changed = 0;
+        int first = -1;
+        int last = -1;
+        for (int i = 50; i &lt; target.length; i++) {
+            if (target[i] != (byte) 0x5a) {
+                changed++;
+                if (first &lt; 0) first = i;
+                last = i;
+            }
+        }
+
+        System.out.println("runtime=" + System.getProperty("java.runtime.version"));
+        System.out.println("vm=" + System.getProperty("java.vm.name"));
+        System.out.printf("rejected=%s changed=%d first=%d last=%d%n",
+            rejected, changed, first, last);
+
+        if (!rejected || changed != 62 || first != 50 || last != 111) {
+            System.err.println("NOT REPRODUCED");
+            System.exit(1);
+        }
+        System.out.println("REPRODUCED");
+    }
+}</code></pre>
+
+<p>编译跑一遍：</p>
+
+<pre><code>$ javac Base64Trigger.java &amp;&amp; java Base64Trigger
+runtime=17.0.6+9-LTS-190
+vm=Java HotSpot(TM) 64-Bit Server VM
+rejected=true changed=0 first=-1 last=-1
+NOT REPRODUCED</code></pre>
+
+<p>版本号完全落在受影响区间，却没打出来。因为这台机器是 Core Ultra 5 338H，Arrow Lake 没有 AVX-512，intrinsic 走了别的分支。这正是这类漏洞最容易误判的地方：<strong>只看版本号会把没风险的机器算成风险，也会让有风险的机器以为自己安全</strong>。检查库存时两个条件必须一起查，缺一个就得出错误结论。</p>
+
+<p>顺带一个旁证。启动参数里打印最终生效的标志位，能直接看到这台机器的 JIT 选择了什么：</p>
+
+<pre><code>$ java -XX:-UseBASE64Intrinsics -XX:+PrintFlagsFinal -version 2&gt;/dev/null | grep -E "Base64Intrinsics|UseAVX"
+     intx UseAVX                                   = 2                                    {ARCH product} {default}
+     bool UseBASE64Intrinsics                      = false                                {product} {command line}</code></pre>
+
+<p>UseAVX 默认就是 2（AVX2），说明这台机器连 AVX-512 那条路都没进。同时这也顺便验证了临时缓解参数确实生效了 —— 第二行那个 {command line} 就是证据，它说明值来自命令行而不是默认值。排查事故时我习惯多看一眼这一行：配置文件里写对、环境变量里被覆盖、包装脚本里丢了参数，最终生效值才是唯一可信的东西。</p>
+
+<h2>二、根因是一次数值下溢，不是越界检查漏了</h2>
+
+<p>intrinsic 把输入按 256 字节迭代，不足 256 的按 64 字节块处理。尾块用 evmovdqub（对应 VMOVDQU8）写，这条指令接收一个 64 位掩码 k1，掩码决定哪几个字节真的落进内存。掩码是由长度算出来的：</p>
+
+<pre><code>input_mask  := bzhiq(-1, input_length)
+output_len  := (input_length / 4) * 3
+
+if input[input_length - 1] == '=':
+    output_len -= 1
+    input_mask >>= 1
+    if input[input_length - 2] == '=':
+        output_len -= 1
+        input_mask >>= 1
+
+output_mask := bzhiq(-1, output_len)</code></pre>
+
+<p>bzhiq 的语义是"从第 index 位起清零高位"，index 大于等于 64 时一位都不清，原样返回。而 output_len 是个有符号整数：当剩余输入形如 =、==、X=、X==、XY= 时，(input_length / 4) * 3 先算出 0，再被 padding 减 1 或减 2，直接变成 -1 或 -2。传进 bzhiq 的 -1 按无符号解释是个天文数字，于是掩码全是 1，evmovdqub 老老实实写满 64 字节。</p>
+
+<p>拿那个 65 字节输入手算一遍就清楚了：前 64 个字符按整块处理掉，产出 48 字节，剩一个 = 落在偏移 48。缓冲区总长度是 ceil(65/4)*3 - 1 = 50。掩码全 1 意味着从 48 写到 111，越过末尾 62 个字节。<strong>顺序很关键：Java 层的参数校验发生在 intrinsic 返回之后</strong> —— 也就是说异常抛出时，内存已经坏了。日志里那行 IllegalArgumentException 不代表什么都没发生。</p>
+
+<p>把这套掩码逻辑用纯 Python 抄一遍，不需要 AVX-512 也能看清每种尾部各溢出多少：</p>
+
+<pre><code>M64 = (1 &lt;&lt; 64) - 1
+
+
+def bzhiq(src, index):
+    if index &lt; 0 or index &gt;= 64:
+        return src &amp; M64
+    return src &amp; ((1 &lt;&lt; index) - 1)
+
+
+def run_tail(tail, head=64):
+    total_in = head + len(tail)
+    pad = tail.count(b"=")
+    buf_len = ((total_in + 3) // 4) * 3 - pad
+    output_len = (len(tail) // 4) * 3
+    if tail.endswith(b"="):
+        output_len -= 1
+        if tail.endswith(b"=="):
+            output_len -= 1
+    written = bin(bzhiq(M64, output_len)).count("1")
+    last = 48 + written - 1
+    return buf_len, output_len, written, last, last - (buf_len - 1)
+
+
+print("%-5s %-7s %-10s %-6s %-9s %s" % ("tail", "buf_len", "output_len", "bytes", "last_byte", "past_end"))
+for tail in [b"=", b"==", b"X=", b"X==", b"XY=", b"===", b"XYAB"]:
+    b, ol, w, last, over = run_tail(tail)
+    print("%-5s %-7d %-10d %-6d %-9d %d" % (tail.decode(), b, ol, w, last, over))</code></pre>
+
+<pre><code>$ python mask_sim.py
+tail  buf_len output_len bytes  last_byte past_end
+=     50      -1         64     111       62
+==    49      -2         64     111       63
+X=    50      -1         64     111       62
+X==   49      -2         64     111       63
+XY=   50      -1         64     111       62
+===   48      -2         64     111       64
+XYAB  51      3          3      50        0</code></pre>
+
+<p>前六行是同一类退化尾部，全都写满 64 字节，越过末尾 62 到 64 字节；最后一行是合法的四字符尾部，只写 3 字节，一点没越界。注意 X= 和 X== 的区别不在 output_len 的正负，而在缓冲区本身短了一字节 —— 越界量永远取决于"缓冲区剩多少"和"写了多少"这两个数的差。</p>
+
+<p>还有一层细节决定了利用难度：只有偏移 0 的字节完全可控，偏移 1 有 4 个 bit 可控，偏移 2 到 63 不可控，其中 48 到 63 恒为 0x9a。也就是说这不是一次任意写，是一次"落点可控、内容基本固定"的写。</p>
+
+<h2>三、攻击面比"某个 API"大得多</h2>
+
+<p>漏洞在解码器里，那么任何走到 Base64 解码的入口都算入口。Calif 实测到的预认证 RCE 名单里有 Keycloak、Atlassian Jira、Confluence、JFrog Artifactory、Jenkins、PingFederate；认证后能打的有 Kafka Broker、Solr、Elasticsearch、Gerrit、Spinnaker。Struts 和 Spring Boot 的示例应用同样复现成功，用的都是登录、文件上传这类普通功能。</p>
+
+<p>更反直觉的是客户端方向：一个 Java 程序只要去连一台恶意 TLS 服务器，自己不开任何端口也会被打穿（samczsun 给的客户端 exploit）。原因很简单 —— 证书链、JWT、SAML 断言、Bearer token 全是 Base64 包着的，客户端解码只是常规操作。</p>
+
+<p>所以"我的服务没暴露 Base64 接口"不是结论。真正要问的是三件事：进程里有没有 Base64 解码、能不能被外部输入触达、那台机器是不是 x86-64 加 AVX-512 VBMI。前两条几乎永远是"有"，第三条把范围砍掉了大半 —— 消费级 Intel 从 Alder Lake 起就关了 AVX-512，很多开发机和 CI runner 天然免疫，而线上那批 Xeon、EPYC 恰恰全中。这个组合很坏：本地测不出来，线上全中。</p>
+
+<h2>四、从"能触发"到"能 RCE"中间隔着的活</h2>
+
+<p>越界写本身只写固定字节，Calif 的利用链是两段：先把某个缓冲区的长度字段改掉，得到一个有界、可选值的线性写（writer 原语）；再篡改另一个数组的长度并让它回显到响应里，把堆内容漏出来（reader 原语，他们叫 JavaBleed，能漏 PII、私钥、token）。中间还要做堆布局 —— G1 把堆切成固定大小 region，得让关键数组离开线程私有 TLAB，走 outside-TLAB 分配路径，再配合多组 writer/reader 撒网。</p>
+
+<p>远程堆布局是最难的一段：分片发送 HTTP 请求，等前一段被 TCP 确认后再控制下一段的分配时点，最后补齐整个请求。对 RTT 和抖动极其敏感。清单里有个容易被当成"通用解药"的东西：nginx 默认会缓冲请求体，看起来能挡住分片。但 Elasticsearch 从单个完整请求就能打，不依赖分片；WebSocket 升级之后的帧走隧道，也不经过请求体缓冲。Calif 明确写了请求缓冲不构成通用缓解。</p>
+
+<p>他们给的阶段划分我抄在这里，判断一个目标是否"真能打"时正好当检查表用：WARM（反复合法解码，让 JIT 选中受影响快路径，不破坏内存）→ REHEARSE（安全校准，测时延）→ TRIGGER（发畸形尾部）→ DISCLOSE（放大 reader 收集堆字节）→ REPAIR（用泄露的原数据还原头部和邻居对象）→ FINISH（落应用特定改动并验证）。没有 universal payload，每个目标都要单独做 profile。</p>
+
+<h2>五、今晚能做的三件事</h2>
+
+<p>OpenJDK 在 2026-11-17 13:00 PT 发了安全公告，Oracle 同步出了 CPU 补丁。所以第一件事没有讨论空间：升级到补丁版本。真正的难点在"升不完的那部分"。</p>
+
+<p>第二件事是临时缓解，两个参数选一个，加到启动参数里：</p>
+
+<pre><code># 关掉硬件加速的 Base64 编解码，最稳，性能损失集中在 Base64 热路径
+-XX:-UseBASE64Intrinsics
+
+# 或者把 AVX 降到 AVX2，注意：只能在 x86-64 主机上用
+-XX:UseAVX=2</code></pre>
+
+<p>第二条有一句话说三遍：<strong>只能在 x86-64 上写</strong>。ARM 上的 OpenJDK 不认这个参数，加了直接起不来。混部环境（一部分 Graviton、一部分 Xeon）如果共用一份 JVM 参数模板，这一条会成片地把 ARM 节点搞挂 —— 而且是在重启之后才发现。分环境下发，或者干脆统一用第一条。</p>
+
+<p>第三件事是资产清点，口径按"版本 + 硬件"两个条件一起判。机器多的时候，先在每台机器上取一次 CPU 标志位和 JDK 版本，再做关联：</p>
+
+<pre><code># x86-64 上这四个 flag 必须同时出现才算暴露，输出 4 才是暴露
+grep -m1 '^flags' /proc/cpuinfo | grep -oE 'avx512f|avx512bw|avx512vbmi|bmi2' | sort -u | wc -l
+
+# 版本粗筛，注意 17 上需要 128 个 A 才触发，21 以后是 64 个
+java -XshowSettings:properties -version 2&gt;&amp;1 | grep 'java.version'</code></pre>
+
+<p>第一条输出 4 才是暴露，0 到 3 都不是。这套判断写成脚本比写在 wiki 里靠谱，因为 wiki 会过期，脚本每次跑都会重新问一遍机器。</p>
+
+<h2>六、这次披露里真正值得记住的两件事</h2>
+
+<p>第一件是成本。Calif 的研究员 Quang Luong 大约 1 小时找到这个漏洞，2 小时做出第一个可用 exploit，token 花费不到 200 美元，工具是 GPT-6 Cyber。这个数字比我见过的任何一份"AI 安全"报告都具体：一个 CVSS 9.2、影响 Keycloak 和 Jenkins 的洞，从零到可复现 exploit 的成本已经低于一次团队午餐。</p>
+
+<p>第二件更麻烦，和补丁本身有关。同一天新智元还有一条报道，说 Google 的威胁情报团队观察到攻击者开始"照着补丁写攻击代码"—— 厂商改哪几行，AI 就盯哪几行，反推出漏洞。两件事叠起来是一条完整的流水线：补丁发布即公开线索，AI 在几小时内把它变成 exploit。传统那套"先内部灰度、两周后再全线升"的节奏，在这个节奏下等于给对手留了一个两周期。</p>
+
+<p>Calif 在文末提了个我挺认同的说法，叫 vibe uncoding：与其问还能构建什么，不如问能删掉什么。死代码、没人用的特性、只为 3% 场景存在的优化路径 —— 每一段删掉的代码都不会再有 CVE。这个 Base64 intrinsic 就是典型：它的全部价值是让解码快一点，代价是一个 CVSS 9.2。</p>
+
+<p>至于今天该怎么排优先级：如果你跑的是 x86-64 上的 Keycloak、Jenkins、Confluence、Artifactory，先加 -XX:-UseBASE64Intrinsics 再安排升级，别等窗口。如果你的机器根本没有 AVX-512，那这次可以只看不动，但请把"版本 + 硬件"这个双条件写进下次的排查手册 —— 这次的教训不是"Java 有洞"，而是"版本号会骗人"。</p>''',
+    'related': [("AI 自主挖漏洞：一次运行复现 1724 个内核漏洞", "blog/openai-autonomous-vuln-discovery-2026/"), ("它拿到 root，然后把自己的越权从答卷里删掉了", "blog/agent-incident-report-gap-2026/"), ("第三方脚本被投毒那天，CSP 只拦住了 15% 的站点", "blog/optimizely-third-party-script-hijack-2026/")],
+},
+{
+    'slug': "grpo-implicit-advantage-symmetry-2026",
+    'category': "ai",
+    'date': "2026-11-18",
+    'updated': "2026-11-18",
+    'tags': ["强化学习", "GRPO", "后训练", "可验证奖励"],
+    'title': "GRPO 的两个隐藏对称：Pass@256 反而不如没训过的基座 | DevTools 博客",
+    'description': "港大团队在 NeurIPS 2026 论文（arXiv:2602.05548）里指出，GRPO 的组内标准化带来两层隐式优势对称：组级零和让未采样但正确的路径拿不到任何梯度，样本级让 p=0.25 与 p=0.75 分到完全相同的更新幅度。Qwen2.5-Math-7B 在 MATH 上 Pass@256 从基座 96.3 掉到 95.0 就是这个机制的代价。本文用 stdlib 复现两个定理（sum|A| 与 2n·sqrt(p(1-p)) 逐位相等）、给出 A-GRAE 两个开关的可跑实现与焦点滑动实测，并列出接进 verl 的命令与三个该盯的训练指标。",
+    'keywords': "GRPO, GRPO 原理, GRPO 缺陷, 隐式优势对称, implicit advantage symmetry, A-GRAE, GRPO 探索不足, 熵坍缩 entropy collapse, RLVR, 可验证奖励强化学习, 后训练 教程, Pass@k 为什么下降, 如何提升 Pass@k, 课程学习 curriculum RL, DAPO, Dr.GRPO, verl 训练 教程, 强化学习 难度加权, NeurIPS 2026 论文, Qwen2.5-Math-7B GRPO, 如何监控策略熵, GRPO 实战",
+    'h1': "训练越久越保守：GRPO 里那行标准化，同时锁死了探索和难度适应",
+    'summary': "MATH 上，基线模型 Pass@256 是 96.3，标准 GRPO 训完掉到 95.0。港大团队把原因指向组内标准化带来的两层对称：组级零和让未采样路径得不到梯度，样本级让简单题和难题分到同样的更新量。附一段 stdlib 代码，把两个定理算成能对上的数字。",
+    'body': '''<p>先看一个不好解释的数字。Qwen2.5-Math-7B 在 MATH 上，基座模型 Pass@256 是 96.3。用标准 GRPO 训完，Pass@256 掉到 95.0。Pass@1 从 63.4 涨到 76.5，看起来一片大好；可一旦允许采样 256 次，训过的模型反而不如没训过的。</p>
+
+<p>香港大学屈靓琼团队把这件反常识的事拆成了两层，论文名叫《Unveiling Implicit Advantage Symmetry》，NeurIPS 2026 录用，arXiv 编号 2602.05548（v1 2026-02-05，v4 2026-09-27），代码在 HKU-HealthAI/A-GRAE。机器之心 2026-11-18 有中文解读。他们找到的东西不在奖励函数里，也不在采样策略里，而在 GRPO 那行"减去均值除以标准差"的标准化上。</p>
+
+<h2>一、那行标准化的副作用</h2>
+
+<p>GRPO 的做法很朴素：一道题采样一组回答，二值奖励，答对 1 分答错 0 分，然后组内标准化 A_i = (r_i - mean) / std，谁高奖谁谁低罚谁。问题在于除以 std 这一步让正负优势的绝对值严格相等 —— 一组里答对的和答错的，优势加起来正好是 0。</p>
+
+<p>零和看起来挺公平。代价藏在没被采样到的路径上：一条概率极低但正确的解法，模型从来没抽到过，它拿不到任何奖励信号，对应的 logit 更新量为零。模型学到的东西，只是它已经会走的那几条路。论文把它叫组级对称，我觉得更贴切的说法是：<strong>GRPO 只会在已经踩出来的路上做跷跷板</strong>。</p>
+
+<p>这不是比喻。把 softmax 策略的梯度写出来就很清楚：某条轨迹 b 的 logit 更新正比于 A_b·1[b 被采样] − p_b·Σ A。Σ A = 0 的时候，第二项直接消失，没被采样的轨迹（1[b 被采样] = 0）连一点推力都分不到。</p>
+
+<pre><code>import math
+
+
+def advantages(rewards):
+    n = len(rewards)
+    mean = sum(rewards) / n
+    std = math.sqrt(sum((r - mean) ** 2 for r in rewards) / n)
+    return [(r - mean) / std for r in rewards]
+
+
+adv = advantages([1, 0, 0, 0])
+total = round(sum(adv), 9)
+zero = abs(total) &lt; 1e-9
+
+print("advantages:", [round(a, 3) for a in adv])
+print("sum(A) =", 0.0 if zero else total)
+print("unsampled logit update =", 0.0 if zero else -0.05 * total)
+
+print()
+n = 8
+print("k  p      sum|A|  formula")
+for k in range(1, n):
+    s = sum(abs(a) for a in advantages([1] * k + [0] * (n - k)))
+    p = k / n
+    print("%d  %.3f  %6.3f  %6.3f" % (k, p, s, 2 * n * math.sqrt(p * (1 - p))))</code></pre>
+
+<pre><code>$ python grae.py
+advantages: [1.732, -0.577, -0.577, -0.577]
+sum(A) = 0.0
+unsampled logit update = 0.0
+
+k  p      sum|A|  formula
+1  0.125   5.292   5.292
+2  0.250   6.928   6.928
+3  0.375   7.746   7.746
+4  0.500   8.000   8.000
+5  0.625   7.746   7.746
+6  0.750   6.928   6.928
+7  0.875   5.292   5.292</code></pre>
+
+<p>上面半段是定理 1 的数值版本：一组四条轨迹 1 对 3 错，优势是 +1.732 和三个 −0.577，加起来精确为 0；拿 0.05 当一条未采样轨迹的概率，它的 logit 更新是 0.0，不是"很小"，是零。Pass@k 掉下来的机制就在这里 —— k 越大，越依赖那些没被采到的路径，而 GRPO 恰好对这些路径一点力都不使。</p>
+
+<h2>二、第二个对称：0.25 和 0.75 被当成一回事</h2>
+
+<p>下面那半段是我自己推的一步，论文里也给了同样的结论。设一组 n 条采样里有 k 条正确，二值奖励下 std = sqrt(k(n−k))/n，于是正确轨迹的优势是 sqrt((n−k)/k)、错误的是 −sqrt(k/(n−k))，组内绝对优势之和：</p>
+
+<pre><code>sum|A| = k·sqrt((n-k)/k) + (n-k)·sqrt(k/(n-k))
+       = 2·sqrt(k(n-k))
+       = 2n·sqrt(p(1-p))        # 代入 k = np</code></pre>
+
+<p>脚本里 n = 8，k 从 1 扫到 7，sum|A| 与 2n·sqrt(p(1−p)) 逐位相等（5.292 / 6.928 / 7.746 / 8.000 / 7.746 / 6.928 / 5.292）。两个结论一眼可见：峰值在 p = 0.5；k = 2 和 k = 6 完全一样。</p>
+
+<p>这就是第二层枷锁。一道题模型成功率 0.75（快学会了），另一道 0.25（还啃不动），在这套算法眼里分到的更新幅度完全相同。中等难度的题拿走最多信号，简单题和难题拿一样多 —— 而模型在变强，简单题在题库里的占比只会越来越高，于是算力持续投在"早就会了"的题上，越刷越熟、越刷越窄。</p>
+
+<p>顺带一个实践里很烦的点：k = 0 或 k = n 时 std 为 0，整组被直接丢掉。8 条采样，全对或全错的组在训练中后期并不罕见，这些 rollout 的算力是纯浪费。这是 GRPO 采样效率的老问题，论文没专门解，但它和上面两层对称叠在一起，解释了为什么"再加卡"不一定有用。</p>
+
+<h2>三、A-GRAE：两个开关，按训练进度滑动</h2>
+
+<p>论文的控制变量实验做得很干净：人为放大正确轨迹的优势 → 熵迅速坍缩、大采样预算下垫底；人为压制正确轨迹的优势 → 探索被激发，但训练后期容易崩。单独看两个方向都不对，正确答案是"早期松、后期收"。样本级同理：早期先练简单题把推理格式立住，后期转向难题突破上限，比任何静态加权都好。</p>
+
+<p>落到实现上就两个开关：组级对正优势做衰减抑制（随进度松开），样本级把难度焦点从简单滑向困难（用本批平均奖励当进度代理，不需要额外标注、不多花算力）。我按这两条写了份最小实现，跑三个难度桶看权重怎么挪：</p>
+
+<pre><code>import math
+
+
+def advantages(rewards):
+    n = len(rewards)
+    mean = sum(rewards) / n
+    std = math.sqrt(sum((r - mean) ** 2 for r in rewards) / n)
+    return [(r - mean) / std for r in rewards]
+
+
+def agrae(rewards, prog, alpha=1.0, gamma=0.1):
+    p = sum(rewards) / len(rewards)
+    att = 1.0 / (1.0 + alpha * (1.0 - prog))
+    w = (1.0 - prog) * p + prog * gamma / max(p, 1e-3)
+    return [a * att * w for a in advantages(rewards)], p, w, att
+
+
+print("prog  p      w      att    sum|A|")
+for prog in (0.2, 0.5, 0.8):
+    for k in (1, 4, 7):
+        rewards = [1] * k + [0] * (8 - k)
+        adv, p, w, att = agrae(rewards, prog)
+        print("%.1f  %.3f  %.3f  %.3f  %5.2f" % (prog, p, w, att, sum(abs(a) for a in adv)))</code></pre>
+
+<pre><code>$ python agrae_demo.py
+prog  p      w      att    sum|A|
+0.2  0.125  0.260  0.556   0.76
+0.2  0.500  0.440  0.556   1.96
+0.2  0.875  0.723  0.556   2.13
+0.5  0.125  0.463  0.667   1.63
+0.5  0.500  0.350  0.667   1.87
+0.5  0.875  0.495  0.667   1.74
+0.8  0.125  0.665  0.833   2.93
+0.8  0.500  0.260  0.833   1.73
+0.8  0.875  0.266  0.833   1.17</code></pre>
+
+<p>prog 是这批题的平均奖励，当"模型现在有多强"的代理。0.2 时 p = 0.875 那一桶（简单题）拿走 2.13 的更新量最多；0.8 时反过来，p = 0.125（难题）拿到 2.93；中间的 0.5 三个桶几乎打平（1.63 / 1.87 / 1.74）。gamma 是难度倾向的旋钮，调小让焦点更早偏向难题。注意这是我按论文两条设计原则写的复刻，不是官方实现，官方代码在 verl 上改的。</p>
+
+<h2>四、真实成绩，和"转述会漂"这件事</h2>
+
+<p>论文在 7 个基准上验证，文本纯数学加多模态，基座是 Qwen2.5-Math-7B、DeepSeek-R1-7B、Qwen2.5-VL-3B。AIME2025 和 AMC23 各跑 16 次，其余 4 次。表 2 里最能说明问题的是这几个数：</p>
+
+<table>
+<thead><tr><th>基准</th><th>方法</th><th>Pass@1</th><th>Avg (k=1..256)</th></tr></thead>
+<tbody>
+<tr><td>MATH</td><td>GRPO</td><td>76.5</td><td>88.8</td></tr>
+<tr><td>MATH</td><td>GRPO + A-GRAE</td><td>78.3</td><td>90.8</td></tr>
+<tr><td>MATH</td><td>Dr.GRPO</td><td>77.2</td><td>89.3</td></tr>
+<tr><td>MATH</td><td>Dr.GRPO + A-GRAE</td><td>78.6</td><td>91.3</td></tr>
+<tr><td>AIME2025</td><td>DAPO</td><td>12.0</td><td>30.5</td></tr>
+<tr><td>AIME2025</td><td>DAPO + A-GRAE</td><td>13.3</td><td>32.9</td></tr>
+<tr><td>AMC23</td><td>GRPO</td><td>60.2</td><td>79.2</td></tr>
+<tr><td>AMC23</td><td>GRPO + A-GRAE</td><td>62.6</td><td>84.8</td></tr>
+</tbody>
+</table>
+
+<p>多模态那边有个更扎眼的数字：Qwen2.5-VL-3B 在医学影像 Xray300 上，GRPO 63.2 → 71.3，DAPO 63.1 → 71.6。8 个点不是噪声，说明"难题没被好好练"在分布外任务上代价最大。</p>
+
+<p>这里插一句不太舒服的观察。同一篇论文，两家中文媒体在同一天给出的数字对不上：一篇写 DAPO+A-GRAE 在 AIME2025 平均 53.3%、原版 52.2%；另一篇写 30.5% 提到 32.9%。论文表 2 的 Avg 列是 30.5 → 32.9，52.2/53.3 应该是别的口径（某个具体 k，或者不同 run）。我提这个不是说谁错了，而是想说明：<strong>Pass@k 的平均分本身很脆</strong>，k 的取值范围、跑几次、报哪个数，都能让结论看起来不一样。看这类结果，去翻表，别只看正文里那个被引用的数字。这也正好是这篇论文的隐喻 —— 一个数字好看，不代表能力真的往外长了。</p>
+
+<h2>五、接进 verl 要改的地方</h2>
+
+<p>官方代码基于 verl 和 W-REINFORCE，仓库里已经把对照组和实验组的启动脚本都摆好了：</p>
+
+<pre><code>conda create -y -n verl python=3.10.14 &amp;&amp; conda activate verl
+pip install -e .
+pip install vllm==0.8.2 latex2sympy2 fire tensordict==0.7.2
+python -m pip install flash-attn --no-build-isolation
+
+bash run_qwen2.5-math-7b-grpo.sh          # 基线
+bash run_qwen2.5-math-7b-grpo-agrae.sh    # 加 A-GRAE
+bash eval.sh                              # 先填 MODEL_PATH 和 OUTPUT_DIR
+python calculate_metrics.py --file_path &lt;待评测文件&gt;</code></pre>
+
+<p>两个坑写在 README 的 Troubleshoot 里，我都记下来了：OOM 时降 actor_rollout_ref.actor.ppo_max_token_len_per_gpu（以及 rollout / ref 的同名参数）；卡在 "Started a local Ray instance." 时，去 verl/trainer/main_ppo.py 的 ray.init() 里补 num_cpus。</p>
+
+<p>自己接的话，真正要动的位置只有一个：算完组内优势、还没进 PPO 更新之前。A-GRAE 是即插即用的，输入是 advantages 加一个 batch 级标量，输出还是 advantages，不碰 rollout 也不碰 reward model。上面那段 agrae() 就是可以直接嵌进去的形状。</p>
+
+<p>训练起来之后我建议盯三个量，比盯 loss 有用：</p>
+
+<ul>
+<li><strong>策略熵</strong>：单调下滑且收敛到很低，就是熵坍缩的先兆，别等 Pass@k 掉下来才发现。</li>
+<li><strong>批内正确条数</strong>：论文图 3 画的就是这个。它一直涨说明题目对模型越来越简单，课程该往前推了。</li>
+<li><strong>p 的直方图</strong>：如果 0.9 以上那一桶越来越胖、0.2 以下几乎没有，说明题库里能突破上限的题已经不够用了 —— 这时候调算法不如换数据。</li>
+</ul>
+
+<h2>六、和这两天的事有什么关系</h2>
+
+<p>GPT-6.2 Astra 和 Sol 在 11-17 发布，参数、价格、基准刷了一屏；同一天新智元还有一条容易被忽略的消息：OpenAI 把四家外部机构拉进来，彻查它迄今规模最大的一次 RL 训练。两件事放在一起看，2026 年后训练的瓶颈已经从"能不能训起来"变成"训出来的是不是我们以为的那个东西"。</p>
+
+<p>这篇论文补的是另一个角度的证据：<strong>不是训练不稳，是目标函数本身在漏</strong>。你看到 Pass@1 一路上扬，很可能只是模型把已经会做的事做得更熟了，能力的边界一步没往外挪。这个判断标准比任何 benchmark 都实用 —— 拿同一个模型跑 Pass@1 和 Pass@256，两个数朝相反方向走，就说明训练在收窄而不是在变强。</p>
+
+<p>至于要不要马上换 A-GRAE：如果手上是标准的 GRPO/DAPO 流水线，改一行 advantage 计算、加两个标量，成本极低，AIME 和 AMC 上那 1 到 5 个点的提升是白给的。但如果你现在的瓶颈是数据质量或者 reward 判错，那先别动算法 —— 两层对称是在"奖励本身可信"的前提下才成立的修正。地基没打好，往上加不对称，只是让错误的方向学得更快。</p>''',
+    'related': [("MOPD 多教师蒸馏：把 RL 专家的能力合进一个学生模型", "blog/mopd-multi-teacher-distillation-2026/"), ("AI 自己改自己：RSI 从论文走到 changelog", "blog/rsi-self-improvement-loop-2026/"), ("1000 万 token 的瓶颈不在注意力：98% 的时间花在「找」", "blog/latent-sparse-attention-10m-context-2026/")],
+},
+{
     'slug': 'latent-sparse-attention-10m-context-2026',
     'category': 'ai',
     'date': '2026-11-17',
