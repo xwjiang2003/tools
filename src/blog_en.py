@@ -6,6 +6,390 @@
 """
 
 ARTICLES_EN = {
+'java4shell-openjdk-base64-rce-2026': {
+    'tags': ["Java security", "OpenJDK", "vulnerability analysis", "memory safety"],
+    'title': "Java4Shell (CVE-2026-114938): OpenJDK's Base64 decoder writes 62 bytes past the buffer, CVSS 9.2 | DevTools Blog",
+    'description': "The x86-64 Base64 intrinsic in OpenJDK subtracts past zero when the tail is a degenerate padding sequence, so bzhiq receives -1, returns an all-ones mask and evmovdqub writes a full 64 bytes, overshooting by 62. CVE-2026-114938 scores 9.2 under CVSS 4.0 and affects OpenJDK from 17.0.6 plus Corretto, Temurin, Zulu and the rest, but only on x86-64 hosts with AVX-512 VBMI. This post reproduces the mask underflow in plain Python with the overshoot for six tail shapes, ships a standalone Java trigger with real output from a host that does not reproduce, explains why buffering request bodies is not a general mitigation, and argues that version and hardware must be checked together.",
+    'keywords': "Java4Shell, CVE-2026-114938, OpenJDK vulnerability, OpenJDK Base64 vulnerability, Java remote code execution, Java RCE fix, how to detect Java4Shell, Base64 decoder out of bounds write, AVX-512 VBMI, bzhiq underflow, evmovdqub, HotSpot intrinsic, Keycloak vulnerability fix, Jenkins vulnerability fix, Confluence vulnerability, how to check if a server is affected, JDK 17.0.6 vulnerability, UseBASE64Intrinsics, UseAVX=2 mitigation, java base64 vulnerability tutorial",
+    'h1': "Sixty-four A characters and one equals sign: how OpenJDK's Base64 fast path wrote 62 bytes past the buffer",
+    'summary': "A 65-byte malformed input makes the OpenJDK Base64 intrinsic run a 50-byte buffer all the way to offset 111. The cause is output_len going negative after padding, which bzhiq reads as unsigned and answers with an all-ones mask. This post reproduces the underflow, shows a real trigger result, and explains why version numbers alone get triage wrong.",
+    'body': '''<p>Feed this single line to the OpenJDK Base64 decoder and, on certain x86-64 servers, it writes 62 bytes past the end of the heap allocation before it ever throws IllegalArgumentException:</p>
+
+<pre><code>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</code></pre>
+
+<p>Sixty-four A characters and one equals sign. The buffer is allocated at 50 bytes. The write starts at offset 48 and runs through offset 111. The exception is still thrown, the stack trace still looks clean, and the memory next door is no longer what it was. This is Java4Shell, CVE-2026-114938, CVSS 4.0 score 9.2.</p>
+
+<p>The disclosure comes from the security team at Calif (the lcamtuf lineage) and went public on 2026-11-18. Greg Brockman amplified it on X the same morning, crediting GPT-6 Cyber for finding it. It hit 983 points at third place on Hacker News. Chinese outlets picked it up within hours.</p>
+
+<h2>1. Whether you are exposed depends on two conditions, not one</h2>
+
+<p>What is affected is the x86-64 Base64 intrinsic in OpenJDK HotSpot: the path where C2 JIT compiles java.util.Base64 decoding into AVX-512 VBMI accelerated code. So the triage needs both halves:</p>
+
+<ul>
+<li><strong>Version</strong>: OpenJDK 17.0.6 and later. Oracle lists 8u511b33-perf, 17.0.21.0.3, 21.0.13.0.3, 25.0.5.0.3 and 27.0.1.0.3 as affected in the same patch batch. Corretto, Temurin, Zulu, Liberica, SapMachine, Microsoft Build and GraalVM for JDK all inherit it.</li>
+<li><strong>Hardware</strong>: x86-64 with AVX-512 VBMI, meaning Intel Xeon from Ice Lake onward and AMD EPYC or Ryzen from Zen 4 onward. ARM64 has none of that assembly and is unaffected.</li>
+</ul>
+
+<p>I happen to have a JDK sitting exactly on the version boundary here: 17.0.6. The standalone trigger Calif published looks like this, and every write stays inside a real 4096-byte array, so simply running it breaks nothing:</p>
+
+<pre><code>import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+
+public final class Base64Trigger {
+    private static volatile int sink;
+
+    public static void main(String[] args) {
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] valid = "A".repeat(64).getBytes(StandardCharsets.US_ASCII);
+        byte[] malformed = ("A".repeat(64) + "=").getBytes(StandardCharsets.US_ASCII);
+        byte[] target = new byte[4096];
+
+        for (int i = 0; i &lt; 200_000; i++) {
+            sink += decoder.decode(valid, target);
+        }
+
+        Arrays.fill(target, (byte) 0x5a);
+        boolean rejected = false;
+        try {
+            decoder.decode(malformed, target);
+        } catch (IllegalArgumentException expected) {
+            rejected = true;
+        }
+
+        int changed = 0;
+        int first = -1;
+        int last = -1;
+        for (int i = 50; i &lt; target.length; i++) {
+            if (target[i] != (byte) 0x5a) {
+                changed++;
+                if (first &lt; 0) first = i;
+                last = i;
+            }
+        }
+
+        System.out.println("runtime=" + System.getProperty("java.runtime.version"));
+        System.out.println("vm=" + System.getProperty("java.vm.name"));
+        System.out.printf("rejected=%s changed=%d first=%d last=%d%n",
+            rejected, changed, first, last);
+
+        if (!rejected || changed != 62 || first != 50 || last != 111) {
+            System.err.println("NOT REPRODUCED");
+            System.exit(1);
+        }
+        System.out.println("REPRODUCED");
+    }
+}</code></pre>
+
+<p>Compile and run:</p>
+
+<pre><code>$ javac Base64Trigger.java &amp;&amp; java Base64Trigger
+runtime=17.0.6+9-LTS-190
+vm=Java HotSpot(TM) 64-Bit Server VM
+rejected=true changed=0 first=-1 last=-1
+NOT REPRODUCED</code></pre>
+
+<p>The version is squarely inside the affected range and nothing happens. This machine is a Core Ultra 5 338H, an Arrow Lake part with no AVX-512, so the intrinsic takes a different branch. This is exactly where triage goes wrong: <strong>version alone flags safe machines as vulnerable and lets vulnerable machines believe they are fine</strong>. Inventory checks need both conditions or the answer is wrong in both directions.</p>
+
+<p>A useful side check is to ask the JIT what it actually chose:</p>
+
+<pre><code>$ java -XX:-UseBASE64Intrinsics -XX:+PrintFlagsFinal -version 2&gt;/dev/null | grep -E "Base64Intrinsics|UseAVX"
+     intx UseAVX                                   = 2                                    {ARCH product} {default}
+     bool UseBASE64Intrinsics                      = false                                {product} {command line}</code></pre>
+
+<p>UseAVX defaults to 2 (AVX2 here), which confirms this box never entered the AVX-512 path. The second line doubles as proof that the mitigation flag actually took effect: the {command line} tag means the value came from the command line rather than the default. During incident work I always read that line. Config files get edited, environment variables override them, wrapper scripts drop arguments, and the effective value is the only thing worth trusting.</p>
+
+<h2>2. The root cause is an integer underflow, not a missing bounds check</h2>
+
+<p>The intrinsic iterates input in 256-byte chunks and handles the remainder in 64-byte blocks. The tail block is written with evmovdqub (VMOVDQU8), which takes a 64-bit mask k1 deciding which bytes actually reach memory. The mask is computed from lengths:</p>
+
+<pre><code>input_mask  := bzhiq(-1, input_length)
+output_len  := (input_length / 4) * 3
+
+if input[input_length - 1] == '=':
+    output_len -= 1
+    input_mask >>= 1
+    if input[input_length - 2] == '=':
+        output_len -= 1
+        input_mask >>= 1
+
+output_mask := bzhiq(-1, output_len)</code></pre>
+
+<p>bzhiq means "zero high bits starting at bit position index", and when index is 64 or greater it changes nothing and returns the source unchanged. output_len is a signed integer: when the remaining input looks like =, ==, X=, X== or XY=, the (input_length / 4) * 3 term evaluates to 0 and then padding subtracts 1 or 2, landing on -1 or -2. Passed to bzhiq, -1 read as unsigned is an enormous number, so the mask comes back as all ones and evmovdqub writes the full 64 bytes.</p>
+
+<p>The 65-byte input makes the arithmetic concrete. The first 64 characters are consumed as a full block producing 48 bytes, leaving a single = at offset 48. Total buffer length is ceil(65/4)*3 - 1 = 50. An all-ones mask writes 64 bytes starting at 48, ending at 111, which is 62 bytes past the end. <strong>Order matters: the Java-level validation runs after the intrinsic returns</strong>, so by the time the exception is thrown the damage is already done. That IllegalArgumentException in the log does not mean nothing happened.</p>
+
+<p>Porting the mask logic to plain Python makes the overflow visible without any AVX-512 hardware:</p>
+
+<pre><code>M64 = (1 &lt;&lt; 64) - 1
+
+
+def bzhiq(src, index):
+    if index &lt; 0 or index &gt;= 64:
+        return src &amp; M64
+    return src &amp; ((1 &lt;&lt; index) - 1)
+
+
+def run_tail(tail, head=64):
+    total_in = head + len(tail)
+    pad = tail.count(b"=")
+    buf_len = ((total_in + 3) // 4) * 3 - pad
+    output_len = (len(tail) // 4) * 3
+    if tail.endswith(b"="):
+        output_len -= 1
+        if tail.endswith(b"=="):
+            output_len -= 1
+    written = bin(bzhiq(M64, output_len)).count("1")
+    last = 48 + written - 1
+    return buf_len, output_len, written, last, last - (buf_len - 1)
+
+
+print("%-5s %-7s %-10s %-6s %-9s %s" % ("tail", "buf_len", "output_len", "bytes", "last_byte", "past_end"))
+for tail in [b"=", b"==", b"X=", b"X==", b"XY=", b"===", b"XYAB"]:
+    b, ol, w, last, over = run_tail(tail)
+    print("%-5s %-7d %-10d %-6d %-9d %d" % (tail.decode(), b, ol, w, last, over))</code></pre>
+
+<pre><code>$ python mask_sim.py
+tail  buf_len output_len bytes  last_byte past_end
+=     50      -1         64     111       62
+==    49      -2         64     111       63
+X=    50      -1         64     111       62
+X==   49      -2         64     111       63
+XY=   50      -1         64     111       62
+===   48      -2         64     111       64
+XYAB  51      3          3      50        0</code></pre>
+
+<p>The first six rows are the same class of degenerate tail, each writing the full 64 bytes and overshooting by 62 to 64. The last row is a legal four-character tail writing 3 bytes with no overflow. Note that X= and X== differ not in the sign of output_len but in the buffer being one byte shorter; the overshoot is always the gap between how much room is left and how much gets written.</p>
+
+<p>One more detail shapes exploitation: only byte 0 is fully controlled, byte 1 has 4 controllable bits, bytes 2 through 63 are not controllable at all, and bytes 48 through 63 are always 0x9a. This is not an arbitrary write. It is a write with a controllable landing spot and mostly fixed content.</p>
+
+<h2>3. The attack surface is wider than one API</h2>
+
+<p>The bug lives in the decoder, so every path that reaches Base64 decoding is an entry point. Calif demonstrated pre-auth RCE in Keycloak, Atlassian Jira and Confluence, JFrog Artifactory, Jenkins and PingFederate; post-auth in Kafka Broker, Solr, Elasticsearch, Gerrit and Spinnaker. Sample Struts and Spring Boot apps reproduced it through ordinary features like login and file upload.</p>
+
+<p>The client side is the counterintuitive part: a Java program that merely connects to a malicious TLS server is compromised even though it exposes no port at all (samczsun contributed the client-side exploit). The reason is mundane. Certificate chains, JWT, SAML assertions and bearer tokens are all Base64-wrapped, and decoding them is routine on the client.</p>
+
+<p>So "we do not expose a Base64 endpoint" is not a conclusion. Three questions actually matter: does the process decode Base64, can external input reach it, and is the host x86-64 with AVX-512 VBMI. The first two are almost always yes. The third removes most of the fleet, because consumer Intel parts dropped AVX-512 from Alder Lake onward, which means developer laptops and CI runners are naturally immune while the production Xeon and EPYC fleet is fully exposed. That combination is nasty: it does not reproduce locally and it hits everywhere in production.</p>
+
+<h2>4. What sits between triggering and RCE</h2>
+
+<p>The overflow writes fixed bytes, so Calif builds two primitives out of it. First, a writer: overwrite a buffer length field so it accepts arbitrary bytes, turning the fixed write into a bounded linear write with selectable values. Second, a reader: corrupt another array length and get its contents echoed into a response, leaking heap data (they call it JavaBleed: PII, private keys, tokens). In between sits heap grooming, since G1 divides the heap into fixed-size regions and the key arrays have to leave the thread-local TLAB and take the outside-TLAB allocation path, plus multiple writer/reader pairs sprayed in parallel.</p>
+
+<p>Remote heap grooming is the hard part: send a request in fragments, wait for TCP acknowledgement before controlling the next allocation, then finish the request. It is extremely sensitive to RTT and jitter. There is one thing in the writeup that looks like a universal fix and is not: nginx buffers request bodies by default, which appears to defeat fragmentation. But Elasticsearch runs the whole exploit from a single complete request, and frames after a WebSocket upgrade travel through a tunnel and never touch body buffering. Calif states plainly that request buffering is not a general mitigation.</p>
+
+<p>Their phase breakdown works well as a checklist for judging whether a target is really exploitable: WARM (repeated legal decoding so the JIT picks the affected fast path, without corrupting memory), REHEARSE (safe calibration pass for timing), TRIGGER (send the malformed tail), DISCLOSE (amplify the reader and collect heap bytes from responses), REPAIR (restore headers and untouched neighbours using leaked originals), FINISH (apply the target-specific change and verify through a real request). There is no universal payload; every target needs its own profile.</p>
+
+<h2>5. Three things you can do tonight</h2>
+
+<p>OpenJDK published an advisory at 13:00 PT on 2026-11-17 and Oracle shipped its patch batch at the same time. So the first item is not a discussion: upgrade to the patched build. The hard part is the fraction of the fleet that cannot be upgraded this week.</p>
+
+<p>The second item is the temporary mitigation, one of two flags on the command line:</p>
+
+<pre><code># Disable the hardware-accelerated codecs. Safest; cost lands on Base64 hot paths only.
+-XX:-UseBASE64Intrinsics
+
+# Or cap AVX at AVX2. x86-64 hosts only.
+-XX:UseAVX=2</code></pre>
+
+<p>The second one deserves a warning repeated three times: <strong>x86-64 only</strong>. OpenJDK on ARM does not recognize that flag and will refuse to start. In a mixed fleet (some Graviton, some Xeon) sharing one JVM options template, that flag takes down every ARM node at once, and you find out after the restart. Scope it per environment, or just use the first flag everywhere.</p>
+
+<p>The third item is inventory, judged on version and hardware together. On each host, pull the CPU flags and the JDK version, then correlate:</p>
+
+<pre><code># All four flags must be present on x86-64. Output of 4 means exposed.
+grep -m1 '^flags' /proc/cpuinfo | grep -oE 'avx512f|avx512bw|avx512vbmi|bmi2' | sort -u | wc -l
+
+# Coarse version filter. Note JDK 17 needs 128 A characters, 21+ needs 64.
+java -XshowSettings:properties -version 2&gt;&amp;1 | grep 'java.version'</code></pre>
+
+<p>A result of 4 means exposed; 0 through 3 means not. Put this in a script rather than a wiki page, because a wiki goes stale and a script asks the machine again every time it runs.</p>
+
+<h2>6. Two things worth remembering from this disclosure</h2>
+
+<p>The first is cost. Calif researcher Quang Luong found the bug in about an hour, had a working exploit two hours later, and spent under 200 dollars in tokens using GPT-6 Cyber. That number is more concrete than any AI security report I have read this year: a CVSS 9.2 flaw affecting Keycloak and Jenkins, from nothing to reproducible exploit, now costs less than a team lunch.</p>
+
+<p>The second is about patches themselves, and it is worse. On the same day, Google's threat intelligence group reported observing attackers writing exploit code directly from patches: vendors change a few lines, AI stares at those lines, and the vulnerability falls out. Stack the two together and you have a pipeline. A patch release is a public hint, and AI converts it into an exploit within hours. The old rhythm of internal canary first, fleet-wide upgrade two weeks later now hands an opponent a two-week head start.</p>
+
+<p>Calif closes with an idea I find persuasive, which they call vibe uncoding: instead of asking what else can be built, ask what can be deleted. Dead code, unused features, optimization paths that exist for three percent of traffic. Code you delete cannot produce a CVE. This Base64 intrinsic is the archetype. Its entire value was making decoding a bit faster, and the price was a 9.2.</p>
+
+<p>For prioritization today: if you run Keycloak, Jenkins, Confluence or Artifactory on x86-64, add -XX:-UseBASE64Intrinsics now and schedule the upgrade, do not wait for a window. If your hardware has no AVX-512, you can watch this one from the sidelines, but write the two-condition rule into your next triage runbook. The lesson here is not that Java has a bug. It is that version numbers lie.</p>''',
+    'related': [("Autonomous vulnerability discovery: 1724 kernel bugs in one run", "blog/openai-autonomous-vuln-discovery-2026/"), ("It got root, then deleted its own overreach from the answer sheet", "blog/agent-incident-report-gap-2026/"), ("The day a third-party script was poisoned, CSP stopped 15 percent of sites", "blog/optimizely-third-party-script-hijack-2026/")],
+},
+'grpo-implicit-advantage-symmetry-2026': {
+    'tags': ["reinforcement learning", "GRPO", "post-training", "verifiable rewards"],
+    'title': "GRPO has two hidden symmetries: why Pass@256 drops below the untrained base model | DevTools Blog",
+    'description': "A University of Hong Kong team shows in a NeurIPS 2026 paper (arXiv:2602.05548) that GRPO's in-group normalization carries two implicit advantage symmetries. Group-level zero sum starves unsampled but correct paths of any gradient, and sample-level weighting gives p=0.25 exactly as much update as p=0.75. On MATH with Qwen2.5-Math-7B, Pass@256 falls from 96.3 at the base model to 95.0 after GRPO, which is that mechanism cashing out. This post reproduces both theorems with the standard library, matches sum|A| against 2n times sqrt(p(1-p)) digit for digit, implements the two A-GRAE knobs and measures the focus shift, then lists the verl commands and three training metrics worth watching.",
+    'keywords': "GRPO, GRPO explained, GRPO limitations, implicit advantage symmetry, A-GRPO alternative, GRPO exploration, entropy collapse, RLVR, reinforcement learning with verifiable rewards, post-training tutorial, why Pass@k drops, how to improve Pass@k, curriculum learning reinforcement learning, DAPO, Dr.GRPO, verl training tutorial, difficulty weighting reinforcement learning, NeurIPS 2026 paper, Qwen2.5-Math-7B GRPO, how to monitor policy entropy, GRPO step by step",
+    'h1': "The conservatism that training buys: how one normalization line in GRPO locks exploration and difficulty adaptation at once",
+    'summary': "On MATH the base model hits Pass@256 of 96.3 and standard GRPO drags it down to 95.0. The paper traces this to two symmetries created by in-group normalization: group-level zero sum starves unsampled paths, sample-level weighting hands easy and hard questions the same update. Includes standard-library code that turns both theorems into numbers you can check.",
+    'body': '''<p>Start with a number that is hard to explain. Qwen2.5-Math-7B on MATH reaches Pass@256 of 96.3 as a base model. Train it with standard GRPO and Pass@256 falls to 95.0. Pass@1 climbs from 63.4 to 76.5, which looks like a clean win, but give the trained model 256 samples and it loses to the model that was never trained at all.</p>
+
+<p>A team at the University of Hong Kong, led by Liangqiong Qu, split that paradox into two layers in a paper titled "Unveiling Implicit Advantage Symmetry", accepted at NeurIPS 2026, arXiv 2602.05548 (v1 February 2026, v4 September 2026), with code at HKU-HealthAI/A-GRAE. The culprit is not in the reward function and not in the sampling strategy. It is in the one line of GRPO that subtracts the group mean and divides by the standard deviation.</p>
+
+<h2>1. What that normalization quietly does</h2>
+
+<p>GRPO is simple by design: sample a group of answers for one prompt, score them with a binary verifier, normalize within the group as A_i = (r_i - mean) / std, reward the high ones and punish the low ones. Dividing by std makes the absolute advantages of correct and incorrect trajectories strictly equal, so the advantages inside a group sum to exactly zero.</p>
+
+<p>Zero-sum sounds fair. The cost hides in the paths that were never sampled. A low-probability but correct solution that the model never drew gets no reward signal, so its logit update is zero. What the model learns is confined to the routes it already walks. The paper calls this group-level symmetry. A more direct description: <strong>GRPO only plays seesaw on paths it has already carved</strong>.</p>
+
+<p>This is not a metaphor. Write the softmax policy gradient out and it is immediate: the logit update for a trajectory b is proportional to A_b times the indicator that b was sampled, minus p_b times the sum of all advantages. When that sum is zero, the second term vanishes and an unsampled trajectory, whose indicator is zero, receives no push at all.</p>
+
+<pre><code>import math
+
+
+def advantages(rewards):
+    n = len(rewards)
+    mean = sum(rewards) / n
+    std = math.sqrt(sum((r - mean) ** 2 for r in rewards) / n)
+    return [(r - mean) / std for r in rewards]
+
+
+adv = advantages([1, 0, 0, 0])
+total = round(sum(adv), 9)
+zero = abs(total) &lt; 1e-9
+
+print("advantages:", [round(a, 3) for a in adv])
+print("sum(A) =", 0.0 if zero else total)
+print("unsampled logit update =", 0.0 if zero else -0.05 * total)
+
+print()
+n = 8
+print("k  p      sum|A|  formula")
+for k in range(1, n):
+    s = sum(abs(a) for a in advantages([1] * k + [0] * (n - k)))
+    p = k / n
+    print("%d  %.3f  %6.3f  %6.3f" % (k, p, s, 2 * n * math.sqrt(p * (1 - p))))</code></pre>
+
+<pre><code>$ python grae.py
+advantages: [1.732, -0.577, -0.577, -0.577]
+sum(A) = 0.0
+unsampled logit update = 0.0
+
+k  p      sum|A|  formula
+1  0.125   5.292   5.292
+2  0.250   6.928   6.928
+3  0.375   7.746   7.746
+4  0.500   8.000   8.000
+5  0.625   7.746   7.746
+6  0.750   6.928   6.928
+7  0.875   5.292   5.292</code></pre>
+
+<p>The first half is theorem 1 in numbers: one group of four trajectories, one correct and three wrong, gives advantages of +1.732 and three copies of -0.577 that sum to exactly zero. Take 0.05 as the probability of an unsampled trajectory and its logit update is 0.0, not small, exactly zero. That is the mechanism behind the Pass@k drop. Larger k leans harder on paths that were never sampled, and those are precisely the paths GRPO never pushes on.</p>
+
+<h2>2. The second symmetry: 0.25 and 0.75 are treated as identical</h2>
+
+<p>The second half is a step I derived myself; the paper reaches the same conclusion. With n samples and k of them correct under binary rewards, std equals sqrt(k(n-k))/n, so a correct trajectory has advantage sqrt((n-k)/k) and a wrong one has -sqrt(k/(n-k)). The absolute advantages inside the group sum to:</p>
+
+<pre><code>sum|A| = k·sqrt((n-k)/k) + (n-k)·sqrt(k/(n-k))
+       = 2·sqrt(k(n-k))
+       = 2n·sqrt(p(1-p))        # with k = np</code></pre>
+
+<p>With n = 8 and k swept from 1 to 7, sum|A| matches 2n·sqrt(p(1-p)) digit for digit: 5.292, 6.928, 7.746, 8.000, 7.746, 6.928, 5.292. Two things are obvious. The peak sits at p = 0.5, and k = 2 is indistinguishable from k = 6.</p>
+
+<p>That is the second lock. A question the model solves 75 percent of the time, nearly learned, and one it solves 25 percent of the time, still out of reach, receive identical update magnitude. Medium difficulty takes the most signal while easy and hard take the same amount, and since the model keeps improving, easy questions only grow as a share of the pool. Compute keeps pouring into questions already solved. Fluency goes up, range goes down.</p>
+
+<p>There is an annoying practical detail here too: when k is 0 or n, std is zero and the whole group is discarded. With 8 samples, all-correct and all-wrong groups are not rare in mid-training, and those rollouts are pure waste. It is an old sampling-efficiency complaint about GRPO that this paper does not solve, but stacked on the two symmetries it explains why adding GPUs often fails to help.</p>
+
+<h2>3. A-GRAE: two knobs that slide with training progress</h2>
+
+<p>The controlled experiments are clean. Artificially amplifying the advantage of correct trajectories drives entropy collapse and finishes last at large sampling budgets. Artificially suppressing them unlocks exploration but destabilizes late training. Neither direction alone is the answer; the answer is loose early, tight late. Sample level is the same story: learn easy questions early to establish reasoning format, shift to hard ones late to raise the ceiling, and this beats any static weighting.</p>
+
+<p>In implementation it comes down to two knobs. At the group level, attenuate positive advantages and relax the attenuation as training proceeds. At the sample level, slide the difficulty focus from easy to hard using the batch mean reward as a proxy for progress, which needs no extra labels and no extra compute. Here is a minimal implementation of both, run across three difficulty buckets:</p>
+
+<pre><code>import math
+
+
+def advantages(rewards):
+    n = len(rewards)
+    mean = sum(rewards) / n
+    std = math.sqrt(sum((r - mean) ** 2 for r in rewards) / n)
+    return [(r - mean) / std for r in rewards]
+
+
+def agrae(rewards, prog, alpha=1.0, gamma=0.1):
+    p = sum(rewards) / len(rewards)
+    att = 1.0 / (1.0 + alpha * (1.0 - prog))
+    w = (1.0 - prog) * p + prog * gamma / max(p, 1e-3)
+    return [a * att * w for a in advantages(rewards)], p, w, att
+
+
+print("prog  p      w      att    sum|A|")
+for prog in (0.2, 0.5, 0.8):
+    for k in (1, 4, 7):
+        rewards = [1] * k + [0] * (8 - k)
+        adv, p, w, att = agrae(rewards, prog)
+        print("%.1f  %.3f  %.3f  %.3f  %5.2f" % (prog, p, w, att, sum(abs(a) for a in adv)))</code></pre>
+
+<pre><code>$ python agrae_demo.py
+prog  p      w      att    sum|A|
+0.2  0.125  0.260  0.556   0.76
+0.2  0.500  0.440  0.556   1.96
+0.2  0.875  0.723  0.556   2.13
+0.5  0.125  0.463  0.667   1.63
+0.5  0.500  0.350  0.667   1.87
+0.5  0.875  0.495  0.667   1.74
+0.8  0.125  0.665  0.833   2.93
+0.8  0.500  0.260  0.833   1.73
+0.8  0.875  0.266  0.833   1.17</code></pre>
+
+<p>Here prog is the batch mean reward, standing in for how capable the model currently is. At 0.2 the p = 0.875 bucket, the easy one, takes the largest share at 2.13. At 0.8 the picture flips and p = 0.125, the hard bucket, takes 2.93. In the middle at 0.5 all three are nearly tied at 1.63, 1.87 and 1.74. gamma is the difficulty bias knob; lower it to push focus toward hard questions earlier. This is my reimplementation from the paper's two design principles, not the official code, which is built on verl.</p>
+
+<h2>4. Real numbers, and why retellings drift</h2>
+
+<p>The paper validates on seven benchmarks covering text math and multimodal, with Qwen2.5-Math-7B, DeepSeek-R1-7B and Qwen2.5-VL-3B as bases. AIME2025 and AMC23 get 16 runs each, the rest 4. The clearest rows from Table 2:</p>
+
+<table>
+<thead><tr><th>Benchmark</th><th>Method</th><th>Pass@1</th><th>Avg (k=1..256)</th></tr></thead>
+<tbody>
+<tr><td>MATH</td><td>GRPO</td><td>76.5</td><td>88.8</td></tr>
+<tr><td>MATH</td><td>GRPO + A-GRAE</td><td>78.3</td><td>90.8</td></tr>
+<tr><td>MATH</td><td>Dr.GRPO</td><td>77.2</td><td>89.3</td></tr>
+<tr><td>MATH</td><td>Dr.GRPO + A-GRAE</td><td>78.6</td><td>91.3</td></tr>
+<tr><td>AIME2025</td><td>DAPO</td><td>12.0</td><td>30.5</td></tr>
+<tr><td>AIME2025</td><td>DAPO + A-GRAE</td><td>13.3</td><td>32.9</td></tr>
+<tr><td>AMC23</td><td>GRPO</td><td>60.2</td><td>79.2</td></tr>
+<tr><td>AMC23</td><td>GRPO + A-GRAE</td><td>62.6</td><td>84.8</td></tr>
+</tbody>
+</table>
+
+<p>Multimodal has the most striking entry: Qwen2.5-VL-3B on Xray300 goes from 63.2 to 71.3 with GRPO and 63.1 to 71.6 with DAPO. Eight points is not noise, and it says the price of under-training hard questions is highest out of distribution.</p>
+
+<p>One uncomfortable observation. Two Chinese outlets covering the same paper on the same day report different numbers: one says DAPO+A-GRAE averages 53.3 percent on AIME2025 against 52.2 for stock DAPO, the other says 30.5 to 32.9. Table 2's Avg column is 30.5 to 32.9, so 52.2 and 53.3 are measuring something else, a specific k or a different run. I mention it not to score points but because <strong>Pass@k averages are fragile</strong>: the range of k, the number of runs and which number gets quoted all change how the conclusion looks. Read the table. This is also the paper's own metaphor. A number looking good does not mean capability actually grew.</p>
+
+<h2>5. What it takes to wire into verl</h2>
+
+<p>The official code builds on verl and W-REINFORCE, and the repo ships both the control and treatment scripts:</p>
+
+<pre><code>conda create -y -n verl python=3.10.14 &amp;&amp; conda activate verl
+pip install -e .
+pip install vllm==0.8.2 latex2sympy2 fire tensordict==0.7.2
+python -m pip install flash-attn --no-build-isolation
+
+bash run_qwen2.5-math-7b-grpo.sh          # baseline
+bash run_qwen2.5-math-7b-grpo-agrae.sh    # with A-GRAE
+bash eval.sh                              # set MODEL_PATH and OUTPUT_DIR first
+python calculate_metrics.py --file_path &lt;file to evaluate&gt;</code></pre>
+
+<p>Two gotchas sit in the README's Troubleshoot section, both worth noting. On OOM, lower actor_rollout_ref.actor.ppo_max_token_len_per_gpu along with the rollout and ref equivalents. When training hangs after "Started a local Ray instance.", add num_cpus to ray.init() in verl/trainer/main_ppo.py.</p>
+
+<p>For a custom integration there is really one place to touch: after group advantages are computed and before the PPO update. A-GRAE is plug and play, taking advantages plus one batch-level scalar and returning advantages. It does not touch rollout or the reward model. The agrae() function above is the shape you can drop in.</p>
+
+<p>Once training runs, watch three quantities instead of the loss:</p>
+
+<ul>
+<li><strong>Policy entropy</strong>: a monotonic slide into a very low value is the leading indicator of entropy collapse, and you want to see it before Pass@k drops.</li>
+<li><strong>Within-batch correct count</strong>: this is what Figure 3 plots. If it keeps climbing, the questions are getting easy for the model and the curriculum needs to advance.</li>
+<li><strong>Histogram of p</strong>: if the bucket above 0.9 keeps fattening and nothing sits below 0.2, you have run out of questions that raise the ceiling. Change the data, not the algorithm.</li>
+</ul>
+
+<h2>6. How this connects to the last two days</h2>
+
+<p>GPT-6.2 Astra and Sol shipped on November 17 and filled a screen with parameters, prices and benchmarks. The same day brought an easier-to-miss item: OpenAI pulled in four outside institutions to audit the largest RL training run it has ever done. Read together, the post-training bottleneck in 2026 has moved from "can we train it" to "is what came out the thing we think it is".</p>
+
+<p>This paper adds evidence from a different angle: <strong>the training loop is not unstable, the objective is leaking</strong>. Pass@1 going up may only mean the model got more fluent at what it already did, with the capability boundary untouched. That gives you a practical test cheaper than any benchmark. Run Pass@1 and Pass@256 on the same checkpoint; if they move in opposite directions, the training is narrowing rather than strengthening.</p>
+
+<p>As for adopting A-GRAE right away: on a standard GRPO or DAPO pipeline it is one changed advantage computation plus two scalars, so the cost is trivial and the one to five points on AIME and AMC are close to free. But if your bottleneck is data quality or a verifier that mislabels, fix that first. Both symmetries are corrections that assume the reward is trustworthy. Layering asymmetry on a broken foundation just makes the model learn the wrong direction faster.</p>''',
+    'related': [("MOPD multi-teacher distillation: merging RL experts into one student", "blog/mopd-multi-teacher-distillation-2026/"), ("AI rewriting itself: RSI moves from papers into changelogs", "blog/rsi-self-improvement-loop-2026/"), ("At 10M tokens the bottleneck is not attention: 98 percent of the time goes to finding", "blog/latent-sparse-attention-10m-context-2026/")],
+},
 'latent-sparse-attention-10m-context-2026': {
     'tags': ["sparse attention", "long context", "SGLang", "inference cost"],
     'title': "Latent Sparse Attention: 22.7x faster prefill at 10M tokens, and 98 percent of the time is spent in the indexer | DevTools Blog",
