@@ -6,6 +6,398 @@
 """
 
 ARTICLES_EN = {
+'nginx-http2-rce-2026': {
+    'tags': ["nginx security", "HTTP/2", "vulnerability analysis", "hardening"],
+    'title': "Two unauthenticated RCEs in nginx HTTP/2 (CVE-2026-123633 and CVE-2026-123007): every release from 1.9.5 to 1.31.8 is affected, with detection scripts and fix steps | DevTools Blog",
+    'description': "F5's 2026-11-18 security batch fixed two remote code execution flaws in nginx's HTTP/2 implementation. CVE-2026-123633 is a use-after-free where a connection stays on the reusable list while it is already serving a request; CVE-2026-123007 is an unsigned underflow in the flow-control counter that pushes a negative length into the TLS send path. Both need HTTP/2, and the second one works against a server that only serves static files. This post walks both root causes frame by frame, ships two runnable detectors (ALPN probe and config audit) with real output, explains why nginx.org rates one of them medium while Wiz scores 9.2, and gives the full http2 off containment procedure with verification.",
+    'keywords': "nginx vulnerability, nginx HTTP/2 vulnerability, CVE-2026-123633, CVE-2026-123007, nginx unauthenticated RCE, nginx remote code execution, nginx how to fix, upgrade nginx 1.30.7, nginx 1.31.9, nginx http2 off, how to check nginx version, nginx hardening, nginx config audit, ALPN h2 detection, nginx 1.28 vulnerability, F5 nginx advisory, nginx use-after-free, send_window underflow, nginx static site security, how to check if nginx has http2 enabled, nginx vulnerability fix steps, nginx CVE 2026",
+    'h1': "The connection was marked reusable, and then the request started: inside two unauthenticated RCEs in nginx HTTP/2",
+    'summary': "nginx shipped ten CVEs on November 18, two of them unauthenticated RCE. The first starts with a partial HEADERS frame that leaves a busy connection sitting on the reusable list. The second turns an unsigned underflow into a negative length inside the TLS send path, and it reaches that path while serving plain static files. Here are two runnable detectors, real output, and what to do before the distro patch lands.",
+    'body': '''<p>Start with the only line that matters: <strong>if your nginx speaks HTTP/2, this patch is due today. If it does not, the two CVSS 9.2 unauthenticated RCEs cannot reach you, but something else in the same batch can.</strong></p>
+
+<p>My own box is the example. devtools.help runs nginx/1.28.3 with TLS 1.3, and ALPN comes back as HTTP/1.1, so neither RCE applies. The second vhost on the same machine, game.devtools.help, carries a single line, <code>http2 on;</code>, negotiates h2 on the handshake, and serves nothing but static files. That is precisely the path Wiz demonstrated: no backend application, no third-party module.</p>
+
+<p>Sources: the Wiz Research disclosure from 2026-11-18 (with Ikotas Labs, Metnir, Rapid7 and Xint reporting independently), the nginx.org advisory page from the same day, and Hacker News where it took first place with 1411 points.</p>
+
+<h2>1. What actually shipped</h2>
+
+<p>Wiz reported the HTTP/2 use-after-free to F5 on October 21 with a working RCE that bypassed ASLR, plus a suggested patch. F5 replied honestly: another team had reported the same bug earlier. A patch for review arrived on November 10. On November 16 Wiz reported a second flaw, an integer underflow in the flow-control counter. It was confirmed for the November 18 release the next day, and everything went public together.</p>
+
+<p>That release carried ten advisories, not two. The ones a normal operator has to care about:</p>
+
+<table>
+<thead><tr><th>CVE</th><th>Issue</th><th>Affected</th><th>Trigger</th></tr></thead>
+<tbody>
+<tr><td>CVE-2026-123007</td><td>HTTP/2 flow-control memory corruption</td><td>1.9.5 to 1.31.8</td><td>HTTP/2 enabled, static sites included</td></tr>
+<tr><td>CVE-2026-123633</td><td>HTTP/2 use-after-free</td><td>1.19.7 to 1.31.8</td><td>HTTP/2 plus reverse proxy</td></tr>
+<tr><td>CVE-2026-121810</td><td>HTTP/3 use-after-free</td><td>1.25.0 to 1.31.8</td><td>QUIC enabled</td></tr>
+<tr><td>CVE-2026-123634</td><td>use-after-free in resolver responses</td><td>0.6.18 to 1.31.8</td><td>resolver used, upstream name attacker controlled</td></tr>
+<tr><td>CVE-2026-118899</td><td>infinite loop reading a body over TLS 1.3</td><td>1.13.0 to 1.31.8</td><td>TLS 1.3 supported</td></tr>
+<tr><td>CVE-2026-125283</td><td>buffer overflow with alias and try_files</td><td>0.9.6 to 1.31.8</td><td>both in the same location</td></tr>
+</tbody>
+</table>
+
+<p>Fixed releases are only two: <strong>1.30.7 on stable and 1.31.9 on mainline</strong>. Everything from 1.30.0 through 1.30.6 sits inside the blast radius. As for the 1.9.5 starting point of CVE-2026-123007, that branch dates to 2015. The bug is eleven years old.</p>
+
+<h2>2. The first one: a connection marked reusable while it is busy</h2>
+
+<p>nginx keeps a list of connections it may close when it needs free slots. <code>ngx_drain_connections()</code> picks victims from that list. An HTTP/2 connection joins the list when it has no active stream, and it has to leave the list when a request begins. The second half is where it breaks.</p>
+
+<p>Send a partial HEADERS frame. There is no active stream yet, so <code>ngx_http_v2_handle_connection()</code> reaches this:</p>
+
+<pre><code>ngx_reusable_connection(c, 1);
+
+if (h2c-&gt;state.incomplete) {
+    return;
+}</code></pre>
+
+<p>Send the rest of the frame. <code>ngx_http_v2_create_stream()</code> creates the stream and increments <code>h2c-&gt;processing</code>, but nothing removes the connection from the reusable list. nginx now believes a connection that is actively serving a request can be closed at any moment.</p>
+
+<p>All it takes next is pressure on free connection slots. Proxying the request upstream calls <code>ngx_get_connection()</code>, which triggers the drain when slots run low, and the drain can pick this very connection. Before closing it nginx wants to send a GOAWAY frame. If the connection has exhausted its frame pool and cannot allocate one, the error path closes the connection and frees its memory, then returns to the original request, which keeps using that memory. That is the use-after-free.</p>
+
+<p>One detail worth repeating: <strong>no multiplexing, no load test</strong>. A single client, one proxied request, plus pool pressure is enough. That is also why nginx.org labels it medium while Wiz scores 9.2 under CVSS 4.0. The upstream rating reflects how hard it is to reach in a default configuration; the CVSS score reflects what happens once it is reached. Both are defensible. Using medium as an excuse to defer the patch is not.</p>
+
+<h2>3. The second one: refunding credit that was never spent</h2>
+
+<p>HTTP/2 flow control tracks remaining send allowance in <code>h2c-&gt;send_window</code>, decremented as response data is queued. When a stream is cancelled, <code>ngx_http_v2_filter_cleanup()</code> returns the allowance for data that never left:</p>
+
+<pre><code>h2c-&gt;send_window += window;</code></pre>
+
+<p>The refund never checks the maximum window. If the client has raised the allowance in the meantime, the refund pushes the counter past the protocol maximum, into a state the rest of the code assumes is impossible.</p>
+
+<p>The next piece is the bounds check:</p>
+
+<pre><code>if (window &gt; NGX_HTTP_V2_MAX_WINDOW - h2c-&gt;send_window)</code></pre>
+
+<p>It computes headroom by subtracting the current value from the maximum. Since the counter already exceeds the maximum, the unsigned subtraction wraps into a huge positive number, the check concludes there is plenty of room, and further increases are allowed. The invalid counter reaches <code>ngx_http_v2_send_chain()</code>, gets converted to signed <code>off_t</code>, and goes negative. A response buffer is then described with its end pointer before its start pointer. <code>ngx_ssl_send_chain()</code> converts again, and a negative length becomes an out-of-bounds copy that both leaks memory and corrupts the heap.</p>
+
+<p>Wiz confirmed RCE with an ASLR bypass on official 1.31.7 and 1.31.8 builds, over HTTP/2 with TLS on 64-bit systems, with response data served from memory. Ordinary static files reach that path through standard TLS processing. No backend, no module.</p>
+
+<h2>4. Detection: look at ALPN, not at the version string</h2>
+
+<p>Version decides what happens if you are hit. ALPN decides whether you can be hit at all. Thirty lines of standard library are enough:</p>
+
+<pre><code>import socket, ssl, sys
+
+def probe(host, port=443):
+    ctx = ssl.create_default_context()
+    ctx.set_alpn_protocols(["h2", "http/1.1"])
+    with socket.create_connection((host, port), timeout=8) as raw:
+        with ctx.wrap_socket(raw, server_hostname=host) as s:
+            proto = s.selected_alpn_protocol()
+            cert = s.getpeercert()
+            print("host      :", host)
+            print("tls       :", s.version())
+            print("alpn      :", proto or "(none)")
+            print("cert until:", cert.get("notAfter"))
+            print("attention :", "h2 negotiated, patch or disable" if proto == "h2" else "no h2, not reachable by the HTTP/2 bugs")
+
+probe(sys.argv[1] if len(sys.argv) > 1 else "devtools.help")</code></pre>
+
+<p>Run it against both hostnames:</p>
+
+<pre><code>python alpn_probe.py devtools.help
+python alpn_probe.py game.devtools.help</code></pre>
+
+<p>Output, measured on 2026-11-19, before containment:</p>
+
+<pre><code>host      : devtools.help
+tls       : TLSv1.3
+alpn      : http/1.1
+cert until: Jan  8 11:20:15 2027 GMT
+attention : no h2, not reachable by the HTTP/2 bugs
+
+host      : game.devtools.help
+tls       : TLSv1.3
+alpn      : h2
+cert until: Jan 21 15:25:15 2027 GMT
+attention : h2 negotiated, patch or disable</code></pre>
+
+<p>The second condition lives in the config: proxy_pass, alias, resolver, quic. This audit runs on the server with nothing installed:</p>
+
+<pre><code>import os, subprocess
+
+CONF = ["/etc/nginx/nginx.conf"]
+for d in ("/etc/nginx/sites-enabled", "/etc/nginx/conf.d"):
+    for name in sorted(os.listdir(d)):
+        CONF.append(os.path.join(d, name))
+KEYS = ("http2", "proxy_pass", "alias", "try_files", "resolver", "ssl_preread", "quic", "proxy_protocol")
+
+
+def nginx_version():
+    r = subprocess.run(["nginx", "-v"], capture_output=True, text=True)
+    tag = ((r.stderr or "") + (r.stdout or "")).split("nginx/")[1].split()[0]
+    return tuple(int(x) for x in tag.split("."))
+
+
+def directives():
+    seen = {k: [] for k in KEYS}
+    for path in CONF:
+        try:
+            lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+        except OSError:
+            continue
+        for no, line in enumerate(lines, 1):
+            s = line.strip()
+            if not s or s.startswith("#"):
+                continue
+            words = s.replace(";", " ").replace("{", " ").replace("}", " ").split()
+            for key in KEYS:
+                if key in words:
+                    seen[key].append(path + ":" + str(no))
+    return seen
+
+
+def inside(ver, lo, hi):
+    return lo &lt;= ver &lt;= hi
+
+
+def main():
+    ver = nginx_version()
+    d = directives()
+    h2 = bool(d["http2"])
+    print("version   :", ".".join(str(x) for x in ver))
+    print("conf files:", len(CONF))
+    for key in KEYS:
+        print("  %-14s %d" % (key, len(d[key])))
+    print()
+    rows = [
+        ("CVE-2026-123007", (1, 9, 5), (1, 31, 8), h2, "HTTP/2 flow control, needs h2"),
+        ("CVE-2026-123633", (1, 19, 7), (1, 31, 8), h2 and bool(d["proxy_pass"]), "HTTP/2 UAF, needs h2 + proxy"),
+        ("CVE-2026-121810", (1, 25, 0), (1, 31, 8), bool(d["quic"]), "HTTP/3 UAF, needs quic"),
+        ("CVE-2026-123634", (0, 6, 18), (1, 31, 8), bool(d["resolver"]), "resolver UAF, needs resolver"),
+        ("CVE-2026-125283", (0, 9, 6), (1, 31, 8), bool(d["alias"]) and bool(d["try_files"]), "alias + try_files"),
+        ("CVE-2026-123640", (1, 15, 2), (1, 31, 8), bool(d["ssl_preread"]), "stream ssl_preread"),
+        ("CVE-2026-120993", (1, 31, 4), (1, 31, 8), bool(d["proxy_protocol"]), "PROXY v2 null deref"),
+        ("CVE-2026-118899", (1, 13, 0), (1, 31, 8), True, "TLS 1.3 body read, always on"),
+    ]
+    for cve, lo, hi, cond, note in rows:
+        if not inside(ver, lo, hi):
+            state = "safe by version"
+        elif cond:
+            state = "AFFECTED"
+        else:
+            state = "gated off"
+        print("%-16s %-22s %s" % (cve, state, note))
+
+
+main()</code></pre>
+
+<p>Measured output from the same server:</p>
+
+<pre><code>version   : 1.28.3
+conf files: 3
+  http2          1
+  proxy_pass     0
+  alias          0
+  try_files      8
+  resolver       0
+  ssl_preread    0
+  quic           0
+  proxy_protocol 0
+
+CVE-2026-123007  AFFECTED               HTTP/2 flow control, needs h2
+CVE-2026-123633  gated off              HTTP/2 UAF, needs h2 + proxy
+CVE-2026-121810  gated off              HTTP/3 UAF, needs quic
+CVE-2026-123634  gated off              resolver UAF, needs resolver
+CVE-2026-125283  gated off              alias + try_files
+CVE-2026-123640  gated off              stream ssl_preread
+CVE-2026-120993  safe by version        PROXY v2 null deref
+CVE-2026-118899  AFFECTED               TLS 1.3 body read, always on</code></pre>
+
+<p>Two lines deserve attention. The first row: exactly one <code>http2</code> token in the whole config, and it belongs to the game vhost. One subdomain opened the attack surface for the machine. The last row: CVE-2026-118899 does not care about HTTP/2. TLS 1.3 is enough, and both hostnames here have it. It is a denial of service rather than RCE, but a static site gets no exemption while the patch is pending.</p>
+
+<h2>5. What I changed</h2>
+
+<p>Upgrading is the right answer and, as it happens, not available yet. Ubuntu ships <code>nginx 1.28.3-2ubuntu1.12</code> as both installed and candidate, and the newest batch in <code>/usr/share/doc/nginx/changelog.Debian.gz</code> is dated October 24. The November 18 fixes have not been backported. Distro lag is normal, so do not wait on <code>apt upgrade</code>.</p>
+
+<p>Containment instead: turn off HTTP/2 on the one vhost that has it.</p>
+
+<pre><code>sudo -n mkdir -p /etc/nginx/backup-20261119
+sudo -n cp /etc/nginx/sites-enabled/game.devtools.help /etc/nginx/backup-20261119/game.devtools.help.orig
+sudo -n sed -i 's/^    http2 on;/    http2 off;  # CVE-2026-123007 mitigation 2026-11-19/' /etc/nginx/sites-enabled/game.devtools.help
+sudo -n nginx -t
+sudo -n systemctl reload nginx
+ps -o pid,etime,cmd -C nginx</code></pre>
+
+<p>That last line is not decoration. A reload only asks the master to start fresh workers. Old workers finish the connections they hold before exiting, so until you watch them go, "disabled" may still mean a window of minutes. After a successful reload the worker ETIME should read single-digit seconds.</p>
+
+<p>Then probe ALPN again: <code>h2</code> becomes <code>http/1.1</code> and the site still returns 200. When the distro backports the fix, restore <code>http2 on;</code> and reload. The original file sits in <code>/etc/nginx/backup-20261119/</code>.</p>
+
+<p>One note on the older <code>listen 443 ssl http2;</code> syntax: since 1.25.1, <code>http2</code> is a separate directive. Mixed configs are where people change one place and forget the other. Check both when you contain.</p>
+
+<h2>6. Traps worth avoiding</h2>
+
+<ul>
+<li><strong>A CDN is not a shield.</strong> Wiz is explicit that CDNs or WAFs terminating HTTP/2 may mitigate part of the exploit by not replaying the exact payload to the origin, but that this depends on the implementation. If HTTP/2 ends at the edge and the origin still speaks it, the origin still needs the patch.</li>
+<li><strong>"I only serve static files" is false comfort.</strong> The CVE-2026-123007 proof of concept ran against a static server. Sites with a backend and a WAF sometimes carry an extra check; the static ones do not.</li>
+<li><strong>Do not stop at nginx -v.</strong> It reports the compiled version and says nothing about whether h2 is on, or whether proxy, resolver or alias appear in the config. All three conditions have to be checked together.</li>
+<li><strong>Container tags do not patch themselves.</strong> <code>nginx:1.28</code> drifts, <code>nginx:1.28.3</code> does not. Verify with <code>docker run --rm nginx:tag nginx -v</code> before trusting the tag.</li>
+<li><strong>Logs offer hints.</strong> Long-lived HTTP/2 connections that suddenly emit a flood of WINDOW_UPDATE frames, or workers that crash and respawn without explanation, are worth reading. Neither is proof, both are leads.</li>
+</ul>
+
+<p>What makes this batch uncomfortable is not the severity. It is the entry cost: one partial HEADERS frame, one refund without a bounds check. Both live in decade-old code that everyone has read and nobody flagged. Reported October 21, public November 18, with a second team saying they had found it earlier. Bugs like these are invisible until somebody reproduces them.</p>
+
+<p>Go run the two ALPN probes. It is worth more than the rest of this page.</p>''',
+    'related': [("Java4Shell: OpenJDK's Base64 decoder writes 62 bytes past the buffer", "blog/java4shell-openjdk-base64-rce-2026/"), ("The day a third-party script was poisoned, CSP stopped 15 percent of sites", "blog/optimizely-third-party-script-hijack-2026/"), ("Autonomous vulnerability discovery: 1724 kernel bugs in one run", "blog/openai-autonomous-vuln-discovery-2026/")],
+},
+'hunyuan-hy4-flash-cost-breakdown-2026': {
+    'tags': ["Hunyuan Hy4 flash", "MoE serving", "inference cost", "KV cache"],
+    'title': "Hunyuan Hy4 flash, unpacked: 224B of weights, 12B active, and where the claimed 1/20 cost actually comes from | DevTools Blog",
+    'description': "Hy4 flash carries 224B total parameters including 64B of Engram tables, activates 12B per token, supports 1M context, and prices at 0.5 CNY per million input tokens. Tencent claims a single task costs one twentieth of Hy4. Using the real config.json structure, this post shows a 1M-token sequence needs 13.5 GiB of KV cache rather than 47 GiB, why 440.5 GB of BF16 weights still means eight GPUs, and how the 20x splits into a 10.5x price advantage plus fewer tokens. Two runnable calculators and the official vLLM command included.",
+    'keywords': "Hunyuan Hy4 flash, Hy4 flash open source, Hy4 flash deployment, Hy4 flash VRAM, Hy4 flash vLLM, Hy4 flash local deployment tutorial, Tencent Hunyuan model, Engram memory module, LatentMoE, MLA KV cache, 1M context VRAM, MoE inference cost, inference cost 20x cheaper, DeepSeek Sparse Attention, sliding window attention, speculative decoding DFly, self-host or API, LLM API price comparison, hy4 flash vram requirement, self-host moe cost",
+    'h1': "224B of weights, 12B active: splitting the Hy4 flash 1/20 claim into two ledgers",
+    'summary': "12B active sounds like something a single consumer card could hold. The download is 440.5 GB. Active parameters set the compute, total parameters set the memory, and one sentence about 224B including 64B of Engram blurs the two. Here is the KV ledger, the weight ledger, and an honest answer to whether self-hosting beats the API at this price.",
+    'body': '''<p>Tencent says a single task on Hy4 flash costs one twentieth of what it costs on Hy4. The same model is described as activating only 12B parameters per token, which sounds like something you could run on a desktop card. Both statements are true, and they are not about the same thing.</p>
+
+<p>Sources: Tencent Hunyuan's release page and the long hands-on piece from Machine Heart on 2026-11-16, the <code>config.json</code> of <code>tencent/Hy4-flash</code> (still being updated on 11-19), the official recipe on vLLM Recipes, and the <code>Tencent-Hunyuan/Hy4-flash</code> repository created on 11-17 with vLLM and SGLang images documented in the README.</p>
+
+<h2>1. Weight ledger: 12B active, 440 GB to download</h2>
+
+<p>Put the two numbers side by side. Total parameters are 224B, of which 64B are Engram memory tables. Per token, 12B are active. Active parameters set the compute: one forward pass touches only those 12B. Total parameters set the residency: the other 212B still occupy memory, because routing may pick them next step.</p>
+
+<p>So the download looks like this. The BF16 checkpoint is 440.5 GB, the FP8 one 287.1 GB, and the official vLLM recipe multiplies by 1.2 to publish 529 GB and 345 GB as conservative estimates rather than measured minimums. Split across eight GPUs with TP=8, weights alone are 55.1 GB or 35.9 GB per card. That is why the recipe says H200 and not RTX.</p>
+
+<p>The 64B of Engram deserve a closer look. In <code>config.json</code>, <code>engram_layer_ids</code> is <code>[2, 12, 22, 32]</code>, each layer has <code>engram_n_embed_per_ngram=768</code>, and two vocabularies of 10.312 million entries each. Four times two times 10.312M times 768 is about 63.4B parameters, which is exactly the "64B Engram" figure. These are n-gram lookup tables rather than dense math, so the official recipe offloads them to host memory by default with <code>engram_fp8_embedding=true</code>, roughly 63 GB of DRAM. It trades HBM for system memory, and pays for it on every lookup that crosses PCIe.</p>
+
+<h2>2. KV ledger: 1M context is 13.5 GiB, not 47 GiB</h2>
+
+<p>The reflex reaction to a 1M context window is that memory will explode. The structure here is worth reading carefully. Of 42 layers, <code>layer_types</code> lists 12 <code>deepseek_sparse_attention</code> plus 30 <code>sliding_attention</code> with a window of 512. Attention is MLA with <code>kv_lora_rank=512</code> and <code>qk_rope_head_dim=64</code>. So each token caches only 576 numbers per layer, 1152 bytes in fp16, and the 30 sliding layers keep no long history at all.</p>
+
+<pre><code>LAYERS, DSA, SW, WINDOW = 42, 12, 30, 512
+LATENT, ROPE, BYTES = 512, 64, 2
+
+per_layer = (LATENT + ROPE) * BYTES
+dsa_per_token = DSA * per_layer
+sw_fixed = SW * WINDOW * per_layer
+full_per_token = LAYERS * per_layer
+
+def gib(n):
+    return n / (1024 ** 3)
+
+print("per layer per token  : %d B (MLA latent %d + rope %d, fp16)" % (per_layer, LATENT, ROPE))
+print("12 sparse layers     : %d B/token = %.1f KiB" % (dsa_per_token, dsa_per_token / 1024))
+print("30 sliding layers    : %d B fixed  = %.1f MiB" % (sw_fixed, sw_fixed / 1024 / 1024))
+print()
+for ctx in (8192, 131072, 1048576):
+    kv = ctx * dsa_per_token + sw_fixed
+    print("ctx %8d tokens -> %8.1f MiB per sequence" % (ctx, kv / 1024 / 1024))
+print()
+print("if all 42 layers kept full history:")
+print("  %.1f KiB/token, 1M ctx = %.1f GiB" % (full_per_token / 1024, gib(full_per_token * 1048576)))
+print("  hybrid keeps it at    %.1f GiB (%.1fx smaller)" % (
+    gib(1048576 * dsa_per_token + sw_fixed),
+    (full_per_token * 1048576) / (1048576 * dsa_per_token + sw_fixed)))</code></pre>
+
+<p>Which prints:</p>
+
+<pre><code>per layer per token  : 1152 B (MLA latent 512 + rope 64, fp16)
+12 sparse layers     : 13824 B/token = 13.5 KiB
+30 sliding layers    : 17694720 B fixed  = 16.9 MiB
+
+ctx     8192 tokens ->    124.9 MiB per sequence
+ctx   131072 tokens ->   1744.9 MiB per sequence
+ctx  1048576 tokens ->  13840.9 MiB per sequence
+
+if all 42 layers kept full history:
+  47.2 KiB/token, 1M ctx = 47.2 GiB
+  hybrid keeps it at    13.5 GiB (3.5x smaller)</code></pre>
+
+<p>13.5 GiB for a full-length sequence. Eight H200s give 1128 GB of HBM, 1015 GB at 90 percent, minus 287 GB of FP8 weights, leaving 728 GB for cache. In theory that is 50 sequences at maximum length. That is the entire technical basis for claiming 1M context at low cost: not a smarter model, but 30 layers that never look at long history.</p>
+
+<p>One illusion to break while we are here. At 8k context, the same 728 GB could hold 6400 sequences, yet the official recipe defaults <code>--max-num-seqs</code> to 4. Memory is never the bottleneck. Scheduling policy is. What you pay for is usually <code>max-num-batched-tokens</code> and admission control, not model size.</p>
+
+<h2>3. The open weights are not the hosted API</h2>
+
+<p>This is the trap. Tencent reports more than 150 tokens per second in production, powered by fused megakernels, 4-bit quantization and DFly speculative decoding. What shipped publicly is a BF16 and an FP8 checkpoint, and two prebuilt images:</p>
+
+<pre><code>docker run --gpus all -p 8000:8000 --ipc=host -v ~/.cache/huggingface:/root/.cache/huggingface vllm/vllm-openai:hy4-flash tencent/Hy4-flash-FP8 --tensor-parallel-size 8 --speculative-config '{"num_speculative_tokens":5,"method":"dfly"}' --attention-backend FLASHMLA_SPARSE --tool-call-parser hy_v4 --reasoning-parser hy_v4 --enable-auto-tool-choice --served-model-name hy4-flash</code></pre>
+
+<p>Read the constraints before reaching for a credit card:</p>
+
+<ul>
+<li><strong>Hardware</strong>: Hopper or Blackwell datacenter parts only, meaning H100, H200, B200, GB200, B300, GB300. AMD Instinct is not supported yet, no ROCm image ships the model.</li>
+<li><strong>Framework</strong>: no released vLLM wheel registers <code>HYV4FlashVLForConditionalGeneration</code> or the DFly drafter, so <code>pip install vllm</code> will not work. The dedicated image is the only path.</li>
+<li><strong>Parallelism</strong>: tensor parallel and tensor plus expert parallel. DP, PP, CP, EPLB, DBO and LoRA are unsupported, and so is MTP, since speculation goes through the five-layer DFly draft head.</li>
+<li><strong>Defaults are conservative</strong>: <code>max-model-len 8192</code>, <code>max-num-seqs 4</code>, one image and no video per prompt. The 1M context is a ceiling, not a default.</li>
+<li><strong>Host memory</strong>: Engram tables live on the CPU side. Size the box for RAM, not just VRAM.</li>
+</ul>
+
+<h2>4. Where the 1/20 comes from</h2>
+
+<p>Published prices: Hy4 flash charges 0.5 CNY per million input tokens, 2 per million output, 0.02 for cache hits. Hy4 charges 6, 18 and 0.3. That is 12x on input, 9x on output, 15x on cached input. But the per-task claim is 20x, and the remainder comes from token count. A typical office task makes it obvious:</p>
+
+<pre><code>PRICE = {"hy4-flash": (0.5, 2.0, 0.02), "hy4": (6.0, 18.0, 0.3)}
+IN_TOKENS, OUT_TOKENS, CACHE_HIT = 40000, 3000, 0.8
+
+def task_cost(name, out_tokens=OUT_TOKENS):
+    p_in, p_out, p_cache = PRICE[name]
+    cached = IN_TOKENS * CACHE_HIT
+    fresh = IN_TOKENS - cached
+    return (fresh * p_in + cached * p_cache + out_tokens * p_out) / 1e6
+
+flash = task_cost("hy4-flash")
+hy4 = task_cost("hy4")
+print("task profile: %d in (%d cached), %d out" % (IN_TOKENS, IN_TOKENS * CACHE_HIT, OUT_TOKENS))
+print("hy4-flash    : %.4f CNY/task" % flash)
+print("hy4          : %.4f CNY/task" % hy4)
+print("price ratio  : %.1fx" % (hy4 / flash))
+print()
+implied = hy4 / 20
+print("to reach the claimed 20x, the same task must cost %.4f CNY" % implied)
+lo, hi = 0.5, 6000
+for _ in range(60):
+    mid = (lo + hi) / 2
+    if task_cost("hy4-flash", mid) > implied:
+        hi = mid
+    else:
+        lo = mid
+print("that means output length would have to be about %d tokens, not %d" % (int(lo), OUT_TOKENS))
+print("so the rest of the gap has to come from fewer tokens, not from price")</code></pre>
+
+<pre><code>task profile: 40000 in (32000 cached), 3000 out
+hy4-flash    : 0.0106 CNY/task
+hy4          : 0.1116 CNY/task
+price ratio  : 10.5x
+
+to reach the claimed 20x, the same task must cost 0.0056 CNY
+that means output length would have to be about 470 tokens, not 3000
+so the rest of the gap has to come from fewer tokens, not from price</code></pre>
+
+<p>Price alone explains 10.5x. Getting to 20x requires the same task to consume less than half the tokens. Tencent's own numbers line up with that: reinforcement learning cut end-to-end output length by 50 percent; the WeCom team reports 60 percent fewer output tokens in thinking mode; QQ's assistant measured 39 percent lower P90 latency and 30 percent fewer tokens; the Honor of Kings bug analysis workflow cut requests by 22 to 39 percent and tokens by 40.5 to 61.2 percent.</p>
+
+<p>The 1/20 is therefore not a measure of model quality. It is cheap unit pricing multiplied by saying less. The second half is the hard part, and it is also why the same release can claim quality slightly above Hy4 preview while dropping the cost.</p>
+
+<h2>5. So does self-hosting pay off</h2>
+
+<p>At 0.0106 CNY per task, how many tasks must eight rented H200s serve to break even?</p>
+
+<pre><code>USB_CNY = 7.1
+GPU_USD_HR = 2.0
+GPUS = 8
+
+hourly = GPUS * GPU_USD_HR * USB_CNY
+print("self-host 8xH200 at %.1f USD/GPU-hr = %.0f CNY/hr" % (GPU_USD_HR, hourly))
+print("tasks per hour needed to match the API: %.0f" % (hourly / 0.0106))
+print("that is %.2f tasks/sec, sustained" % (hourly / 0.0106 / 3600))</code></pre>
+
+<pre><code>self-host 8xH200 at 2.0 USD/GPU-hr = 114 CNY/hr
+tasks per hour needed to match the API: 10717
+that is 2.98 tasks/sec, sustained</code></pre>
+
+<p>Roughly ten thousand seven hundred tasks an hour, about three per second, around the clock. A single node decoding at 150 tokens per second with 3000 output tokens per task needs twenty seconds per stream, so even a generous 3000 tokens per second of aggregate throughput lands near one task per second. That is a factor of three short, and 2.0 USD per GPU-hour is already a friendly rental assumption.</p>
+
+<p>The conclusion is blunt. At this price, self-hosting is not a way to save money. It is a way to buy something else: data that never leaves your network, GPUs you already own, a domain fine-tune, or an endpoint that no rate limit can throttle. If the goal is purely lower cost per task, the API wins by an order of magnitude.</p>
+
+<h2>6. When to use it, and when not to</h2>
+
+<p>Tencent's own routing advice matches the measurements: daily work such as deep search, document handling, slide generation, simple frontend pages and computer use belongs on flash; long-horizon software engineering belongs on Hy4, which has the higher ceiling. That split is not marketing. The gap between 12B active and 49B active is invisible on a single step and compounds over forty steps.</p>
+
+<p>Two things are easy to miss. First, <code>reasoning_effort</code> has <code>high</code> and <code>no_think</code> settings, defaulting to the former. On routine tasks a large share of tokens goes into thinking, and switching to <code>no_think</code> often saves more than swapping models. Second, a 1M window is not a target. One full-length sequence takes 13.5 GiB, so fifty of them drain the pool, and most tasks are finished well within 32k. Spend the difference on concurrency instead.</p>
+
+<p>In fairness: moving 64B of static knowledge from HBM to DRAM, letting 30 layers look at 512 tokens, and cutting output length in half with reinforcement learning are each old ideas. Getting all three to hold simultaneously in a 12B-active model is the part worth studying. As for the 1/20, understanding what it is made of is more useful than remembering the number.</p>''',
+    'related': [("Qwen4-Max: splitting a 58 percent cost cut into two factors", "blog/qwen4-max-cost-per-task-2026/"), ("Kimi K3.1 Pro and 1M context: how much VRAM it really takes", "blog/kimi-k3-pro-1m-context-2026/"), ("Running a 284B MoE locally: what FreeToken and colibri actually changed", "blog/local-moe-serving-freetoken-colibri-2026/")],
+},
 'java4shell-openjdk-base64-rce-2026': {
     'tags': ["Java security", "OpenJDK", "vulnerability analysis", "memory safety"],
     'title': "Java4Shell (CVE-2026-114938): OpenJDK's Base64 decoder writes 62 bytes past the buffer, CVSS 9.2 | DevTools Blog",

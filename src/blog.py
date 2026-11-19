@@ -50,6 +50,406 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': "nginx-http2-rce-2026",
+    'category': "security",
+    'date': "2026-11-19",
+    'updated': "2026-11-19",
+    'tags': ["nginx 安全", "HTTP/2", "漏洞分析", "运维加固"],
+    'title': "nginx HTTP/2 两个未授权 RCE（CVE-2026-123633 / CVE-2026-123007）：1.9.5 到 1.31.8 全在射程内，附自查脚本与修复步骤 | DevTools 博客",
+    'description': "F5 在 2026-11-18 发布的安全批次里修了两个 nginx 的 HTTP/2 远程代码执行漏洞：CVE-2026-123633 是连接被标记为可回收后仍被使用（use-after-free），CVE-2026-123007 是流量控制计数器的无符号下溢把负数长度送进 TLS 发送路径。两者都要 HTTP/2 才触发，后者连纯静态站点也能打通。本文按帧拆开两条根因链，给出两个可直接跑的检测脚本（ALPN 探测 + 配置扫描，含真实输出），说明为什么 nginx.org 标 medium 而 Wiz 给 9.2，以及升级到 1.30.7 / 1.31.9 之前用 http2 off 临时降险的完整步骤与验证方法。",
+    'keywords': "nginx 漏洞, nginx HTTP/2 漏洞, CVE-2026-123633, CVE-2026-123007, nginx 未授权 RCE, nginx 远程代码执行, nginx 如何修复, nginx 升级 1.30.7, nginx 1.31.9, nginx http2 off, 如何检测 nginx 版本, nginx 安全加固, nginx 配置自查, ALPN h2 检测, nginx 1.28 漏洞, F5 nginx 安全公告, nginx use-after-free, nginx send_window 下溢, nginx 静态站点 安全, how to check if nginx has http2 enabled, nginx vulnerability fix steps, nginx CVE 2026",
+    'h1': "连接被标成“可回收”之后，请求才刚刚开始：nginx 两个 HTTP/2 未授权 RCE 拆解",
+    'summary': "11 月 18 日 nginx 一次性发了十条 CVE，其中两个是未授权 RCE。第一个的起点低得离谱：一个不完整的 HEADERS 帧就能让正在处理请求的连接停留在可回收列表里。第二个把一个无符号下溢的计数器变成负数长度，塞进 TLS 发送路径，纯静态文件也能打通。本文给出两个可运行的检测脚本、实测输出，以及打补丁前的临时处置。",
+    'body': '''<p>先把结论放最前面：<strong>开了 HTTP/2 的 nginx，11 月 18 日这批补丁当天就得打；没开 HTTP/2 的，两个 CVSS 9.2 的未授权 RCE 打不到你 —— 但同一批里还有一个躲不掉的。</strong></p>
+
+<p>我自己这台机器就是现成样本。devtools.help 跑 nginx/1.28.3，TLS 1.3，ALPN 协商出来是 HTTP/1.1，跟这两个洞没关系。同一台机器上的 game.devtools.help 配了一行 <code>http2 on;</code>，握手直接给 h2，而它只服务静态文件 —— 正好是 Wiz 在报告里演示的那条路径：没有后端，没有第三方模块。</p>
+
+<p>素材：Wiz Research 2026-11-18 的披露（Ikotas Labs、Metnir、Rapid7、Xint 各自独立发现并上报）、nginx.org 当日安全公告、Hacker News 当天榜首（1411 分）。</p>
+
+<h2>一、这批发的是什么</h2>
+
+<p>10 月 21 日 Wiz 把 HTTP/2 的 use-after-free 报给 F5，附了一个带 ASLR bypass 的完整 RCE 和建议补丁。F5 回复得很坦诚：另一个团队早前报过同一个洞。11 月 10 日 F5 给出待审补丁，11 月 16 日 Wiz 又报了第二个 —— 这次是流量控制计数器的整数下溢。11 月 17 日确认并入 18 日的安全版本，18 日同步公开。</p>
+
+<p>18 日这一批 nginx.org 上同时挂了十条，和普通运维真正相关的几条：</p>
+
+<table>
+<thead><tr><th>CVE</th><th>问题</th><th>影响版本</th><th>触发条件</th></tr></thead>
+<tbody>
+<tr><td>CVE-2026-123007</td><td>HTTP/2 流量控制内存破坏</td><td>1.9.5 – 1.31.8</td><td>开 HTTP/2 即可，静态站也中</td></tr>
+<tr><td>CVE-2026-123633</td><td>HTTP/2 use-after-free</td><td>1.19.7 – 1.31.8</td><td>开 HTTP/2 + 反向代理</td></tr>
+<tr><td>CVE-2026-121810</td><td>HTTP/3 use-after-free</td><td>1.25.0 – 1.31.8</td><td>开 QUIC</td></tr>
+<tr><td>CVE-2026-123634</td><td>resolver 响应处理 UAF</td><td>0.6.18 – 1.31.8</td><td>用了 resolver 且上游域名可控</td></tr>
+<tr><td>CVE-2026-118899</td><td>TLS 1.3 读请求体死循环</td><td>1.13.0 – 1.31.8</td><td>只要支持 TLS 1.3</td></tr>
+<tr><td>CVE-2026-125283</td><td>alias + try_files 缓冲区溢出</td><td>0.9.6 – 1.31.8</td><td>两者同时出现在一个 location</td></tr>
+</tbody>
+</table>
+
+<p>修复版本只有两个：<strong>1.30.7（stable）与 1.31.9（mainline）</strong>。中间的 1.30.0 到 1.30.6 全在射程之内。至于 <code>CVE-2026-123007</code> 的起点 1.9.5，那是 2015 年的分支 —— 这个洞存在了十一年。</p>
+
+<h2>二、第一个：连接被标成“可回收”，然后请求开始了</h2>
+
+<p>nginx 维护一个可回收连接列表，空闲连接不够时 <code>ngx_drain_connections()</code> 从这里挑人踢掉。HTTP/2 连接在没有活跃请求时进这个列表，请求开始时必须离开。问题出在后半句。</p>
+
+<p>先发一个不完整的 HEADERS 帧。此刻没有活跃流，<code>ngx_http_v2_handle_connection()</code> 会走到这里：</p>
+
+<pre><code>ngx_reusable_connection(c, 1);
+
+if (h2c-&gt;state.incomplete) {
+    return;
+}</code></pre>
+
+<p>补完剩下的帧，<code>ngx_http_v2_create_stream()</code> 建流并把 <code>h2c-&gt;processing</code> 加一，但没有把它从可回收列表里摘掉。于是一个正在处理请求的连接，nginx 认为随时可以关。</p>
+
+<p>接着只要让 nginx 缺空闲连接。把请求代理到上游会调用 <code>ngx_get_connection()</code>，槽位不足时触发 drain，选中自己。关闭前要发 GOAWAY 帧，如果这个连接的帧池已经耗尽、拿不到可用帧，错误路径直接关连接、释放内存，然后控制流回到原请求，继续用那块内存。UAF 成立。</p>
+
+<p>容易被忽略的一点：<strong>不需要多路并发，也不需要压测</strong>。一个客户端、一次代理请求，配上连接池压力就能走到。所以 nginx.org 给它的官方严重性是 medium，而 Wiz 按 CVSS 4.0 打 9.2 —— 前者评的是“默认配置下多难触发”，后者评的是“触发之后多严重”。两个数字都不算错，错的是拿 medium 当借口往后拖。</p>
+
+<h2>三、第二个：给没发出去的数据退款，退穿了上限</h2>
+
+<p>HTTP/2 的流量控制用 <code>h2c-&gt;send_window</code> 记还剩多少发送额度。响应入队时先扣掉字节数。流被取消时，<code>ngx_http_v2_filter_cleanup()</code> 把没发出去的部分退回去：</p>
+
+<pre><code>h2c-&gt;send_window += window;</code></pre>
+
+<p>退款不检查上限。如果客户端在这期间已经把额度抬高过，这次退款就把计数器顶到 HTTP/2 允许的最大窗口之外 —— 一个后面的代码都假设不可能出现的值。</p>
+
+<p>第二个坑在检查函数里：</p>
+
+<pre><code>if (window &gt; NGX_HTTP_V2_MAX_WINDOW - h2c-&gt;send_window)</code></pre>
+
+<p>它用“上限减当前值”算剩余空间。当前值已经被顶过上限，无符号整数减出负数，回绕成一个巨大的正数，检查于是认为“还有的是空间”，放行后续增长。这个非法计数一路传到 <code>ngx_http_v2_send_chain()</code>，转成有符号的 <code>off_t</code> 变负，缓冲区被描述成“结束指针在开始指针之前”。最后在 <code>ngx_ssl_send_chain()</code> 里再转一次，负数变成一次越界内存拷贝，既能读内存也能写堆。</p>
+
+<p>Wiz 在官方 1.31.7 与 1.31.8 上带 ASLR bypass 打通了 RCE，路径是 64 位、HTTP/2 over TLS、响应数据来自内存。普通静态文件走标准 TLS 处理就能到，不需要后端应用，也不需要第三方模块 —— 这也是我盯着 game.devtools.help 的原因。</p>
+
+<h2>四、自查：只看 ALPN，别看版本号</h2>
+
+<p>版本只决定“中了会怎样”，ALPN 决定“能不能打到你”。探测脚本不到三十行，标准库就够：</p>
+
+<pre><code>import socket, ssl, sys
+
+def probe(host, port=443):
+    ctx = ssl.create_default_context()
+    ctx.set_alpn_protocols(["h2", "http/1.1"])
+    with socket.create_connection((host, port), timeout=8) as raw:
+        with ctx.wrap_socket(raw, server_hostname=host) as s:
+            proto = s.selected_alpn_protocol()
+            cert = s.getpeercert()
+            print("host      :", host)
+            print("tls       :", s.version())
+            print("alpn      :", proto or "(none)")
+            print("cert until:", cert.get("notAfter"))
+            print("attention :", "h2 negotiated, patch or disable" if proto == "h2" else "no h2, not reachable by the HTTP/2 bugs")
+
+probe(sys.argv[1] if len(sys.argv) > 1 else "devtools.help")</code></pre>
+
+<p>对着两个域名跑：</p>
+
+<pre><code>python alpn_probe.py devtools.help
+python alpn_probe.py game.devtools.help</code></pre>
+
+<p>输出（实测，处置前，2026-11-19）：</p>
+
+<pre><code>host      : devtools.help
+tls       : TLSv1.3
+alpn      : http/1.1
+cert until: Jan  8 11:20:15 2027 GMT
+attention : no h2, not reachable by the HTTP/2 bugs
+
+host      : game.devtools.help
+tls       : TLSv1.3
+alpn      : h2
+cert until: Jan 21 15:25:15 2027 GMT
+attention : h2 negotiated, patch or disable</code></pre>
+
+<p>第二个条件（proxy_pass、alias、resolver、quic）得看配置。这段扫描可以直接贴在服务器上跑，不用装任何东西：</p>
+
+<pre><code>import os, subprocess
+
+CONF = ["/etc/nginx/nginx.conf"]
+for d in ("/etc/nginx/sites-enabled", "/etc/nginx/conf.d"):
+    for name in sorted(os.listdir(d)):
+        CONF.append(os.path.join(d, name))
+KEYS = ("http2", "proxy_pass", "alias", "try_files", "resolver", "ssl_preread", "quic", "proxy_protocol")
+
+
+def nginx_version():
+    r = subprocess.run(["nginx", "-v"], capture_output=True, text=True)
+    tag = ((r.stderr or "") + (r.stdout or "")).split("nginx/")[1].split()[0]
+    return tuple(int(x) for x in tag.split("."))
+
+
+def directives():
+    seen = {k: [] for k in KEYS}
+    for path in CONF:
+        try:
+            lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+        except OSError:
+            continue
+        for no, line in enumerate(lines, 1):
+            s = line.strip()
+            if not s or s.startswith("#"):
+                continue
+            words = s.replace(";", " ").replace("{", " ").replace("}", " ").split()
+            for key in KEYS:
+                if key in words:
+                    seen[key].append(path + ":" + str(no))
+    return seen
+
+
+def inside(ver, lo, hi):
+    return lo &lt;= ver &lt;= hi
+
+
+def main():
+    ver = nginx_version()
+    d = directives()
+    h2 = bool(d["http2"])
+    print("version   :", ".".join(str(x) for x in ver))
+    print("conf files:", len(CONF))
+    for key in KEYS:
+        print("  %-14s %d" % (key, len(d[key])))
+    print()
+    rows = [
+        ("CVE-2026-123007", (1, 9, 5), (1, 31, 8), h2, "HTTP/2 flow control, needs h2"),
+        ("CVE-2026-123633", (1, 19, 7), (1, 31, 8), h2 and bool(d["proxy_pass"]), "HTTP/2 UAF, needs h2 + proxy"),
+        ("CVE-2026-121810", (1, 25, 0), (1, 31, 8), bool(d["quic"]), "HTTP/3 UAF, needs quic"),
+        ("CVE-2026-123634", (0, 6, 18), (1, 31, 8), bool(d["resolver"]), "resolver UAF, needs resolver"),
+        ("CVE-2026-125283", (0, 9, 6), (1, 31, 8), bool(d["alias"]) and bool(d["try_files"]), "alias + try_files"),
+        ("CVE-2026-123640", (1, 15, 2), (1, 31, 8), bool(d["ssl_preread"]), "stream ssl_preread"),
+        ("CVE-2026-120993", (1, 31, 4), (1, 31, 8), bool(d["proxy_protocol"]), "PROXY v2 null deref"),
+        ("CVE-2026-118899", (1, 13, 0), (1, 31, 8), True, "TLS 1.3 body read, always on"),
+    ]
+    for cve, lo, hi, cond, note in rows:
+        if not inside(ver, lo, hi):
+            state = "safe by version"
+        elif cond:
+            state = "AFFECTED"
+        else:
+            state = "gated off"
+        print("%-16s %-22s %s" % (cve, state, note))
+
+
+main()</code></pre>
+
+<p>同一台服务器上的实测输出：</p>
+
+<pre><code>version   : 1.28.3
+conf files: 3
+  http2          1
+  proxy_pass     0
+  alias          0
+  try_files      8
+  resolver       0
+  ssl_preread    0
+  quic           0
+  proxy_protocol 0
+
+CVE-2026-123007  AFFECTED               HTTP/2 flow control, needs h2
+CVE-2026-123633  gated off              HTTP/2 UAF, needs h2 + proxy
+CVE-2026-121810  gated off              HTTP/3 UAF, needs quic
+CVE-2026-123634  gated off              resolver UAF, needs resolver
+CVE-2026-125283  gated off              alias + try_files
+CVE-2026-123640  gated off              stream ssl_preread
+CVE-2026-120993  safe by version        PROXY v2 null deref
+CVE-2026-118899  AFFECTED               TLS 1.3 body read, always on</code></pre>
+
+<p>这张表值得盯两行。第一行：整个 conf 里只有 <code>http2</code> 一处，就是 game 那个 vhost —— 一个子域把整台机器的攻击面打开了。最后一行：<code>CVE-2026-118899</code> 不看 HTTP/2，只要 TLS 1.3 开着就成立，我这台机器两个域名都在里面。它是死循环导致的 DoS，不是 RCE，但在补丁下发之前，静态站也没有豁免权。</p>
+
+<h2>五、我最后改了什么</h2>
+
+<p>升级是首选，问题是我这台机器暂时升不了：Ubuntu 的 <code>nginx 1.28.3-2ubuntu1.12</code> 就是当前 candidate，<code>/usr/share/doc/nginx/changelog.Debian.gz</code> 里最新一批补丁停在 10 月 24 日，11 月 18 日这批还没 backport。发行版滞后是常态，别指望 <code>apt upgrade</code> 当天就有。</p>
+
+<p>所以先做临时处置：关掉唯一开着 h2 的 vhost。</p>
+
+<pre><code>sudo -n mkdir -p /etc/nginx/backup-20261119
+sudo -n cp /etc/nginx/sites-enabled/game.devtools.help /etc/nginx/backup-20261119/game.devtools.help.orig
+sudo -n sed -i 's/^    http2 on;/    http2 off;  # CVE-2026-123007 mitigation 2026-11-19/' /etc/nginx/sites-enabled/game.devtools.help
+sudo -n nginx -t
+sudo -n systemctl reload nginx
+ps -o pid,etime,cmd -C nginx</code></pre>
+
+<p>最后那行 <code>ps</code> 不是装饰。reload 只是让 master 拉起新 worker，旧 worker 会带完手上的连接才退出 —— 不确认它们真的走光了，你以为的“已关闭”可能还留着几分钟窗口。改完之后 worker 的 <code>ETIME</code> 应该掉到个位数秒。</p>
+
+<p>再跑一次 ALPN 探测，<code>h2</code> 变成 <code>http/1.1</code>，站点仍然是 200。等发行版把补丁 backport 下来，改回 <code>http2 on;</code> 再 reload 即可，配置原件就在 <code>/etc/nginx/backup-20261119/</code>。</p>
+
+<p>顺带说一句 <code>listen 443 ssl http2;</code> 这种老写法：1.25.1 之后 <code>http2</code> 从 listen 参数独立成指令，两种写法混在一起时很容易改了 A 忘了 B。降险时两处都要看。</p>
+
+<h2>六、几个别踩的坑</h2>
+
+<ul>
+<li><strong>CDN 不是护盾。</strong> Wiz 说得很清楚：终止 HTTP/2 的 CDN 或 WAF 可能因为不回放原始 payload 而缓解一部分利用，但“取决于实现”。把 h2 终止在边缘、源站仍跑 h2 的架构，源站该修还得修。</li>
+<li><strong>“我只服务静态文件”不成立。</strong> <code>CVE-2026-123007</code> 的 PoC 就是在静态站上打通的。反而是有 WAF、有后端的站点多了一层额外检查。</li>
+<li><strong>别只看 nginx -v。</strong> <code>nginx -v</code> 给的是编译版本，不告诉你 h2 有没有开、有没有 proxy、有没有 resolver。三个条件要一起查。</li>
+<li><strong>容器镜像不会自己更新。</strong> 官方 <code>nginx:1.28</code> 这种 tag 会漂移，但 <code>nginx:1.28.3</code> 钉死的就是老版本。改 tag 之前先 <code>docker run --rm nginx:tag nginx -v</code> 确认。</li>
+<li><strong>日志里能看出点东西。</strong> 长时间保持的 HTTP/2 连接突然发大量 WINDOW_UPDATE，或者 worker 莫名崩溃重启，都值得翻一翻 —— 这不是确认指标，只是线索。</li>
+</ul>
+
+<p>这批洞最让人不舒服的地方不是严重性，是起点：一个不完整的 HEADERS 帧、一次没检查上限的退款。都是十年级别的代码，谁读都觉得“这里应该没问题”。10 月 21 日报上去、11 月 18 日公开，中间还有另一个团队说“我们早报过” —— 这类洞在被复现之前，没人觉得它是洞。</p>
+
+<p>现在去跑那两行 ALPN 探测吧，比读这篇剩下的部分有用。</p>''',
+    'related': [("Java4Shell：OpenJDK 的 Base64 解码器会多写 62 字节", "blog/java4shell-openjdk-base64-rce-2026/"), ("第三方脚本被投毒那天，CSP 只拦住了 15% 的站点", "blog/optimizely-third-party-script-hijack-2026/"), ("OpenAI 自主漏洞挖掘：一次运行复现 1724 个内核漏洞", "blog/openai-autonomous-vuln-discovery-2026/")],
+},
+{
+    'slug': "hunyuan-hy4-flash-cost-breakdown-2026",
+    'category': "ai",
+    'date': "2026-11-19",
+    'updated': "2026-11-19",
+    'tags': ["混元 Hy4 flash", "MoE 部署", "推理成本", "KV cache"],
+    'title': "混元 Hy4 flash 开源拆解：224B 权重、12B 激活，凭什么叫 1/20 的成本 | DevTools 博客",
+    'description': "Hy4 flash 总参数 224B（含 64B Engram）、每 token 激活 12B、1M 上下文，API 输入 0.5 元/M、输出 2 元/M，腾讯称单任务成本是 Hy4 的 1/20。本文用 config.json 里的真实结构（42 层中 12 层稀疏注意力 + 30 层 512 滑窗、MLA latent 512）算出 1M 上下文只要 13.5 GiB KV，而不是 47 GiB；算清 440.5 GB BF16 / 287.1 GB FP8 权重为什么必须 8 卡；并把 1/20 拆成单价 10.5 倍与 token 侧压缩两部分。附两个可运行的核算脚本与 vLLM 官方部署命令。",
+    'keywords': "混元 Hy4 flash, Hy4 flash 开源, Hy4 flash 部署, Hy4 flash 显存, Hy4 flash vLLM, Hy4 flash 本地部署 教程, 腾讯混元 大模型, Engram 记忆模块, LatentMoE, MLA KV cache, 1M 上下文 显存, MoE 推理成本, 推理成本 1/20, DeepSeek Sparse Attention, 滑窗注意力, 投机解码 DFly, 自托管 还是 API, 大模型 API 价格对比, hunyuan hy4 flash tutorial, hy4 flash vram requirement, self-host moe cost",
+    'h1': "224B 权重，12B 激活：把混元 Hy4 flash 的 1/20 成本拆成两笔账",
+    'summary': "12B 激活听起来像能在单卡上跑，实际下载是 440.5 GB 权重。激活参数决定算力，总参数决定显存，这两件事被同一句“224B 含 64B Engram”糊在一起。本文用 config.json 算清 KV 与权重两笔账，再把 1/20 拆成单价 10.5 倍和 token 侧压缩，最后回答一个问题：这个价格下，自托管还划不划算。",
+    'body': '''<p>腾讯说 Hy4 flash 的单任务成本是 Hy4 的 1/20。同时它宣称每 token 只激活 12B 参数 —— 听起来像是能塞进一张消费级显卡的东西。这两句话都对，但它们描述的不是同一个东西，中间那层窗户纸值得捅破。</p>
+
+<p>素材：腾讯混元 2026-11-16 的发布页与机器之心同日的实测长文、<code>tencent/Hy4-flash</code> 的 <code>config.json</code>（HF 仓库 11-19 仍在更新）、vLLM Recipes 上官方给的部署配方、GitHub <code>Tencent-Hunyuan/Hy4-flash</code>（11-17 建仓，README 里 vLLM / SGLang 镜像命令齐全）。</p>
+
+<h2>一、权重账：激活 12B，下载 440 GB</h2>
+
+<p>先把两个数字摆在一起：总参数 224B（其中 64B 是 Engram 记忆表），每 token 激活 12B。激活参数决定的是算力 —— 一次前向只算这 12B；总参数决定的是显存 —— 另外那 212B 也得占着地方，随时可能被路由到。</p>
+
+<p>所以下载体积是这样的：BF16 checkpoint 440.5 GB，FP8 287.1 GB，官方 vLLM 配方在两者之上乘 1.2 给出 529 GB / 345 GB 的估算（保守值，不是实测下限）。8 卡 TP=8 摊下来，每卡光权重就是 55.1 GB 或 35.9 GB —— 这就是为什么配方里写的是 H200 而不是 4090。</p>
+
+<p>至于那 64B 的 Engram，它的定位更有意思：<code>config.json</code> 里 <code>engram_layer_ids</code> 是 <code>[2, 12, 22, 32]</code> 四层，每层 <code>engram_n_embed_per_ngram=768</code>，两个词表各 1031.2 万条 —— 4 × 2 × 10.312M × 768 ≈ 63.4B 参数，正好对上“64B Engram”。这些是 n-gram 查表，不是稠密计算，所以官方把它们默认卸到主机内存（<code>engram_fp8_embedding=true</code>，约 63 GB DRAM）。用内存换 HBM，代价是每次查表都要过 PCIe。</p>
+
+<h2>二、KV 账：1M 上下文不是 47 GiB，是 13.5 GiB</h2>
+
+<p>很多人看到 1M 上下文第一反应是“显存爆炸”。这里的结构值得细看。42 层里，<code>layer_types</code> 给出 12 层 <code>deepseek_sparse_attention</code> + 30 层 <code>sliding_attention</code>，滑窗大小 512；注意力是 MLA，<code>kv_lora_rank=512</code>、<code>qk_rope_head_dim=64</code>。也就是说每个 token 在每层只缓存 576 个数（fp16 下 1152 字节），而 30 层滑窗层根本不留长历史。</p>
+
+<pre><code>LAYERS, DSA, SW, WINDOW = 42, 12, 30, 512
+LATENT, ROPE, BYTES = 512, 64, 2
+
+per_layer = (LATENT + ROPE) * BYTES
+dsa_per_token = DSA * per_layer
+sw_fixed = SW * WINDOW * per_layer
+full_per_token = LAYERS * per_layer
+
+def gib(n):
+    return n / (1024 ** 3)
+
+print("per layer per token  : %d B (MLA latent %d + rope %d, fp16)" % (per_layer, LATENT, ROPE))
+print("12 sparse layers     : %d B/token = %.1f KiB" % (dsa_per_token, dsa_per_token / 1024))
+print("30 sliding layers    : %d B fixed  = %.1f MiB" % (sw_fixed, sw_fixed / 1024 / 1024))
+print()
+for ctx in (8192, 131072, 1048576):
+    kv = ctx * dsa_per_token + sw_fixed
+    print("ctx %8d tokens -> %8.1f MiB per sequence" % (ctx, kv / 1024 / 1024))
+print()
+print("if all 42 layers kept full history:")
+print("  %.1f KiB/token, 1M ctx = %.1f GiB" % (full_per_token / 1024, gib(full_per_token * 1048576)))
+print("  hybrid keeps it at    %.1f GiB (%.1fx smaller)" % (
+    gib(1048576 * dsa_per_token + sw_fixed),
+    (full_per_token * 1048576) / (1048576 * dsa_per_token + sw_fixed)))</code></pre>
+
+<p>跑出来的数：</p>
+
+<pre><code>per layer per token  : 1152 B (MLA latent 512 + rope 64, fp16)
+12 sparse layers     : 13824 B/token = 13.5 KiB
+30 sliding layers    : 17694720 B fixed  = 16.9 MiB
+
+ctx     8192 tokens ->    124.9 MiB per sequence
+ctx   131072 tokens ->   1744.9 MiB per sequence
+ctx  1048576 tokens ->  13840.9 MiB per sequence
+
+if all 42 layers kept full history:
+  47.2 KiB/token, 1M ctx = 47.2 GiB
+  hybrid keeps it at    13.5 GiB (3.5x smaller)</code></pre>
+
+<p>13.5 GiB 一条 1M 序列。8 张 H200（1128 GB HBM，按 90% 可用算 1015 GB）减掉 287 GB FP8 权重，还剩 728 GB 给 KV —— 理论上能同时挂 50 条满长度的序列。这就是“1M 上下文同时低成本”那句话的全部技术底牌：不是模型更聪明，是 30 层压根不看长历史。</p>
+
+<p>顺便破除一个幻觉：8k 上下文下，同样 728 GB 能装 6400 条序列，但官方配方里 <code>--max-num-seqs</code> 默认是 4。显存从来不是瓶颈，吞吐策略才是 —— 决定你花钱的往往是 <code>max-num-batched-tokens</code> 和调度，不是模型体积。</p>
+
+<h2>三、开源权重，和线上那个 API 不是同一个东西</h2>
+
+<p>这是最容易踩的坑。腾讯说线上解码超过 150 tps，靠的是 megakernel 融合小算子、4bit 量化、DFly 投机解码三件套。但开源出去的是 BF16 与 FP8 两个 checkpoint，官方只给了两个预构建镜像：</p>
+
+<pre><code>docker run --gpus all -p 8000:8000 --ipc=host -v ~/.cache/huggingface:/root/.cache/huggingface vllm/vllm-openai:hy4-flash tencent/Hy4-flash-FP8 --tensor-parallel-size 8 --speculative-config '{"num_speculative_tokens":5,"method":"dfly"}' --attention-backend FLASHMLA_SPARSE --tool-call-parser hy_v4 --reasoning-parser hy_v4 --enable-auto-tool-choice --served-model-name hy4-flash</code></pre>
+
+<p>几个硬限制，伸手之前先看清楚：</p>
+
+<ul>
+<li><strong>硬件</strong>：Hopper / Blackwell 数据中心卡（H100、H200、B200、GB200、B300、GB300）。AMD Instinct 没有 ROCm 镜像，暂时不支持。</li>
+<li><strong>框架</strong>：没有已发布的 vLLM wheel 注册 <code>HYV4FlashVLForConditionalGeneration</code> 和 DFly drafter，<code>pip install vllm</code> 跑不起来，只能用专用镜像。</li>
+<li><strong>并行</strong>：只支持 TP 与 TP+EP。DP、PP、CP、EPLB、DBO、LoRA 都不支持，MTP 也不支持（投机解码走 DFly 的五层 draft head）。</li>
+<li><strong>默认参数很保守</strong>：<code>max-model-len 8192</code>、<code>max-num-seqs 4</code>、单图无视频。1M 上下文是能力上限，不是开箱默认值。</li>
+<li><strong>主机内存</strong>：Engram 表在 CPU 侧，配机器时别只算显存。</li>
+</ul>
+
+<h2>四、1/20 是怎么凑出来的</h2>
+
+<p>官方价格：Hy4 flash 输入 0.5 元/M、输出 2 元/M、命中缓存 0.02 元/M；Hy4 是 6 / 18 / 0.3。输入差 12 倍，输出差 9 倍，缓存命中差 15 倍。但单任务成本差 20 倍 —— 中间那部分来自 token 数量。拿一个典型的办公任务算一下就清楚了：</p>
+
+<pre><code>PRICE = {"hy4-flash": (0.5, 2.0, 0.02), "hy4": (6.0, 18.0, 0.3)}
+IN_TOKENS, OUT_TOKENS, CACHE_HIT = 40000, 3000, 0.8
+
+def task_cost(name, out_tokens=OUT_TOKENS):
+    p_in, p_out, p_cache = PRICE[name]
+    cached = IN_TOKENS * CACHE_HIT
+    fresh = IN_TOKENS - cached
+    return (fresh * p_in + cached * p_cache + out_tokens * p_out) / 1e6
+
+flash = task_cost("hy4-flash")
+hy4 = task_cost("hy4")
+print("task profile: %d in (%d cached), %d out" % (IN_TOKENS, IN_TOKENS * CACHE_HIT, OUT_TOKENS))
+print("hy4-flash    : %.4f CNY/task" % flash)
+print("hy4          : %.4f CNY/task" % hy4)
+print("price ratio  : %.1fx" % (hy4 / flash))
+print()
+implied = hy4 / 20
+print("to reach the claimed 20x, the same task must cost %.4f CNY" % implied)
+lo, hi = 0.5, 6000
+for _ in range(60):
+    mid = (lo + hi) / 2
+    if task_cost("hy4-flash", mid) > implied:
+        hi = mid
+    else:
+        lo = mid
+print("that means output length would have to be about %d tokens, not %d" % (int(lo), OUT_TOKENS))
+print("so the rest of the gap has to come from fewer tokens, not from price")</code></pre>
+
+<pre><code>task profile: 40000 in (32000 cached), 3000 out
+hy4-flash    : 0.0106 CNY/task
+hy4          : 0.1116 CNY/task
+price ratio  : 10.5x
+
+to reach the claimed 20x, the same task must cost 0.0056 CNY
+that means output length would have to be about 470 tokens, not 3000
+so the rest of the gap has to come from fewer tokens, not from price</code></pre>
+
+<p>单价只解释 10.5 倍。要凑到 20 倍，同一个任务得再省掉一半以上的 token。腾讯自己给的侧证是对得上的：后训练阶段用 RL 把端到端输出长度压了 50%；企业微信团队说思考模式输出 token 少 60%；QQ 小 Q 那边 P90 延迟降 39%、token 降 30%；王者荣耀的 Bug 分析任务请求次数少 22% 到 39%、token 少 40.5% 到 61.2%。</p>
+
+<p>换句话说，1/20 不是一个模型能力的度量，是“单价便宜”乘“少说废话”的结果。后者才是真正难的部分，也是为什么它敢同时宣称“效果略优于 Hy4 preview”。</p>
+
+<h2>五、那自托管划算吗</h2>
+
+<p>按 API 每个任务 0.0106 元算，自己租 8 张 H200 要跑多少任务才打平？</p>
+
+<pre><code>USB_CNY = 7.1
+GPU_USD_HR = 2.0
+GPUS = 8
+
+hourly = GPUS * GPU_USD_HR * USB_CNY
+print("self-host 8xH200 at %.1f USD/GPU-hr = %.0f CNY/hr" % (GPU_USD_HR, hourly))
+print("tasks per hour needed to match the API: %.0f" % (hourly / 0.0106))
+print("that is %.2f tasks/sec, sustained" % (hourly / 0.0106 / 3600))</code></pre>
+
+<pre><code>self-host 8xH200 at 2.0 USD/GPU-hr = 114 CNY/hr
+tasks per hour needed to match the API: 10717
+that is 2.98 tasks/sec, sustained</code></pre>
+
+<p>每小时 10717 个任务，约每秒 3 个，24 小时不停。单节点解码 150 tps、任务平均输出 3000 token，就算批量把吞吐拉到 3000 tok/s，也就是每秒 1 个任务 —— 差三倍。而 <code>GPU_USD_HR = 2.0</code> 已经是很客气的租价假设了。</p>
+
+<p>结论很直接：这个价位上，自托管不是省钱，是花钱买别的东西 —— 数据不出网、已有闲置卡、要做领域微调、要给内部系统一个不受限流约束的端点。如果目标只是“降低单位任务成本”，API 比自建便宜一个量级。</p>
+
+<h2>六、什么时候用它，什么时候别用</h2>
+
+<p>腾讯自己的建议和实测数据是一致的：深度搜索、文档处理、PPT 生成、简单前端、Computer Use 这类日常任务交给 flash；长程软件工程这类需要连续几十步不跑偏的活，用智能上限更高的 Hy4。这个分工不是营销话术 —— 12B 激活在单步任务上和 49B 激活的差距不明显，但错误会累积。</p>
+
+<p>另外两点容易被忽略。第一，<code>reasoning_effort</code> 有 <code>high</code> 和 <code>no_think</code> 两档，默认是前者，日常任务里大量 token 花在思考上，改成 <code>no_think</code> 往往比换模型更有效。第二，1M 上下文能装不等于该开 —— 一条 1M 序列占 13.5 GiB，50 条就把机器的 KV 池吃干，而绝大多数任务 32k 就够，剩下的钱花在并发上更值。</p>
+
+<p>最后说句公道话：把 64B 静态知识从 HBM 挪到 DRAM、让 30 层只看 512 个 token、再用 RL 把输出长度砍一半 —— 这三件事任何一件单独做都不新鲜，凑在一个 12B 激活的模型里同时成立，才是这次值得看的地方。至于那个 1/20，读懂它的构成比记住这个数字有用。</p>''',
+    'related': [("Qwen4-Max：把“单任务成本降 58%”拆成两个因子", "blog/qwen4-max-cost-per-task-2026/"), ("Kimi K3.1 Pro 开源：100 万上下文到底要多少显存", "blog/kimi-k3-pro-1m-context-2026/"), ("本地跑 284B MoE：FreeToken 与 colibri 把门槛拉到了哪", "blog/local-moe-serving-freetoken-colibri-2026/")],
+},
+{
     'slug': "java4shell-openjdk-base64-rce-2026",
     'category': "security",
     'date': "2026-11-18",
