@@ -6,6 +6,408 @@
 """
 
 ARTICLES_EN = {
+'gemini-4-neon-cost-per-task-2026': {
+    'tags': ["Gemini 4", "model selection", "inference cost", "pricing"],
+    'title': "Gemini 4 Neon pricing, taken apart: 50% higher unit price, 32% lower cost per task, and Carbon doubles on December 1 | DevTools Blog",
+    'description': "Gemini 4 Neon went GA on 2026-11-18 at $3 per million input tokens, $15 output, and $0.15 for cached input. Carbon sits at $2 and $10, but its introductory price expires on 2026-11-30 and doubles to $4 and $20 on December 1. This post splits the per-million-token unit into unit price, token count and cache hit rate, models four Gemini 4 SKUs on the same workload, derives the 2.21x token multiplier hidden inside Google's 32% claim, and works out the pass rate at which cheap-first-then-escalate actually pays (50%, 62%, 33%).",
+    'keywords': "Gemini 4 Neon, Gemini 4 Neon pricing, Gemini 4 Neon vs Carbon, Gemini 4 Carbon price increase, December 1 model price change, cost per task, per million tokens, LLM cost optimization, how to reduce LLM cost per task, model selection, model routing, prompt caching discount, cache hit rate, token cost breakdown, thinking levels, 1M output tokens, Gemini API pricing, Gemini Decisions API, model routing break-even, how to lower inference spend",
+    'h1': "A unit price 50% higher and a per-task cost 32% lower: Gemini 4 Neon takes the per-million-token metric apart",
+    'summary': "Neon charges $3 in and $15 out, half again what Carbon charges, while Google claims a 32% lower cost per task. Both are true, and the gap lives entirely in how many tokens one task burns. The fact worth remembering is smaller and harder: Carbon's introductory price ends on November 30.",
+    'body': '''<p>Gemini 4 Neon went GA on November 18 at $3 per million input tokens and $15 per million output. Carbon, in the same family, is $2 and $10. Neon's unit price is 50% higher, and Google says it completes the same task for 32% less than Carbon does.</p>
+
+<p>Both statements hold. The 82-point gap between them lives inside the word task, which happens to be the part of model selection people get wrong most often.</p>
+
+<h2>Four models in five weeks, three price sheets, one expiring on November 30</h2>
+
+<p>Line up Google's release record for the month (Gemini API changelog, 2026-11-18):</p>
+
+<table>
+<thead><tr><th>Model</th><th>GA date</th><th>Input $/1M</th><th>Output $/1M</th><th>Cached input</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Carbon</td><td>11-10</td><td>2.00 to 4.00</td><td>10.00 to 20.00</td><td>not published</td><td>intro price until 2026-11-30</td></tr>
+<tr><td>Hydrogen</td><td>11-12</td><td>1.50</td><td>7.50</td><td>not published</td><td>free tier available</td></tr>
+<tr><td>Neon</td><td>11-18</td><td>3.00</td><td>15.00</td><td>0.15</td><td>four thinking levels</td></tr>
+<tr><td>Decision 1</td><td>11-11</td><td>n/a</td><td>zero output tokens</td><td>n/a</td><td>Decisions API</td></tr>
+</tbody>
+</table>
+
+<p>Carbon and Argon, which share a price, both double on December 1 (The Decoder, 2026-11-19). That is the most useful fact in this release cycle: the model you pick in November comes with a price sheet that dies at the end of the month.</p>
+
+<p>Neon does not move. So the 50% premium is true only in November. From December 1, $3 and $15 is 25% cheaper than Carbon's $4 and $20. Same code, same eval set, opposite conclusion.</p>
+
+<h2>Take the per-million-token unit apart</h2>
+
+<p>That single number compresses three entangled quantities: unit price, token count, and cache hit rate.</p>
+
+<p>Unit price is the sticker. Everyone can see it, and it is the one you should not compare. Token count is how much a model burns to finish the same task; Google states the conclusion without the distribution. Cache hit rate is your own engineering problem, and Neon's cached input at $0.15 is 5% of its input price, which makes it the highest-leverage line in the table.</p>
+
+<p>The script below models a mid-sized repository task: 180k input tokens for repo context plus system prompt, and 12k output tokens for reasoning plus patch.</p>
+
+<pre><code>CACHE = 0.15
+IN_TOK, OUT_TOK = 180_000, 12_000
+MODELS = {
+    "hydrogen":     (1.50, 7.50),
+    "carbon_intro": (2.00, 10.00),
+    "carbon_dec1":  (4.00, 20.00),
+    "neon":         (3.00, 15.00),
+}
+
+def task_cost(pin, pout, it=IN_TOK, ot=OUT_TOK, hit=0.0):
+    return (it * (1 - hit) * pin + it * hit * CACHE + ot * pout) / 1e6
+
+print("per task, no cache (180k in / 12k out)")
+for k, v in MODELS.items():
+    print("  %-12s $%.4f" % (k, task_cost(*v)))
+
+print()
+print("neon, cache hit sensitivity")
+for h in (0.0, 0.5, 0.8, 0.9, 0.95):
+    print("  hit %3.0f%%  $%.4f" % (h * 100, task_cost(3.00, 15.00, hit=h)))
+
+neon = task_cost(3.00, 15.00)
+carb = task_cost(2.00, 10.00)
+print()
+print("google claim: neon is 32% cheaper per task than carbon")
+print("  same-token ratio      %.3fx" % (neon / carb))
+print("  implied carbon tokens %.2fx" % ((neon / 0.68) / carb))
+
+print()
+print("monthly at 3000 tasks")
+for k, v in MODELS.items():
+    print("  %-12s $%7.0f" % (k, task_cost(*v) * 3000))</code></pre>
+
+<p>Run <code>python cost.py</code>:</p>
+
+<pre><code>per task, no cache (180k in / 12k out)
+  hydrogen     $0.3600
+  carbon_intro $0.4800
+  carbon_dec1  $0.9600
+  neon         $0.7200
+
+neon, cache hit sensitivity
+  hit   0%  $0.7200
+  hit  50%  $0.4635
+  hit  80%  $0.3096
+  hit  90%  $0.2583
+  hit  95%  $0.2327
+
+google claim: neon is 32% cheaper per task than carbon
+  same-token ratio      1.500x
+  implied carbon tokens 2.21x
+
+monthly at 3000 tasks
+  hydrogen     $   1080
+  carbon_intro $   1440
+  carbon_dec1  $   2880
+  neon         $   2160</code></pre>
+
+<p>Four numbers, two conclusions. The December 1 cliff is real: at 3,000 tasks a month, Carbon moves from $1,440 to $2,880 overnight while Neon stays at $2,160. And caching beats model choice: Neon at a 90% hit rate lands at $0.2583, below Carbon's promotional price, while pushing to 95% saves another three cents. Past 90% the marginal return is gone, so stop spending engineering time there.</p>
+
+<h2>Reverse the 32% into a token multiplier</h2>
+
+<p>Neon costs $0.72 per task. Carbon at its introductory price costs $0.48. At equal token counts Neon is 1.5x. For the ratio to fall to 0.68, Carbon has to burn 2.21 times the tokens.</p>
+
+<p>That is the quantified version of stronger models rambling. They do not write more code for the same plan; they try more plans, read more files, and keep thinking longer. You see tokens on the invoice and thoroughness on the screen, and those are the same phenomenon.</p>
+
+<p>Google's own framing is a 32% lower cost per task than Carbon at the default high thinking level (reported by Huanqiu, 2026-11-19). Xinzhiyuan measured the same day at $6.86 per task for Neon against $12.61 for Opus 5.5 and $15.47 for Fable 5.2 (2026-11-19). All of it points one way: tokens are quoted, tasks are paid for, and the conversion factor between them is how chatty the model is.</p>
+
+<p>A paper on arXiv makes the argument properly (arXiv:2608.08528). Once retries and escalations are priced in, minimizing cost per completed task weakly dominates minimizing token cost. It also hands you a usable criterion: the minimum pass rate a cheaper model needs on a given cell before deploying it pays off.</p>
+
+<h2>What that criterion looks like</h2>
+
+<p>Write cheap-first-then-escalate as expected cost equals cheap cost plus (1 minus pass rate) times strong cost, then solve for the pass rate where the two strategies tie.</p>
+
+<pre><code>H2, N2, C_INTRO, C_DEC1 = 0.36, 0.72, 0.48, 0.96
+
+def with_escalation(first, strong, p):
+    return first + (1 - p) * strong
+
+def breakeven(first, strong):
+    return (strong - first) / strong
+
+print("cheap-first, escalate on failure")
+print("  hydrogen $%.2f -> neon $%.2f  breakeven pass %.0f%%" % (H2, N2, breakeven(H2, N2) * 100))
+print("  hydrogen $%.2f -> carbon $%.2f breakeven pass %.0f%%" % (H2, C_DEC1, breakeven(H2, C_DEC1) * 100))
+print("  carbon   $%.2f -> neon   $%.2f breakeven pass %.0f%%" % (C_INTRO, N2, breakeven(C_INTRO, N2) * 100))
+print()
+print("expected cost per completed task")
+print("  pass  hydrogen->neon  hydrogen->carbon  neon_only")
+for p in (0.50, 0.60, 0.70, 0.80, 0.90, 0.95):
+    a = with_escalation(H2, N2, p)
+    b = with_escalation(H2, C_DEC1, p)
+    print("  %.2f       $%.3f           $%.3f          $%.3f" % (p, a, b, N2))</code></pre>
+
+<p>Run <code>python boundary.py</code>:</p>
+
+<pre><code>cheap-first, escalate on failure
+  hydrogen $0.36 -> neon $0.72  breakeven pass 50%
+  hydrogen $0.36 -> carbon $0.96 breakeven pass 62%
+  carbon   $0.48 -> neon   $0.72 breakeven pass 33%
+
+expected cost per completed task
+  pass  hydrogen->neon  hydrogen->carbon  neon_only
+  0.50       $0.720           $0.840          $0.720
+  0.60       $0.648           $0.744          $0.720
+  0.70       $0.576           $0.648          $0.720
+  0.80       $0.504           $0.552          $0.720
+  0.90       $0.432           $0.456          $0.720
+  0.95       $0.396           $0.408          $0.720</code></pre>
+
+<p>Three lines are worth memorizing. Hydrogen to Neon breaks even at a 50% pass rate, so below one in two, running cheap first costs more than going straight to Neon. Carbon's introductory price to Neon breaks even at 33%, which makes Carbon the workhorse with occasional Neon escalation the cheaper shape in November. On December 1, once Carbon reaches $0.96, that flips: Neon becomes the workhorse and escalation becomes rare.</p>
+
+<p>The third line is the one people miss: Hydrogen to Carbon at December prices breaks even at 62%, versus 56% in November. Same pipeline, different price sheet, different optimal route, and most teams have their router hardcoded in an if statement.</p>
+
+<h2>Four thinking levels are four products, not four prices</h2>
+
+<p>Neon ships low, medium, high (default) and xhigh, which Google frames as letting teams align intelligence and token spend to the workload (Google blog, 2026-11-18). In practice:</p>
+
+<ul>
+<li><strong>low and medium</strong>: config edits, boilerplate, batch renames. Latency is the constraint, not intelligence.</li>
+<li><strong>high (default)</strong>: multi-file debugging, refactors, cross-repo location. Every 32% lower cost per task figure was measured here. Do not benchmark xhigh against a competitor's default.</li>
+<li><strong>xhigh</strong>: reserve it for the hardest 5%. Google's 36%-plus-cheaper claim at this level compares against competitors at their highest setting, not against its own high.</li>
+</ul>
+
+<p>One trap: xhigh is not more reliable. On long tasks it spends budget re-verifying, and verification quality depends on whether there are tests to run. In a repository without tests, xhigh mostly makes the model wrong with more confidence. You hit this more often building your own agent pipeline than swapping models.</p>
+
+<h2>A million output tokens is a billing risk, not a feature</h2>
+
+<p>Neon supports decode up to one million tokens (Gemini API changelog, 2026-11-18). At $15 per million, one runaway loop emits $15, which is twenty normal tasks.</p>
+
+<p>Cap <code>max_output_tokens</code> at about twice what the task actually needs, and put a budget gate in the call layer that aborts and logs once a single request crosses N dollars. That gate does more than any prompt asking the model to be concise.</p>
+
+<h2>Migration checklist</h2>
+
+<ol>
+<li><strong>Move Carbon off the main path before December 1</strong>, or confirm you can absorb a doubling. What changes is one model string; what you rerun is the eval set, not the code.</li>
+<li><strong>Measure the token distribution before choosing</strong>. Run the same task twenty times and record the spread of input and output tokens, not the mean. The tail sets your budget ceiling.</li>
+<li><strong>Keep the cache prefix stable</strong>. A timestamp, a user id or a randomly ordered tool list inside the system prompt drops the hit rate to zero. The $0.15 line only pays if the first N tokens are byte-identical on every call.</li>
+<li><strong>Write routing as data, not code</strong>. The three break-even rates above move with the price sheet, and a hardcoded branch means rewriting code every quarter.</li>
+<li><strong>Do not use a chat model for binary decisions</strong>. The Decisions API that shipped on November 11 returns calibrated decisions with zero output tokens, an order of magnitude cheaper for the same judgment.</li>
+<li><strong>Do not pick from leaderboards alone</strong>. Neon scores 65.2% on Terminal-Bench 4.1 while Opus 5.5 stays slightly ahead, and 90.5% SOTA on SEC-bench Pro at roughly half the cost (Google blog). The right question is who gets your task set right on the first attempt.</li>
+</ol>
+
+<p>Neon's pricing strategy is easy to read: lift the unit price above the flagship, use token efficiency to push cost per task below it, and use the cache discount to lock in high-frequency users. The only thing it asks of the buyer is that you know which unit you are paying in.</p>''',
+},
+'claude-bughunter-skill-bundle-audit-2026': {
+    'tags': ["Agent Skills", "context budget", "AI security", "code audit"],
+    'title': "Claude-BugHunter unpacked: 83 skills, 1.66M characters, and an official eval table that reads 3/3 against 3/3 | DevTools Blog",
+    'description': "The number one repository on GitHub Trending today claims 82 skills and 681 disclosed reports. Its 83 SKILL.md files add up to 1,122 reports instead, total 1.66 million characters, and cannot fit in any context window. This post audits the bundle with two runnable scripts: one measures skill size, description length and citation density, the other simulates description-based routing and blows a 32k budget by 2.3x. It also covers the silent Opus 5 to Opus 4.8 fallback on penetration testing requests, straight from the repo's own README.",
+    'keywords': "Claude-BugHunter, AI penetration testing, Agent Skills, SKILL.md, skill bundle audit, Claude Code plugin, context budget, token budget, skill auto-loading, skill routing, GitHub Trending, bug bounty, red team tooling, AI security tooling, how to audit agent skills, Claude Code skills tutorial, Opus 5 fallback Opus 4.8, silent model switch, which agent skills to install, skill bundle token budget, agent skills security",
+    'h1': "The number one repo on GitHub Trending, with all 83 of its SKILL.md files taken apart: its own eval table reads 3/3 against 3/3",
+    'summary': "Up 1,349 stars in a day, 83 skills, 1.66 million characters, a README that claims 681 reports while the frontmatter sums to 1,122. The binding constraint is not how much knowledge is inside, it is the context budget: 462k tokens cannot be resident, and one description-based load overshoots a 32k window by 2.3x.",
+    'body': '''<p>Today's top repository on GitHub Trending is <code>elementalsouls/Claude-BugHunter</code>, up 1,349 stars in a day to 13,334 total. The pitch is specific: 82 skills, 15 slash commands, 681 disclosed reports across 24 vulnerability classes, plus enterprise identity and infrastructure attack matrices.</p>
+
+<p>I downloaded it and took it apart. Short version: the knowledge is organized with real craft, and the eval table the repo publishes cannot show that any of it works.</p>
+
+<h2>Start with the table it publishes itself</h2>
+
+<p>It lives in <code>eval/BASELINE.md</code>, run on 2026-08-25 against claude-opus-4-8, on three OWASP Juice Shop challenges: SQLi auth bypass, confidential document, basket IDOR.</p>
+
+<table>
+<thead><tr><th>Condition</th><th>Solved</th><th>Median turns</th><th>Median cost</th></tr></thead>
+<tbody>
+<tr><td>skills-off</td><td>3/3</td><td>2</td><td>$0.178</td></tr>
+<tr><td>skills-on</td><td>3/3</td><td>3</td><td>$0.254</td></tr>
+<tr><td>delta</td><td>+0</td><td>+1</td><td>+$0.076</td></tr>
+</tbody>
+</table>
+
+<p>The author wrote "Ceiling effect, as predicted" underneath and explained it: both conditions solved all three, so on memorized, curl-trivial Juice Shop challenges the hunt skill context is pure overhead. Skills-on took one more turn and 43% more money. v0 measures whether the pipeline runs, not whether the skills help.</p>
+
+<p>That self-criticism is more honest than most READMEs. It also quietly bounds the battle-tested claim: the tier that could show a delta is v1 on PortSwigger Academy, which needs an account, a manually launched lab and a browser oracle. The author does not have the PortSwigger credentials, so v1 has not run. The <code>eval-harness.yml</code> workflow only sanity-checks the harness.</p>
+
+<p>So the evidence the bundle currently has is this: two authorized engagement records, 433 of 681 citations traceable to primary sources, and coverage metrics showing zero-report skills dropping from 4 to 0. What is missing is a detection rate.</p>
+
+<h2>What is actually inside</h2>
+
+<p>83 <code>SKILL.md</code> files. The README title says 82 and the body says 83, and that drift is itself a signal. Four layers: Think (methodology plus red-team discipline), Hunt webapps (58 hunt skills), Hit the perimeter (M365 and Entra, Okta, vCenter, SSL-VPN, cloud IAM), and Ship it (a seven-question gate, reporting, PII redaction).</p>
+
+<p>Each skill opens with YAML frontmatter carrying four fields: <code>name</code>, <code>description</code>, <code>sources</code>, <code>report_count</code>. The bodies run long. hunt-xss spells out the judgement models skip most often: the payload must come back with unescaped angle brackets, <code>&lt;script&gt;</code> is XSS and <code>&amp;lt;script&amp;gt;</code> is not. It also tells you to use a four-digit canary such as <code>alert(91234)</code> instead of <code>alert(1)</code>, because practice pages are littered with <code>alert(1)</code> as decoy hint text. A general model does not invent that detail on the spot. It comes from a real report.</p>
+
+<h2>The first number that does not add up</h2>
+
+<p>Add <code>report_count</code> across the frontmatter and you get 1,122. The README says 681. The gap is 441.</p>
+
+<p>Nobody is lying. One report can be counted under both xss and misc, so 681 is the deduplicated pattern count and 1,122 is the sum of per-skill citations. But if you estimate coverage from 681, you should know which figure you are holding. That is the difference between auditable and apparently auditable.</p>
+
+<h2>The real constraint is the context budget</h2>
+
+<p>All 83 files total 1,663,341 characters. At 3.6 characters per token that is roughly 462k tokens, more than twice any 200k window. The mean skill is 20,040 characters, about 5.6k tokens. The heaviest, <code>osint-methodology</code>, is 93,281 characters: 25.9k tokens from a single skill, 81% of a 32k window.</p>
+
+<p>So routing is a precondition, not an optimization. The library can never be resident. You load a few each turn, and loading the wrong ones shows up immediately in both bill and accuracy.</p>
+
+<p>The script below runs on any directory that follows the Agent Skills layout. The optional second argument is the report count the README claims, for reconciliation.</p>
+
+<pre><code>import os, sys
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "skills"
+CLAIM = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+CPT = 3.6
+
+def front(text):
+    lines = text.split(chr(10))
+    if not lines or lines[0] != "---":
+        return {}, text
+    end = lines.index("---", 1)
+    fm = {}
+    for line in lines[1:end]:
+        if ":" in line and not line.startswith(" "):
+            k, v = line.split(":", 1)
+            fm[k.strip()] = v.strip()
+    return fm, chr(10).join(lines[end + 1:])
+
+rows = []
+for name in sorted(os.listdir(ROOT)):
+    path = os.path.join(ROOT, name, "SKILL.md")
+    if not os.path.isfile(path):
+        continue
+    text = open(path, encoding="utf-8").read()
+    fm, body = front(text)
+    rows.append({
+        "name": name,
+        "chars": len(text),
+        "desc": fm.get("description", ""),
+        "reports": int(fm["report_count"]) if fm.get("report_count", "").isdigit() else 0,
+        "sources": fm.get("sources", ""),
+        "urls": body.count("http"),
+    })
+
+total = sum(r["chars"] for r in rows)
+print("skills            %d" % len(rows))
+print("total chars       %d  (~%dk tokens)" % (total, total / CPT / 1000))
+print("mean chars        %d  (~%.1fk tokens)" % (total / len(rows), total / len(rows) / CPT / 1000))
+print("report_count sum  %d" % sum(r["reports"] for r in rows))
+if CLAIM:
+    print("readme claim      %d  (delta %+d)" % (CLAIM, sum(r["reports"] for r in rows) - CLAIM))
+print("desc max / mean   %d / %d" % (max(len(r["desc"]) for r in rows), sum(len(r["desc"]) for r in rows) / len(rows)))
+print("desc over 1024    %d" % sum(1 for r in rows if len(r["desc"]) > 1024))
+print("no url in body    %d" % sum(1 for r in rows if r["urls"] == 0))
+print("says 'Use when'   %d" % sum(1 for r in rows if "use when" in r["desc"].lower()))
+print("says 'any target' %d" % sum(1 for r in rows if "any target" in r["desc"].lower()))
+
+print()
+print("heaviest five")
+for r in sorted(rows, key=lambda r: -r["chars"])[:5]:
+    print("  %-26s %7d chars  %5.1fk tok" % (r["name"], r["chars"], r["chars"] / CPT / 1000))
+
+print()
+print("skills with empty description: %d" % sum(1 for r in rows if not r["desc"]))</code></pre>
+
+<p>Run <code>python audit_skills.py skills 681</code>:</p>
+
+<pre><code>skills            83
+total chars       1663341  (~462k tokens)
+mean chars        20040  (~5.6k tokens)
+report_count sum  1122
+readme claim      681  (delta +441)
+desc max / mean   1017 / 595
+desc over 1024    0
+no url in body    10
+says 'Use when'   61
+says 'any target' 11
+
+heaviest five
+  osint-methodology            93281 chars   25.9k tok
+  bug-bounty                   76597 chars   21.3k tok
+  bb-local-toolkit             73036 chars   20.3k tok
+  supply-chain-attack-recon    42132 chars   11.7k tok
+  hunt-race-condition          35163 chars    9.8k tok
+
+skills with empty description: 0</code></pre>
+
+<p>A few lines deserve their own comment. <code>desc max 1017</code>: the spec caps description at 1024 characters, and this bundle reaches 1017, so one skill claims nearly the whole trigger field and leaves no room for its siblings. <code>no url in body 10</code>: ten skills contain not one clickable source, which makes them experience rather than auditable knowledge. <code>says 'any target' 11</code>: eleven descriptions promise to hunt on any target, a trigger phrase that collides with every similar skill.</p>
+
+<h2>Routing is where it breaks, not knowledge</h2>
+
+<p>Harnesses such as Claude Code choose a skill by reading <code>name</code> and <code>description</code> and deciding, which makes the load a model-driven string match. <code>says 'Use when' 61</code> shows the author knows this and wrote the trigger sentence into 61 descriptions.</p>
+
+<p>The trouble is ordering. I simulated the most naive rule: split the query into words, intersect with description words, treat two or more hits as a match, rank by overlap. The query is a plausible opener: audit this web app for xss and ssrf, it runs on aws behind a graphql api.</p>
+
+<pre><code>import os, re, sys
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "skills"
+QUERY = "audit this web app for xss and ssrf, it runs on aws behind a graphql api"
+BUDGET = 32_000
+CPT = 3.6
+
+def words(s):
+    return {w for w in re.findall("[a-z0-9]+", s.lower()) if len(w) > 3}
+
+def description(text):
+    lines = text.split(chr(10))
+    if not lines or lines[0] != "---":
+        return ""
+    for line in lines[1:lines.index("---", 1)]:
+        if line.startswith("description:"):
+            return line[len("description:"):].strip()
+    return ""
+
+q = words(QUERY)
+hits = []
+for name in sorted(os.listdir(ROOT)):
+    path = os.path.join(ROOT, name, "SKILL.md")
+    if not os.path.isfile(path):
+        continue
+    text = open(path, encoding="utf-8").read()
+    score = len(q & words(description(text)))
+    if score >= 2:
+        hits.append((score, len(text) / CPT, name))
+
+hits.sort(reverse=True)
+print("query: %s" % QUERY)
+print("matched %d of %d skills, budget %dk tokens" % (len(hits), 83, BUDGET // 1000))
+print()
+run = 0.0
+for i, (score, tok, name) in enumerate(hits[:10], 1):
+    run += tok
+    flag = "OVER" if run > BUDGET else ""
+    print("  %2d. %-26s score %d  %5.1fk  cum %6.1fk %s"
+          % (i, name, score, tok / 1000, run / 1000, flag))
+print()
+allt = sum(h[1] for h in hits)
+print("all matched cost %.1fk tokens (%.1fx budget)" % (allt / 1000, allt / BUDGET))</code></pre>
+
+<p>Run <code>python route.py skills</code>:</p>
+
+<pre><code>query: audit this web app for xss and ssrf, it runs on aws behind a graphql api
+matched 8 of 83 skills, budget 32k tokens
+
+   1. bug-bounty                 score 2   21.3k  cum   21.3k 
+   2. bb-local-toolkit           score 2   20.3k  cum   41.6k OVER
+   3. offensive-osint            score 2    9.3k  cum   50.9k OVER
+   4. hunt-cache-poison          score 2    6.4k  cum   57.3k OVER
+   5. hunt-graphql               score 2    5.7k  cum   63.0k OVER
+   6. hunt-fintech-graphql       score 2    3.9k  cum   66.9k OVER
+   7. hunt-nextjs                score 2    2.9k  cum   69.8k OVER
+   8. hunt-spa-api               score 2    2.5k  cum   72.3k OVER
+
+all matched cost 72.3k tokens (2.3x budget)</code></pre>
+
+<p>The result is ugly. Eight matches, 72.3k tokens total, 2.3 times a 32k budget. The top two are <code>bug-bounty</code> at 21.3k and <code>bb-local-toolkit</code> at 20.3k, the two largest general skills, so 41.6k is gone before anything specific to xss loads.</p>
+
+<p>The cause is structural. The longer a description, the more query words it can hit, and the longest descriptions belong to the most general skills. This is not a defect unique to this bundle. It is what every skill library that encodes triggers in prose runs into, including the ones you write yourself.</p>
+
+<p>The author clearly knows. <code>engine/skill_map.py</code> holds an explicit <code>CLASS_SKILL</code> table that pins attack classes such as sqli, ssrf and graphql to skill names, with a comment noting that hunt-dispatch is an internal loader and deliberately excluded. That is the right engineering call: put deterministic mapping in code and leave fuzzy judgement to the model. The host's auto-loading still goes through descriptions though.</p>
+
+<h2>And your model gets swapped mid-session</h2>
+
+<p>The README has a section titled Why your model switched mid-session, and it is blunt. On Opus 5, a narrow set of cyber requests including exploit generation, binary-based vulnerability scanning and penetration testing fall back to Opus 4.8 rather than being refused. You get a notice and the response is labelled with the answering model, but in a long agentic run that line scrolls past. It looks like Opus 5 quietly got worse.</p>
+
+<p>For a security bundle that matters. You are comparing two payloads, assuming one variable, and the model changed as well. The recommended handling: for a defensive review of your own repository, say so plainly; for authorized offensive work, enroll in Anthropic's Cyber Verification Program, which is free and application-based; if you just want it off, disable automatic model switching under Settings, Capabilities.</p>
+
+<h2>Six things to do before installing</h2>
+
+<ol>
+<li><strong>Work out the token budget first.</strong> Point the audit script at the skills directory and read the total and the mean. For any single skill above 10k tokens, ask whether it earns its place.</li>
+<li><strong>Read the delta column of BASELINE, not the adjectives in the README.</strong> In this repository, battle-tested is backed by two engagement records, not by a detection rate.</li>
+<li><strong>Look at the description length distribution.</strong> A skill pinned at the 1024 limit crowds out everyone else's trigger words, and after install you will find the right skill never loads and the wrong ones always do.</li>
+<li><strong>Count the skills with zero sources.</strong> Without URLs, quality depends on the author's judgement and updates will lag behind CVEs.</li>
+<li><strong>Check what your harness actually gets.</strong> The knowledge layer is plain SKILL.md and works in five harnesses, but the 15 slash commands and the <code>/hunt</code> engine exist only in Claude Code. Elsewhere you install half a bundle.</li>
+<li><strong>Settle authorization before you start.</strong> Cyber Verification Program approval is not same-day, and finding out mid-engagement is expensive.</li>
+</ol>
+
+<p>The honest summary: this bundle turns the question of what to try into searchable documentation better than almost any comparable repository. Whether it helps you find more bugs has one table behind it, and that table reads 3/3 against 3/3. The first half is usable today. The second half waits on v1 data, or on your own run, and the two are judged differently: the documentation by its structure, the claim only by pass rates on your own task set.</p>''',
+},
 'nginx-http2-rce-2026': {
     'tags': ["nginx security", "HTTP/2", "vulnerability analysis", "hardening"],
     'title': "Two unauthenticated RCEs in nginx HTTP/2 (CVE-2026-123633 and CVE-2026-123007): every release from 1.9.5 to 1.31.8 is affected, with detection scripts and fix steps | DevTools Blog",

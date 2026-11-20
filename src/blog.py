@@ -50,6 +50,417 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': "gemini-4-neon-cost-per-task-2026",
+    'category': "ai",
+    'date': "2026-11-20",
+    'updated': "2026-11-20",
+    'tags': ["Gemini 4", "模型选型", "推理成本", "定价"],
+    'title': "Gemini 4 Neon 定价拆解：单价贵 50%，单任务便宜 32%，而 Carbon 12 月 1 日翻倍 | DevTools 博客",
+    'description': "Gemini 4 Neon 于 2026-11-18 GA，输入每百万 token 3 美元、输出 15 美元、缓存输入 0.15 美元。同门 Carbon 是 2/10 美元，但它的促销价 2026-11-30 到期，12 月 1 日翻倍到 4/20。本文把「每百万 token」这个单位拆成单价、token 数、缓存命中率三件事，用一个可跑的成本模型算出同一负载下四个模型的单任务与月度账单，反解出谷歌「单任务便宜 32%」对应的 2.21 倍 token 差，并给出便宜模型先跑、失败升级的临界通过率（50% / 62% / 33%），最后是六条迁移清单。",
+    'keywords': "Gemini 4 Neon, Gemini 4 Neon 价格, Gemini 4 Neon 怎么用, Gemini 4 Neon vs Carbon, Gemini 4 Carbon 涨价, 12 月 1 日 模型涨价, 每百万 token, 单任务成本, LLM 成本优化, 如何降低大模型成本, 模型选型, 模型路由, prompt caching 折扣, 缓存命中率, token 成本拆解, thinking level 四档, 1M 输出 token, Gemini API 定价, Gemini Decisions API, how to reduce LLM cost per task, Gemini 4 Neon pricing, model routing break-even",
+    'h1': "单价贵 50%，单任务却便宜 32%：Gemini 4 Neon 把「每百万 token」这个单位拆了",
+    'summary': "Neon 输入 3 美元、输出 15 美元，比 Carbon 的 2/10 贵一半，谷歌却说它单任务便宜 32%。两句话都成立，差额全在「一个任务烧多少 token」上。顺带一个更该记住的事实：Carbon 的促销价 11 月 30 日到期，12 月 1 日翻倍。",
+    'body': '''<p>Gemini 4 Neon 在 11 月 18 日 GA，输入每百万 token 3 美元、输出 15 美元。同门的 Carbon 是 2 美元和 10 美元。单价贵了 50%，而谷歌说它跑同一个任务的成本比 Carbon 低 32%。</p>
+
+<p>两句话同时成立。中间那 82 个百分点的落差，全在「任务」这个词里 —— 而这恰好是模型选型最容易算错的地方。</p>
+
+<h2>五周四个模型，三张价目表，一张 11 月 30 日到期</h2>
+
+<p>把谷歌这一个月的发布记录排一下（据 Gemini API changelog，2026-11-18）：</p>
+
+<table>
+<thead><tr><th>型号</th><th>GA 日期</th><th>输入 $/1M</th><th>输出 $/1M</th><th>缓存输入</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>Carbon</td><td>11-10</td><td>2.00 → 4.00</td><td>10.00 → 20.00</td><td>未公布</td><td>促销价至 2026-11-30</td></tr>
+<tr><td>Hydrogen</td><td>11-12</td><td>1.50</td><td>7.50</td><td>未公布</td><td>有免费档</td></tr>
+<tr><td>Neon</td><td>11-18</td><td>3.00</td><td>15.00</td><td>0.15</td><td>四档 thinking</td></tr>
+<tr><td>Decision 1</td><td>11-11</td><td>—</td><td>零输出 token</td><td>—</td><td>Decisions API</td></tr>
+</tbody>
+</table>
+
+<p>Carbon 和同价位的 Argon 在 12 月 1 日把输入输出一起翻倍（据 The Decoder，2026-11-19）。这是本轮最该记住的一条：你 11 月做的选型，12 月 1 日价格表就作废了。</p>
+
+<p>Neon 不涨。所以「贵 50%」这个结论只在 11 月成立 —— 12 月 1 日之后，3/15 反过来比 Carbon 的 4/20 便宜 25%。同一份代码，同一批评测，结论反了个方向。</p>
+
+<h2>先把「每百万 token」这个单位拆掉</h2>
+
+<p>它把三件互相纠缠的事压成了一个数：单价、token 数、缓存命中率。</p>
+
+<p><strong>单价</strong>是牌价，谁都看得见，也是唯一不该拿来比的那个。<strong>token 数</strong>是模型完成同一个任务要烧多少 —— 谷歌只给了结论，没给分布。<strong>缓存命中率</strong>是你自己的工程问题，而 Neon 的缓存价是输入的 5%（0.15 美元），这是整张表里最有杠杆的一栏。</p>
+
+<p>下面这个脚本按一个中等仓库任务估算：18 万 token 输入（仓库上下文加系统提示）、1.2 万 token 输出（推理加补丁）。</p>
+
+<pre><code>CACHE = 0.15
+IN_TOK, OUT_TOK = 180_000, 12_000
+MODELS = {
+    "hydrogen":     (1.50, 7.50),
+    "carbon_intro": (2.00, 10.00),
+    "carbon_dec1":  (4.00, 20.00),
+    "neon":         (3.00, 15.00),
+}
+
+def task_cost(pin, pout, it=IN_TOK, ot=OUT_TOK, hit=0.0):
+    return (it * (1 - hit) * pin + it * hit * CACHE + ot * pout) / 1e6
+
+print("per task, no cache (180k in / 12k out)")
+for k, v in MODELS.items():
+    print("  %-12s $%.4f" % (k, task_cost(*v)))
+
+print()
+print("neon, cache hit sensitivity")
+for h in (0.0, 0.5, 0.8, 0.9, 0.95):
+    print("  hit %3.0f%%  $%.4f" % (h * 100, task_cost(3.00, 15.00, hit=h)))
+
+neon = task_cost(3.00, 15.00)
+carb = task_cost(2.00, 10.00)
+print()
+print("google claim: neon is 32% cheaper per task than carbon")
+print("  same-token ratio      %.3fx" % (neon / carb))
+print("  implied carbon tokens %.2fx" % ((neon / 0.68) / carb))
+
+print()
+print("monthly at 3000 tasks")
+for k, v in MODELS.items():
+    print("  %-12s $%7.0f" % (k, task_cost(*v) * 3000))</code></pre>
+
+<p>跑 <code>python cost.py</code>：</p>
+
+<pre><code>per task, no cache (180k in / 12k out)
+  hydrogen     $0.3600
+  carbon_intro $0.4800
+  carbon_dec1  $0.9600
+  neon         $0.7200
+
+neon, cache hit sensitivity
+  hit   0%  $0.7200
+  hit  50%  $0.4635
+  hit  80%  $0.3096
+  hit  90%  $0.2583
+  hit  95%  $0.2327
+
+google claim: neon is 32% cheaper per task than carbon
+  same-token ratio      1.500x
+  implied carbon tokens 2.21x
+
+monthly at 3000 tasks
+  hydrogen     $   1080
+  carbon_intro $   1440
+  carbon_dec1  $   2880
+  neon         $   2160</code></pre>
+
+<p>四个数，两个结论。<strong>一是 12 月 1 日的悬崖是真的</strong>：三千个任务，Carbon 从 1440 美元跳到 2880 美元，一夜翻倍；Neon 停在 2160。<strong>二是缓存比选型更值钱</strong>：Neon 在 90% 命中率下是 0.2583 美元，比 Carbon 促销价还低；命中率提到 95% 只再省三分钱，说明 90% 之后边际收益已经很小，别在那上面继续投工程。</p>
+
+<h2>把 -32% 反解成 token 倍数</h2>
+
+<p>Neon 单任务 0.72 美元，Carbon 促销价 0.48 美元，同 token 口径下 Neon 贵 1.5 倍。要让这两者变成 0.68 倍的关系，Carbon 实际必须烧掉 <strong>2.21 倍</strong>的 token。</p>
+
+<p>这就是「更强的模型更啰嗦」的量化版本：它不会在同一个方案上多写代码，它会在同样的活上多试几条路、多读几遍文件、多留几轮思考。你在账单上看到 token 数，在屏幕上看的是它想得更周全。两件事是同一件事。</p>
+
+<p>谷歌自己的口径是「默认 high 档下单任务成本比 Carbon 低 32%」（据环球网转述，2026-11-19）。同一天新智元的实测口径是 Neon 单任务 6.86 美元、Opus 5.5 是 12.61 美元、Fable 5.2 是 15.47 美元（2026-11-19）。这些数字指向同一件事：<strong>按 token 报价、按任务付费，两者之间的换算系数就是模型的啰嗦程度。</strong></p>
+
+<p>arXiv 上那篇 T2MO（arXiv:2608.08528）把这件事说透了：一旦把失败重试和升级算进成本，「每个完成任务的花费」会弱支配「token 花费最小化」。它还给了个能直接用的判据 —— 一个便宜模型在某个任务格子上要通过多少，才算值得部署。</p>
+
+<h2>那条判据长什么样</h2>
+
+<p>把「先跑便宜模型，失败再升级」写成公式：期望成本 = 便宜模型成本 + （1 - 通过率）× 强模型成本。解出通过率的临界点就是那条判据。</p>
+
+<pre><code>H2, N2, C_INTRO, C_DEC1 = 0.36, 0.72, 0.48, 0.96
+
+def with_escalation(first, strong, p):
+    return first + (1 - p) * strong
+
+def breakeven(first, strong):
+    return (strong - first) / strong
+
+print("cheap-first, escalate on failure")
+print("  hydrogen $%.2f -> neon $%.2f  breakeven pass %.0f%%" % (H2, N2, breakeven(H2, N2) * 100))
+print("  hydrogen $%.2f -> carbon $%.2f breakeven pass %.0f%%" % (H2, C_DEC1, breakeven(H2, C_DEC1) * 100))
+print("  carbon   $%.2f -> neon   $%.2f breakeven pass %.0f%%" % (C_INTRO, N2, breakeven(C_INTRO, N2) * 100))
+print()
+print("expected cost per completed task")
+print("  pass  hydrogen->neon  hydrogen->carbon  neon_only")
+for p in (0.50, 0.60, 0.70, 0.80, 0.90, 0.95):
+    a = with_escalation(H2, N2, p)
+    b = with_escalation(H2, C_DEC1, p)
+    print("  %.2f       $%.3f           $%.3f          $%.3f" % (p, a, b, N2))</code></pre>
+
+<p>跑 <code>python boundary.py</code>：</p>
+
+<pre><code>cheap-first, escalate on failure
+  hydrogen $0.36 -> neon $0.72  breakeven pass 50%
+  hydrogen $0.36 -> carbon $0.96 breakeven pass 62%
+  carbon   $0.48 -> neon   $0.72 breakeven pass 33%
+
+expected cost per completed task
+  pass  hydrogen->neon  hydrogen->carbon  neon_only
+  0.50       $0.720           $0.840          $0.720
+  0.60       $0.648           $0.744          $0.720
+  0.70       $0.576           $0.648          $0.720
+  0.80       $0.504           $0.552          $0.720
+  0.90       $0.432           $0.456          $0.720
+  0.95       $0.396           $0.408          $0.720</code></pre>
+
+<p>三条线值得记住。<strong>Hydrogen 到 Neon 的临界是 50%</strong>：一次通过率低于一半，先跑便宜的再升级比直接上 Neon 更贵。<strong>Carbon 促销价到 Neon 是 33%</strong>：11 月用 Carbon 做主干、偶尔升级到 Neon 是划算的形状 —— 但 12 月 1 日 Carbon 涨到 0.96 之后这个方向就反了，应该反过来用 Neon 做主干、极少升级。</p>
+
+<p>第三条最容易被忽略：<strong>Hydrogen 到 Carbon（12 月价）的临界是 62%，而 11 月是 56%</strong>。同一条流水线，价格表一变，最优路由就变了。而大多数团队的路由是写死在 if/else 里的。</p>
+
+<h2>四档 thinking 是四个产品，不是四倍价格</h2>
+
+<p>Neon 的 low / medium / high（默认）/ xhigh，谷歌的说法是让团队把智力和 token 花销对齐到工作负载（据谷歌官方博客，2026-11-18）。实际操作上：</p>
+
+<ul>
+<li><strong>low / medium</strong>：改配置、写样板、批量重命名。这类活的瓶颈是延迟，不是智力。</li>
+<li><strong>high（默认）</strong>：多文件调试、重构、跨仓库定位。谷歌所有「单任务成本低 32%」的数字都是这一档测的，别拿 xhigh 的表现去对标竞品的默认档。</li>
+<li><strong>xhigh</strong>：只留给最难的那 5%。谷歌说这一档「仍比竞品最高档便宜 36% 以上」—— 注意比较对象是竞品的最高档，不是自家 high。</li>
+</ul>
+
+<p>一个容易踩的坑：<strong>xhigh 不等于更可靠</strong>。长任务里它会把预算烧在反复验证上，而验证的质量取决于它有没有测试可跑。没有测试的仓库，xhigh 只是让它更自信地错。这个坑在自己搭 agent 流水线的时候比换模型更容易踩。</p>
+
+<h2>1M 输出 token 是账单风险，不是卖点</h2>
+
+<p>Neon 支持最长 100 万 token 的 decode（据 Gemini API changelog，2026-11-18）。按 15 美元/百万算，一次跑飞的循环能输出 15 美元 —— 抵得上二十个正常任务。</p>
+
+<p>落地时把 <code>max_output_tokens</code> 设到任务实际需要的两倍以内，并在调用层加一个预算闸门：单次请求超过 N 美元就中断并记日志。这个闸门比在提示词里写「请简洁」有用一百倍。</p>
+
+<h2>迁移清单</h2>
+
+<ol>
+<li><strong>12 月 1 日前把 Carbon 从主干上摘下来</strong>，或者确认自己承担得起价格翻倍。改的是 model string 一行，重跑的是评测集，不是代码。</li>
+<li><strong>先量 token 分布再谈选型</strong>。同一个任务跑二十次，记 input 与 output token 的分布而不是均值 —— 长尾决定预算上限。</li>
+<li><strong>缓存前缀要稳</strong>。系统提示里塞时间戳、用户 ID、随机排序的工具清单，命中率直接归零。0.15 美元这一栏值钱的前提是「每次请求的前 N 个 token 一模一样」。</li>
+<li><strong>路由写成数据，不要写成代码</strong>。上面那三条临界通过率会随价格表变，写死在分支里就得每季度改一次代码。</li>
+<li><strong>二分类决策别用聊天模型</strong>。11 月 11 日上线的 Decisions API 是零输出 token 的校准决策接口，同样的判断便宜一个数量级。</li>
+<li><strong>别只看跑分</strong>。Neon 在 Terminal-Bench 4.1 是 65.2%，Opus 5.5 仍略高；在 SEC-bench Pro 上 Neon 是 90.5% 的 SOTA、成本约一半（据谷歌官方博客）。选型的正确姿势是「我的任务集上谁能一次做对」，不是「谁的榜一多」。</li>
+</ol>
+
+<p>说到底，Neon 这次的定价很清楚：把单价抬到旗舰之上，用 token 效率把单任务成本压到旗舰之下，再用缓存折扣锁住高频用户。这套打法对买方只有一个要求 —— 你得知道自己在按什么单位付钱。</p>''',
+},
+
+{
+    'slug': "claude-bughunter-skill-bundle-audit-2026",
+    'category': "tooling",
+    'date': "2026-11-20",
+    'updated': "2026-11-20",
+    'tags': ["Agent Skills", "上下文预算", "AI 安全", "代码审计"],
+    'title': "Claude-BugHunter 拆包：83 个技能 166 万字符，官方评测表却是 3/3 对 3/3（附审计脚本）| DevTools 博客",
+    'description': "2026-11-20 GitHub Trending 第一的 elementalsouls/Claude-BugHunter 单日涨 1349 星，声称 82 个技能、681 份公开披露报告。本文把它 83 个 SKILL.md 全拆了一遍：frontmatter 的 report_count 加起来是 1122 而不是 681；整套 166 万字符约 46.2 万 token，永远装不进上下文；61 个描述写着 Use when、11 个写着 any target，按描述匹配的路由在 32k 预算下 2.3 倍超支。附两个可跑的审计脚本（技能包体量统计、路由超支模拟），以及 Opus 5 在渗透测试请求上静默降级到 Opus 4.8 的实测提醒。",
+    'keywords': "Claude-BugHunter, AI 渗透测试, Agent Skills, SKILL.md, 技能包审计, Claude Code 插件, 上下文预算, token 预算, 技能自动加载, 技能路由, GitHub Trending, 漏洞赏金, 红队工具, AI 安全工具, 如何审计 Agent 技能包, Claude Code skills 教程, Opus 5 降级 Opus 4.8, 模型静默降级, 技能包怎么选, 安全技能包实测, how to audit agent skills, skill bundle token budget, Claude Code skills tutorial",
+    'h1': "GitHub Trending 第一的安全技能包，我把 83 个 SKILL.md 全拆了：它自己的评测表写着 3/3 对 3/3",
+    'summary': "单日涨 1349 星、83 个技能、166 万字符，README 说 681 份报告而 frontmatter 加起来 1122。拆完发现真正的瓶颈不是知识量，是上下文预算：整套 46.2 万 token，而按描述匹配加载一次就 2.3 倍超支。",
+    'body': '''<p>今天 GitHub Trending 第一是 <code>elementalsouls/Claude-BugHunter</code>，单日涨 1349 星，总计 13334。描述写得很硬：82 个技能、15 个斜杠命令、681 份公开披露报告、24 个漏洞类别，外加企业身份与基础设施攻击矩阵。</p>
+
+<p>我把它下下来拆了一遍。先给结论：<strong>知识组织得相当专业，但仓库自己贴的那张评测表，证明不了它有用。</strong></p>
+
+<h2>先看它自己贴的那张表</h2>
+
+<p>表在 <code>eval/BASELINE.md</code> 里，2026-08-25 跑的，模型是 claude-opus-4-8，目标是 OWASP Juice Shop 的三个挑战（SQLi 绕过登录、机密文档、购物车 IDOR）：</p>
+
+<table>
+<thead><tr><th>条件</th><th>解决</th><th>中位轮次</th><th>中位花费</th></tr></thead>
+<tbody>
+<tr><td>skills-off</td><td>3/3</td><td>2</td><td>$0.178</td></tr>
+<tr><td>skills-on</td><td>3/3</td><td>3</td><td>$0.254</td></tr>
+<tr><td>delta</td><td>+0</td><td>+1</td><td>+$0.076</td></tr>
+</tbody>
+</table>
+
+<p>作者自己在下面写了一行 “Ceiling effect — as predicted”，然后解释：两个条件都把三个挑战解了，在记忆化的、curl 就能打穿的 Juice Shop 上，hunt 技能的上下文是纯开销 —— skills-on 反而多花一轮、多花 43% 的钱。所以 v0 测的是流水线能不能跑通，不是技能有没有价值。</p>
+
+<p>这段自我批评比大部分 README 都诚实。它也顺手把 battle-tested 这个说法限定住了：真正能显出差异的是 v1（PortSwigger Academy），需要账号、需要手动开 lab、需要浏览器 oracle，而作者的 PS 凭据不在手上，所以 v1 没跑。CI 里那个 <code>eval-harness.yml</code> 只做 harness 的健全性检查。</p>
+
+<p>换句话说，这个包目前有的证据是：两次授权交战记录、433/681 条可追溯引用、覆盖率指标（零报告技能从 4 个降到 0 个）。缺的是检出率。</p>
+
+<h2>它到底装了什么</h2>
+
+<p>83 个 <code>SKILL.md</code>（README 标题写 82、正文写 83，这种小漂移本身也是个信号）。四层堆叠：Think（方法论加红队心态）、Hunt webapps（58 个 hunt 技能）、Hit the perimeter（M365/Entra、Okta、vCenter、SSL-VPN、云 IAM）、Ship it（七问门禁加报告加 PII 脱敏）。</p>
+
+<p>每个技能头部是 YAML frontmatter，四个字段：<code>name</code>、<code>description</code>、<code>sources</code>、<code>report_count</code>。正文动辄两万字。hunt-xss 里单独拎出了模型最容易跳过的那条判据 —— 反射必须带未转义的尖括号，<code>&lt;script&gt;</code> 才是 XSS、<code>&amp;lt;script&amp;gt;</code> 不是 —— 还提醒你用一个四位数的 canary（<code>alert(91234)</code>）而不是 <code>alert(1)</code>，因为练习页面的提示文本里全是 <code>alert(1)</code> 这种诱饵。这种细节不靠通用模型临场想，它确实来自真实报告。</p>
+
+<h2>第一个对不上的数字</h2>
+
+<p>frontmatter 里的 <code>report_count</code> 加起来是 1122，README 说 681，差 441。</p>
+
+<p>这不是造假。同一份报告可以同时被算进 xss 和 misc 两个技能，681 是去重后的模式数，1122 是每个技能引用数之和。但如果你按 681 去估覆盖度，就得知道手里拿的是哪个口径 —— 这正是「可审计」和「看起来可审计」的区别。</p>
+
+<h2>真正的瓶颈是上下文预算</h2>
+
+<p>83 个文件全读进来是 1663341 个字符。按 3.6 字符/token 折算约 46.2 万 token，比任何一个 20 万窗口大两倍多。均值一个技能 20040 字符，约 5.6k token；最重的 <code>osint-methodology</code> 是 93281 字符，单一技能 25.9k token，占满一个 32k 窗口的 81%。</p>
+
+<p>所以路由不是优化项，是前提。整套库永远不可能同时驻留，必须每次挑几个加载 —— 挑错了，代价立刻体现在账单和准确率上。</p>
+
+<p>下面的脚本对任意符合 Agent Skills 规范的目录都能跑，第二个参数是可选的「README 声称的报告数」，用来对账：</p>
+
+<pre><code>import os, sys
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "skills"
+CLAIM = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+CPT = 3.6
+
+def front(text):
+    lines = text.split(chr(10))
+    if not lines or lines[0] != "---":
+        return {}, text
+    end = lines.index("---", 1)
+    fm = {}
+    for line in lines[1:end]:
+        if ":" in line and not line.startswith(" "):
+            k, v = line.split(":", 1)
+            fm[k.strip()] = v.strip()
+    return fm, chr(10).join(lines[end + 1:])
+
+rows = []
+for name in sorted(os.listdir(ROOT)):
+    path = os.path.join(ROOT, name, "SKILL.md")
+    if not os.path.isfile(path):
+        continue
+    text = open(path, encoding="utf-8").read()
+    fm, body = front(text)
+    rows.append({
+        "name": name,
+        "chars": len(text),
+        "desc": fm.get("description", ""),
+        "reports": int(fm["report_count"]) if fm.get("report_count", "").isdigit() else 0,
+        "sources": fm.get("sources", ""),
+        "urls": body.count("http"),
+    })
+
+total = sum(r["chars"] for r in rows)
+print("skills            %d" % len(rows))
+print("total chars       %d  (~%dk tokens)" % (total, total / CPT / 1000))
+print("mean chars        %d  (~%.1fk tokens)" % (total / len(rows), total / len(rows) / CPT / 1000))
+print("report_count sum  %d" % sum(r["reports"] for r in rows))
+if CLAIM:
+    print("readme claim      %d  (delta %+d)" % (CLAIM, sum(r["reports"] for r in rows) - CLAIM))
+print("desc max / mean   %d / %d" % (max(len(r["desc"]) for r in rows), sum(len(r["desc"]) for r in rows) / len(rows)))
+print("desc over 1024    %d" % sum(1 for r in rows if len(r["desc"]) > 1024))
+print("no url in body    %d" % sum(1 for r in rows if r["urls"] == 0))
+print("says 'Use when'   %d" % sum(1 for r in rows if "use when" in r["desc"].lower()))
+print("says 'any target' %d" % sum(1 for r in rows if "any target" in r["desc"].lower()))
+
+print()
+print("heaviest five")
+for r in sorted(rows, key=lambda r: -r["chars"])[:5]:
+    print("  %-26s %7d chars  %5.1fk tok" % (r["name"], r["chars"], r["chars"] / CPT / 1000))
+
+print()
+print("skills with empty description: %d" % sum(1 for r in rows if not r["desc"]))</code></pre>
+
+<p>跑 <code>python audit_skills.py skills 681</code>：</p>
+
+<pre><code>skills            83
+total chars       1663341  (~462k tokens)
+mean chars        20040  (~5.6k tokens)
+report_count sum  1122
+readme claim      681  (delta +441)
+desc max / mean   1017 / 595
+desc over 1024    0
+no url in body    10
+says 'Use when'   61
+says 'any target' 11
+
+heaviest five
+  osint-methodology            93281 chars   25.9k tok
+  bug-bounty                   76597 chars   21.3k tok
+  bb-local-toolkit             73036 chars   20.3k tok
+  supply-chain-attack-recon    42132 chars   11.7k tok
+  hunt-race-condition          35163 chars    9.8k tok
+
+skills with empty description: 0</code></pre>
+
+<p>几行值得单独看。<code>desc max 1017</code> —— 规范把 description 上限设在 1024 字符，这个包顶到了 1017，等于一个技能把触发字段几乎占满，别的技能在这个字段上就没空间了。<code>no url in body 10</code> —— 十个技能通篇没有一个能点开的来源，这些是经验，不是可审计知识。<code>says 'any target' 11</code> —— 十一个技能的描述里写着「在任何目标上狩猎」，这种触发词会跟所有同类技能打架。</p>
+
+<h2>路由才是失败点，不是知识量</h2>
+
+<p>Claude Code 这类 harness 决定加载哪个技能，靠读 <code>name</code> 加 <code>description</code> 自己判断 —— 也就是说，这是一次模型驱动的字符串匹配。<code>says 'Use when' 61</code> 说明作者很清楚这件事，把触发句写进了 61 个描述里。</p>
+
+<p>问题在排序。我按最朴素的规则模拟了一次：把 query 拆成词，跟 description 的词取交集，命中两个以上算匹配，然后按重词数排序加载。query 是一句很典型的开场白：audit this web app for xss and ssrf, it runs on aws behind a graphql api。</p>
+
+<pre><code>import os, re, sys
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "skills"
+QUERY = "audit this web app for xss and ssrf, it runs on aws behind a graphql api"
+BUDGET = 32_000
+CPT = 3.6
+
+def words(s):
+    return {w for w in re.findall("[a-z0-9]+", s.lower()) if len(w) > 3}
+
+def description(text):
+    lines = text.split(chr(10))
+    if not lines or lines[0] != "---":
+        return ""
+    for line in lines[1:lines.index("---", 1)]:
+        if line.startswith("description:"):
+            return line[len("description:"):].strip()
+    return ""
+
+q = words(QUERY)
+hits = []
+for name in sorted(os.listdir(ROOT)):
+    path = os.path.join(ROOT, name, "SKILL.md")
+    if not os.path.isfile(path):
+        continue
+    text = open(path, encoding="utf-8").read()
+    score = len(q & words(description(text)))
+    if score >= 2:
+        hits.append((score, len(text) / CPT, name))
+
+hits.sort(reverse=True)
+print("query: %s" % QUERY)
+print("matched %d of %d skills, budget %dk tokens" % (len(hits), 83, BUDGET // 1000))
+print()
+run = 0.0
+for i, (score, tok, name) in enumerate(hits[:10], 1):
+    run += tok
+    flag = "OVER" if run > BUDGET else ""
+    print("  %2d. %-26s score %d  %5.1fk  cum %6.1fk %s"
+          % (i, name, score, tok / 1000, run / 1000, flag))
+print()
+allt = sum(h[1] for h in hits)
+print("all matched cost %.1fk tokens (%.1fx budget)" % (allt / 1000, allt / BUDGET))</code></pre>
+
+<p>跑 <code>python route.py skills</code>：</p>
+
+<pre><code>query: audit this web app for xss and ssrf, it runs on aws behind a graphql api
+matched 8 of 83 skills, budget 32k tokens
+
+   1. bug-bounty                 score 2   21.3k  cum   21.3k 
+   2. bb-local-toolkit           score 2   20.3k  cum   41.6k OVER
+   3. offensive-osint            score 2    9.3k  cum   50.9k OVER
+   4. hunt-cache-poison          score 2    6.4k  cum   57.3k OVER
+   5. hunt-graphql               score 2    5.7k  cum   63.0k OVER
+   6. hunt-fintech-graphql       score 2    3.9k  cum   66.9k OVER
+   7. hunt-nextjs                score 2    2.9k  cum   69.8k OVER
+   8. hunt-spa-api               score 2    2.5k  cum   72.3k OVER
+
+all matched cost 72.3k tokens (2.3x budget)</code></pre>
+
+<p>结果很难看：八个命中，加起来 72.3k token，是 32k 预算的 2.3 倍；排在最前的是 <code>bug-bounty</code>（21.3k）和 <code>bb-local-toolkit</code>（20.3k）这两个最大的通用技能 —— 光这两个就 41.6k，具体到 xss 的技能还没进来，预算已经爆了。</p>
+
+<p>原因是结构性的：description 越长，能命中的词越多，越容易被排到前面，而最长的恰好是最通用的那两个。这不是这个包的独有缺陷，是所有「用自然语言描述触发条件」的技能库共同面对的问题 —— 包括你自己写的那些。</p>
+
+<p>作者显然也意识到了。<code>engine/skill_map.py</code> 里有一张显式的 <code>CLASS_SKILL</code> 映射，把 sqli、ssrf、graphql 这些攻击类别硬钉到技能名上，还带一句注释说 hunt-dispatch 是内部加载器、故意不列在这里。这是对的工程判断：确定的映射交给人写，模糊的判断才交给模型。但宿主的自动加载仍然走 description。</p>
+
+<h2>还有一件事：你的模型会在会话中间被换掉</h2>
+
+<p>README 里有一节叫 Why your model switched mid-session，写得很直白：在 Opus 5 上，exploit generation、binary-based vulnerability scanning、penetration testing 这几类请求会 fall back 到 Opus 4.8，而不是被拒绝。你会收到一条通知，回答也会标注是哪个模型答的，但在长会话里那条提示很容易被滚过去 —— 看起来就像 Opus 5 突然变笨了。</p>
+
+<p>对一个安全工具包来说这不是小事。你在对比两条 payload 的效果，以为变量只有一个，其实模型也换了。作者给的处置是：审计自己的仓库就直说「我在做自己代码的防御性审计」；授权攻防就走 Anthropic 的 Cyber Verification Program（免费、需申请）；嫌麻烦就在 Settings 里的 Capabilities 关掉自动切换。</p>
+
+<h2>装之前先做六件事</h2>
+
+<ol>
+<li><strong>先算 token 预算。</strong>把上面的审计脚本指向技能目录，看总量和均值。单项超过 10k token 的技能，问一句它值不值。</li>
+<li><strong>读 BASELINE 的 delta 列，别读 README 的形容词。</strong>battle-tested 在这份文档里的证据是两次授权交战记录，不是检出率。</li>
+<li><strong>看 description 长度分布。</strong>顶到 1024 上限的技能会挤掉别人的触发词，装上之后你会发现该来的不来、不该来的乱来。</li>
+<li><strong>数一下零来源的技能。</strong>没有 URL 的那些，质量取决于作者手感，更新也跟不上 CVE。</li>
+<li><strong>确认你的 harness 拿到了什么。</strong>知识层是纯 SKILL.md，五个 harness 都能用；但 15 个斜杠命令和 <code>/hunt</code> 引擎只在 Claude Code 里存在，别的 harness 装上去只有一半。</li>
+<li><strong>授权和合规先落地。</strong>CVP 申请不是当天能批的，别等打到一半被拒了才去填表。</li>
+</ol>
+
+<p>这套东西的真实价值，一句话概括：它把「该试什么」写成了可检索的文档，这件事做得比绝大多数同类仓库好；但「它能让你多找到几个洞」目前只有一张 3/3 对 3/3 的表。前者你现在就能用，后者得等 v1 的 PortSwigger 数据 —— 或者你自己跑一遍。顺便说，这两件事的判断方法不一样：前者看文档结构，后者只能看你自己任务集上的通过率。</p>''',
+},
+{
     'slug': "nginx-http2-rce-2026",
     'category': "security",
     'date': "2026-11-19",
