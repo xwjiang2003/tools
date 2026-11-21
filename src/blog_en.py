@@ -6,6 +6,283 @@
 """
 
 ARTICLES_EN = {
+'riemann-hypothesis-lean-proof-audit-2026': {
+    'tags': ["Lean 4", "formal verification", "AI mathematics", "audit"],
+    'title': "Two proofs of the Generalized Riemann Hypothesis in one day: 940 human pages versus 250,000 lines of Lean, and they are not the same kind of evidence | DevTools Blog",
+    'description': "On 2026-11-20, Anthropic mathematician Levent Alpöge released fourteen volumes of Lean code claiming a proof of the Generalized Riemann Hypothesis produced with Claude, and the same day AMS president Ravi Vakil published Alessandro Masullo's 940-page manuscript built over twelve years, stressing it involved no AI. This post separates the two events, unpacks what the Lean kernel actually guarantees, walks through the three escape hatches (statement equivalence, smuggled axioms, sorry), ships a runnable triage script plus a #print axioms gate you can put in CI, and reconstructs why Terence Tao could only verify the two ends of a 250,000-line artifact.",
+    'keywords': "Riemann Hypothesis, Generalized Riemann Hypothesis, GRH, Lean 4, Lean formal verification, how to verify an AI proof, theorem prover, mathlib, print axioms, what is sorry in Lean, sorryAx, native_decide, axiom injection, proof audit, 940 pages, The Music of Primes, Masullo, Terence Tao response, James Maynard, formal verification tutorial, how to audit Lean code, Riemann hypothesis proof verification, statement fidelity, Lean 4 audit tutorial, verifier gate CI",
+    'h1': "Two proofs of the Generalized Riemann Hypothesis in one day, and they are not the same kind of evidence",
+    'summary': "Alpöge's artifact closes logically but nobody can read it. Masullo's manuscript reads like mathematics but still carries placeholder theorems. Both are waiting for the same thing, which is now the bottleneck: someone actually finishing it.",
+    'body': '''<p>Two announcements landed about twenty hours apart on November 20, 2026. Levent Alpöge, a mathematician employed by Anthropic, posted that he and Claude had settled the Generalized Riemann Hypothesis, and that he would not publish a paper. What he released instead was fourteen compressed volumes of Lean code. That evening Ravi Vakil, president of the American Mathematical Society, put a manuscript on his course blog under the title Hurried Announcement, on behalf of a different mathematician.</p>
+
+<p>The line in Vakil's post that carried the most weight was not mathematical. He stressed that the work was all human, with no AI. Coming hours after Alpöge's post, that sentence reads as a defence rather than a description.</p>
+
+<h2>Two events, stitched into one headline</h2>
+
+<p>The next day, Chinese tech outlets ran the story under a single frame. One headline read: Riemann hypothesis proven, Claude assisted, a 34-year-old mathematician releases a Lean proof. The age belongs to Alpöge. The twelve years and the 940 pages belong to Masullo. Another outlet put the artifact at seventeen million lines; a third said two hundred fifty thousand.</p>
+
+<p>The two figures differ by a factor of sixty-eight. Terence Tao wrote 250,000 lines of logic. A retranslation rendered it as 250,000 pages once converted to a document. At seventeen million, nobody can say whether the number counts lines, tokens, or a generation log.</p>
+
+<p>That detail outlives the announcement. When an artifact is too large to finish reading, even its size survives only as hearsay, and the hearsay drifts on the first hop.</p>
+
+<table>
+<thead><tr><th></th><th>Alpöge + Claude</th><th>Masullo (human only)</th></tr></thead>
+<tbody>
+<tr><td>Artifact</td><td>14 volumes of Lean code, no paper</td><td>932-page manuscript, 14 chapters, no formalization</td></tr>
+<tr><td>Review state</td><td>Kernel accepts it; most mathematicians read declarations only</td><td>Former advisor Brian Conrad reviewed for months; still in major revision</td></tr>
+<tr><td>Known gap</td><td>Equivalence between the formal statement and RH unconfirmed</td><td>Placeholder notes left in the text; propositions near chapter 13 and page 484 reported false as stated</td></tr>
+<tr><td>Why now</td><td>Fear of being scooped; Navier-Stokes was lost to an OpenAI model in September</td><td>Forced out by Alpöge; another year of polish was planned</td></tr>
+</tbody>
+</table>
+
+<h2>What the Lean kernel guarantees, and what it does not</h2>
+
+<p>Every report mentions that the proof passed Lean. Almost none unpacks the sentence.</p>
+
+<p>The kernel guarantees that a proposition P has a well-typed proof term, given the definitions of P and of everything P depends on. Once it returns green, three things remain open.</p>
+
+<ul>
+<li><strong>Whether the statement is the right one.</strong> Formalize something much weaker than RH and you can still prove it. James Maynard put his confidence at 98 to 99 percent that the proof is correct, then asked the question that matters: is it really the Riemann hypothesis that was proven.</li>
+<li><strong>Whether axioms were smuggled in.</strong> A single axiom declaration lets you assume the conclusion. The kernel will not object.</li>
+<li><strong>Whether holes were left.</strong> sorry is the common one. The compiler passes it silently and leaves sorryAx in the axiom list.</li>
+</ul>
+
+<p>Tao's own account is a demonstration of all three. He re-proved the analytic end from scratch, meaning the windowed form of Landau's theorem, its equivalence with GRH, and the identity. For the middle he read declaration statements only, and said so explicitly: he had not checked that the objects are built the way their names suggest, nor that the middle constructs what the end consumes.</p>
+
+<p>A top-tier mathematician, handed 250,000 lines, verified the two ends. That is the shape of the new bottleneck. Not that the proof cannot be found. That nobody can finish reading it.</p>
+
+<h2>If you want to check it yourself, scope first, then ask about axioms</h2>
+
+<p>The script below is a first pass. It walks the source tree and flags suspicious constructs. It proves nothing, but on 250,000 lines it tells you where to start reading.</p>
+
+<pre><code>import os, sys
+
+SUSPECT = [
+    ("sorry", "proof hole, kernel accepts it silently"),
+    ("admit", "older spelling of the same hole"),
+    ("axiom ", "free assumption, may be the conclusion"),
+    ("opaque ", "unfoldable definition, can hide assumptions"),
+    ("native_decide", "trusts the compiler, bypasses the kernel"),
+    ("implemented_by", "external implementation, invisible to the kernel"),
+]
+
+def scan(root):
+    total, hits = 0, []
+    for base, _, files in os.walk(root):
+        for f in files:
+            if not f.endswith(".lean"):
+                continue
+            p = os.path.join(base, f)
+            txt = open(p, encoding="utf-8", errors="replace").read()
+            lines = txt.splitlines()
+            total += len(lines)
+            for i, line in enumerate(lines, 1):
+                code = line.split("--")[0]
+                for kw, why in SUSPECT:
+                    if kw in code:
+                        rel = os.path.relpath(p, root).replace(os.sep, "/")
+                        hits.append((rel, i, kw.strip(), why))
+    return total, hits
+
+root = sys.argv[1] if len(sys.argv) > 1 else "."
+total, hits = scan(root)
+print("lines scanned:", total)
+print("suspect hits:", len(hits))
+for path, ln, kw, why in hits[:12]:
+    print("  %s:%d  %s  -- %s" % (path, ln, kw, why))
+sys.exit(1 if hits else 0)</code></pre>
+
+<p>I ran it against a small directory containing one instance of each construct. The output was this.</p>
+
+<pre><code>$ python lean_audit.py fixture
+lines scanned: 16
+suspect hits: 3
+  AutomorphicArithmetic/CoreGm.lean:10  axiom  -- free assumption, may be the conclusion
+  AutomorphicArithmetic/CoreGm.lean:13  sorry  -- proof hole, kernel accepts it silently
+  AutomorphicArithmetic/CoreGm.lean:16  native_decide  -- trusts the compiler, bypasses the kernel
+$ echo $?
+1</code></pre>
+
+<p>Three caveats. It scans line by line, so a mention of sorry inside a comment also fires and needs a human pass. It does not catch the bracketed form of implemented_by. And it knows nothing about imported mathlib, which is fine, because the artifact under audit is this one, not mathlib.</p>
+
+<p>The verdict comes from the second pass. Lean will tell you which axioms a theorem actually rests on.</p>
+
+<pre><code>cat &gt; Probe.lean &lt;&lt;'EOF'
+import Mathlib
+import AutomorphicArithmetic
+#print axioms core_gm
+#print axioms ch_top
+#print axioms ch_balance
+EOF
+lake env lean Probe.lean</code></pre>
+
+<p>There is exactly one criterion. The axiom set printed for each theorem must land inside propext, Classical.choice, Quot.sound. Any extra name needs its own explanation. sorryAx means a hole was never filled.</p>
+
+<p>Turning that into a CI gate takes a dozen lines. Save it as axiom_gate.py; its input is the lake output you just captured.</p>
+
+<pre><code>import sys
+
+ALLOWED = {"propext", "Classical.choice", "Quot.sound"}
+
+def parse_axioms(path):
+    bad = 0
+    for line in open(path, encoding="utf-8", errors="replace"):
+        if "depends on axioms" not in line:
+            continue
+        name = line.split("'")[1] if "'" in line else "?"
+        inside = line[line.index("[") + 1:line.rindex("]")] if "[" in line else ""
+        ax = {a.strip() for a in inside.split(",") if a.strip()}
+        extra = ax - ALLOWED
+        print("  %-34s %s" % (name, "clean" if not extra else "EXTRA " + str(sorted(extra))))
+        bad += 1 if extra else 0
+    return bad
+
+sys.exit(1 if parse_axioms(sys.argv[1]) else 0)</code></pre>
+
+<p>Fed three fabricated lake lines, the result reads instantly.</p>
+
+<pre><code>$ python axiom_gate.py axioms.txt
+  core_gm                            clean
+  ch_top                             EXTRA ['ch_top_uniform']
+  ch_balance                         EXTRA ['sorryAx']
+$ echo $?
+1</code></pre>
+
+<p>The name on the second line is an axiom I planted. The third line is the fingerprint of sorry. That is the whole point. The axiom list is the only part a machine can adjudicate. Everything else needs a person.</p>
+
+<h2>The other manuscript was audited by AI, in eight hours</h2>
+
+<p>Roughly eight hours after publishing, Vakil appended an update. Several people had contacted him to report problems in Masullo's proof, identified with the assistance of different AI models.</p>
+
+<p>One comment in that thread, which its author openly attributes to Astra-6.2-Max, points at the uniform bound stated just after (10.3.1.18). If that bound holds uniformly across zeros, it forces a positive minimum gap between the ordinates of simple critical-line zeros. Count those zeros with Conrey's 1989 two-thirds result and the Riemann-von Mangoldt formula, and the contradiction follows. Whether the objection survives, or whether it reads uniformity too strongly, is a number theorist's call. It still delivers a page number, an equation label, and a falsifiable chain of reasoning, which beats a vague sense that something is off.</p>
+
+<p>The 940-page draft has blunter problems too. Notes reading insert theorem here and rephrase this are still in the body text, and several propositions around chapter 13 and page 484 are reported false as currently written. Conrad's own summary is flat: the draft is under major revision and contains unfinished chapters.</p>
+
+<p>The symmetry is the interesting part. The human manuscript was audited by AI within eight hours. The AI artifact cannot be audited by humans at all. Two failure modes that happen to be complementary, and neither of them is a scoreboard.</p>
+
+<h2>What a working programmer should take from this</h2>
+
+<p>The takeaway is not that mathematics is finished. What changed is the audit layer, and its shape is familiar to anyone who has shipped software.</p>
+
+<p>Formal verification turns semantic drift into an inspectable artifact. The statement is an object. The axioms are a list you can print. A hole has a name, sorryAx. The most common failure in code review is the same failure in a different costume: the spec lives in one document, the implementation lives in another file, and nobody ever puts them side by side.</p>
+
+<p>Three things transfer.</p>
+
+<ul>
+<li><strong>Dependencies must be printable.</strong> Do not judge whether something was quietly bypassed by the feel of a review. Have a command that lists what the artifact actually rests on. Lean has #print axioms. Your project probably has lockfile diffs, image layer manifests, or an explicit allowlist.</li>
+<li><strong>The gate has to be faster than the reviewer.</strong> parse_axioms is a dozen lines, and it converts whether a hole exists from a human judgement into an exit code. What found problems within eight hours was not a genius. It was a path that could run automatically.</li>
+<li><strong>At scale, nobody finishing the read is the default.</strong> 250,000 lines of Lean, 940 pages, seventeen million lines generated in one push. All three exceed what line-by-line review can cover. Accept sampling plus a machine gate, or admit you are betting.</li>
+</ul>
+
+<p>As for the Riemann hypothesis itself, there is one sentence available today. Neither manuscript has been digested by the community, and the entry point for auditing one of them is a repository you must compile before you can even ask it a question.</p>''',
+    'related': [("AlphaProof used 6.5 million lines of Lean to verify libsignal's machine code", "blog/alphaproof-code-lean-verification-2026/"), ("Recursive self-improvement: the verifier is the only thing still worth money", "blog/rsi-self-improvement-loop-2026/"), ("Weight-space programming: 98 percent confidence and a 51 percent replication", "blog/weight-space-programming-2026/")],
+},
+'inkling-2-mini-looped-transformer-2026': {
+    'tags': ["Inkling 2 Mini", "looped transformer", "local inference", "MoE"],
+    'title': "Inkling 2 Mini: 48 layers of depth out of 24, paid for with 59% more weight traffic per token | DevTools Blog",
+    'description': "Thinking Machines open-sourced Inkling 2 Mini under Apache 2.0 on 2026-11-20. Twelve of its 24 layers run three times, giving 26.4B total parameters, 3.4B activated, and 5.4B weights read per token, in about 20GB of memory. This post reconciles the three parameter counts, uses a runnable ledger to convert loop count into decode throughput (101 tok/s at three loops against 20 tok/s for a dense 27B), gives real llama.cpp and vLLM launch commands, explains how to prove the loop is actually running, and covers where it loses to same-size models.",
+    'keywords': "Inkling 2 Mini, looped transformer, Thinking Machines, open weights, Apache 2.0 model, MoE architecture, NVFP4, 4-bit training, local LLM deployment, run 26B model on 32GB, Ollama, llama.cpp, vLLM, DGX Spark, intelligence per watt, test-time compute, latent reasoning, loop depth, how to run Inkling 2 Mini, agentic coding open model, run 26B MoE locally, looped transformer tutorial, test-time compute without tokens, memory bandwidth bound decoding",
+    'h1': "Inkling 2 Mini: 48 layers of depth out of 24, paid for with 59% more weight traffic per token",
+    'summary': "A looped transformer finally separates thinking longer from writing more. Doubling depth costs 58.8% more bandwidth and buys five times the decode speed of a dense 27B. What it does not buy is knowledge, and you can barely steer its reasoning.",
+    'body': '''<p>26.4B total parameters, 3.4B activated, 5.4B weights read. Three numbers describing one model and one forward pass, all of them printed in Thinking Machines' release notes on November 20. The Decoder's coverage that day reported the 5.4B figure as the active parameter count. The digits were copied correctly; the label moved. That misplacement is the most interesting thing about the architecture.</p>
+
+<h2>The loop lives in twelve of the twenty-four layers</h2>
+
+<p>Inkling 2 Mini has 24 layers arranged in four blocks of six. The first block and the last block run once each. The middle two blocks, layers 7 through 18, run three times in a row. A token therefore passes through 48 layer applications while the depth parameter says 24.</p>
+
+<table>
+<thead><tr><th></th><th>Value</th><th>Where it comes from</th></tr></thead>
+<tbody>
+<tr><td>Layers</td><td>24 (4 x 6)</td><td>Physical layers in the config</td></tr>
+<tr><td>Looped span</td><td>Layers 7 to 18, three passes</td><td>Only the middle two blocks loop</td></tr>
+<tr><td>Layer applications per token</td><td>48</td><td>24 + 12 x (3 - 1)</td></tr>
+<tr><td>Total parameters</td><td>26.4B</td><td>MoE, 384 experts choose 8, pruned to 128 per layer</td></tr>
+<tr><td>Activated parameters</td><td>3.4B</td><td>Weights that participate in one forward pass</td></tr>
+<tr><td>Weights read per token</td><td>5.4B</td><td>Looped span is re-read, 3.4B becomes 5.4B</td></tr>
+</tbody>
+</table>
+
+<p>All three counts are correct and each answers a different question. 26.4B is how big the download is. 3.4B is how many FLOPs one pass costs. 5.4B is how many times memory gets walked. Decoding is bandwidth bound, so the third number is the one that sets tokens per second.</p>
+
+<h2>Trading bandwidth for depth, and the arithmetic is hand-checkable</h2>
+
+<p>What a loop actually does is move thinking longer from the output side to the layer side. An ordinary model that needs deeper reasoning can only emit more tokens. This one emits more layer applications and keeps the output length fixed. The cost is that every extra pass re-reads those twelve layers of weights.</p>
+
+<pre><code>TOTAL, ACTIVE, READ3 = 26.4e9, 3.4e9, 5.4e9   # params; weights read per token at 3 loops
+LAYERS, LOOPED = 24, 12                        # middle two blocks are the ones re-run
+BITS, BW_GBS = 4.0, 273.0                      # NVFP4 expert path, M5 Pro class bandwidth
+
+def read_p(n):
+    return ACTIVE + (READ3 - ACTIVE) * (n - 1) / 2
+
+def report(n):
+    apps = LAYERS + LOOPED * (n - 1)
+    gb = read_p(n) * BITS / 8 / 1e9
+    return apps, gb, BW_GBS / gb
+
+print("loops  layer-apps  GB/token  decode ceiling (tok/s)")
+for n in (1, 2, 3, 4, 5):
+    a, gb, ceil = report(n)
+    print("  %d      %6d      %5.2f        %6.1f" % (n, a, gb, ceil))
+
+dense = 27e9 * BITS / 8 / 1e9
+print("dense 27B @%d-bit: %.2f GB/token -> %.1f tok/s" % (BITS, dense, BW_GBS / dense))
+print("paying %.1f%% more traffic for %dx the depth of the looped block"
+      % ((READ3 / ACTIVE - 1) * 100, 3))</code></pre>
+
+<p>Which prints:</p>
+
+<pre><code>loops  layer-apps  GB/token  decode ceiling (tok/s)
+  1          24       1.70         160.6
+  2          36       2.20         124.1
+  3          48       2.70         101.1
+  4          60       3.20          85.3
+  5          72       3.70          73.8
+dense 27B @4-bit: 13.50 GB/token -> 20.2 tok/s
+paying 58.8% more traffic for 3x the depth of the looped block</code></pre>
+
+<p>Three ways to read that. First, three loops against one doubles depth for 58.8% more traffic. Second, at equal precision it walks a fifth of what a dense 27B walks, which is where the marketing line about 27B speed comes from. The official comparison puts it at AI Index 20.1, level with Qwen3.8-27B at roughly one sixth the cost and four times the speed, and the ledger agrees. Third, 273 GB/s is an M5 Pro class figure; drop in your own memory bandwidth and the conclusion holds while the absolute numbers shift.</p>
+
+<p>One question the release notes do not answer, and that you have to measure: does each extra loop add another copy of the KV cache? If not, every loop recomputes attention. If so, memory grows linearly with loop count. Before running long context, measure the footprint difference between an 8k and a 32k prompt. Do not trust the release note.</p>
+
+<h2>Four bits decided during training, not during deployment</h2>
+
+<p>Twenty expert layers stay in NVFP4 from pretraining through reinforcement learning, and the last four layers run MXFP8. The companion post on end-to-end 4-bit training is required reading, because it implies two things. There is no quantization conversion loss, so the weights you download are the weights that were trained. And do not plan to squeeze further: three bits is not a cheaper version of this model, it is a different model.</p>
+
+<p>The whole thing lands around 20GB. The stated minimum is any Mac with 32GB of memory through Ollama, and a DGX Spark is the most comfortable target because it speaks NVFP4 natively.</p>
+
+<h2>Four ways to get it running</h2>
+
+<pre><code># 1) weights only
+huggingface-cli download thinkingmachines/Inkling-2-Mini --local-dir inkling2mini
+
+# 2) llama.cpp with the Unsloth GGUF
+llama-server -m inkling2mini/Inkling-2-Mini-Q4_K_M.gguf -c 32768 -ngl 99 --host 0.0.0.0 --port 8080
+
+# 3) vLLM with the NVFP4 checkpoint; quantization is read from config.json
+vllm serve thinkingmachines/Inkling-2-Mini --max-model-len 32768 --gpu-memory-utilization 0.90 --enable-prefix-caching
+
+# 4) did the server actually come up
+curl -s localhost:8080/v1/models | head -c 300</code></pre>
+
+<p>The fourth one is not filler. This config carries loop gates and attention residuals, so unofficial serving stacks fail in two ways. They may refuse to load on a missing op, or they may load fine and run the loop exactly once. The second failure is the dangerous one, because the output looks completely normal and is simply dumber. So always confirm the model id from /v1/models, then probe depth with a task that cannot be solved in parallel. The N-Hop Lookup benchmark exists for that purpose.</p>
+
+<p>The published baseline: no-chain-of-thought time horizon is 16 seconds at one loop and 37 seconds at three, then flattens. If one loop and three loops give you identical answers on the same prompt, the loop is not running.</p>
+
+<h2>What the loop buys, and what it does not</h2>
+
+<p>It buys serial depth. On N-Hop Lookup, a purely serial task, Thinking Machines measured improvement out to ten loops even though training stopped at five, so the mechanism extrapolates past its training distribution. It also compresses chain of thought: at five loops, reasoning tokens drop from 3,703 to 1,661, less than half, while sentence length and vocabulary distribution stay put. The model takes fewer detours rather than writing shorter sentences.</p>
+
+<p>It does not buy knowledge. MultiChallenge comes in at 50.0% and ComplexConstraints v1.1 at 33.4%, both behind Qwen3.8-27B at the same size. This model is aimed at agentic coding and long-context tool use: 79.2% on SWE-bench Verified with bash only, 48.2% on DeepSWE v1.1, 79.0% on BrowseComp. It is not built for small talk or fact recall.</p>
+
+<p>One counterintuitive result deserves its own paragraph. The model is almost impossible to steer at the reasoning level. On CoT-Control-QA, asking it to modify its own chain of thought on instruction produced compliance below 0.1%, against 1.3% for Qwen3.8-27B. The more loops it runs and the deeper it computes internally, the less leverage you have from outside. Thinking Machines summarises this as more unspoken capability without a measurable drop in monitorability, a finding validated at this scale only.</p>
+
+<p>The efficiency figure is the more practical one. Intelligence per watt on a DGX Spark reaches 0.703, against 0.430 for Qwen3.6-35B-A3B and 0.159 for Gemma-4-26B-A4B. For a small always-on agent, that number matters more than any benchmark score.</p>
+
+<p>One sentence of judgement: a looped transformer pays bandwidth for depth and, for the first time on consumer hardware, separates thinking longer from writing more. The problem is not on the model side. It is in your eval set. If you are still measuring single-turn question answering, you will not see a single advantage this architecture has.</p>''',
+    'related': [("Kimi K3.1 Pro open weights: what a one-million-token context actually costs in VRAM", "blog/kimi-k3-pro-1m-context-2026/"), ("35B MoE on a phone: reverse-engineering 14 tok/s from the roofline", "blog/on-device-35b-moe-phone-2026/"), ("Running a 284B MoE locally: where FreeToken and colibri moved the line", "blog/local-moe-serving-freetoken-colibri-2026/")],
+},
+
 'gemini-4-neon-cost-per-task-2026': {
     'tags': ["Gemini 4", "model selection", "inference cost", "pricing"],
     'title': "Gemini 4 Neon pricing, taken apart: 50% higher unit price, 32% lower cost per task, and Carbon doubles on December 1 | DevTools Blog",

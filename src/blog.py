@@ -50,6 +50,291 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': "riemann-hypothesis-lean-proof-audit-2026",
+    'category': "tooling",
+    'date': "2026-11-21",
+    'updated': "2026-11-21",
+    'tags': ["Lean 4", "形式化验证", "AI 数学", "审计"],
+    'title': "一天两份广义黎曼猜想证明：940 页人写的和 25 万行 Lean 的，验的不是同一件事 | DevTools 博客",
+    'description': "2026-11-20，Anthropic 的 Levent Alpöge 公布 14 个分卷的 Lean 代码，声称与 Claude 一起拿下广义黎曼猜想；同一天美国数学学会主席 Ravi Vakil 放出 Masullo 十二年手写的 940 页手稿《素数的音乐》，强调零 AI。本文把两件事分开，拆解 Lean 内核到底保证了什么（推导合法不等于结论正确）、三个逃逸口（命题等价性、自带公理、sorry），给出一个可跑的文本层审计脚本加 #print axioms 判据，并复盘陶哲轩只核了头尾的事实，以及八小时内有人用 AI 在人类那份里找出具体反例的过程。",
+    'keywords': "黎曼猜想, 广义黎曼猜想, GRH, Riemann Hypothesis, 黎曼猜想被证明, Claude 证明黎曼猜想, Lean 4, Lean 形式化验证, 如何验证 AI 数学证明, theorem prover, mathlib, print axioms, sorry 是什么意思, sorryAx, native_decide, axiom 公理注入, 数学证明审计, 940 页 素数的音乐, Masullo, 陶哲轩 回应, James Maynard, 形式化验证 教程, 如何审计 Lean 代码, how to verify a Lean proof, Lean 4 audit tutorial, Riemann hypothesis proof verification, formal verification pitfalls, statement fidelity",
+    'h1': "一天两份广义黎曼猜想证明：940 页人写的和 25 万行 Lean 的，验的不是同一件事",
+    'summary': "Alpöge 那份逻辑闭环但没人读得动，Masullo 那份人读得懂但还带着待插入定理。两份手稿都在等同一件事：有人真的把它读完。而这件事，现在是瓶颈。",
+    'body': '''<p>2026 年 11 月 20 日，两件事隔了大约二十小时落地。先是 Anthropic 的数学家 Levent Alpöge 发帖，说自己和 Claude 合作拿下了广义黎曼猜想，并且不打算发论文 —— 他公布的是 14 个压缩分卷的 Lean 代码。当天夜里，美国数学学会主席 Ravi Vakil 在自己的课程博客上挂出一篇《Hurried Announcement》，替另一位数学家把手稿放了出来。</p>
+
+<p>Vakil 公告里那句「完全由人类完成，没有借助任何 AI」，在当时不是一个学术声明，是一个姿态。Alpöge 已经抢在前面几小时，他要说的是「这一份不是 AI 写的」。</p>
+
+<h2>两家媒体的标题，把两件事缝成了一件事</h2>
+
+<p>第二天凌晨到中午，中文报道陆续出来。量子位的标题是「黎曼猜想被证明？！Claude 加持，34 岁数学家放出 Lean 证明」，正文里 34 岁指的是 Alpöge，而「12 年」「940 页」指的是 Masullo。新智元更直接，一条写「黎曼猜想或已被 Claude 1700 万行代码证明」，另一条又说是 25 万行。</p>
+
+<p>两个数字差了六十八倍。陶哲轩自己写的是「25 万行的逻辑」，量子位转述的是「转成文档会超过 25 万页」。再往上到 1700 万这个量级，已经没人能确认它指的是行数、token 数，还是生成过程的日志。</p>
+
+<p>这一点比事件本身更值得记：一个没人读得完的产物，连它的体积都只能靠转述，而转述在第一轮就开始漂。</p>
+
+<table>
+<thead><tr><th></th><th>Alpöge + Claude</th><th>Masullo（纯人类）</th></tr></thead>
+<tbody>
+<tr><td>产物</td><td>14 个分卷的 Lean 代码，无论文</td><td>932 页手稿《素数的音乐》，14 章，无形式化</td></tr>
+<tr><td>审阅状态</td><td>Lean 内核通过；数学家多数只读了声明</td><td>前导师 Brian Conrad 秘密审了数月，仍在重大修订</td></tr>
+<tr><td>已知缺口</td><td>命题与 RH 的等价性未被独立确认</td><td>正文留着「待插入定理」批注；第 13 章与 484 页附近命题被指表述即错</td></tr>
+<tr><td>公开动因</td><td>怕被截胡（9 月纳维-斯托克斯已被 OpenAI 抢先）</td><td>被 Alpöge 逼出来，原计划再打磨一年</td></tr>
+</tbody>
+</table>
+
+<h2>Lean 通过检查，证明的是推导合法，不是结论正确</h2>
+
+<p>所有报道都提到「通过了 Lean 验证」，但没人往下拆一句：Lean 内核保证了什么。</p>
+
+<p>它保证的是命题 P 存在一个类型正确的证明项。前提是 P 的定义、以及 P 依赖的所有定义和公理，都是你给的那些东西。所以内核返回绿色之后，还有三件事全部悬空：</p>
+
+<ul>
+<li><strong>命题写得对不对。</strong> 把 RH 写成一个弱得多的命题，照样能证。James Maynard 说他有 98% 到 99% 的把握这份证明是对的，紧接着问了另一句：它证明的真的是黎曼猜想吗。</li>
+<li><strong>公理带没带私货。</strong> 一句 axiom 就能把结论当假设塞进去，内核不会反对。</li>
+<li><strong>有没有留洞。</strong> sorry 是最常见的洞，编译器静默通过，只在公理清单里留下一个 sorryAx。</li>
+</ul>
+
+<p>陶哲轩的做法正好是这三条的示范。他说自己独立重证了分析端 —— Landau 定理的窗口形式、它与 GRH 的等价性、以及那个恒等式 —— 中段他只读了声明，并明确写了：我没有检查这些对象是否按名字暗示的方式构造，也没有检查中段是否真的造出了尾端用到的东西。</p>
+
+<p>一个顶级数学家，拿到 25 万行产物，也只能核头尾。新瓶颈的形状就是这样：不是证不出来，是没有人能读完。</p>
+
+<h2>真要验，先圈范围，再问公理</h2>
+
+<p>下面这个脚本做第一遍历：文本层扫描，把可疑构造圈出来。它证明不了任何东西，但能在 25 万行里告诉你该从哪开始读。</p>
+
+<pre><code>import os, sys
+
+SUSPECT = [
+    ("sorry", "proof hole, kernel accepts it silently"),
+    ("admit", "older spelling of the same hole"),
+    ("axiom ", "free assumption, may be the conclusion"),
+    ("opaque ", "unfoldable definition, can hide assumptions"),
+    ("native_decide", "trusts the compiler, bypasses the kernel"),
+    ("implemented_by", "external implementation, invisible to the kernel"),
+]
+
+def scan(root):
+    total, hits = 0, []
+    for base, _, files in os.walk(root):
+        for f in files:
+            if not f.endswith(".lean"):
+                continue
+            p = os.path.join(base, f)
+            txt = open(p, encoding="utf-8", errors="replace").read()
+            lines = txt.splitlines()
+            total += len(lines)
+            for i, line in enumerate(lines, 1):
+                code = line.split("--")[0]
+                for kw, why in SUSPECT:
+                    if kw in code:
+                        rel = os.path.relpath(p, root).replace(os.sep, "/")
+                        hits.append((rel, i, kw.strip(), why))
+    return total, hits
+
+root = sys.argv[1] if len(sys.argv) > 1 else "."
+total, hits = scan(root)
+print("lines scanned:", total)
+print("suspect hits:", len(hits))
+for path, ln, kw, why in hits[:12]:
+    print("  %s:%d  %s  -- %s" % (path, ln, kw, why))
+sys.exit(1 if hits else 0)</code></pre>
+
+<p>我在一个只有四种典型构造的小目录上跑了一遍，输出是这样：</p>
+
+<pre><code>$ python lean_audit.py fixture
+lines scanned: 16
+suspect hits: 3
+  AutomorphicArithmetic/CoreGm.lean:10  axiom  -- free assumption, may be the conclusion
+  AutomorphicArithmetic/CoreGm.lean:13  sorry  -- proof hole, kernel accepts it silently
+  AutomorphicArithmetic/CoreGm.lean:16  native_decide  -- trusts the compiler, bypasses the kernel
+$ echo $?
+1</code></pre>
+
+<p>三点说明。它按行扫，注释里提到 sorry 也会命中，得人工过一遍；它不认 implemented_by 的方括号写法；它对 import 进来的 mathlib 一无所知 —— 但你审的是这份产物，不是 mathlib。</p>
+
+<p>第二遍才是判决。Lean 允许直接问「这个定理依赖哪些公理」：</p>
+
+<pre><code>cat &gt; Probe.lean &lt;&lt;'EOF'
+import Mathlib
+import AutomorphicArithmetic
+#print axioms core_gm
+#print axioms ch_top
+#print axioms ch_balance
+EOF
+lake env lean Probe.lean</code></pre>
+
+<p>判据只有一个：输出里的公理集合是不是恰好落在 {propext, Classical.choice, Quot.sound} 里。多出任何一个名字都要单独解释；出现 sorryAx，说明那里有个洞没补。</p>
+
+<p>把这一步做成闸门，接到 CI 里也就是十几行。单独存成 axiom_gate.py，输入是刚抓下来的 lake 输出：</p>
+
+<pre><code>import sys
+
+ALLOWED = {"propext", "Classical.choice", "Quot.sound"}
+
+def parse_axioms(path):
+    bad = 0
+    for line in open(path, encoding="utf-8", errors="replace"):
+        if "depends on axioms" not in line:
+            continue
+        name = line.split("'")[1] if "'" in line else "?"
+        inside = line[line.index("[") + 1:line.rindex("]")] if "[" in line else ""
+        ax = {a.strip() for a in inside.split(",") if a.strip()}
+        extra = ax - ALLOWED
+        print("  %-34s %s" % (name, "clean" if not extra else "EXTRA " + str(sorted(extra))))
+        bad += 1 if extra else 0
+    return bad
+
+sys.exit(1 if parse_axioms(sys.argv[1]) else 0)</code></pre>
+
+<p>喂三段伪造的 lake 输出，结果一眼就能读：</p>
+
+<pre><code>$ python axiom_gate.py axioms.txt
+  core_gm                            clean
+  ch_top                             EXTRA ['ch_top_uniform']
+  ch_balance                         EXTRA ['sorryAx']
+$ echo $?
+1</code></pre>
+
+<p>第二行那个 ch_top_uniform 是我自己塞的 axiom，第三行是 sorry 留下的痕迹。这就是全部的意义：公理清单是唯一能机器判定的部分，其余靠人。</p>
+
+<h2>另一份的问题，是 AI 找出来的</h2>
+
+<p>Vakil 的公告发出大约八小时后，他自己补了一段更新：好几个人联系他，说 Masullo 的证明里有问题，而这些问题是「借助不同 AI 模型」找到的。</p>
+
+<p>评论区里有一条，作者坦白说是 Astra-6.2-Max 生成的，指向（10.3.1.18）之后那个一致界：如果这个界对所有零点一致成立，会强行推出临界线上单零点纵坐标之间存在一个正的最小间隔；再用 Conrey 1989 的三分之二零点简单性结果加上 Riemann–von Mangoldt 公式数一数，就能凑出矛盾。这条批评对不对、是不是把「一致」读过头了，得数论的人判 —— 但它给出了页码、公式号和一条可证伪的推理链，这已经比「感觉不对」有用得多。</p>
+
+<p>940 页的稿子里还有一批更朴素的问题：「此处需修正表述」「待插入定理」这类批注留在正文里，第 13 章与 484 页附近的几个命题在当前表述下直接不成立。Conrad 说得很直白：草稿仍在重大修订，包含未完成的章节。</p>
+
+<p>有意思的是对称性。人类那份的问题被 AI 在八小时内指了出来；AI 那份的问题，是人类读不动。两种失败模式正好互补，也都不是「谁赢了」。</p>
+
+<h2>写代码的人该拿走什么</h2>
+
+<p>我不觉得结论是「数学完了」。真正变了的是审计这一层，而它的形状对做工程的人并不陌生。</p>
+
+<p>形式化验证把「语义漂移」变成了一个可检查的产物：命题是一个对象，公理是一张能打印出来的清单，洞是一个叫 sorryAx 的符号。相比之下，代码评审里最常见的失败是「规格在需求文档里，实现在另一个文件里，两边从来没人对过」。</p>
+
+<p>能搬的三条：</p>
+
+<ul>
+<li><strong>依赖要能打印。</strong> 别靠 review 的感觉判断「有没有偷偷绕过」，要有一条命令能列出这个产物真实依赖了什么。Lean 有 #print axioms，你的项目对应的可能是 lockfile 差异、镜像层清单，或者一份显式 allowlist。</li>
+<li><strong>闸门要比人快。</strong> 上面那个 parse_axioms 只有十几行，但它把「有没有洞」从人的判断变成了退出码。八小时内找出问题的不是某个天才，是一条能自动跑的路。</li>
+<li><strong>规模上来之后，「没人读完」是默认状态。</strong> 25 万行 Lean、940 页手稿、一次生成 1700 万行，三种规模都超出了逐行审阅的可能。要么接受抽样加机器闸门，要么承认自己在赌。</li>
+</ul>
+
+<p>至于黎曼猜想本身，现在能说的只有一句：两份手稿都还没被社区消化完，而其中一份的验证入口，是一个需要先编译 25 万行才能提问的仓库。</p>''',
+    'related': [("AlphaProof 用 650 万行 Lean 验了 libsignal 的机器码", "blog/alphaproof-code-lean-verification-2026/"), ("递归自我改进：验证器成了唯一还值钱的东西", "blog/rsi-self-improvement-loop-2026/"), ("权重空间编程：98% 的把握和 51% 的复现", "blog/weight-space-programming-2026/")],
+},
+{
+    'slug': "inkling-2-mini-looped-transformer-2026",
+    'category': "ai",
+    'date': "2026-11-21",
+    'updated': "2026-11-21",
+    'tags': ["Inkling 2 Mini", "循环 Transformer", "本地部署", "MoE"],
+    'title': "Inkling 2 Mini：24 层跑出 48 层的深度，代价是每 token 多读 59% 的权重 | DevTools 博客",
+    'description': "Thinking Machines 于 2026-11-20 以 Apache 2.0 开源 Inkling 2 Mini：24 层里中间 12 层循环三遍，26.4B 总参数、3.4B 激活、每 token 读 5.4B 权重，20GB 显存可在 32GB Mac 上跑。本文拆开三个互相矛盾的参数量，用一个可跑的账本脚本算出循环次数与解码吞吐的换算（3 圈 101 tok/s，稠密 27B 只有 20 tok/s），给出 llama.cpp 与 vLLM 的真实启动命令、循环是否生效的自测方法，以及它在 MultiChallenge 上落后同尺寸模型的原因。",
+    'keywords': "Inkling 2 Mini, 循环 Transformer, looped transformer, Thinking Machines, 开源模型, Apache 2.0 模型, MoE 架构, NVFP4, 4-bit 训练, 本地部署大模型, 32GB 内存跑大模型, Ollama, llama.cpp, vLLM, DGX Spark, 每瓦智能, test-time compute, 潜在推理, 循环深度, 如何本地部署 Inkling 2 Mini, Inkling 2 Mini 怎么用, agentic coding 开源模型, run 26B MoE locally, looped transformer tutorial, test-time compute without tokens",
+    'h1': "Inkling 2 Mini：24 层跑出 48 层的深度，代价是每 token 多读 59% 的权重",
+    'summary': "循环 Transformer 第一次把「多想想」和「多写字」拆开了：深度翻倍只多付 58.8% 的带宽，48 次层应用换 5 倍于稠密 27B 的解码速度。代价是知识量不涨，以及你几乎无法干预它的推理过程。",
+    'body': '''<p>26.4B 总参数，3.4B 激活，5.4B 权重读取。三个数字说的是同一个模型、同一次前向，都写在 Thinking Machines 11 月 20 日的发布说明里。而 The Decoder 当天的报道把 5.4B 写成了「激活参数」—— 数字没抄错，位置错了，而这个错位恰好是这个架构最值得看的地方。</p>
+
+<h2>循环发生在中间那 12 层</h2>
+
+<p>Inkling 2 Mini 一共 24 层，分成 4 个 block，每块 6 层。前 6 层和后 6 层各跑一遍，中间两个 block（第 7 到 18 层）连跑三遍。所以每个 token 实际经历了 48 次层应用，而模型的深度参数只有 24。</p>
+
+<table>
+<thead><tr><th></th><th>数值</th><th>为什么是这个数</th></tr></thead>
+<tbody>
+<tr><td>层数</td><td>24（4 × 6）</td><td>参数表里的物理层</td></tr>
+<tr><td>循环段</td><td>第 7–18 层，跑 3 次</td><td>只有中间两个 block 参与循环</td></tr>
+<tr><td>每 token 层应用</td><td>48</td><td>24 + 12 × (3 − 1)</td></tr>
+<tr><td>总参数</td><td>26.4B</td><td>MoE，384 专家选 8，中途剪到每层 128</td></tr>
+<tr><td>激活参数</td><td>3.4B</td><td>单次前向真正参与计算的权重</td></tr>
+<tr><td>每 token 权重读取</td><td>5.4B</td><td>循环段被重复读，3.4B 变成 5.4B</td></tr>
+</tbody>
+</table>
+
+<p>三个数都对，只是回答的问题不同：26.4B 是「下载要多大」，3.4B 是「算一遍要多少 FLOPs」，5.4B 是「显存要被读多少遍」。解码阶段卡在带宽上，所以第三个才决定 tok/s。</p>
+
+<h2>用带宽换深度：这本账可以手算</h2>
+
+<p>循环的本质是把「想更久」从输出侧搬到层侧。普通模型要更深的推理，只能多写 token；这个模型多写的是层应用次数，输出长度不变。代价是循环段每多跑一次，那 12 层的权重就要再读一遍。</p>
+
+<pre><code>TOTAL, ACTIVE, READ3 = 26.4e9, 3.4e9, 5.4e9   # params; weights read per token at 3 loops
+LAYERS, LOOPED = 24, 12                        # middle two blocks are the ones re-run
+BITS, BW_GBS = 4.0, 273.0                      # NVFP4 expert path, M5 Pro class bandwidth
+
+def read_p(n):
+    return ACTIVE + (READ3 - ACTIVE) * (n - 1) / 2
+
+def report(n):
+    apps = LAYERS + LOOPED * (n - 1)
+    gb = read_p(n) * BITS / 8 / 1e9
+    return apps, gb, BW_GBS / gb
+
+print("loops  layer-apps  GB/token  decode ceiling (tok/s)")
+for n in (1, 2, 3, 4, 5):
+    a, gb, ceil = report(n)
+    print("  %d      %6d      %5.2f        %6.1f" % (n, a, gb, ceil))
+
+dense = 27e9 * BITS / 8 / 1e9
+print("dense 27B @%d-bit: %.2f GB/token -> %.1f tok/s" % (BITS, dense, BW_GBS / dense))
+print("paying %.1f%% more traffic for %dx the depth of the looped block"
+      % ((READ3 / ACTIVE - 1) * 100, 3))</code></pre>
+
+<p>输出：</p>
+
+<pre><code>loops  layer-apps  GB/token  decode ceiling (tok/s)
+  1          24       1.70         160.6
+  2          36       2.20         124.1
+  3          48       2.70         101.1
+  4          60       3.20          85.3
+  5          72       3.70          73.8
+dense 27B @4-bit: 13.50 GB/token -> 20.2 tok/s
+paying 58.8% more traffic for 3x the depth of the looped block</code></pre>
+
+<p>三点读法。一，3 圈对 1 圈，深度翻倍，带宽只多付 58.8%。二，同精度下它比稠密 27B 少读五倍权重，这就是「26B 的模型跑出 27B 的速度」这句话的来路 —— 官方说 AI Index 20.1 与 Qwen3.8-27B 打平，成本约六分之一、速度快四倍，账对得上。三，那个 273 GB/s 是拿 M5 Pro 量级填的，把你手上机器的带宽换进去，结论不变，绝对数平移。</p>
+
+<p>这里有个官方文档没回答、但你必须自己量的问题：循环段每多跑一遍，KV 缓存要不要多存一份？不存，等于每圈重算注意力；存，显存就随圈数线性涨。跑长上下文之前先测 8k 和 32k 的显存差，别信发布说明。</p>
+
+<h2>4-bit 是训练时就决定的，不是部署时压的</h2>
+
+<p>20 层专家层从预训练到 RL 全程 NVFP4，最后 4 层走 MXFP8。配套那篇 end-to-end 4-bit training 的博客是必读的，因为它意味着两件事：没有量化转换损失，权重下下来就是能跑的那份；以及别指望再往下压 —— 3-bit 不是「更省」，是换了个模型。</p>
+
+<p>整模型落在 20GB 左右，官方最低要求是任意 32GB 内存的 Mac，Ollama 能直接起。DGX Spark 因为原生支持 NVFP4，是它最舒服的落点。</p>
+
+<h2>跑起来的四条路</h2>
+
+<pre><code># 1) 只想要权重
+huggingface-cli download thinkingmachines/Inkling-2-Mini --local-dir inkling2mini
+
+# 2) llama.cpp（GGUF，Unsloth 那版）
+llama-server -m inkling2mini/Inkling-2-Mini-Q4_K_M.gguf -c 32768 -ngl 99 --host 0.0.0.0 --port 8080
+
+# 3) vLLM（NVFP4 检查点，量化方式从 config.json 自动识别）
+vllm serve thinkingmachines/Inkling-2-Mini --max-model-len 32768 --gpu-memory-utilization 0.90 --enable-prefix-caching
+
+# 4) 只想知道服务起没起
+curl -s localhost:8080/v1/models | head -c 300</code></pre>
+
+<p>第四条不是废话。这个模型的 config 里有循环门控和 Attention Residuals，非官方推理栈很容易在加载阶段报缺 op，或者加载成功但循环只跑了一遍 —— 后者最坑，因为输出看起来完全正常，只是变笨了。所以第一步永远是对一下 /v1/models 返回的 model id，再用一道必须串行推理的题测深度，官方给的 N-Hop Lookup 就是干这个的。</p>
+
+<p>官方基线：1 圈的无 CoT 时间跨度 16 秒，3 圈 37 秒，再往上走平。你要是拿同一个 prompt 测出来 1 圈和 3 圈没差别，就是循环没生效。</p>
+
+<h2>循环买到了什么，没买到什么</h2>
+
+<p>买到的是串行深度。N-Hop Lookup 这种纯串行任务，官方测到 10 圈还在涨，尽管训练只到 5 圈 —— 这个机制外推得比训练分布远。CoT 会被压缩：5 圈时推理 token 从 3703 降到 1661，不到一半，而句子长度、词汇分布没变，只是更少绕路。</p>
+
+<p>没买到的是知识。MultiChallenge 50.0%、ComplexConstraints v1.1 33.4%，都落后同尺寸的 Qwen3.8-27B。它的定位是 agentic coding 和长上下文工具调用：SWE-bench Verified 在只给 bash 的条件下 79.2%、DeepSWE v1.1 48.2%、BrowseComp 79.0%。不是陪你闲聊或者背事实的。</p>
+
+<p>还有一个反直觉的发现值得单独拎出来：它对自己的推理几乎不可控。CoT-Control-QA 里，让它按指令修改自己的思维链，遵循率不到 0.1%，Qwen3.8-27B 是 1.3%。圈数越多、内部算得越深，你在外部能施加的干预反而更少 —— 官方把这个总结成「未言明的能力增加，但可监控性没有明显下降」，而这个结论只在这个规模上验过。</p>
+
+<p>每瓦智能那个数字更实在：DGX Spark 上 0.703，Qwen3.6-35B-A3B 是 0.430，Gemma-4-26B-A4B 是 0.159。如果你的场景是常驻的小 agent，这个指标比 benchmark 分数重要。</p>
+
+<p>一句话判断：循环 Transformer 用带宽换深度，第一次在消费级硬件上把「多想想」和「多写字」拆开了。真正的问题不在模型侧，在你的评测集 —— 如果现在测的还是单轮问答，这个架构的优势你一条都测不出来。</p>''',
+    'related': [("Kimi K3.1 Pro 开源：100 万上下文到底要多少显存", "blog/kimi-k3-pro-1m-context-2026/"), ("手机跑 35B MoE：roofline 反解 14 tok/s 是怎么来的", "blog/on-device-35b-moe-phone-2026/"), ("本地跑 284B MoE：FreeToken 与 colibri 把门槛拉到了哪", "blog/local-moe-serving-freetoken-colibri-2026/")],
+},
+
+{
     'slug': "gemini-4-neon-cost-per-task-2026",
     'category': "ai",
     'date': "2026-11-20",
