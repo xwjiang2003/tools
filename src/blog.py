@@ -50,6 +50,273 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': "openai-perplexity-pretraining-metric-2026",
+    'category': "ai",
+    'date': "2026-11-23",
+    'updated': "2026-11-23",
+    'tags': ["OpenAI", "perplexity", "预训练", "模型评测"],
+    'title': "OpenAI 首次公开预训练核心指标：log-perplexity 从 0.99 到 0.76，以及它测不到什么 | DevTools 博客",
+    'description': "2026-11-22 OpenAI 首次公开内部预训练追踪指标 log-perplexity：GPT-3.5 约 0.99、GPT-4 约 0.91、数学突破模型约 0.76、下一窗口 0.68 到 0.7。本文把交叉熵换算成 bits/token 与压缩量，解释为什么固定代码留出集一换数字就不可比、思维链根本不降这个数，并给出两条可运行结果脚本：换算表与带数据集指纹的 CE 闸门。",
+    'keywords': "OpenAI 首次公开预训练核心指标, perplexity 是什么, log-perplexity, 困惑度, cross entropy loss, 交叉熵损失, 如何计算困惑度, perplexity tutorial, how to compute perplexity from logits, 预训练曲线, 预训练指标, GPT-3.5 0.99, GPT-4 0.91, 0.76 阈值, math breakthrough model, AI 参与模型设计, common limits, 前沿模型安全限制, CoT monitor, 思维链 不降低 perplexity, 留出集 数据集指纹, held-out dataset 固定快照, 模型评测 如何做, LLM evaluation gate, per token bits, nats to bits, 熵 压缩率 估算",
+    'h1': "OpenAI 首次公开预训练核心指标：log-perplexity 从 0.99 到 0.76，以及它测不到什么",
+    'summary': "一个能横看十年的指标，代价是它看不见思维链、看不见回答变短、也看不见数据集被换掉。OpenAI 把指标摊开的同时，也把这三块空白写在脚注里。",
+    'body': '''<p>11 月 22 日，OpenAI 发了一篇不长的文章，把内部追踪预训练进展的指标摊开：<strong>log-perplexity</strong>，也就是留出集上的交叉熵损失。给出的坐标很清楚 —— GPT-3.5 约 0.99，GPT-4 约 0.91，当前模型跌破 0.8，某个开始解出数学开放问题的模型落在 0.76 附近，下一扇窗被圈在 0.68 到 0.7。当天这篇帖子在 Hacker News 拿到 513 分、353 条评论；国内是 11 月 23 日机器之心以「刚刚，OpenAI首次公开预训练核心指标」跟上，新智元凌晨 01:12 的快讯则抓住另一半：最新模型已经有 AI 参与设计。</p>
+
+<p>这是个值得认真读的披露，但不是一张可以直接抄进自己模型卡的验收表。原因 OpenAI 自己写得比大多数转述都清楚。</p>
+
+<h2>0.99 和 0.76 到底差多少</h2>
+
+<p>这里记的不是困惑度本身，是它的自然对数。交叉熵 CE 的单位是 nats/token，PPL 等于 e 的 CE 次方；换成 bits/token 要除以 ln 2。把 OpenAI 给的四个坐标代进去：</p>
+
+<pre><code>import math
+
+ROWS = [
+    ("GPT-3.5", 0.99),
+    ("GPT-4", 0.91),
+    ("math breakthrough", 0.76),
+    ("next window", 0.69),
+]
+
+print("model              log-PPL   PPL     bits/tok   KB per 1M tokens")
+for name, ce in ROWS:
+    ppl = math.exp(ce)
+    bits = ce / math.log(2)
+    kb = bits * 1000000 / 8 / 1000
+    print(f"{name:18s} {ce:7.2f}  {ppl:6.3f}  {bits:8.3f}  {kb:8.1f}")
+
+delta_bits = (0.99 - 0.76) / math.log(2)
+saved_kb = delta_bits * 1000000 / 8 / 1000
+print(f"0.99 to 0.76: {delta_bits:.3f} bits/token, {saved_kb:.1f} KB per 1M tokens")</code></pre>
+
+<pre><code>model              log-PPL   PPL     bits/tok   KB per 1M tokens
+GPT-3.5               0.99   2.691     1.428     178.5
+GPT-4                 0.91   2.484     1.313     164.1
+math breakthrough     0.76   2.138     1.096     137.1
+next window           0.69   1.994     0.995     124.4
+0.99 to 0.76: 0.332 bits/token, 41.5 KB per 1M tokens</code></pre>
+
+<p>从 0.99 到 0.76，每 token 少 0.332 bit，一百万 token 少约 41.5 KB。这是熵意义上的下界估算，不是模型文件的体积，也不是 API 账单；它只说明「预测下一个 token 所需的信息量」在稳步缩水。0.69 那行看着只比 0.76 低 0.07，按这个换算也只是再省 13 KB/百万 token —— 如果能力真在 0.68 到 0.7 这一带跳一档，那显然不是靠省下来的比特换的。</p>
+
+<h2>指标越干净，盲区就越刺眼</h2>
+
+<p>据 OpenAI（2026-11-22），从 GPT-3.5 起主要留出集来自内部代码库的固定快照。选代码不是随手挑的：他们承认 GPT-2、GPT-3 的训练语料让「预测代码的能力」很难代表通用能力，但对今天的进展来说，代码是最贴的观测面。代价是别人的 0.76 和你的 0.76 基本没有关系 —— 不同实验室用不同评测集、不同训练混合，论文里那句 cross-lab comparison is hard 不是客套。</p>
+
+<p>更硬的三条限制写在原文里：</p>
+
+<ul>
+<li><strong>它和任务评测不对应。</strong> perplexity 不是任何人要完成的任务，只是「能力可能要出现了」的先导信号。</li>
+<li><strong>思维链不降 perplexity。</strong> 原文原话：chain-of-thought reasoning does not reduce perplexity achieved by the model，尽管能力会暴涨。也就是说，过去两年大量真正改变用户体验的推理侧进展，在这条曲线上是平的。</li>
+<li><strong>下界未知。</strong> loss 不可能到 0，但数据的内在熵是多少没人知道。越接近底，数字动得越小；原文反而提醒，越小的数据改善可能对应越大的智能跃迁。</li>
+</ul>
+
+<p>把这几条和当天另一条新闻对着看更有意思。The Decoder（2026-11-22）报道 GPT-6.2 Astra 的平均回答从 352 词缩到 210 词，少约 40%，同时「承认不确定」的相对评分从 96 掉到 24。回答长度、坦白程度、要不要停下来请示 —— 这些正在被开发者天天讨论的行为变化，在 CE 曲线上大概率什么都不显示。拿一个数当模型全部进度，就是把这些变化全当成噪声丢掉。</p>
+
+<h2>把指标拿回自己手里：先锁住数据集，再看数</h2>
+
+<p>如果要在自己的评测里用这类指标，第一件事不是装库，是给留出集做指纹。下面这段只用标准库：语料一改，指纹就变，直接拒绝比较 —— 否则你以为的「模型进步 0.02」可能只是有人往留出集里塞了新文件。</p>
+
+<pre><code>import hashlib
+import json
+import os
+
+CORPUS = "def cross_entropy(logp):" + chr(10) + "    return -sum(logp) / len(logp)"
+
+SNAPSHOT = hashlib.sha256(CORPUS.encode("utf-8")).hexdigest()[:16]
+PINNED = "a6330d916bcbfdca"
+
+EVIDENCE = [
+    {"token": "def", "logp": -0.61},
+    {"token": "cross_entropy", "logp": -1.02},
+    {"token": "return", "logp": -0.75},
+    {"token": "sum", "logp": -0.66},
+]
+
+print("snapshot:", SNAPSHOT)
+if SNAPSHOT != PINNED:
+    print("REFUSE: held-out snapshot changed, refusing to compare CE across runs")
+else:
+    ce = -sum(row["logp"] for row in EVIDENCE) / len(EVIDENCE)
+    print("gate: PASS, dataset pinned")
+    print("tokens:", len(EVIDENCE), "mean CE:", round(ce, 4), "PPL:", round(2.718281828 ** ce, 4))</code></pre>
+
+<pre><code>snapshot: a6330d916bcbfdca
+gate: PASS, dataset pinned
+tokens: 4 mean CE: 0.76 PPL: 2.1383</code></pre>
+
+<p>把 CORPUS 里 `logp` 改成 `log_probs` 再跑一遍，指纹变成 3193d2d8156f9986，输出 REFUSE。真实项目里要把 logp 从推理服务按 token 落盘（JSONL 即可），留出集本身单独算哈希，两个数字一起进 CI；只存一个平均分是复现不了的。</p>
+
+<p>至于 OpenAI 拿这个数提「common limits」—— 在行为监控能力达到某个具体里程碑（比如出现 CoT monitor 的后继者）之前，开发者承诺不越过某些指标线 —— 意愿可以理解，可执行性还得打个问号。一个跨实验室不可比、又看不见思维链的标量，适合当早期预警，不适合当闸门。你能立刻照做的，是把自己的留出集钉死、把 token 级 logprob 留下来，然后给推理能力单独设一套评测。曲线归曲线，验收归验收。</p>
+''',
+    'related': [
+        ("Qwen4-Max 的单任务成本：把「便宜 58%」拆成两个因子", "blog/qwen4-max-cost-per-task-2026/"),
+        ("Gemini 4 Neon 账本：缓存命中率怎么改写单价", "blog/gemini-4-neon-cost-per-task-2026/"),
+        ("递归自我改进：验证器成了唯一还值钱的东西", "blog/rsi-self-improvement-loop-2026/"),
+    ],
+},
+
+{
+    'slug': "cli-anything-agent-native-2026",
+    'category': "tooling",
+    'date': "2026-11-23",
+    'updated': "2026-11-23",
+    'tags': ["CLI-Anything", "Agent Native", "CLI 工具", "AI Agent"],
+    'title': "CLI-Anything 拆包：69 个 GUI 软件变成 agent 原生 CLI，2464 个测试撑起的不是噱头 | DevTools 博客",
+    'description': "2026-11-23 CLI-Anything 冲上 GitHub Trending 第三，单日 +783 星。README 徽章写 2461 个测试通过、表格末尾写 2464，拉下仓库实点却是 69 个 agent-harness、151 份 SKILL.md、164 个测试文件。本文拆 HARNESS.md 的 7 阶段流水线，说明为什么「必须调真软件、导出失败不许 skip」才是核心，并给出可运行的仓库审计脚本与最小 agent 原生 CLI 骨架。",
+    'keywords': "CLI-Anything, agent-native CLI, GUI agent, computer use agent, 如何把 GUI 软件改造成 CLI, cli-hub tutorial, cli-hub install, HARNESS.md, SKILL.md, agent skills, how to build agent-native CLI, CLI agent 教程, JSON output 确定性输出, Click REPL, session state 会话状态, 69 harnesses, 2464 tests, HKUDS, arXiv 2606.03854, 像素坐标 点击 失效, 真实后端 导出验证, magic bytes 校验, defusedxml, LibreOffice headless, 如何给 agent 暴露命令行, agent 工具设计 实战",
+    'h1': "CLI-Anything 拆包：69 个 GUI 软件变成 agent 原生 CLI，2464 个测试撑起的不是噱头",
+    'summary': "README 的徽章和表格差 3 个测试，实际 harness 数又是宣传口径的近四倍。数字打架不用急，真正值钱的是那份规定「导出失败必须报错、不许跳过」的测试清单。",
+    'body': '''<p>11 月 23 日 GitHub Trending 第三名是 HKUDS/CLI-Anything：63,184 星，当天 +783。它的 README 上挂着「18 apps」「2,461 passing」两枚徽章，往下翻到测试汇总，末尾写的却是 TOTAL 2,464 passed。把 48 MB 的 tarball 拉下来解压（64 MB）数一遍：69 个带 <code>agent-harness</code> 的目录、7 份 HARNESS.md、151 份 SKILL.md、164 个 <code>test_*.py</code>。</p>
+
+<p>文档口径和代码口径已经不是一回事了。这不是丑闻，是 agent 项目跑得太快的常态 —— 但它正好给了一个切入点：把宣传剥掉，看它到底解决了什么。</p>
+
+<h2>它反对的不是 GUI，是像素坐标</h2>
+
+<p>技术报告 arXiv:2606.03854（2026-06-02，Yuhao Yang、Tianyu Fan、Chao Huang）把立场写得很直白：主流 computer use agent 靠截图、找 UI 元素、算坐标、点击，这条路和 agent 的能力结构对不上。像素级交互脆弱、时序依赖难控、界面一改坐标就废；agent 被迫模仿人类的感知缺陷，而不是用它擅长的结构化处理和程序化控制。</p>
+
+<p>CLI-Anything 的主张是换交互范式：把现有软件包装成命令行 harness，暴露结构化命令、显式状态、确定性反馈，让「视觉到计算」那次有损翻译根本不发生。CLI-Hub 则是这套范式的分发层 —— <code>pip install cli-anything-hub</code>，然后 <code>cli-hub install &lt;name&gt;</code>。</p>
+
+<p>听上去像老派 Unix 原教旨主义者的反击。但翻完 36 KB 的 HARNESS.md，你会发现它和「写个 wrapper」没什么关系。</p>
+
+<h2>7 阶段流水线：值钱的是第 3 和第 5 阶段</h2>
+
+<table>
+<thead><tr><th>阶段</th><th>交付物</th><th>真正能被机器检查的部分</th></tr></thead>
+<tbody>
+<tr><td>1 代码分析</td><td>后端引擎、动作到 API 的映射、数据模型清单</td><td>是否找到原生 CLI（melt、ffmpeg、convert）当积木</td></tr>
+<tr><td>2 架构设计</td><td>子命令 + 有状态 REPL 双模式、会话模型、--json</td><td>状态能否序列化成 JSON、命令分组是否覆盖 undo/redo</td></tr>
+<tr><td>3 实现</td><td>真实后端模块、会话锁、ReplSkin</td><td>shutil.which 找真程序、subprocess.run 调真程序、<code>r+</code> 打开后加锁再截断写会话</td></tr>
+<tr><td>4 测试计划</td><td>先写 TEST.md，再写测试代码</td><td>测试清单先于实现，E2E 场景写清楚验证什么属性</td></tr>
+<tr><td>5 测试实现</td><td>单元 + 原生 E2E + 真后端 E2E + 子进程 CLI</td><td>必须调真软件；没装软件就失败，不许 skip；校验 magic bytes / ZIP 结构 / 像素 / RMS</td></tr>
+<tr><td>6 文档</td><td>README、TEST.md 回填</td><td>命令与实测输出对齐</td></tr>
+<tr><td>6.5 技能生成</td><td>根目录规范 SKILL.md + 包内兼容副本</td><td>从 Click 装饰器、setup.py、README 抽元数据生成 YAML frontmatter</td></tr>
+<tr><td>7 发布</td><td>PyPI 包 <code>cli-anything-&lt;software&gt;</code></td><td>装完直接进 PATH，agent 用 which 就能发现</td></tr>
+</tbody>
+</table>
+
+<p>第 5 阶段那句 "No graceful degradation — if the software isn't installed, tests fail, not skip" 是整套东西的脊梁。生成 CLI 不稀奇，稀奇的是有人规定：导出一个 PDF，退出码 0 不算过，得去读文件头确认是 <code>%PDF-</code>；导出视频，得抽帧比亮度、查 RMS，非整数帧率还得允许 ±1 帧误差。这条不写进 SOP，模型每次都会给你一个「优雅降级」的假成功。</p>
+
+<h2>实点一遍仓库</h2>
+
+<pre><code>import os
+
+root = "CLI-Anything-main"
+apps = []
+for name in os.listdir(root):
+    if os.path.isdir(os.path.join(root, name, "agent-harness")):
+        apps.append(name)
+
+harness_docs = 0
+skills = 0
+tests = 0
+for dirpath, dirnames, filenames in os.walk(root):
+    for filename in filenames:
+        if filename == "HARNESS.md":
+            harness_docs += 1
+        if filename == "SKILL.md":
+            skills += 1
+        if filename.startswith("test_") and filename.endswith(".py"):
+            tests += 1
+
+readme = open(os.path.join(root, "README.md"), encoding="utf-8").read()
+badge = "Tests-2%2C461_Passing" in readme
+summary = "TOTAL        2,464 passed" in readme
+
+print("apps with agent-harness:", len(apps))
+print("HARNESS.md files:", harness_docs)
+print("SKILL.md files:", skills)
+print("test_*.py files:", tests)
+print("README badge says 2,461:", badge)
+print("README summary says 2,464:", summary)</code></pre>
+
+<pre><code>apps with agent-harness: 69
+HARNESS.md files: 7
+SKILL.md files: 151
+test_*.py files: 164
+README badge says 2,461: True
+README summary says 2,464: True</code></pre>
+
+<p>69 对 18：徽章上的 18 apps 指的是 18 个有完整演示的应用，不是 harness 总数。151 份 SKILL.md 对 69 个应用：Phase 6.5 同时写根目录规范副本和包内兼容副本，差出来的是这些双份文件（外加一些独立登记的 CLI）。164 个测试文件对 2,464 个测试：前者是文件数，后者是用例数，不是矛盾。</p>
+
+<p>真正该留意的还是那三个测试数字的口径漂移，以及 README 里明说的限制：要靠 Claude Opus 4.6、Sonnet 4.6、GPT-5.4 这一档模型才能可靠生成；目标软件得有源码可读，只有二进制时质量会掉；一次 <code>/cli-anything</code> 往往不够，还得 <code>/refine</code> 几轮。许可证 Apache 2.0，但安全修补是逐条加上去的 —— 03-14 修 GIMP Script-Fu 路径注入，05-19 把 XML/SVG/ODF 解析换成 defusedxml，05-21 给 Sketch 的 token 文件加路径穿越和符号链接防护。这些不是装饰，是把文件当输入暴露给 agent 必然踩到的坑。</p>
+
+<h2>照骨架写一个最小 harness</h2>
+
+<p>真实的 harness 用 Click、prompt_toolkit 和真后端。协议层其实很小：先 probe，再 mutate，状态落 JSON，输出机器可读，导出后回读验证。下面 60 行只用标准库，把这个骨架跑起来：</p>
+
+<pre><code>import argparse
+import json
+import os
+
+
+def load_state(path):
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    return {"version": 1, "values": {}}
+
+
+def save_state(path, state):
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(state, handle, sort_keys=True)
+        handle.write(chr(10))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    commands = parser.add_subparsers(dest="cmd", required=True)
+    probe = commands.add_parser("probe")
+    probe.add_argument("--state", required=True)
+    set_cmd = commands.add_parser("set")
+    set_cmd.add_argument("--state", required=True)
+    set_cmd.add_argument("--key", required=True)
+    set_cmd.add_argument("--value", required=True)
+    export = commands.add_parser("export")
+    export.add_argument("--state", required=True)
+    export.add_argument("--out", required=True)
+    args = parser.parse_args()
+
+    state = load_state(args.state)
+    if args.cmd == "probe":
+        result = {"ok": True, "commands": ["probe", "set", "export"],
+                  "state_exists": os.path.exists(args.state),
+                  "keys": sorted(state["values"].keys())}
+    elif args.cmd == "set":
+        state["values"][args.key] = args.value
+        save_state(args.state, state)
+        result = {"ok": True, "set": args.key,
+                  "keys": sorted(state["values"].keys())}
+    else:
+        payload = json.dumps(state, sort_keys=True).encode("utf-8")
+        with open(args.out, "wb") as handle:
+            handle.write(payload)
+        with open(args.out, "rb") as handle:
+            head = handle.read(1)
+        result = {"ok": head == b"{", "bytes": len(payload),
+                  "out": args.out.rsplit(os.sep, 1)[-1]}
+    print(json.dumps(result, sort_keys=True))
+
+
+main()</code></pre>
+
+<pre><code>python mini_harness.py probe --state state.json
+{"commands": ["probe", "set", "export"], "keys": [], "ok": true, "state_exists": false}
+python mini_harness.py set --state state.json --key model --value qwen3.6-35b
+{"keys": ["model"], "ok": true, "set": "model"}
+python mini_harness.py export --state state.json --out artifact.json
+{"bytes": 50, "ok": true, "out": "artifact.json"}</code></pre>
+
+<p>注意最后一步：它没有相信 <code>open(..., "wb")</code> 没抛异常，而是把文件重新读回来检查首字节。这就是 HARNESS.md 第 5 阶段的缩小版。真要接进 agent，再加一层 <code>--json</code> 固定输出、把状态文件写入放进独占锁、给每个变更命令配一个撤销命令，骨架就够了。</p>
+
+<p>这套东西的护城河不是「能用模型生成 CLI」—— 那部分换个模型就能抄。护城河是第 5 阶段那份不许降级的测试清单：导出失败就报错，没装软件就失败，别拿退出码 0 糊弄人。模型换三代，这条规矩还是得有人写。</p>
+''',
+    'related': [
+        ("Agent Skills 标准落地：SKILL.md 的两个硬限制", "blog/agent-skills-standard-2026/"),
+        ("Claude Code 技能包拆包审计：83 个 SKILL.md 的账", "blog/claude-bughunter-skill-bundle-audit-2026/"),
+        ("agent-browser 屠榜：浏览器 Agent 的另一条路", "blog/agent-browser-ai-2026/"),
+    ],
+},
+
+{
     'slug': "riemann-hypothesis-lean-proof-audit-2026",
     'category': "tooling",
     'date': "2026-11-21",

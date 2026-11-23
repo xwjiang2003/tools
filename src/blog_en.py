@@ -6,6 +6,265 @@
 """
 
 ARTICLES_EN = {
+'openai-perplexity-pretraining-metric-2026': {
+    'tags': ["OpenAI", "perplexity", "pretraining", "model evaluation"],
+    'title': "OpenAI publishes its pretraining metric for the first time: log-perplexity from 0.99 to 0.76, and what it cannot see | DevTools Blog",
+    'description': "On 2026-11-22 OpenAI disclosed its internal pretraining progress metric: log-perplexity. GPT-3.5 sat near 0.99, GPT-4 near 0.91, the math breakthrough model near 0.76, and the next window is 0.68 to 0.7. This post converts cross entropy into bits per token, explains why changing the held-out code snapshot makes the numbers incomparable and why chain of thought does not move them at all, then ships two runnable scripts: a conversion table and a CE gate pinned to a dataset fingerprint.",
+    'keywords': "OpenAI pretraining metric, perplexity explained, log-perplexity, cross entropy loss, what is perplexity, how to compute perplexity from logits, perplexity tutorial, pretraining curve, GPT-3.5 0.99, GPT-4 0.91, 0.76 threshold, math breakthrough model, AI design contributions, common limits, CoT monitor, chain of thought does not reduce perplexity, held-out dataset snapshot, dataset fingerprint, LLM evaluation gate, nats to bits, bits per token, entropy compression estimate, how to evaluate base models, model card metrics",
+    'h1': "OpenAI publishes its pretraining metric for the first time: log-perplexity from 0.99 to 0.76, and what it cannot see",
+    'summary': "A metric you can read across a decade of models is also blind to reasoning, to answers getting shorter, and to someone swapping the evaluation set. OpenAI disclosed all three blind spots in the footnotes.",
+    'body': '''<p>On November 22, 2026, OpenAI published a short piece laying out the metric it uses internally to track pretraining: <strong>log-perplexity</strong>, the cross entropy loss on a held-out set. The coordinates are explicit. GPT-3.5 sat near 0.99, GPT-4 near 0.91, current models are below 0.8, a model that started solving open math problems landed around 0.76, and the next window is sketched at 0.68 to 0.7. The post gathered 513 points and 353 comments on Hacker News that day. Chinese coverage followed on November 23, with one outlet running the headline that OpenAI had published its core pretraining metric and another picking up the other half: recent models already make meaningful design contributions.</p>
+
+<p>Worth reading closely. Not a checklist you can paste into your own model card. OpenAI is more candid about the reasons than most of the retellings.</p>
+
+<h2>How far apart are 0.99 and 0.76</h2>
+
+<p>The logged value is not perplexity itself. Cross entropy is measured in nats per token, perplexity is e to the power of CE, and bits per token requires dividing by ln 2. Substituting the four coordinates OpenAI gave:</p>
+
+<pre><code>import math
+
+ROWS = [
+    ("GPT-3.5", 0.99),
+    ("GPT-4", 0.91),
+    ("math breakthrough", 0.76),
+    ("next window", 0.69),
+]
+
+print("model              log-PPL   PPL     bits/tok   KB per 1M tokens")
+for name, ce in ROWS:
+    ppl = math.exp(ce)
+    bits = ce / math.log(2)
+    kb = bits * 1000000 / 8 / 1000
+    print(f"{name:18s} {ce:7.2f}  {ppl:6.3f}  {bits:8.3f}  {kb:8.1f}")
+
+delta_bits = (0.99 - 0.76) / math.log(2)
+saved_kb = delta_bits * 1000000 / 8 / 1000
+print(f"0.99 to 0.76: {delta_bits:.3f} bits/token, {saved_kb:.1f} KB per 1M tokens")</code></pre>
+
+<pre><code>model              log-PPL   PPL     bits/tok   KB per 1M tokens
+GPT-3.5               0.99   2.691     1.428     178.5
+GPT-4                 0.91   2.484     1.313     164.1
+math breakthrough     0.76   2.138     1.096     137.1
+next window           0.69   1.994     0.995     124.4
+0.99 to 0.76: 0.332 bits/token, 41.5 KB per 1M tokens</code></pre>
+
+<p>From 0.99 to 0.76 costs 0.332 fewer bits per token, about 41.5 KB per million tokens. That is an entropy-level estimate, not the size of a checkpoint and not your API bill. It only says the information needed to predict the next token is shrinking steadily. The 0.69 row is just 0.07 below 0.76, worth roughly 13 KB more per million tokens. If capability really jumps in the 0.68 to 0.7 window, it is plainly not bought with those saved bits.</p>
+
+<h2>The cleaner the metric, the louder the blind spots</h2>
+
+<p>According to OpenAI (2026-11-22), since GPT-3.5 the primary held-out sets come from a fixed snapshot of the company code base. Code was not chosen at random. The authors concede that GPT-2 and GPT-3 training data make code prediction a poor proxy for general capability, but for the progress they care about today, code is the closest observable surface. The cost: someone else's 0.76 has almost nothing to do with yours. Different evaluation sets, different training mixtures. The line about cross-lab comparability in the post is not politeness.</p>
+
+<p>Three further limits are stated outright.</p>
+
+<ul>
+<li><strong>It does not correspond to any task people care about.</strong> Perplexity is a leading indicator that new capabilities may appear, not an evaluation of a capability.</li>
+<li><strong>Chain of thought does not lower perplexity.</strong> The exact line: chain-of-thought reasoning does not reduce perplexity achieved by the model, even though capability increases drastically. Most of the reasoning-side progress that changed user experience over the last two years is flat on this curve.</li>
+<li><strong>The floor is unknown.</strong> Loss cannot reach zero, but the intrinsic entropy of the data has not been measured. As the floor approaches, the number moves less; the authors warn that smaller gains may map to larger jumps in intelligence.</li>
+</ul>
+
+<p>Set that beside another story from the same day. The Decoder (2026-11-22) reported that GPT-6.2 Astra answers shrank from 352 words to 210, about 40 percent shorter, while a relative score for admitting uncertainty fell from 96 to 24. Answer length, willingness to admit uncertainty, whether the model stops to ask permission: all of these are argued over by developers every week, and all of them are invisible in a cross-entropy curve. Treat one scalar as total progress and you discard all of it as noise.</p>
+
+<h2>Take the metric back: pin the dataset first</h2>
+
+<p>To use this kind of metric in your own evaluation, the first step is not installing a library. It is fingerprinting the held-out set. The snippet below uses only the standard library: change the corpus and the fingerprint changes, so the comparison is refused. Without that, a 0.02 improvement might just mean someone dropped a new file into the held-out directory.</p>
+
+<pre><code>import hashlib
+import json
+import os
+
+CORPUS = "def cross_entropy(logp):" + chr(10) + "    return -sum(logp) / len(logp)"
+
+SNAPSHOT = hashlib.sha256(CORPUS.encode("utf-8")).hexdigest()[:16]
+PINNED = "a6330d916bcbfdca"
+
+EVIDENCE = [
+    {"token": "def", "logp": -0.61},
+    {"token": "cross_entropy", "logp": -1.02},
+    {"token": "return", "logp": -0.75},
+    {"token": "sum", "logp": -0.66},
+]
+
+print("snapshot:", SNAPSHOT)
+if SNAPSHOT != PINNED:
+    print("REFUSE: held-out snapshot changed, refusing to compare CE across runs")
+else:
+    ce = -sum(row["logp"] for row in EVIDENCE) / len(EVIDENCE)
+    print("gate: PASS, dataset pinned")
+    print("tokens:", len(EVIDENCE), "mean CE:", round(ce, 4), "PPL:", round(2.718281828 ** ce, 4))</code></pre>
+
+<pre><code>snapshot: a6330d916bcbfdca
+gate: PASS, dataset pinned
+tokens: 4 mean CE: 0.76 PPL: 2.1383</code></pre>
+
+<p>Change logp to log_probs inside CORPUS and the fingerprint becomes 3193d2d8156f9986, and the output is REFUSE. In a real setup, write per-token log probabilities from the inference service to JSONL, hash the held-out corpus separately, and send both numbers to CI. Storing a single average makes reproduction impossible.</p>
+
+<p>As for the proposed common limits, in which developers agree not to cross metric thresholds until behaviour monitoring reaches a concrete milestone such as a successor to CoT monitors, the intent is sound and the enforceability is not yet. A scalar that cannot be compared across labs and cannot see reasoning is an early warning signal, not a gate. What you can do today is pin your own held-out set, keep token-level log probabilities, and evaluate reasoning separately. The curve is the curve. Acceptance testing is something else.</p>
+''',
+    'related': [
+        ("Qwen4-Max cost per task: splitting a 58 percent drop into two factors", "blog/qwen4-max-cost-per-task-2026/"),
+        ("Gemini 4 Neon ledger: how cache hit rate rewrites the unit price", "blog/gemini-4-neon-cost-per-task-2026/"),
+        ("Recursive self-improvement: the verifier is the only thing still worth money", "blog/rsi-self-improvement-loop-2026/"),
+    ],
+},
+
+'cli-anything-agent-native-2026': {
+    'tags': ["CLI-Anything", "agent native", "CLI tooling", "AI agents"],
+    'title': "Inside CLI-Anything: 69 GUI apps turned into agent-native CLIs, and 2,464 tests behind the claim | DevTools Blog",
+    'description': "CLI-Anything ranked third on GitHub Trending on 2026-11-23, gaining 783 stars in a day. Its README badge says 2,461 tests passing while the summary table says 2,464; the tarball actually contains 69 agent harnesses, 151 SKILL.md files, and 164 test files. This teardown walks the seven-phase HARNESS.md pipeline, explains why calling the real software and failing loudly on export is the whole point, and ships a runnable repo audit plus a minimal agent-native CLI skeleton.",
+    'keywords': "CLI-Anything, agent-native CLI, GUI agent, computer use agent, how to turn a GUI app into a CLI, cli-hub tutorial, cli-hub install, HARNESS.md, SKILL.md, agent skills, how to build an agent-native CLI, deterministic JSON output, Click REPL, session state, 69 harnesses, 2464 tests, HKUDS, arXiv 2606.03854, pixel coordinates brittle, real backend verification, magic bytes check, defusedxml, LibreOffice headless, agent tool design, CLI for AI agents",
+    'h1': "Inside CLI-Anything: 69 GUI apps turned into agent-native CLIs, and 2,464 tests behind the claim",
+    'summary': "The README badge and the summary table disagree by three tests, while the real harness count is nearly four times the advertised number. The mismatch is not the story. The test rule that says a failed export must fail the run is.",
+    'body': '''<p>On November 23, 2026, HKUDS/CLI-Anything was third on GitHub Trending: 63,184 stars, 783 added that day. Its README carries badges for 18 apps and 2,461 passing tests; scroll to the test summary and the total reads 2,464. Pulling the 48 MB tarball and counting the 64 MB tree gives 69 directories with an <code>agent-harness</code>, 7 HARNESS.md files, 151 SKILL.md files, and 164 <code>test_*.py</code> files.</p>
+
+<p>Documentation and code have stopped describing the same project. That is not a scandal, it is what happens when an agent project moves fast. It is also a useful way in.</p>
+
+<h2>What it rejects is pixel coordinates, not the GUI</h2>
+
+<p>The technical report, arXiv:2606.03854, submitted June 2, 2026 by Yuhao Yang, Tianyu Fan and Chao Huang, states the position bluntly. Mainstream computer use agents read screenshots, locate UI elements, compute coordinates, and click. That loop is misaligned with what agents are good at: pixel interactions are brittle, timing dependencies are hard to control, and a moved button invalidates the coordinate. Agents end up imitating human perceptual limits instead of using structured processing and programmatic control.</p>
+
+<p>CLI-Anything proposes changing the interface instead: wrap existing software in a command-line harness with structured commands, explicit state and deterministic feedback, so the lossy visual-to-computational translation never happens. CLI-Hub is the distribution layer for that idea: <code>pip install cli-anything-hub</code>, then <code>cli-hub install &lt;name&gt;</code>.</p>
+
+<p>It sounds like an old Unix argument dressed up for agents. Then you read the 36 KB HARNESS.md and realize it has very little to do with writing wrappers.</p>
+
+<h2>Seven phases, and phases three and five carry the weight</h2>
+
+<table>
+<thead><tr><th>Phase</th><th>Deliverable</th><th>What a machine can actually check</th></tr></thead>
+<tbody>
+<tr><td>1 Codebase analysis</td><td>Backend engine, action to API map, data model inventory</td><td>Whether native CLIs such as melt, ffmpeg or convert were found as building blocks</td></tr>
+<tr><td>2 Architecture</td><td>Subcommands plus stateful REPL, session model, --json</td><td>Session serializes to JSON; command groups cover undo and redo</td></tr>
+<tr><td>3 Implementation</td><td>Real backend module, session lock, ReplSkin</td><td>shutil.which finds the real program, subprocess.run calls it, session JSON saved under an exclusive lock with r+ open and truncate inside the lock</td></tr>
+<tr><td>4 Test plan</td><td>TEST.md written before test code</td><td>Inventory precedes implementation; E2E scenarios say which output property is checked</td></tr>
+<tr><td>5 Tests</td><td>Unit, native E2E, real backend E2E, subprocess CLI</td><td>Must call the real software; missing software fails rather than skips; check magic bytes, ZIP structure, pixels, RMS, allow plus or minus one frame at non-integer frame rates</td></tr>
+<tr><td>6 Documentation</td><td>README and TEST.md filled in</td><td>Commands aligned with measured output</td></tr>
+<tr><td>6.5 Skill generation</td><td>Canonical root SKILL.md plus packaged copy</td><td>YAML frontmatter generated from Click decorators, setup.py and README</td></tr>
+<tr><td>7 Publish</td><td>PyPI package <code>cli-anything-&lt;software&gt;</code></td><td>Installed command lands on PATH so agents find it with which</td></tr>
+</tbody>
+</table>
+
+<p>Phase five contains the spine of the project: no graceful degradation, if the software is not installed the tests fail, not skip. Generating a CLI is not rare. What is rare is a rule that says exporting a PDF only counts when the file header reads <code>%PDF-</code>, that a rendered video needs frame sampling and brightness comparison, and that an exit code of zero proves nothing.</p>
+
+<h2>Counting the repository</h2>
+
+<pre><code>import os
+
+root = "CLI-Anything-main"
+apps = []
+for name in os.listdir(root):
+    if os.path.isdir(os.path.join(root, name, "agent-harness")):
+        apps.append(name)
+
+harness_docs = 0
+skills = 0
+tests = 0
+for dirpath, dirnames, filenames in os.walk(root):
+    for filename in filenames:
+        if filename == "HARNESS.md":
+            harness_docs += 1
+        if filename == "SKILL.md":
+            skills += 1
+        if filename.startswith("test_") and filename.endswith(".py"):
+            tests += 1
+
+readme = open(os.path.join(root, "README.md"), encoding="utf-8").read()
+badge = "Tests-2%2C461_Passing" in readme
+summary = "TOTAL        2,464 passed" in readme
+
+print("apps with agent-harness:", len(apps))
+print("HARNESS.md files:", harness_docs)
+print("SKILL.md files:", skills)
+print("test_*.py files:", tests)
+print("README badge says 2,461:", badge)
+print("README summary says 2,464:", summary)</code></pre>
+
+<pre><code>apps with agent-harness: 69
+HARNESS.md files: 7
+SKILL.md files: 151
+test_*.py files: 164
+README badge says 2,461: True
+README summary says 2,464: True</code></pre>
+
+<p>Sixty-nine against eighteen: the badge counts apps with full demos, not harnesses. One hundred fifty-one SKILL.md files against 69 apps: phase 6.5 writes both a canonical root file and a packaged compatibility copy, plus some independently registered CLIs. One hundred sixty-four test files against 2,464 passing tests: files versus cases, not a contradiction.</p>
+
+<p>The numbers worth pausing on are the three different test totals, and the limitations the README states itself. Reliable generation needs frontier-class models such as Claude Opus 4.6, Sonnet 4.6 or GPT-5.4. The target software needs readable source, since binary-only targets degrade coverage. One <code>/cli-anything</code> run is often not enough; <code>/refine</code> is expected. The license is Apache 2.0, but the safety work arrived as individual patches: a GIMP Script-Fu path injection fix on March 14, a switch to defusedxml for XML, SVG and ODF inputs on May 19, and path traversal plus symlink hardening for Sketch token files on May 21. Those are not decoration. They are what happens when files become agent-controlled input.</p>
+
+<h2>A minimal harness, in sixty lines</h2>
+
+<p>Real harnesses use Click, prompt_toolkit and actual backends. The protocol layer is small: probe first, then mutate, persist state as JSON, emit machine-readable output, read the artifact back. This version uses only the standard library:</p>
+
+<pre><code>import argparse
+import json
+import os
+
+
+def load_state(path):
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    return {"version": 1, "values": {}}
+
+
+def save_state(path, state):
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(state, handle, sort_keys=True)
+        handle.write(chr(10))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    commands = parser.add_subparsers(dest="cmd", required=True)
+    probe = commands.add_parser("probe")
+    probe.add_argument("--state", required=True)
+    set_cmd = commands.add_parser("set")
+    set_cmd.add_argument("--state", required=True)
+    set_cmd.add_argument("--key", required=True)
+    set_cmd.add_argument("--value", required=True)
+    export = commands.add_parser("export")
+    export.add_argument("--state", required=True)
+    export.add_argument("--out", required=True)
+    args = parser.parse_args()
+
+    state = load_state(args.state)
+    if args.cmd == "probe":
+        result = {"ok": True, "commands": ["probe", "set", "export"],
+                  "state_exists": os.path.exists(args.state),
+                  "keys": sorted(state["values"].keys())}
+    elif args.cmd == "set":
+        state["values"][args.key] = args.value
+        save_state(args.state, state)
+        result = {"ok": True, "set": args.key,
+                  "keys": sorted(state["values"].keys())}
+    else:
+        payload = json.dumps(state, sort_keys=True).encode("utf-8")
+        with open(args.out, "wb") as handle:
+            handle.write(payload)
+        with open(args.out, "rb") as handle:
+            head = handle.read(1)
+        result = {"ok": head == b"{", "bytes": len(payload),
+                  "out": args.out.rsplit(os.sep, 1)[-1]}
+    print(json.dumps(result, sort_keys=True))
+
+
+main()</code></pre>
+
+<pre><code>python mini_harness.py probe --state state.json
+{"commands": ["probe", "set", "export"], "keys": [], "ok": true, "state_exists": false}
+python mini_harness.py set --state state.json --key model --value qwen3.6-35b
+{"keys": ["model"], "ok": true, "set": "model"}
+python mini_harness.py export --state state.json --out artifact.json
+{"bytes": 50, "ok": true, "out": "artifact.json"}</code></pre>
+
+<p>Note the last command. It does not trust <code>open(..., "wb")</code> for not raising. It reads the file back and checks the first byte. That is phase five in miniature. To wire this into an agent, add a fixed <code>--json</code> output mode, put state writes under an exclusive lock, and pair every mutation with an undo command. The skeleton is enough.</p>
+
+<p>The moat here is not generating a CLI, which any stronger model can copy. It is that unglamorous phase-five rule: a failed export must fail the run, a missing backend must fail the run, and exit code zero is not evidence. Models will change three times. That rule will still need someone to write it down.</p>
+''',
+    'related': [
+        ("Agent Skills standard: two hard limits in SKILL.md", "blog/agent-skills-standard-2026/"),
+        ("Inside a Claude Code skill bundle: auditing 83 SKILL.md files", "blog/claude-bughunter-skill-bundle-audit-2026/"),
+        ("agent-browser tops the charts: another route for browser agents", "blog/agent-browser-ai-2026/"),
+    ],
+},
+
 'riemann-hypothesis-lean-proof-audit-2026': {
     'tags': ["Lean 4", "formal verification", "AI mathematics", "audit"],
     'title': "Two proofs of the Generalized Riemann Hypothesis in one day: 940 human pages versus 250,000 lines of Lean, and they are not the same kind of evidence | DevTools Blog",
