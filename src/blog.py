@@ -50,6 +50,199 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'github-weekly-alibaba-open-code-review-2026',
+    'category': 'tooling',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['GitHub 热门项目', '代码审查', 'AI Agent', 'Go'],
+    'title': '每周 GitHub 热门项目｜alibaba/open-code-review：56k 星的代码审查 Agent，把「别漏文件」写成了硬约束 | DevTools 博客',
+    'description': '本周 GitHub 趋势榜上 alibaba/open-code-review 周增 2638 星、总计 56261 星。它是 Go 写的 AI 代码审查 CLI，真正值钱的不是「让模型看 diff」，而是把文件筛选、规则匹配、分组覆盖、行号定位从提示词挪回确定性代码：六道门过滤、四层规则链、按 token 分包、外部定位与复核。本文拆架构、实测两条可运行示例、对比 reviewdog 与通用 Agent，并给安装、CI 接入和贡献路径（源：GitHub repo/README/config/docs、release v1.14.3、AACR-Bench，2026-11-25）。',
+    'keywords': 'alibaba open-code-review, open code review 教程, ocr review 命令, AI 代码审查工具对比, 如何避免 AI 代码审查漏文件, deterministic pipeline code review, 六道门 文件过滤, include 不是白名单, ocr rules check 用法, ocr scan 用法, delegation mode 无 API key, MCP server code review, GitHub Action 代码审查, reviewdog 对比, CodeRabbit 对比, 代码审查 precision recall 取舍, AACR-Bench 数据集, Git 2.41 要求, api_key_cmd 密钥管理, Go 代码审查工具, 每周 GitHub 热门项目, open code review benchmark 1/9 tokens, ocr config provider, 自定义规则 JSON, merge_system_rule, 代码审查覆盖率 gate, 企业代码审查 agent, AI code review line drift',
+    'h1': '每周 GitHub 热门项目｜alibaba/open-code-review：56k 星的代码审查 Agent，把「别漏文件」写成了硬约束',
+    'summary': '本周趋势榜里这个 Go 项目周增 2638 星。它的卖点不是一个更会聊天的模型，而是六道文件门、四层规则链和按 token 分包——把审查流程里不能出错的部分，从提示词交还给代码。',
+    'body': '''<p>56,261 星，本周 +2,638，Go 写的 CLI，Apache 2.0。<code>alibaba/open-code-review</code>（下文简称 OCR）在 2026-11-25 的 GitHub 周榜上排在第 5 位附近。它想解决的不是「让模型读懂 diff」——那件事通用 Agent 早就能做——而是更脏的三件：大改动漏审、评论行号漂移、同一份 PR 两次审出两种结果。</p>
+
+<p>README 把内部履历写得很直白：阿里巴巴集团内部官方 AI 代码审查助手，两年间服务数万名开发者、发现数百万代码缺陷，之后才孵化成开源项目。这些数字来自项目自述，本文没有独立复核；能复核的是仓库状态和代码结构。</p>
+
+<h2>纯语言驱动的审查，坏在三个地方</h2>
+
+<p>项目给通用 Agent 加 Skill 做审查列了三条毛病（据 README，2026-11-25）：</p>
+
+<ul>
+<li><strong>覆盖不全</strong>：改动一大，Agent 会「抄近路」，挑几个文件看，剩下的跳过。</li>
+<li><strong>位置漂移</strong>：说的问题对，但行号或文件引用对不上实际代码。</li>
+<li><strong>质量不稳</strong>：自然语言写的 Skill 难调试，提示词稍微一改，审查结果就抖。</li>
+</ul>
+
+<p>它把根因归到一点：纯语言驱动的架构对审查流程没有硬约束。于是整个设计被劈成两半——<strong>确定性工程</strong>管「不许出错」的部分，<strong>Agent</strong>只管需要动态判断的部分。前者包括精确选文件、把相关文件打包成一个子任务（比如 <code>message_en.properties</code> 和 <code>message_zh.properties</code> 一起审）、按文件特征匹配规则、以及把评论定位和评论复核做成独立模块；后者包括场景调优的提示词和从生产环境工具调用轨迹里筛出来的工具集。</p>
+
+<p>这个分工是整篇文章的重点。市面上多数「AI 审查」产品只是把 diff 塞给模型再让它说三句话；OCR 的赌注是：<em>模型负责判断，工程负责流程</em>。</p>
+
+<h2>六道门：先决定审谁，再决定按什么规则审</h2>
+
+<p>每个进入 diff 的文件先过六道门：binary → secret_exclude → user_exclude → user_include → unsupported_ext → default_path。敏感路径（<code>.ssh/</code>、<code>id_rsa</code>、<code>.env</code> 及变体、<code>.npmrc</code> 等）被排除，且 <code>include</code> 不能覆盖；用户 <code>exclude</code> 优先级高于 <code>include</code>；命中 <code>include</code> 的文件会跳过扩展名白名单和默认路径排除，但没命中 <code>include</code> 的文件仍会继续走后面两道门。文档里那句原话值得抄下来：<code>include is not a whitelist</code>。</p>
+
+<p>规则解析是另一条链：<code>--rule</code> → 项目 <code>.opencodereview/rule.json</code> → 全局 <code>~/.opencodereview/rule.json</code> → 内嵌 <code>system_rules.json</code>，第一个匹配的文件路径获胜。一个容易踩的坑是 <code>rules[].path</code> 只决定「用哪条规则文本」，不决定「这个文件要不要审」；想保留内置语言规则，得显式写 <code>merge_system_rule: true</code>，否则用户规则会整条替换掉系统规则。全部匹配大小写不敏感，拿不准就跑 <code>ocr rules check &lt;path&gt;</code> 看最终命中。</p>
+
+<p>下面是一个只依赖标准库的教学模型，把六道门的顺序复现出来。它不是 OCR 源码，但顺序和优先级按官方文档实现：</p>
+
+<pre><code>from fnmatch import fnmatch
+
+SECRET = (".ssh&#42;", "id_rsa", ".env", ".env.*", ".npmrc", ".pypirc")
+DEFAULT_EXCLUDE = ("*_test.go", "*.test.js", "testdata&#42;", "fixtures&#42;", "node_modules&#42;", "vendor&#42;", "dist&#42;", "*.pb.go", "*.snap")
+ALLOWED_EXT = (".go", ".java", ".py", ".ts", ".tsx", ".js", ".json", ".yaml", ".yml", ".sql", ".xml", ".md")
+
+
+def selected(path, include=(), exclude=(), binary=False):
+    low = path.lower()
+    if binary:
+        return "binary"
+    if any(fnmatch(low, p) for p in SECRET) and not low.endswith((".example", ".sample", ".template")):
+        return "secret_exclude"
+    if any(fnmatch(low, p) for p in exclude):
+        return "user_exclude"
+    if any(fnmatch(low, p) for p in include):
+        return "keep(include)"
+    name = low.rsplit("/", 1)[-1]
+    ext = "." + name.rsplit(".", 1)[-1] if "." in name else ""
+    if ext not in ALLOWED_EXT:
+        return "unsupported_ext"
+    if any(fnmatch(low, p) for p in DEFAULT_EXCLUDE):
+        return "default_path"
+    return "review"
+
+
+CASES = [
+    ("internal/agent/selection.go", {}, "review"),
+    ("internal/agent/selection_test.go", {}, "default_path"),
+    (".ssh/config", {}, "secret_exclude"),
+    ("vendor/github.com/x/y.go", {}, "default_path"),
+    ("assets/logo.png", {}, "unsupported_ext"),
+    ("docs/notes.md", {"include": ["docs&#42;.md"]}, "keep(include)"),
+    ("src/main.py", {"exclude": ["src/main.py"]}, "user_exclude"),
+    ("pkg/blob.dat", {"binary": True}, "binary"),
+]
+
+for path, options, expect in CASES:
+    got = selected(path, **options)
+    print(path, " -> ", got, "  expect=", expect)</code></pre>
+
+<pre><code>internal/agent/selection.go  ->  review   expect= review
+internal/agent/selection_test.go  ->  default_path   expect= default_path
+.ssh/config  ->  secret_exclude   expect= secret_exclude
+vendor/github.com/x/y.go  ->  default_path   expect= default_path
+assets/logo.png  ->  unsupported_ext   expect= unsupported_ext
+docs/notes.md  ->  keep(include)   expect= keep(include)
+src/main.py  ->  user_exclude   expect= user_exclude
+pkg/blob.dat  ->  binary   expect= binary</code></pre>
+
+<p>注意 <code>docs/notes.md</code>：Markdown 不在扩展名白名单里，但显式 <code>include</code> 把它救回来了；而 <code>.ssh/config</code> 无论怎么 include 都出不来。这两条正好解释了为什么「把规则写进提示词」和「把规则写进代码」不是一回事。</p>
+
+<h2>大 diff 怎么拆：分包、覆盖率和 token 预算</h2>
+
+<p>README 说智能文件打包会把相关文件归入同一子任务，每个子任务用隔离上下文跑，天然支持并发，在超大改动上仍然稳定。GitHub Action 里能直接看到这套工程化的边角：<code>max_tokens_budget</code> 在每轮 LLM 调用前检查，超预算的组还有最后一轮提交发现，之后不再派新组；<code>review_concurrency</code> 控并发；<code>effort</code> 用 low/medium/high 对应 1/2/3 轮；<code>checkpoint_range</code> 只审上次记录之后的提交区间，且 base 变了、配置变了、git 证明不了祖先关系时一律回退全量审查。</p>
+
+<p>安全侧也有硬约束。项目的安全论证文件写明：只调 <code>git</code> 且子命令硬编码、用 <code>--end-of-options</code> 防参数注入；模型给的文件路径在解析符号链接前后都过 <code>pathutil.WithinBase()</code>；评论结构走 JSON Schema 校验，行号按真实 diff 范围做边界检查；TLS 1.2+ 且不关证书验证。这套东西和「提示词里写一句请准确标行号」完全不在一个量级。</p>
+
+<p>第二个示例把分包和覆盖检查抽象出来，顺手算一下 medium 档（两轮）的 token 量：</p>
+
+<pre><code>FILES = [
+    ("internal/agent/selection.go", 42000),
+    ("internal/agent/rules.go", 38000),
+    ("internal/llm/providers.go", 91000),
+    ("src/api/user.ts", 26000),
+    ("docs/config.md", 12000),
+]
+
+MAX_TOKENS = 100000
+EFFORT_ROUNDS = {"low": 1, "medium": 2, "high": 3}
+
+groups = []
+current = []
+used = 0
+for path, tokens in FILES:
+    if current and used + tokens > MAX_TOKENS:
+        groups.append((current, used))
+        current = []
+        used = 0
+    current.append(path)
+    used += tokens
+if current:
+    groups.append((current, used))
+
+covered = sum(len(paths) for paths, _ in groups)
+print("files:", len(FILES), "groups:", len(groups), "covered:", covered)
+for i, (paths, tokens) in enumerate(groups, 1):
+    print("group", i, "files=", len(paths), "tokens=", tokens, paths[0])
+
+rounds = EFFORT_ROUNDS["medium"]
+budget = sum(tokens for _, tokens in groups)
+print("rounds(medium):", rounds, "estimated tokens:", budget * rounds)
+print("coverage gate:", "PASS" if covered == len(FILES) else "FAIL")</code></pre>
+
+<pre><code>files: 5 groups: 3 covered: 5
+group 1 files= 2 tokens= 80000 internal/agent/selection.go
+group 2 files= 1 tokens= 91000 internal/llm/providers.go
+group 3 files= 2 tokens= 38000 src/api/user.ts
+rounds(medium): 2 estimated tokens: 418000
+coverage gate: PASS</code></pre>
+
+<p>同样是教学模型，不是 OCR 的真实分包算法。它要说明的是：覆盖率可以当硬门禁来算，成本也能在派活之前估出来。5 个文件分 3 组、两轮共 41.8 万 token——如果你的预算只有 10 万，该砍的是组数或文件数，不是把 <code>effort</code> 从 high 悄悄改成 low 然后假装审完了。</p>
+
+<h2>怎么用：两条路径，别把订阅当 API key</h2>
+
+<p>环境要求很硬：Git 2.41 以上，Windows / macOS / Linux 都支持。安装与配置按官方给出的命令走：</p>
+
+<ul>
+<li>CLI：<code>npm install -g @alibaba-group/open-code-review</code>，之后全局可用 <code>ocr</code>；也可走安装脚本、GitHub Release 二进制或源码构建。</li>
+<li>原生模式：<code>ocr config provider</code> 选供应商、<code>ocr config model</code> 选模型、<code>ocr llm test</code> 验连通，然后 <code>ocr review</code>；<code>ocr review --preview</code> 可以让它先输出将要审查的文件范围。</li>
+<li>委派模式：<code>npx skills add alibaba/open-code-review</code>，用 <code>open-code-review-delegate</code> 技能，让宿主 Agent（Claude Code / Codex / Cursor / Kimi Code 等）跑审查；不需要给 OCR 单独配 API key，但宿主自己的订阅、额度和费用照旧。</li>
+<li>整库审计：<code>ocr scan</code> 审整个文件，不依赖有意义的 diff；规则调试用 <code>ocr rules check &lt;path&gt;</code>。</li>
+<li>CI：仓库根目录自带 <code>action.yml</code>，必填输入是 <code>llm_url</code>、<code>llm_auth_token</code>、<code>llm_model</code>、<code>llm_use_anthropic</code>；输出包括 inline 评论数、跳过数、路由到摘要的条数、checkpoint 区间等。</li>
+</ul>
+
+<p>配置上有两个容易吃亏的细节。第一，<code>chatgpt</code> provider 没有 API key 环境变量，走 <code>ocr auth login</code>；自定义 provider 必须显式给 <code>url</code> 和 <code>protocol</code>，并且模型要支持 native tool calling，本地 Ollama 也一样。第二，<code>api_key_cmd</code> 会从密钥管理器取 key，但静态 <code>api_key</code> 优先级更高、会让它被忽略；<code>~/.opencodereview/config.json</code> 因为能执行命令被视为可信输入，OCR 以 0600 权限写入，别把它塞进仓库。</p>
+
+<h2>放回同类工具里看</h2>
+
+<table>
+  <tr><th>方案</th><th>谁决定审哪些文件</th><th>行号与覆盖</th><th>代价 / 门槛</th></tr>
+  <tr><td>通用 Agent + 审查 Skill</td><td>模型自己读 diff 后挑</td><td>依赖提示词约束，README 指出会漂移、会漏</td><td>接入最快，结果随模型和提示词变化</td></tr>
+  <tr><td>reviewdog + linters</td><td>外部 linter 报，reviewdog 按 diff 过滤</td><td>只报改动行的诊断，行级稳定</td><td>MIT，需自备 linter；不做语义理解</td></tr>
+  <tr><td>OCR</td><td>Go 代码的六道门 + 四层规则链</td><td>独立定位/复核模块，行号按 diff 范围校验</td><td>CLI + Git 2.41 + 模型端点；可切委派模式省掉 key</td></tr>
+</table>
+
+<p>benchmark 要单独说清楚。README 给出的口径是：50 个流行开源仓库、200 个真实 PR、10 种语言、80 多名资深工程师交叉验证、1,505 条标注缺陷（AACR-Bench）；在同等底模下，相比通用 Agent（Claude Code），OCR 的 Precision 与 F1 明显更高、token 约为九分之一、耗时更短，但 <strong>Recall 更低</strong>，官方明说这是「优先精确、压低噪音」的取舍。这组数字出自项目自述，本文没有复跑；引用时最好把这句限制一起带上，否则很容易被读成「全面碾压」。</p>
+
+<p>还有一条边界值得写进选型清单：ROADMAP 明确不做「无人审批的自动修复」、不做通用编码助手、不自带模型托管。它需要的是审查，不是替你改完。</p>
+
+<h2>近期更新与贡献入口</h2>
+
+<p>发布节奏很密：v1.14.3（11-24）、v1.14.2（11-23）、v1.14.1（11-22）、v1.14.0（11-21）、v1.13.13（11-19）。截至 11-25 的最近提交里，能看到 <code>fix(tool): preserve binary matches in code_search</code>、<code>feat(allowlist): exclude C and C++ test and benchmark paths</code>、敏感路径门控的架构文档、越南语 i18n，以及「按固定快照审 GitHub PR」和「重试报告在会话结束时落盘」。仓库当前 4,641 forks、342 个 open issues，162 个 watcher；讨论区在 Discussions。</p>
+
+<p>ROADMAP 里 H2 2026 还列着实验性 ACP v1 stdio 适配器、JetBrains 插件、Delegate Mode 和更高召回的 Ultra Mode，H1 2027 是领域长期记忆。这里有一处文档时差：ROADMAP 仍把 Delegate Mode 写在计划里，README 已经把它当成可用功能介绍；以 README 和 release 为准更稳妥。</p>
+
+<p>想贡献的话，入口是 Issues 与 Discussions；<a href="https://github.com/alibaba/open-code-review/issues/470">#470「expand supported file types — language experts wanted」</a>挂着 <code>good first issue</code> 和 <code>help wanted</code>，评论 34 条，适合从规则/语言支持切入。<code>AGENTS.md</code> 的规矩比较严：issue 和 PR 里必须声明用了 AI 及具体工具模型、提交消息用英文、LF 换行、源文件保持 ASCII、改 README 要同步 7 个语种版本；提交前还得跑 <code>ocr review --audience agent --background "..."</code> 自审，<code>make check</code> 与 <code>make test</code> 是常规门禁，覆盖率阈值 90%。</p>
+
+<p>把这几件事连起来看，OCR 的价值不在「AI 审查」四个字，而在于它把审查流水线拆成了可验证的工程件：进了哪些文件、用了哪条规则、分了几组、行号怎么来的、超预算怎么办。如果你的 PR 审查现在还是一段提示词，值得先把六道门和覆盖率门禁抄走——哪怕不用它的模型。</p>
+
+<h2>资料来源</h2>
+<ul>
+<li><a href="https://github.com/alibaba/open-code-review">GitHub 仓库与 README</a>（2026-11-25 读取）</li>
+<li><a href="https://github.com/alibaba/open-code-review/releases">Releases：v1.14.3 等</a>（2026-11-19 至 11-24）</li>
+<li><a href="https://github.com/alibaba/open-code-review/commits/main">提交历史</a>（截至 2026-11-25）</li>
+<li><a href="https://open-codereview.ai/docs/review-rules">Review Rules 文档</a>：六道门与四层规则链</li>
+<li><a href="https://open-codereview.ai/docs/configuration">Configuration 文档</a>：provider、密钥与超时</li>
+<li><a href="https://raw.githubusercontent.com/alibaba/open-code-review/main/action.yml">action.yml</a>：GitHub Action 输入与输出</li>
+<li><a href="https://github.com/alibaba/open-code-review/blob/main/ASSURANCE_CASE.md">Security Assurance Case</a>：威胁模型与缓解措施</li>
+<li><a href="https://github.com/alibaba/open-code-review/blob/main/ROADMAP.md">ROADMAP</a> 与 <a href="https://github.com/alibaba/open-code-review/blob/main/AGENTS.md">AGENTS.md</a></li>
+<li><a href="https://huggingface.co/datasets/Alibaba-Aone/aacr-bench">AACR-Bench 数据集</a></li>
+<li><a href="https://github.com/reviewdog/reviewdog">reviewdog</a>：同类确定性审查工具</li>
+<li><a href="https://github.com/trending?since=weekly">GitHub Trending（每周）</a></li>
+</ul>''',
+    'related': [('Agent Skills 标准：一份能被任意代理加载的技能该怎么写', 'blog/agent-skills-standard-2026/'), ('CLI-Anything：让 GUI 软件变成 agent 原生 CLI', 'blog/cli-anything-agent-native-2026/'), ('AI 代码审计的漏斗：37966 个候选最后修了多少', 'blog/ai-code-audit-triage-2026/')],
+},
+{
     'slug': 'pretraining-poisoning-cli-agent-backdoor-2026',
     'category': 'security',
     'date': '2026-11-25',

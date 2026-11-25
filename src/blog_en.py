@@ -6,6 +6,198 @@
 """
 
 ARTICLES_EN = {
+'github-weekly-alibaba-open-code-review-2026': {
+    'category': 'tooling',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['GitHub weekly', 'code review', 'AI agent', 'Go'],
+    'title': 'GitHub Weekly: alibaba open-code-review, a 56k-star review agent that turns no-missed-files into a hard constraint | DevTools Blog',
+    'description': 'alibaba/open-code-review gained 2638 stars this week and now has 56261. It is a Go CLI for AI code review, but the interesting part is not the model. File selection, rule resolution, token-aware bundling and line anchoring live in deterministic code: six selection gates, a four-level rule chain, isolated subagents and an external positioning module. This post walks the architecture, runs two reproducible examples, compares it with reviewdog and a general agent, and covers installation, CI, releases and how to contribute (sources: repo README, docs, action.yml, release v1.14.3, AACR-Bench, 2026-11-25).',
+    'keywords': 'alibaba open-code-review, open code review tutorial, ocr review command, AI code review tool comparison, how to stop an AI reviewer from missing files, deterministic pipeline code review, six file gates, include is not a whitelist, ocr rules check, ocr scan usage, delegation mode no API key, MCP server code review, GitHub Action code review, reviewdog comparison, CodeRabbit comparison, code review precision recall tradeoff, AACR-Bench dataset, Git 2.41 requirement, api_key_cmd secret management, Go code review tool, GitHub weekly trending project, open code review benchmark one ninth tokens, ocr config provider, custom rule JSON, merge_system_rule, review coverage gate, enterprise code review agent, AI code review line drift',
+    'h1': 'GitHub Weekly: alibaba open-code-review, a 56k-star review agent that turns no-missed-files into a hard constraint',
+    'summary': 'This week the Go project alibaba/open-code-review added 2638 stars. Its pitch is not a better chat model. It is six file gates, a four-level rule chain and token-aware bundling that move the review pipeline from prompts back into code.',
+    'body': '''<p>56,261 stars, plus 2,638 this week, a Go CLI under Apache 2.0. On the November 25, 2026 GitHub weekly chart, alibaba/open-code-review, OCR for short, sits around fifth place. It is not trying to make a model read a diff. General agents already do that. It is chasing three uglier problems: missing files on large changesets, review comments anchored to the wrong line, and the same PR producing different results twice.</p>
+
+<p>The README states the internal history plainly: Alibaba Groups official AI code review assistant, used by tens of thousands of developers over two years and credited with millions of defects found, then incubated as an open source project. Those numbers are self reported and were not independently verified here. Repository state and code structure can be checked.</p>
+
+<h2>Where a language driven reviewer breaks</h2>
+
+<p>The project lists three failure modes for a general agent plus a review skill, from the README dated 2026-11-25:</p>
+
+<ul>
+<li><strong>Incomplete coverage.</strong> On large changesets the agent cuts corners, reviews a few files and skips the rest.</li>
+<li><strong>Position drift.</strong> The finding is real, but the line number or file reference no longer points at the code.</li>
+<li><strong>Unstable quality.</strong> Natural language skills are hard to debug, and small prompt edits move the results.</li>
+</ul>
+
+<p>It attributes all three to one cause: a purely language driven architecture has no hard constraints on the process. The design is therefore split in two. Deterministic engineering owns the parts that must not fail: precise file selection, bundling related files such as message_en.properties and message_zh.properties into one isolated subtask, rule matching per file, and separate modules for comment positioning and reflection. The agent owns dynamic judgment: review tuned prompts and a toolset distilled from production tool call traces.</p>
+
+<p>That split is the point of this article. Most AI review products hand a diff to a model and ask for three sentences. OCR bets that the model judges while engineering owns the workflow.</p>
+
+<h2>Six gates decide what gets reviewed</h2>
+
+<p>Every file in a diff passes six gates in order: binary, secret_exclude, user_exclude, user_include, unsupported_ext, default_path. Sensitive paths such as .ssh/, id_rsa, .env variants and .npmrc are excluded and include cannot override that. A user exclude outranks include. A path matching include skips the extension allowlist and the default path exclusions, but a path that does not match include still goes through both later gates. The doc says it directly: include is not a whitelist.</p>
+
+<p>Rule resolution is a second chain: a --rule flag, the project file .opencodereview/rule.json, the global file ~/.opencodereview/rule.json, then the embedded system_rules.json. The first matching path wins. A common trap is that rules[].path only selects which rule text applies, not whether the file is reviewed. To keep the built in language rules alongside a custom rule, set merge_system_rule to true, otherwise the user rule replaces the system rule. Matching is case insensitive; ocr rules check path shows the final resolution.</p>
+
+<p>This standard library teaching model reproduces the gate order. It is not OCR source code, but the sequence and priorities follow the official docs:</p>
+
+<pre><code>from fnmatch import fnmatch
+
+SECRET = (".ssh&#42;", "id_rsa", ".env", ".env.*", ".npmrc", ".pypirc")
+DEFAULT_EXCLUDE = ("*_test.go", "*.test.js", "testdata&#42;", "fixtures&#42;", "node_modules&#42;", "vendor&#42;", "dist&#42;", "*.pb.go", "*.snap")
+ALLOWED_EXT = (".go", ".java", ".py", ".ts", ".tsx", ".js", ".json", ".yaml", ".yml", ".sql", ".xml", ".md")
+
+
+def selected(path, include=(), exclude=(), binary=False):
+    low = path.lower()
+    if binary:
+        return "binary"
+    if any(fnmatch(low, p) for p in SECRET) and not low.endswith((".example", ".sample", ".template")):
+        return "secret_exclude"
+    if any(fnmatch(low, p) for p in exclude):
+        return "user_exclude"
+    if any(fnmatch(low, p) for p in include):
+        return "keep(include)"
+    name = low.rsplit("/", 1)[-1]
+    ext = "." + name.rsplit(".", 1)[-1] if "." in name else ""
+    if ext not in ALLOWED_EXT:
+        return "unsupported_ext"
+    if any(fnmatch(low, p) for p in DEFAULT_EXCLUDE):
+        return "default_path"
+    return "review"
+
+
+CASES = [
+    ("internal/agent/selection.go", {}, "review"),
+    ("internal/agent/selection_test.go", {}, "default_path"),
+    (".ssh/config", {}, "secret_exclude"),
+    ("vendor/github.com/x/y.go", {}, "default_path"),
+    ("assets/logo.png", {}, "unsupported_ext"),
+    ("docs/notes.md", {"include": ["docs&#42;.md"]}, "keep(include)"),
+    ("src/main.py", {"exclude": ["src/main.py"]}, "user_exclude"),
+    ("pkg/blob.dat", {"binary": True}, "binary"),
+]
+
+for path, options, expect in CASES:
+    got = selected(path, **options)
+    print(path, " -> ", got, "  expect=", expect)</code></pre>
+
+<pre><code>internal/agent/selection.go  ->  review   expect= review
+internal/agent/selection_test.go  ->  default_path   expect= default_path
+.ssh/config  ->  secret_exclude   expect= secret_exclude
+vendor/github.com/x/y.go  ->  default_path   expect= default_path
+assets/logo.png  ->  unsupported_ext   expect= unsupported_ext
+docs/notes.md  ->  keep(include)   expect= keep(include)
+src/main.py  ->  user_exclude   expect= user_exclude
+pkg/blob.dat  ->  binary   expect= binary</code></pre>
+
+<p>Note docs/notes.md. Markdown is not in the extension allowlist, but an explicit include rescues it. Meanwhile .ssh/config never escapes. Those two cases are why putting rules in a prompt and putting rules in code are different engineering choices.</p>
+
+<h2>Splitting a large diff: bundles, coverage and token budget</h2>
+
+<p>The README describes smart file bundling: related files become one subtask with isolated context, so reviews stay stable on very large changesets and can run concurrently. The GitHub Action shows the engineered edges. max_tokens_budget is checked before every LLM round; a group already over budget gets one final round to submit findings and no new groups are dispatched. review_concurrency controls parallelism. effort maps low, medium and high to one, two and three rounds. checkpoint_range reviews only commits after the last recorded head and falls back to a full review when the base changed, configuration changed, or git cannot prove ancestry.</p>
+
+<p>The security assurance case adds harder constraints. External process execution is limited to git with hardcoded subcommands and --end-of-options to prevent flag injection. Every model supplied path is validated with pathutil.WithinBase() before and after symlink resolution. Responses pass JSON schema validation and line numbers are bounded against real diff ranges. TLS 1.2 or higher is enforced with full certificate verification. This is a different class of guarantee from asking a prompt to please cite the right line.</p>
+
+<p>The second example abstracts bundling and coverage, then prices a medium run with two rounds:</p>
+
+<pre><code>FILES = [
+    ("internal/agent/selection.go", 42000),
+    ("internal/agent/rules.go", 38000),
+    ("internal/llm/providers.go", 91000),
+    ("src/api/user.ts", 26000),
+    ("docs/config.md", 12000),
+]
+
+MAX_TOKENS = 100000
+EFFORT_ROUNDS = {"low": 1, "medium": 2, "high": 3}
+
+groups = []
+current = []
+used = 0
+for path, tokens in FILES:
+    if current and used + tokens > MAX_TOKENS:
+        groups.append((current, used))
+        current = []
+        used = 0
+    current.append(path)
+    used += tokens
+if current:
+    groups.append((current, used))
+
+covered = sum(len(paths) for paths, _ in groups)
+print("files:", len(FILES), "groups:", len(groups), "covered:", covered)
+for i, (paths, tokens) in enumerate(groups, 1):
+    print("group", i, "files=", len(paths), "tokens=", tokens, paths[0])
+
+rounds = EFFORT_ROUNDS["medium"]
+budget = sum(tokens for _, tokens in groups)
+print("rounds(medium):", rounds, "estimated tokens:", budget * rounds)
+print("coverage gate:", "PASS" if covered == len(FILES) else "FAIL")</code></pre>
+
+<pre><code>files: 5 groups: 3 covered: 5
+group 1 files= 2 tokens= 80000 internal/agent/selection.go
+group 2 files= 1 tokens= 91000 internal/llm/providers.go
+group 3 files= 2 tokens= 38000 src/api/user.ts
+rounds(medium): 2 estimated tokens: 418000
+coverage gate: PASS</code></pre>
+
+<p>A teaching model again, not the real bundling algorithm. The point is that coverage can be a hard gate and cost can be estimated before dispatch. Five files in three groups cost 418,000 tokens over two rounds. If the budget is 100,000, cut groups or files instead of quietly lowering effort and claiming a complete review.</p>
+
+<h2>How to use it: two paths, and a subscription is not an API key</h2>
+
+<p>Requirements are firm: Git 2.41 or newer, on Windows, macOS or Linux. The official commands are straightforward:</p>
+
+<ul>
+<li>CLI: npm install -g @alibaba-group/open-code-review puts ocr on PATH. Install scripts, release binaries and source builds are also documented.</li>
+<li>Native mode: run ocr config provider, ocr config model, verify with ocr llm test, then ocr review. ocr review --preview shows the selected scope before spending tokens.</li>
+<li>Delegation mode: npx skills add alibaba/open-code-review installs the open-code-review-delegate skill so the host agent, such as Claude Code, Codex, Cursor or Kimi Code, performs the review. No separate OCR API key is needed, but the host subscription, limits and costs still apply.</li>
+<li>Whole repository: ocr scan reviews whole files without a meaningful diff. Use ocr rules check path to debug rule resolution.</li>
+<li>CI: the root action.yml requires llm_url, llm_auth_token, llm_model and llm_use_anthropic. Outputs include inline comment counts, skipped comments, routed comments and checkpoint ranges.</li>
+</ul>
+
+<p>Two configuration details bite people. First, the chatgpt provider has no API key environment variable and uses ocr auth login. Custom providers must declare url and protocol explicitly and the model must support native tool calls; local Ollama is no exception. Second, a static api_key outranks api_key_cmd and silently disables it. The file ~/.opencodereview/config.json is treated as trusted input because it can execute a command, and OCR writes it with mode 0600. Do not commit it.</p>
+
+<h2>Among similar tools</h2>
+
+<table>
+  <tr><th>Approach</th><th>Who picks files</th><th>Position and coverage</th><th>Cost and entry point</th></tr>
+  <tr><td>General agent plus skill</td><td>The model chooses after reading the diff</td><td>Prompt constrained; the README reports drift and misses</td><td>Fastest to adopt, results track model and prompt changes</td></tr>
+  <tr><td>reviewdog plus linters</td><td>External linters report, reviewdog filters by diff</td><td>Only changed lines, stable line anchoring</td><td>MIT licensed, linters required, no semantic reasoning</td></tr>
+  <tr><td>OCR</td><td>Go code with six gates and a four level rule chain</td><td>Separate positioning and reflection modules, line bounds checked against the diff</td><td>CLI plus Git 2.41 plus a model endpoint, or delegation mode without a key</td></tr>
+</table>
+
+<p>The benchmark deserves its own paragraph. The README describes 50 popular open source repositories, 200 real pull requests, ten languages, more than 80 senior engineers cross validating, and 1505 annotated defects in AACR-Bench. With the same underlying model, OCR claims clearly higher precision and F1 than a general agent, roughly one ninth of the tokens and a faster run, while recall is lower by design to reduce noise. Those figures are self reported and were not reproduced here. Quote the limitation with the claim or the comparison reads as a total win.</p>
+
+<p>One boundary belongs in any evaluation sheet. The roadmap explicitly rules out automatic fixing without human approval, a general coding assistant and bundled model hosting. This is a review tool, not a pair programmer that merges its own patches.</p>
+
+<h2>Recent changes and where to contribute</h2>
+
+<p>Releases arrive quickly: v1.14.3 on November 24, v1.14.2 on the 23rd, v1.14.1 on the 22nd, v1.14.0 on the 21st and v1.13.13 on the 19th. Commits visible on November 25 include a fix preserving binary matches in code_search, an allowlist change excluding C and C plus test and benchmark paths, documentation for the secret path gate, Vietnamese i18n, review of GitHub pull requests from pinned snapshots, and retry reports persisted at session end. The repository has 4641 forks, 342 open issues and 162 watchers, with discussion in GitHub Discussions.</p>
+
+<p>The roadmap lists an experimental ACP v1 stdio adapter, a JetBrains plugin, Delegate Mode and a higher recall Ultra Mode for H2 2026, plus domain specific long term memory in H1 2027. There is a docs mismatch worth knowing: the roadmap still lists Delegate Mode as planned while the README describes it as available. Trust the README and releases.</p>
+
+<p>For contributions, start with Issues and Discussions. Issue 470, expand supported file types, carries good first issue and help wanted labels and 34 comments, which makes it a reasonable entry point for rule and language work. AGENTS.md is strict: disclose AI and the exact tools or models used in the issue or pull request, use English commit messages and LF line endings, keep source files ASCII, and sync README changes to seven translated versions. Before committing, run ocr review with the audience agent flag and a short background note. make check and make test are the usual gates, with a 90 percent coverage threshold.</p>
+
+<p>The takeaway is not that AI reviews code well. It is that the review pipeline has been decomposed into verifiable parts: which files entered, which rule applied, how many groups ran, where line numbers came from and what happens on budget exhaustion. If the review process in your team is still one prompt, steal the six gates and the coverage check first, even if you never use this model.</p>
+
+<h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/alibaba/open-code-review">Repository and README</a>, read 2026-11-25</li>
+<li><a href="https://github.com/alibaba/open-code-review/releases">Releases including v1.14.3</a>, 2026-11-19 to 11-24</li>
+<li><a href="https://github.com/alibaba/open-code-review/commits/main">Commit history</a>, through 2026-11-25</li>
+<li><a href="https://open-codereview.ai/docs/review-rules">Review Rules</a>: six gates and the four level rule chain</li>
+<li><a href="https://open-codereview.ai/docs/configuration">Configuration</a>: providers, credentials and timeouts</li>
+<li><a href="https://raw.githubusercontent.com/alibaba/open-code-review/main/action.yml">action.yml</a>: GitHub Action inputs and outputs</li>
+<li><a href="https://github.com/alibaba/open-code-review/blob/main/ASSURANCE_CASE.md">Security Assurance Case</a>: threat model and mitigations</li>
+<li><a href="https://github.com/alibaba/open-code-review/blob/main/ROADMAP.md">ROADMAP</a> and <a href="https://github.com/alibaba/open-code-review/blob/main/AGENTS.md">AGENTS.md</a></li>
+<li><a href="https://huggingface.co/datasets/Alibaba-Aone/aacr-bench">AACR-Bench dataset</a></li>
+<li><a href="https://github.com/reviewdog/reviewdog">reviewdog</a>: a deterministic review companion</li>
+<li><a href="https://github.com/trending?since=weekly">GitHub Trending weekly</a></li>
+</ul>''',
+    'related': [('Agent Skills standard: a skill any agent can load', 'blog/agent-skills-standard-2026/'), ('CLI-Anything: making GUI software agent native', 'blog/cli-anything-agent-native-2026/'), ('The AI code audit funnel: 37966 candidates, how many fixed', 'blog/ai-code-audit-triage-2026/')],
+},
 'pretraining-poisoning-cli-agent-backdoor-2026': {
     'category': 'security',
     'date': '2026-11-25',
