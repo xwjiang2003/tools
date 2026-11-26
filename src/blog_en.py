@@ -6,6 +6,258 @@
 """
 
 ARTICLES_EN = {
+'artex-agentic-attack-deception-2026': {
+    'category': 'security',
+    'date': '2026-11-26',
+    'updated': '2026-11-26',
+    'tags': ['ARTEX', 'AI security', 'agent attacks', 'deception defense'],
+    'title': 'Inside the ARTEX agentic attack framework: five minutes from a GitHub credential to Azure Key Vault, and how a fake win makes the AI stop | DevTools Blog',
+    'description': 'A Microsoft Threat Intelligence report dated 2026-11-25 details ARTEX, a framework that wires Nmap, Sqlmap and Metasploit to LLMs. Four agent roles circle a knowledge graph; a Storm-0940 campaign logged 151,000 failed logins peaking at 2,900 per minute. This post takes the architecture apart and ships two runnable scripts: a lying honeypot and a minute-scale rate gate.',
+    'keywords': 'ARTEX, ARTEX AI framework, agentic AI attack, AI automated attack, how to defend against agentic AI attacks, Microsoft Threat Intelligence, fake wins deception defense, honeypot tarpit honeytoken, Storm-0940, AI agent attack framework, LLM driven penetration testing, how to detect ARTEX attacks, how a honeypot fools an AI agent, AI agent credential theft, exposed GitHub credential Azure Key Vault, agentic attack defense tutorial, ARTEX honeypot tutorial, machine speed attack detection, decoy credentials for AI agents, rate detection for automated attacks, AI attack chain knowledge graph, deception technology hands on',
+    'h1': 'Inside the ARTEX agentic attack framework: five minutes from a GitHub credential to Azure Key Vault, and how a fake win makes the AI stop',
+    'summary': 'The ARTEX report from Microsoft on 2026-11-25 describes a system that does not invent new exploits. It connects Nmap, Sqlmap and Metasploit to an LLM and runs the loop itself. The lesson is not how to block it, but how to convince it that it won.',
+    'body': '''<p>A Microsoft Threat Intelligence report dated 2026-11-25 contains a number defenders will not like: <strong>five minutes</strong>. That is how long an AI agent took to find an accidentally exposed credential on GitHub and then pull data out of Azure Key Vault. The same disclosure includes another set of figures: over 151,000 failed login attempts in a Storm-0940 campaign, peaking at 2,900 per minute. Human response time is measured in minutes. So is the machine attack chain.</p>
+
+<p>The framework is called ARTEX. According to The Decoder on 2026-11-26, GitHub user Autumn-27 published the source in July 2026 and deleted the repository in October, though copies remain with other developers. Chinese security firm ThreatBook sells a commercial Pro version. Microsoft lists Salt Typhoon, Crystal Typhoon, Onyx Sleet and Storm-0940 among the users, alongside financially motivated criminal groups.</p>
+
+<h2>ARTEX invents no new exploit; it wires old tools to a brain</h2>
+
+<p>Start with what it does not do. ARTEX introduces no new attack technique. It operates Nmap, Sqlmap, Metasploit and automated headless browsers, all familiar to any security practitioner. The increment is elsewhere: almost no human supervision, and any LLM can be plugged in, including modified versions without safety guardrails.</p>
+
+<p>It also ships model pooling. When a call fails or hits a usage limit, the framework switches models or API keys automatically. For a defender this matters more than the mere fact that attackers use AI: even a good relationship with one model vendor gives you only a fragment of the traffic, spread across accounts and providers.</p>
+
+<h2>Four roles around one graph</h2>
+
+<p>The architecture Microsoft describes has four roles plus a graph:</p>
+
+<ul>
+<li><strong>goal model</strong> turns the attacker's instructions into verifiable subgoals;</li>
+<li><strong>planning agent</strong> reads a knowledge graph, a live map of discovered systems and vulnerabilities, and assigns short attack tasks;</li>
+<li><strong>worker agents</strong> run system commands: drop a web shell on a web server, read password files, hijack cloud accounts;</li>
+<li><strong>reporting agent</strong> documents the flaws that were actually exploited.</li>
+</ul>
+
+<p>Every finding feeds back into the graph and the planning agent picks the next step. This is not an AI that helps write a payload. It is an AI that runs reconnaissance through exfiltration on its own. Note the word verifiable: the goal model decides a task is done only when it can obtain proof. The whole defense idea below hangs off that word.</p>
+
+<h2>Why rule-based filters break here</h2>
+
+<p>Classic rules depend on fixed markers. ARTEX has left browser identifiers such as <code>artex-enrich</code> and <code>norma</code>, but operators and their models keep changing them, and blocked traffic is rerouted through rotating VPNs, proxies or Tor. Worse, it usually runs two or three attack chains at once. Isolate one and the others shift network paths immediately.</p>
+
+<p>It does have a tell: by default it does not hide its activity and generates huge bursts of traffic. The 151,000 failed logins and 2,900-per-minute peak in Storm-0940 are exactly that tell. In the same campaign Microsoft observed compromised apps granting themselves top administrator privileges. That kind of self-escalation is a harder signal than login noise alone.</p>
+
+<h2>Make the AI think it won, then watch it stop</h2>
+
+<p>The most interesting recommendation in the Microsoft report is not faster detection. It is feeding fake success signals. The logic: since the goal model looks for verifiable proof of a breach, give it highly credible fake proof.</p>
+
+<ul>
+<li><strong>Honeypots</strong> offer attractive but worthless decoy systems and pull traffic away from real targets;</li>
+<li><strong>tarpits</strong> add artificial delay and drain the agent's built-in time and compute budget;</li>
+<li><strong>fake wins</strong> return convincing success messages, so the AI considers the task complete and stops on its own;</li>
+<li><strong>honeytokens</strong> are decoy credentials that alert early when an agent tries to hijack someone else's compute.</li>
+</ul>
+
+<p>Put differently: a traditional IDS intercepts behavior, while deception changes what the agent observes about the world. You plant a false pointer in its objective function. Microsoft's own tests showed these tactics sharply reduce effective attack traffic against real systems while producing high-precision data for identifying the operators.</p>
+
+<h2>Hands on one: a honeypot that lies, in five minutes</h2>
+
+<p>This uses only the standard library. It starts a local HTTP service and returns a JSON claiming data was exfiltrated for every path, exactly the verifiable proof a goal model wants. Run it once and read the output.</p>
+
+<pre><code>import json, threading, time, urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+HITS = []
+
+class Decoy(BaseHTTPRequestHandler):
+    def do_GET(self):
+        HITS.append((self.path, self.client_address[0]))
+        time.sleep(0.02)
+        body = json.dumps({"ok": True, "exfiltrated": True, "key": "decoy-only"}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+    def log_message(self, fmt, *args):
+        pass
+
+srv = ThreadingHTTPServer(("127.0.0.1", 8765), Decoy)
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+for path in ("/.env", "/vault/keys", "/admin"):
+    r = urllib.request.urlopen("http://127.0.0.1:8765" + path, timeout=5)
+    print(path, r.status, r.read().decode())
+srv.shutdown()
+print("decoy hits:", len(HITS))</code></pre>
+
+<p>Expected output, verified locally:</p>
+
+<pre><code>/.env 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+/vault/keys 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+/admin 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+decoy hits: 3</code></pre>
+
+<p>To a script, <code>exfiltrated: true</code> is just a string. To an agent searching for verifiable proof, it is a stop signal. In production, move <code>127.0.0.1:8765</code> to a separate decoy network and pipe <code>HITS</code> into your alerting system. That <code>time.sleep(0.02)</code> is a minimal tarpit; stretch it to match the attacker budget you want to drain.</p>
+
+<h2>Hands on two: turn 2,900 per minute into a hard gate</h2>
+
+<p>The second script quantifies a burst into a decidable threshold. It uses a sliding window to compute the peak per minute, fed once with the 2,900 attempts from the Storm-0940 report and once with a human-paced sequence.</p>
+
+<pre><code>import time
+
+storm_180s = [i * (60.0 / 2900) for i in range(2900)]
+human_180s = [t for t in (0.3, 4.1, 8.7, 15.2, 44.8, 61.5, 120.4, 150.9)]
+
+def peak_per_minute(ts, window=60.0):
+    ts = sorted(ts)
+    j = 0
+    best = 0
+    for i, t in enumerate(ts):
+        while j &lt; len(ts) and ts[j] &lt; t + window:
+            j += 1
+        best = max(best, j - i)
+    return best
+
+for name, ts in (("ARTEX Storm-0940", storm_180s), ("human operator", human_180s)):
+    peak = peak_per_minute(ts)
+    print(name, "events=" + str(len(ts)), "peak/min=" + str(peak),
+          "VERDICT=" + ("BLOCK" if peak &gt;= 200 else "PASS"))</code></pre>
+
+<p>Expected output, verified locally:</p>
+
+<pre><code>ARTEX Storm-0940 events=2900 peak/min=2900 VERDICT=BLOCK
+human operator events=8 peak/min=5 VERDICT=PASS</code></pre>
+
+<p>The threshold of 200 is my choice, not Microsoft's. Run your own login logs through it first. Also, 2,900 is not an ARTEX fingerprint: once an attacker slows down and spreads requests, this gate is useless. Microsoft concedes as much at the end of the report: these defenses depend heavily on ARTEX still being noisy, and they shrink further if a strong model learns to recognize an artificial test environment.</p>
+
+<h2>How long will this hold</h2>
+
+<p>Be honest about it. Deception buys a window measured in minutes, not an endgame. Its value is turning the attacker's verifiable success into one of your high-precision alerts, recovering a little decision time at machine speed. Whether ARTEX learns to distrust a success that came too easily is the next round.</p>
+
+<p>Sources: Microsoft Threat Intelligence report (2026-11-25), The Decoder reporting and incident background (2026-11-25 and 11-26), and Microsoft's earlier analyses of Storm-0940 and exposed credentials (2026-10-21, 11-05, 11-06). All figures come from those public materials; the code was written for this post and tested locally.</p>''',
+    'related': [('Ternary Bonsai 27B in 5.9 GB: the memory ledger and half-bit precision', 'blog/ternary-bonsai-27b-5gb-2026/'), ('AI memory poisoning and prompt injection: a developer checklist', 'blog/ai-memory-poisoning-2026/'), ('OpenAI autonomous vulnerability discovery: 1,724 kernel bugs in one run', 'blog/openai-autonomous-vuln-discovery-2026/')],
+},
+'ternary-bonsai-27b-5gb-2026': {
+    'category': 'tooling',
+    'date': '2026-11-26',
+    'updated': '2026-11-26',
+    'tags': ['ternary quantization', 'Ternary Bonsai', 'on-device inference', 'model compression'],
+    'title': 'A 27B model in 5.9 GB: the ternary quantization memory ledger, benchmark traps and half-bit precision | DevTools Blog',
+    'description': 'PrismML released Ternary Bonsai 2.5 27B on 2026-11-24: based on Qwen3.8 27B, ternary weights compress 54 GB down to 5.9 GB under Apache 2.0. This post accounts for every byte of that 5.9 GB, walks the benchmark table including a score that keeps falling, and ships runnable code for Any-Rate half-bit Hamming blocks and memory budgeting.',
+    'keywords': 'Ternary Bonsai 2.5 27B, ternary quantization, 5.9GB LLM, Qwen3.8 27B, how to run a 27B model locally, Any-Rate half-bit quantization, half-bit quantization tutorial, llama.cpp 27B deployment, MLX iPhone LLM, calculate LLM memory footprint, how to calculate LLM VRAM, SWE-bench Verified quantization comparison, AppWorld agent benchmark, extended Hamming code quantization, 0.5 bit per weight, how to reduce LLM memory footprint, on-device agentic coding model, multi-token prediction speedup, ternary weights minus one zero plus one, LLM quantization accuracy loss, code generation degradation after quantization, GPTQ AWQ ternary comparison',
+    'h1': 'A 27B model in 5.9 GB: the ternary quantization memory ledger, benchmark traps and half-bit precision',
+    'summary': 'Fitting 27B parameters into 5.9 GB is simple division: each weight is only -1, 0 or +1. The hard part is why agentic scores bounce back close to the base model while single-shot code generation keeps dropping. Do both ledgers before you download.',
+    'body': '''<p>27B parameters, 5.9 GB of memory, Apache 2.0. When PrismML released Ternary Bonsai 2.5 27B on 2026-11-24, those three numbers together looked off: the same scale at BF16 takes 54 GB, more than nine times as much. The Decoder added the speed on 2026-11-25: about 204 tokens per second on an RTX 4090 with MTP.</p>
+
+<p>Do not download yet. Where the 5.9 GB goes, and which abilities were traded for it, are more useful numbers than the headline.</p>
+
+<h2>The 5.9 GB ledger: three values per weight</h2>
+
+<p>Ternary quantization is plain enough: a weight may only be -1, 0 or +1. Its information content is log2(3), about 1.585 bits per weight, not 16. So 27B times 1.585 divided by 8 is 5.35 GB, the theoretical floor. Where do the remaining fractions go? Run this and see.</p>
+
+<pre><code>import math
+
+P = 27_000_000_000
+
+def gib(bpw, overhead_gib=0.16):
+    return P * bpw / 8 / (1024 ** 3) + overhead_gib
+
+for bpw, name in ((16, "BF16"), (8, "INT8"), (4, "INT4"), (3, "INT3"), (1.58, "ternary ~log2(3)")):
+    print("%-16s %6.2f GiB" % (name, gib(bpw)))
+
+reported = 5.9 * 1000 ** 3 / 1024 ** 3
+print("reported 5.9 GB = %.2f GiB" % reported)
+print("ternary at 1.585 bit/w = %.2f GiB, delta %.2f GiB (metadata/KV/overhead)" % (gib(math.log2(3)), reported - gib(math.log2(3))))
+print("27B x log2(3) bits = %.0f bytes = %.2f GB" % (P * math.log2(3) / 8, P * math.log2(3) / 8 / 1000 ** 3))</code></pre>
+
+<p>Expected output, verified locally:</p>
+
+<pre><code>BF16              50.45 GiB
+INT8              25.31 GiB
+INT4              12.73 GiB
+INT3               9.59 GiB
+ternary ~log2(3)   5.13 GiB
+reported 5.9 GB = 5.49 GiB
+ternary at 1.585 bit/w = 5.14 GiB, delta 0.35 GiB (metadata/KV/overhead)
+27B x log2(3) bits = 5349248440 bytes = 5.35 GB</code></pre>
+
+<p>5.9 GB decimal is 5.49 GiB. Subtract the 5.14 GiB theoretical weight store and 0.35 GiB remains: metadata, runtime structures, and the easiest thing to overlook, the KV cache. Remember that 5.9 GB is where the weights live, not the resident set of the process. Long-context KV is extra, and it doubles when the context doubles.</p>
+
+<h2>The benchmark table has a counterexample</h2>
+
+<p>From the official PrismML whitepaper (Qwen3.8 27B base / Bonsai 2 / Bonsai 2.5):</p>
+
+<ul>
+<li>SWE-bench Verified: 80.6 / 60.8 / <strong>75.6</strong></li>
+<li>Terminal-Bench 2.1: 70.8 / 52.8 / <strong>60.1</strong></li>
+<li>AppWorld: 93.2 / 51.2 / <strong>90.5</strong></li>
+<li>tau-cube Bench: 72.8 / 69.1 / <strong>73.9</strong>, the one case that beats the base model</li>
+<li>BigCodeBench: 61.5 / 57.2 / <strong>60.3</strong></li>
+<li>LiveCodeBench v6: 87.6 / 83.8 / <strong>83.0</strong></li>
+</ul>
+
+<p>Version 2.5 recovers most agentic scores, but LiveCodeBench v6 keeps falling, from 83.8 to 83.0. That counterexample carries more information than the gains.</p>
+
+<p>My reading: the bottleneck in a long agentic task is not recalling the exact signature of an obscure API. It is not getting stuck, not looping, and not burning the token budget on repeated reasoning. PrismML says the same thing in different words: 2.5 finishes in fewer turns with fewer tokens. A compressed model that gives up earlier happens to help on long chains. Single-shot code generation needs precise recall, and quantization loss has nowhere to hide, so the score keeps sliding. Ask whether your task is long-horizon decision making or single-shot precise output, not whether ternary is good.</p>
+
+<h2>The speed ledger: MTP is why a consumer card works</h2>
+
+<p>Official numbers: on a single H100, 291 tokens per second with MTP and 3,200 tokens per second prompt processing for a 2,000-token prompt. On an RTX 4090, 204 tokens per second and roughly 3,060 tokens per second prompt processing. Runtimes are llama.cpp for NVIDIA and Intel GPUs and MLX for Mac, iPhone and iPad. Weights are Apache 2.0.</p>
+
+<p>One trap here: MTP speed is measured at a particular batch size and decode configuration. When your agent generates a few dozen tokens per step and then waits for a tool, real throughput drops well below that figure. The bottleneck moves from small-model compute to scheduling and tool round trips. Benchmark your own call shape.</p>
+
+<h2>Half a bit: precision as a slider</h2>
+
+<p>Another paper from the same day is worth reading: arXiv:2611.34402, Any-Rate: Half-Bit Multi-Precision LLM Quantization with Coded Bit-Planes, submitted 2026-11-25, 41 pages and 17 figures. It asks how one checkpoint can serve several precisions to devices with different headroom. Existing multi-precision methods offer only integer bits, leaving large gaps between adjacent settings and severe damage around 2 bits.</p>
+
+<p>Any-Rate serves 2 to 8 bits from one checkpoint in half-bit steps over 2 to 4 bits. The key move restricts some bit-planes to extended Hamming codewords over blocks of eight weights: eight weights share a four-bit information code, so 4 divided by 8 is 0.5 bits per weight. Each row shares one LUT and each precision gets its own target to reduce the loss from shared bit-planes. The reported results: 69 percent of FP16 accuracy at 2 bits, within one point of the best method at 4 bits, decoding about as fast as existing kernels, and up to 27 percent less energy in an LPDDR model at equal accuracy.</p>
+
+<p>Here is where the half bit literally comes from. The following uses only the standard library to build an extended (8,4) Hamming code: 16 codewords, minimum distance 3, one bit flip correctable per block, and only four bits of information stored.</p>
+
+<pre><code>def parity4(v):
+    return (v ^ (v >> 1) ^ (v >> 2) ^ (v >> 3)) &amp; 1
+
+def hamming84(nibble):
+    d0 = (nibble >> 0) &amp; 1
+    d1 = (nibble >> 1) &amp; 1
+    d2 = (nibble >> 2) &amp; 1
+    d3 = (nibble >> 3) &amp; 1
+    p1 = d0 ^ d1 ^ d3
+    p2 = d0 ^ d2 ^ d3
+    p4 = d1 ^ d2 ^ d3
+    p8 = parity4(d0 ^ d1 ^ d2 ^ d3)
+    return p1 | (p2 << 1) | (p4 << 2) | (d0 << 3) | (p8 << 4) | (d1 << 5) | (d2 << 6) | (d3 << 7)
+
+codes = [hamming84(n) for n in range(16)]
+dmin = min(bin(a ^ b).count("1") for i, a in enumerate(codes) for b in codes[i + 1:])
+print("codewords:", len(codes), "unique:", len(set(codes)), "min_distance:", dmin)
+print("correction capability:", (dmin - 1) // 2, "bit flip per block")
+print("stored bits per block: 4, weights per block: 8, bits per weight: 0.5")
+for n in (0, 5, 15):
+    code = hamming84(n)
+    flipped = code ^ (1 << 3)
+    print("nibble", n, "code", format(code, "08b"), "flipped", format(flipped, "08b"),
+          "distance_to_original", bin(flipped ^ code).count("1"))</code></pre>
+
+<p>Expected output, verified locally:</p>
+
+<pre><code>codewords: 16 unique: 16 min_distance: 3
+correction capability: 1 bit flip per block
+stored bits per block: 4, weights per block: 8, bits per weight: 0.5
+nibble 0 code 00000000 flipped 00001000 distance_to_original 1
+nibble 5 code 01001101 flipped 01000101 distance_to_original 1
+nibble 15 code 11101111 flipped 11100111 distance_to_original 1</code></pre>
+
+<p>That is the literal meaning of half a bit: not half a bit per weight, but four bits of information shared by eight weights. The cost is that quantization levels collapse to sixteen, which is why Any-Rate needs a separate optimization target per precision to recover the loss.</p>
+
+<h2>Three things before you switch</h2>
+
+<p>First, task shape. Long agentic chains, private file handling and always-on local assistants are worth trying. For single-shot precise code generation, run your own regression set before trusting an aggregate SWE-bench score. Second, memory budgeting: add KV cache using the ledger above and check whether the 5.9 GB card is actually enough. Third, license boundaries: the Bonsai weights are Apache 2.0, the Any-Rate repository is something else entirely, and commercial use needs both checked.</p>
+
+<p>One more thread. Qubit reported on 2026-11-25 a different route from a Chinese team: a General Looped Model claiming 94 million parameters take on five billion with 98 percent less weight memory. It recycles weights rather than quantizing them. Both routes answer the same question: to fit a large model into a small device, do you save parameters or save bit width?</p>
+
+<p>Sources: PrismML release page and whitepaper (2026-11-24), The Decoder (2026-11-25), arXiv:2611.34402 (2026-11-25), Qubit (2026-11-25). All code here was written for this post and tested locally; benchmark numbers are quoted from those public materials.</p>''',
+    'related': [('Inside the ARTEX agentic attack framework: deception defense', 'blog/artex-agentic-attack-deception-2026/'), ('Qwen 3.8 27B on a laptop: llama.cpp and an LLM-as-judge test', 'blog/qwen-3-8-27b-laptop-judge-2026/'), ('On-device 35B MoE on a phone: 2-bit experts and on-demand loading', 'blog/on-device-35b-moe-phone-2026/')],
+},
+
 'github-weekly-alibaba-open-code-review-2026': {
     'category': 'tooling',
     'date': '2026-11-25',

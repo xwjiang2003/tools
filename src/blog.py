@@ -50,6 +50,261 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    'slug': 'artex-agentic-attack-deception-2026',
+    'category': 'security',
+    'date': '2026-11-26',
+    'updated': '2026-11-26',
+    'tags': ['ARTEX', 'AI 安全', '智能体攻防', '欺骗防御'],
+    'title': 'ARTEX 智能体攻击框架拆解：5 分钟从 GitHub 凭据到 Azure Key Vault，以及如何用假胜利让 AI 自己收手 | DevTools 博客',
+    'description': '微软威胁情报 2026-11-25 报告披露 ARTEX：一套把 Nmap、Sqlmap、Metasploit 接上 LLM 的智能体攻击框架。goal/planning/worker/reporting 四类智能体围着一张知识图谱闭环，Storm-0940 活动留下 151,000 次失败登录、峰值 2,900/分钟。本文拆它的架构与失效点，给出两个可运行脚本：会说谎的蜜罐与分钟级速率闸门，并讲清欺骗防御的边界。',
+    'keywords': 'ARTEX, ARTEX AI framework, ARTEX 智能体攻击框架, agentic AI attack, AI 自动化攻击, 如何防御 AI 自动化攻击, Microsoft Threat Intelligence, fake wins 欺骗防御, honeypot tarpit honeytoken, Storm-0940, AI agent 攻击框架, LLM 驱动的渗透测试, 如何检测 ARTEX 攻击, 蜜罐如何骗过 AI agent, AI agent 凭据窃取, GitHub 泄露凭据 Azure Key Vault, 智能体攻击防御教程, how to defend against agentic AI attacks, ARTEX honeypot tutorial, machine speed attack detection, decoy credentials AI agent, 自动攻击 速率检测, AI 攻击链 知识图谱, 安全 欺骗技术 实操',
+    'h1': 'ARTEX 智能体攻击框架拆解：5 分钟从 GitHub 凭据到 Azure Key Vault，以及如何用假胜利让 AI 自己收手',
+    'summary': '微软 2026-11-25 报告里的 ARTEX 不发明新漏洞，它把 Nmap、Sqlmap、Metasploit 接到 LLM 上跑成闭环。最值得学的不是怎么拦它，而是怎么让它以为自己赢了。',
+    'body': '''<p>微软威胁情报在 2026-11-25 的报告里放了一个让防御方不太舒服的数字：<strong>5 分钟</strong>。一个 AI 智能体用五分钟在 GitHub 上翻到意外暴露的凭据，紧接着从 Azure Key Vault 取走了数据。同一批披露里还有另一组数字——Storm-0940 活动中记录到超过 151,000 次失败登录，峰值 2,900 次/分钟。人的响应时间是以分钟计的，机器的攻击链也是。</p>
+
+<p>这套东西叫 ARTEX。据 The Decoder 2026-11-26 转述，它 2026 年 7 月由 GitHub 用户 Autumn-27 发布源码，10 月删除仓库，但副本仍在多个开发者手里流转；国内安全厂商 ThreatBook 还卖商业 Pro 版。微软把 Salt Typhoon、Crystal Typhoon、Onyx Sleet、Storm-0940 以及多个逐利犯罪团伙都列进了使用者名单。</p>
+
+<h2>ARTEX 不是新漏洞，是把老工具接上了大脑</h2>
+
+<p>先说清楚它不做什么：ARTEX 没有发明任何新的攻击技术。它操作的是 Nmap、Sqlmap、Metasploit 和自动化无头浏览器——都是安全从业者熟得不能再熟的工具。真正的增量在两点：几乎不需要人看着，以及任何 LLM 都能插进来，包括去掉安全护栏的改版。</p>
+
+<p>它内置了 model pooling：一次调用报错或撞上用量上限，就自动切换模型或 API key。对防御方来说，这意味着你就算和某一家模型供应商关系再好，也看不到攻击的全貌——流量被摊到了多个账号、多个厂商头上。这一条比"攻击者用了 AI"本身更值得记。</p>
+
+<h2>四个角色围着一张图跑闭环</h2>
+
+<p>微软给出的架构是四个角色加一张图：</p>
+
+<ul>
+<li><strong>goal model</strong> 把攻击者的自然语言指令拆成可验证的子目标；</li>
+<li><strong>planning agent</strong> 持续读一张 knowledge graph——动态更新的"已发现系统 / 已找到漏洞"地图——然后派发很短的攻击任务；</li>
+<li><strong>worker agents</strong> 执行系统命令：往 Web 服务器丢 web shell、读密码文件、劫持云账号；</li>
+<li><strong>reporting agent</strong> 把最终打穿的漏洞整理成报告。</li>
+</ul>
+
+<p>每有新发现就回灌进那张图，planning agent 再派下一步。这不是"AI 帮你写 payload"，是 AI 自己把 reconnaissance 跑到 exfiltration。值得琢磨的是那个"可验证"限定词：goal model 判断任务完成与否，靠的是能不能拿到攻陷证据。后面整个防御思路都挂在这个限定词上。</p>
+
+<h2>为什么规则过滤在这套系统面前会失效</h2>
+
+<p>传统规则依赖固定标记。ARTEX 留下过 <code>artex-enrich</code> 和 <code>norma</code> 这样的浏览器标识，但攻击者和他们的模型会不断改掉这些标记，被封的流量则改走轮换的 VPN、代理或 Tor。更麻烦的是它通常同时跑两到三条攻击链：你隔离了一条，剩下的立刻换网络路径继续。</p>
+
+<p>它也有明显的破绽——默认不隐藏活动，会制造巨大的流量突发。Storm-0940 那 151,000 次失败登录、2,900/分钟峰值就是这种破绽。同一个活动里，微软还观察到部分被攻陷的应用给自己授予了最高管理员权限。这类"越权自提"比单纯的登录爆破更像一个可以抓的硬信号。</p>
+
+<h2>让 AI 以为自己赢了，然后自己收手</h2>
+
+<p>微软报告里我认为最有意思的建议不是"更快检测"，而是喂假成功信号。逻辑是这样的：既然 goal model 在找可验证的攻陷证据，那就给它一个高度可信的假证据。</p>
+
+<ul>
+<li><strong>蜜罐（honeypot）</strong>把有吸引力但毫无价值的诱饵系统摆出去，把流量从真目标上引开；</li>
+<li><strong>tarpit</strong>用人工延迟拖住请求，消耗智能体内置的时间和算力预算；</li>
+<li><strong>fake wins</strong>返回让人信服的成功消息，AI 判定任务完成，自己停止攻击；</li>
+<li><strong>honeytoken</strong>是诱饵凭据，智能体试图盗用他人算力时提前报警。</li>
+</ul>
+
+<p>换个说法：传统 IDS 拦的是"行为"，欺骗防御改的是"智能体对世界的观测"。你在它的目标函数里插了一根假指针。微软自己的测试显示，这类手段显著降低了打向真实系统的有效攻击流量，同时给出高精度的数据用来反查背后的攻击者。</p>
+
+<h2>实操一：五分钟起一个会说谎的蜜罐</h2>
+
+<p>下面这段只用标准库。它起一个本地 HTTP 服务，对每个路径都回一个"已拿到数据"的 JSON——正是 goal model 想看到的可验证证据。真跑一遍，看输出。</p>
+
+<pre><code>import json, threading, time, urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+HITS = []
+
+class Decoy(BaseHTTPRequestHandler):
+    def do_GET(self):
+        HITS.append((self.path, self.client_address[0]))
+        time.sleep(0.02)
+        body = json.dumps({"ok": True, "exfiltrated": True, "key": "decoy-only"}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+    def log_message(self, fmt, *args):
+        pass
+
+srv = ThreadingHTTPServer(("127.0.0.1", 8765), Decoy)
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+for path in ("/.env", "/vault/keys", "/admin"):
+    r = urllib.request.urlopen("http://127.0.0.1:8765" + path, timeout=5)
+    print(path, r.status, r.read().decode())
+srv.shutdown()
+print("decoy hits:", len(HITS))</code></pre>
+
+<p>预期输出（实测）：</p>
+
+<pre><code>/.env 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+/vault/keys 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+/admin 200 {"ok": true, "exfiltrated": true, "key": "decoy-only"}
+decoy hits: 3</code></pre>
+
+<p>注意那个 <code>exfiltrated: true</code>。对脚本来说它只是一串字符，对一个在找"可验证证据"的智能体来说，它是停手信号。生产环境里把 <code>127.0.0.1:8765</code> 换成独立的诱饵网段，并把 <code>HITS</code> 接到你的告警管道；那段 <code>time.sleep(0.02)</code> 就是 tarpit 的最小形态，按预算拉长即可。</p>
+
+<h2>实操二：把 2,900/分钟变成一条硬闸门</h2>
+
+<p>第二个脚本把速率突发量化成可判定的阈值。它用滑动窗口算每分钟峰值，一端喂 Storm-0940 报告里的 2,900 次，另一端喂一个真实感的人类操作节奏。</p>
+
+<pre><code>import time
+
+storm_180s = [i * (60.0 / 2900) for i in range(2900)]
+human_180s = [t for t in (0.3, 4.1, 8.7, 15.2, 44.8, 61.5, 120.4, 150.9)]
+
+def peak_per_minute(ts, window=60.0):
+    ts = sorted(ts)
+    j = 0
+    best = 0
+    for i, t in enumerate(ts):
+        while j &lt; len(ts) and ts[j] &lt; t + window:
+            j += 1
+        best = max(best, j - i)
+    return best
+
+for name, ts in (("ARTEX Storm-0940", storm_180s), ("human operator", human_180s)):
+    peak = peak_per_minute(ts)
+    print(name, "events=" + str(len(ts)), "peak/min=" + str(peak),
+          "VERDICT=" + ("BLOCK" if peak &gt;= 200 else "PASS"))</code></pre>
+
+<p>预期输出（实测）：</p>
+
+<pre><code>ARTEX Storm-0940 events=2900 peak/min=2900 VERDICT=BLOCK
+human operator events=8 peak/min=5 VERDICT=PASS</code></pre>
+
+<p>阈值 200 是我拍的，不是微软给的——拿你自己的登录日志跑一遍再定。也别把 2,900 当成 ARTEX 的指纹：一旦攻击者放慢节奏、把请求摊开，这条闸门就形同虚设。微软在报告结尾自己也承认，欺骗手段高度依赖 ARTEX 目前仍然"吵"这个前提，强模型若能认出人工测试环境，这些招数都会缩水。</p>
+
+<h2>这能撑多久</h2>
+
+<p>把话说实在点：欺骗防御争取的是分钟级的窗口，不是终局。它的价值在于把攻击者的"可验证成功"变成你手里的高精度告警，让你在机器速度下抢回一点决策时间。至于 ARTEX 之后会不会学会怀疑一次过于顺利的成功——那是下一轮的事了。</p>
+
+<p>素材来源：Microsoft Threat Intelligence 报告（2026-11-25）、The Decoder 转述与事件背景（2026-11-25 / 11-26）、微软关于 Storm-0940 与暴露凭据的系列分析（2026-10-21 / 11-05 / 11-06）。文中数字均来自这些公开材料，代码为本文原创并在本地实测。</p>''',
+    'related': [('三值量化把 27B 模型塞进 5.9GB：内存账本与半比特精度', 'blog/ternary-bonsai-27b-5gb-2026/'), ('AI 记忆投毒与提示注入：开发者自查清单', 'blog/ai-memory-poisoning-2026/'), ('OpenAI 自主漏洞挖掘流水线：一次运行复现 1724 个内核漏洞', 'blog/openai-autonomous-vuln-discovery-2026/')],
+},
+
+{
+    'slug': 'ternary-bonsai-27b-5gb-2026',
+    'category': 'tooling',
+    'date': '2026-11-26',
+    'updated': '2026-11-26',
+    'tags': ['三值量化', 'Ternary Bonsai', '端侧推理', '模型压缩'],
+    'title': '27B 模型塞进 5.9GB：三值量化的内存账本、benchmark 陷阱与半比特精度 | DevTools 博客',
+    'description': 'PrismML 2026-11-24 发布 Ternary Bonsai 2.5 27B：基于 Qwen3.8 27B，三值权重把 54GB 压到 5.9GB，Apache 2.0。本文算清 5.9GB 的每一字节，逐项拆解 benchmark（LiveCodeBench 反而继续下滑），并用可运行代码演示 Any-Rate 的半比特汉明码块与显存预算。',
+    'keywords': 'Ternary Bonsai 2.5 27B, 三值量化, ternary quantization, 5.9GB 大模型, Qwen3.8 27B, 如何本地运行 27B 模型, Any-Rate 半比特量化, half-bit quantization tutorial, llama.cpp 27B 部署, MLX iPhone 大模型, 模型压缩 显存计算, 如何计算大模型显存, SWE-bench Verified 量化对比, AppWorld agent benchmark, 扩展汉明码 量化, 0.5 bit per weight, how to reduce LLM memory footprint, 端侧 agentic coding 模型, multi-token prediction 加速, 三值权重 -1 0 1, LLM quantization accuracy loss, 量化后代码能力下降, GPTQ AWQ 三值对比',
+    'h1': '27B 模型塞进 5.9GB：三值量化的内存账本、benchmark 陷阱与半比特精度',
+    'summary': '5.9GB 装下 27B 参数，除法很简单：每个权重只剩 -1、0、+1。难的是为什么 agentic 任务分数回到接近基座，单轮代码题却还在掉。把账本和 benchmark 一起算，才知道该在什么场景用它。',
+    'body': '''<p>27B 参数，5.9GB 内存，Apache 2.0。2026-11-24 PrismML 发 Ternary Bonsai 2.5 27B 时，这三个数字摆在一起有点反直觉——同样规模按 BF16 存要 54GB，差了九倍多。The Decoder 在 2026-11-25 的报道里补了速度：RTX 4090 上带 MTP 约 204 tokens/s。</p>
+
+<p>先别急着下载。5.9GB 是怎么来的，以及哪些能力被拿去换了这 5.9GB，比数字本身更值得算。</p>
+
+<h2>5.9GB 的账本：每个权重只有三个值</h2>
+
+<p>三值量化的意思很朴素：权重只允许取 -1、0、+1。信息量是 log2(3) ≈ 1.585 bit/weight，而不是 BF16 的 16 bit。27B × 1.585 ÷ 8 = 5.35 GB，这就是理论下界。剩下的零点几 GB 去哪了？跑一遍这段就清楚。</p>
+
+<pre><code>import math
+
+P = 27_000_000_000
+
+def gib(bpw, overhead_gib=0.16):
+    return P * bpw / 8 / (1024 ** 3) + overhead_gib
+
+for bpw, name in ((16, "BF16"), (8, "INT8"), (4, "INT4"), (3, "INT3"), (1.58, "ternary ~log2(3)")):
+    print("%-16s %6.2f GiB" % (name, gib(bpw)))
+
+reported = 5.9 * 1000 ** 3 / 1024 ** 3
+print("reported 5.9 GB = %.2f GiB" % reported)
+print("ternary at 1.585 bit/w = %.2f GiB, delta %.2f GiB (metadata/KV/overhead)" % (gib(math.log2(3)), reported - gib(math.log2(3))))
+print("27B x log2(3) bits = %.0f bytes = %.2f GB" % (P * math.log2(3) / 8, P * math.log2(3) / 8 / 1000 ** 3))</code></pre>
+
+<p>预期输出（实测）：</p>
+
+<pre><code>BF16              50.45 GiB
+INT8              25.31 GiB
+INT4              12.73 GiB
+INT3               9.59 GiB
+ternary ~log2(3)   5.13 GiB
+reported 5.9 GB = 5.49 GiB
+ternary at 1.585 bit/w = 5.14 GiB, delta 0.35 GiB (metadata/KV/overhead)
+27B x log2(3) bits = 5349248440 bytes = 5.35 GB</code></pre>
+
+<p>5.9 GB 十进制等于 5.49 GiB，减掉权重理论的 5.14 GiB，差 0.35 GiB。这部分是元数据、运行时结构，以及——最容易被忽略的——KV cache。记住一件事：5.9GB 是权重占的地方，不是进程驻留内存。长上下文的 KV 还得另算，上下文翻倍它就翻倍。</p>
+
+<h2>benchmark 表里藏着一个反例</h2>
+
+<p>PrismML 官方白皮书里的对比（Qwen3.8 27B 基座 / Bonsai 2 / Bonsai 2.5）：</p>
+
+<ul>
+<li>SWE-bench Verified：80.6 / 60.8 / <strong>75.6</strong></li>
+<li>Terminal-Bench 2.1：70.8 / 52.8 / <strong>60.1</strong></li>
+<li>AppWorld：93.2 / 51.2 / <strong>90.5</strong></li>
+<li>τ³-Bench：72.8 / 69.1 / <strong>73.9</strong>（这一项反超了基座）</li>
+<li>BigCodeBench：61.5 / 57.2 / <strong>60.3</strong></li>
+<li>LiveCodeBench v6：87.6 / 83.8 / <strong>83.0</strong></li>
+</ul>
+
+<p>2.5 相比 2 代，几乎所有 agentic 指标都大幅回血，唯独 LiveCodeBench v6 继续往下掉（83.8 → 83.0）。这个反例比那些涨幅更有信息量。</p>
+
+<p>我的读法是：agentic 长链任务的瓶颈根本不是"记住某个冷门 API 的精确写法"，而是别卡住、别陷入循环、别把 token 预算烧在反复推理上。PrismML 自己也说 2.5 的任务完成轮数更少、token 更少——压缩后模型更倾向于早收手，这恰好对长链任务有利。单轮代码生成要的是精确记忆，量化损失没地方藏，于是继续掉。所以别问"三值模型好不好"，问"你的任务是长链决策还是单轮精确输出"。</p>
+
+<h2>速度账：MTP 才是消费卡能跑的原因</h2>
+
+<p>官方数据：单卡 H100 带 MTP 生成 291 tokens/s，2000-token prompt 处理 3,200 tokens/s；RTX 4090 上 204 tokens/s、prompt 约 3,060 tokens/s。运行时是 llama.cpp（NVIDIA / Intel GPU）和 MLX（Mac、iPhone、iPad）。权重 Apache 2.0。</p>
+
+<p>这里有个容易踩的坑：MTP（multi-token prediction）的速度是在特定批大小和解码配置下测的。你接上 agent 框架、每步只生成几十个 token 再等工具返回时，实际吞吐会明显低于这个数字——瓶颈从小模型计算变成了调度和工具往返。跑基准之前先按自己的调用形态测。</p>
+
+<h2>半比特：把精度做成可调滑块</h2>
+
+<p>同一天还有一篇更底层的论文值得看：arXiv:2611.34402《Any-Rate: Half-Bit Multi-Precision LLM Quantization with Coded Bit-Planes》，2026-11-25 提交，41 页 17 图。它想解决的是"一个 checkpoint 怎么按设备余量 serving 不同精度"——现有多精度方法只给整数 bit，2 bit 附近掉得厉害，相邻档位之间空档太大。</p>
+
+<p>Any-Rate 的做法是从一个 checkpoint 提供 2–8 bit，2–4 bit 区间按 0.5 bit 步进。关键一步是把部分 bit-plane 限制到 8 个权重一组的扩展汉明码字上：8 个权重共享 4 位信息码，4 ÷ 8 = 0.5 bit/weight。每行共用一个 LUT，每个精度单独设优化目标，减少共享 bit-plane 带来的损失。论文结果：2 bit 保持 FP16 精度的 69%，4 bit 距离最佳方法不到 1 分，解码速度与现有 kernel 相当，LPDDR 能耗模型估算同等精度下最多省 27%。</p>
+
+<p>半比特到底怎么来的，写段代码看。下面用标准库构造 (8,4) 扩展汉明码：16 个码字、最小汉明距离 3，每块能纠 1 位翻转，落盘只存 4 位信息码。</p>
+
+<pre><code>def parity4(v):
+    return (v ^ (v >> 1) ^ (v >> 2) ^ (v >> 3)) &amp; 1
+
+def hamming84(nibble):
+    d0 = (nibble >> 0) &amp; 1
+    d1 = (nibble >> 1) &amp; 1
+    d2 = (nibble >> 2) &amp; 1
+    d3 = (nibble >> 3) &amp; 1
+    p1 = d0 ^ d1 ^ d3
+    p2 = d0 ^ d2 ^ d3
+    p4 = d1 ^ d2 ^ d3
+    p8 = parity4(d0 ^ d1 ^ d2 ^ d3)
+    return p1 | (p2 << 1) | (p4 << 2) | (d0 << 3) | (p8 << 4) | (d1 << 5) | (d2 << 6) | (d3 << 7)
+
+codes = [hamming84(n) for n in range(16)]
+dmin = min(bin(a ^ b).count("1") for i, a in enumerate(codes) for b in codes[i + 1:])
+print("codewords:", len(codes), "unique:", len(set(codes)), "min_distance:", dmin)
+print("correction capability:", (dmin - 1) // 2, "bit flip per block")
+print("stored bits per block: 4, weights per block: 8, bits per weight: 0.5")
+for n in (0, 5, 15):
+    code = hamming84(n)
+    flipped = code ^ (1 << 3)
+    print("nibble", n, "code", format(code, "08b"), "flipped", format(flipped, "08b"),
+          "distance_to_original", bin(flipped ^ code).count("1"))</code></pre>
+
+<p>预期输出（实测）：</p>
+
+<pre><code>codewords: 16 unique: 16 min_distance: 3
+correction capability: 1 bit flip per block
+stored bits per block: 4, weights per block: 8, bits per weight: 0.5
+nibble 0 code 00000000 flipped 00001000 distance_to_original 1
+nibble 5 code 01001101 flipped 01000101 distance_to_original 1
+nibble 15 code 11101111 flipped 11100111 distance_to_original 1</code></pre>
+
+<p>这就是"半比特"的字面含义：不是每个权重存半个 bit，而是 8 个权重合用 4 位信息码。代价是量化档位从任意值压到 16 级——所以 Any-Rate 要配合逐精度优化目标来补回精度损失。</p>
+
+<h2>要不要换，看三件事</h2>
+
+<p>第一，任务形态。长链 agentic、隐私文件处理、端侧常驻助手——这类场景值得试；单轮精确代码生成先跑你自己的回归集，别拿 SWE-bench 的总分替你做决定。第二，内存预算。按上面的账本把 KV cache 也算进去，再决定 5.9GB 的卡够不够。第三，许可证边界：Bonsai 权重是 Apache 2.0，Any-Rate 的仓库是另一套，商用前分别看清楚。</p>
+
+<p>顺带一提，量子位 2026-11-25 报道的另一条路线——9400 万参数硬刚 50 亿、权重显存降 98% 的 General Looped Model——走的是循环复用而不是量化。两条路都在回答同一个问题：把大模型塞进小设备，到底该省参数还是省位宽。</p>
+
+<p>素材来源：PrismML 官方发布页与白皮书（2026-11-24）、The Decoder 报道（2026-11-25）、arXiv:2611.34402（2026-11-25）、量子位（2026-11-25）。文中代码为本文原创，均在本地实测通过；benchmark 数字引自上述公开材料。</p>''',
+    'related': [('ARTEX 智能体攻击框架拆解：假胜利欺骗防御', 'blog/artex-agentic-attack-deception-2026/'), ('Qwen 3.8 27B 本地跑：llama.cpp 部署与 LLM-as-judge 实测', 'blog/qwen-3-8-27b-laptop-judge-2026/'), ('端侧 35B MoE 上手机：2bit 专家与按需加载', 'blog/on-device-35b-moe-phone-2026/')],
+},
+
+{
     'slug': 'github-weekly-alibaba-open-code-review-2026',
     'category': 'tooling',
     'date': '2026-11-25',
