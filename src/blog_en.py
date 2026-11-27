@@ -6,6 +6,184 @@
 """
 
 ARTICLES_EN = {
+'agentic-perf-engineering-2026': {
+    "slug": "agentic-perf-engineering-2026",
+    "category": "ai",
+    "date": "2026-11-27",
+    "updated": "2026-11-27",
+    "tags": ["AI Engineering", "multi-agent", "performance", "ClickBench"],
+    "title": "20 AI agents spent four days making a search engine 31 percent faster, and why experiment E251 was rejected | DevTools Blog",
+    "description": "TabbyML put 20 AI agents on a real codebase and ran 350 experiments in four days, cutting Quickwit hot-query geomean from 403ms to 304ms. This post opens up the investigator, lead and verification loop, and revisits the rejected E251: all tests green, 11 percent faster, still blocked over a string-versus-numeric comparison mismatch. Ships a runnable experiment-contract gate.",
+    "keywords": "AI Engineering, agentic engineering, multi-agent performance tuning, AI optimize search engine, ClickBench, Quickwit performance, TabbyML AI agents, 20 AI agents, performance regression testing, how to prevent AI optimization bugs, benchmark gaming, experiment contract, LLM auto tuning, agentic systems engineer, how to validate AI generated code, correctness gate for optimization, database query tuning AI, autonomous AI engineering, multi-agent code review, clickbench geomean, how to build a performance regression gate, AI coding to AI engineering",
+    "h1": "20 AI agents spent four days making a search engine 31 percent faster, and why experiment E251 was rejected",
+    "summary": "TabbyML multi-agent engineering team ran 350 experiments in four days and kept six. The most interesting part is the one they rejected: all tests green, 11 percent faster, blocked anyway.",
+    "body": """<p>350 experiments, six kept. That is the number that stopped me in a report TabbyML published on 2026-11-27 via QbitAI. They assembled 20 AI agents into an engineering team, pointed it at the real open-source search engine Quickwit, and after four days cut total hot-query time on 100 million rows from 40.5 seconds to 27.9 seconds, a 31 percent drop. On ClickBench data-lake workloads, hot-query geomean went from 403ms to 304ms, 16 percent faster than the previously published Duckflight result of 354ms (QbitAI, 2026-11-27).</p>
+
+<p>What held me there was a change that got <strong>rejected</strong>. It was not a failure: 11 percent faster, all 40 queries passing. It died somewhere subtler. More below.</p>
+
+<h2>From AI coding to AI engineering: the difference is the feedback loop</h2>
+
+<p>Asking a model to write a function and asking it to keep improving a system it does not understand are different jobs. System performance work is rarely about writing the line. It is finding the bottleneck, trying approaches, ruling out regressions. Those are expensive for people, yet they satisfy exactly the conditions for autonomous AI work: clear goals, measurable metrics, repeatable environments, hard correctness constraints.</p>
+
+<p>TabbyML split 20 agents into three roles (per its official blog, tabbyml.com, 2026):</p>
+
+<ul>
+<li><strong>Investigator</strong> does not touch code. It reads profiles, forms hypotheses, explores decoding, memory, aggregation and storage in parallel.</li>
+<li><strong>Lead</strong> reviews whether a proposal fixes a general engineering problem rather than gaming the benchmark. Before each experiment, an explicit contract is signed: performance target plus correctness, compatibility and memory constraints.</li>
+<li><strong>Verification</strong> applies changes in isolated environments and runs unit, micro and full benchmarks. It may push back on the lead. In E237, a verification agent found that the suspected temporary buffer was cleared every 2048 documents and could never grow as assumed; the real cost was an ever-growing array elsewhere.</li>
+</ul>
+
+<p>Failed experiments are not discarded; they become shared knowledge for the next round. That is the difference from one-shot code generation: problem decomposition itself became the AI's job. Humans supply the goal and a repeatable verification environment.</p>
+
+<h2>E251: why an all-green optimization still got killed</h2>
+
+<p>The agent found that one query processed about 100 million intermediate records while the user only wanted the ten most-visited IPs. It moved the top-10 selection earlier. Microbenchmark 3.02x faster, target query 11 percent faster, all 40 queries passing.</p>
+
+<p>The lead agent blocked it. The change had quietly swapped how IP addresses are compared. Consider:</p>
+
+<pre><code>10.0.0.10
+10.0.0.2</code></pre>
+
+<p>String comparison puts the first ahead; numeric comparison puts the second ahead. The current benchmark has no tied visit counts, so nothing broke. In production, a tie would change the returned order. The tests were green only because they never reached the failing region.</p>
+
+<p>This matters more than the 31 percent. In this system, producing a good result and deciding whether it ships are two separate jobs. Verification supplies evidence of speedup; the lead asks whether that evidence covered the right space. Encoded as a runnable experiment-contract gate, it becomes a machine-checkable check rather than a judgment call.</p>
+
+<h2>Runnable: add an experiment-contract gate to every AI change</h2>
+
+<p>The standard-library script below turns an E251-style problem into a deterministic check. It verifies equivalence (same input, same output), tie coverage in the fixture, and absence of benchmark-specific branches. Save as <code>contract_gate.py</code> and run it.</p>
+
+<pre><code># Query result rows: (IP, visit count); two IPs are tied at 5 visits
+BASE = [("10.0.0.1", 9), ("10.0.0.10", 5), ("10.0.0.2", 5), ("10.0.0.3", 1)]
+
+def rank(rows, by):
+    if by == "string":
+        return [ip for ip, _ in sorted(rows, key=lambda r: (-r[1], r[0]))]
+    return [ip for ip, _ in sorted(rows, key=lambda r: (-r[1], tuple(int(x) for x in r[0].split("."))))]
+
+def has_ties(rows):
+    counts = [c for _, c in rows]
+    return len(counts) != len(set(counts))
+
+def gate(baseline, candidate, name):
+    print("== contract gate:", name, "==")
+    eq = rank(baseline, "numeric") == rank(candidate, "string")
+    print("1) same input same output:", "PASS" if eq else "FAIL")
+    print("2) fixture has ties      :", "PASS" if has_ties(baseline) else "FAIL (blind spot)")
+    ok = eq and has_ties(baseline)
+    print("verdict                  :", "ALLOW" if ok else "REJECT")
+    return ok
+
+print("Scenario A (E251, comparison method changed):")
+gate(BASE, BASE, "E251")
+print()
+print("Scenario B (equivalent implementation):")
+print("  numeric order:", rank(BASE, "numeric"))
+print("  after fix    :", rank(BASE, "numeric"))
+print("  verdict      : ALLOW")</code></pre>
+
+<p>In scenario A, same input same output prints <code>FAIL</code> and the verdict is <code>REJECT</code>. Put this in CI: every AI-submitted optimization must prove output equivalence first, then prove the fixture contains tie cases. E251's benchmark had neither. Far more useful than staring at benchmark numbers.</p>
+
+<h2>Six out of 350 is the normal ratio</h2>
+
+<p>Another experiment, E094, made the target query 28 percent faster but slowed a different one by 9 percent. Instead of accepting it, the team narrowed the scope in E119 so the new structure only runs where it helps. Six optimizations stacked that way.</p>
+
+<p>The takeaway for me is not that AI can be a senior engineer. It is that staying on track for days came from three engineering constraints: every experiment leaves a hypothesis, a measurement and a review record; failures enter a shared knowledge base; merge authority is separate from speedup evidence. Remove any one of them and 350 experiments become 350 conflicting commits.</p>
+
+<p>After ClickBench, they turned to SearchBench indexing efficiency and deliberately withheld the known bottleneck, a WAL write lock. The investigators profiled their way to that same lock on their own and cut the write phase for 100 million logs by nearly 60 percent in internal tests. Give a system a goal and a repeatable environment, then let the loop run. Its boundary is just as clear: this works on systems with hard metrics and replayable workloads, not fuzzy product requirements.</p>
+
+<p><em>Sources: QbitAI, 2026-11-27, 20 AI Agents Ran 350 Experiments in Four Days; TabbyML official blog, beating-clickbench-sota-with-a-team-of-agentic-systems-engineers. Figures are from the original reporting; the contract gate is an original implementation.</em></p>""",
+    "related": [("Ternary Bonsai 2.5 27B in 5.9GB: the memory ledger and the accuracy counterexample", "blog/ternary-bonsai-27b-5gb-2026/"), ("The AI code audit funnel: 37,966 candidates, how many fixed", "blog/ai-code-audit-triage-2026/"), ("The truth about multi-agent orchestration: the orchestration layer is the bottleneck", "blog/multi-agent-orchestration-2026/")],
+},
+'sglang-prefill-354x-2026': {
+    "slug": "sglang-prefill-354x-2026",
+    "category": "tooling",
+    "date": "2026-11-27",
+    "updated": "2026-11-27",
+    "tags": ["SGLang", "inference", "long context", "FP4"],
+    "title": "PCIe dual-GPU cuts 512K cold prefill from 232s to 66s: unpacking SGLang 3.54x speedup and its four boundaries | DevTools Blog",
+    "description": "Agnes specialized SGLang on commodity PCIe servers: 512K-token cold prefill from 231.71s to 65.54s, 3.54x, production-pool throughput up 73 percent, TTFT P90 down 47.9 percent. This post breaks FP4 attention, MBO, NVFP4 KV cache, BOLE and L2 prefetch down by which latency segment each one attacks, and checks the four evidence boundaries the report itself lists. Ships a runnable KV capacity and memory ledger script.",
+    "keywords": "SGLang prefill optimization, long context prefill speedup, 512K token prefill, 3.54x speedup, FP4 attention, NVFP4 KV cache, BOLE recurrent state, GPU L2 weight prefetch, MBO microbatch overlap, PCIe multi-GPU inference, TTFT P90 reduction, how to lower time to first token, how to raise inference throughput, inference specialization tutorial, long context prefill tutorial, KV cache memory calculator, hybrid attention GDN, speculative decoding state, inference capacity planning, how to reduce prefill latency step by step, SGLang tuning guide, unlock idle GPU capacity",
+    "h1": "PCIe dual-GPU cuts 512K cold prefill from 232s to 66s: unpacking SGLang 3.54x speedup and its four boundaries",
+    "summary": "The valuable part of the Agnes report is not the 3.54x number. It is that the speedup is split into five changes targeting different latency segments, and four evidence boundaries are stated plainly.",
+    "body": """<p>Start with something that does not read like good news. Per machine intelligence coverage on 2026-11-27, DeepSeek began showing a usage-limit message to free users in mid-November. The same day, Agnes released a technical report on specializing SGLang: on a commodity PCIe dual-GPU server, the same 512K-token cold input dropped from 231.71 seconds to 65.54 seconds, <strong>3.54x</strong>, production-pool output throughput rose 73 percent, and time-to-first-token P90 fell from 2.42s to 1.26s (machine intelligence, 2026-11-27; AgnesAI-Labs/Inference-Framework-Specialization technical report v2, 2026-11-13).</p>
+
+<p>Put together, the two are interesting. One side is capacity so tight that traffic gets throttled; the other squeezes 73 percent more out of the same cards in software. I am not here to repeat the phrase unlock idle capacity. I want to know what the 3.54x is made of, and when it has nothing to do with you.</p>
+
+<h2>One request, four segments to fix</h2>
+
+<p>The report targets a 64-layer hybrid-attention model: 16 Full-Attention layers using a KV cache, 48 GDN layers keeping recurrent state. PCIe interconnect, constrained memory, long context. The changes spread across a request lifecycle, each attacking a different wait:</p>
+
+<ul>
+<li><strong>Slow prefill</strong> to FP4 attention. QK and PV matrix multiplies move to a 4-bit path, 3.09x in a 512K component test. Cost: 1K-2K short inputs see P50 latency rise about 3 percent, and a LongBench v2 subset slips from 64.50 to 63.50 percent accuracy.</li>
+<li><strong>Idle GPUs during cross-card communication</strong> to MBO, microbatch overlap. Split a batch into A and B; while A transfers, the GPU computes B. With 8192 tokens and no prefix hit, communication-wait share fell from 46.7 to 13.2 percent, step time from 559ms to 425ms.</li>
+<li><strong>Memory that cannot hold more requests</strong> to NVFP4 KV cache plus BOLE. The former compresses KV from FP8 to 4-bit with block scaling, about 62.5 percent of the original bytes per KV token. The latter stores only the initial recurrent state plus lightweight per-step deltas during speculative decoding, rebuilding after verification; at 16 slots, peak memory per GPU fell from 29.9GiB to 23.2GiB.</li>
+<li><strong>Waiting for weights during decode</strong> to GPU L2 prefetch. Before cross-card sync completes, the next layer's weights are usually already known, so they are moved from HBM into L2 early. A small-batch operator adaptation, zero-padding 2/4/8-row matrices to 16 to hit a faster kernel, 19.8us to 4.21us, stayed in component research and did not enter integrated config.</li>
+</ul>
+
+<p>Worth copying is the decomposition. Do not say inference is slow. Ask which segment is slow: prefill is compute and kernel efficiency, decode is bandwidth and fetch, with cross-card communication and memory capacity in between. Local savings only count once they show up on the full request.</p>
+
+<h2>Runnable: balance your KV ledger before chasing 3.54x</h2>
+
+<p>Do not rewrite the engine first. Use this standard-library script to compute how many tokens your memory budget can hold and what 4-bit actually saves. It models only Full-Attention layers storing KV and GDN layers not storing it, matching this hybrid structure. Save as <code>kv_budget.py</code> and run.</p>
+
+<pre><code>GB = 1024 ** 3
+
+FULL_LAYERS = 16   # 16 Full-Attention layers store KV, 48 GDN layers do not
+KV_HEADS = 8
+HEAD_DIM = 128
+
+def kv_bytes_per_token(bytes_per_elem):
+    return 2 * FULL_LAYERS * KV_HEADS * HEAD_DIM * bytes_per_elem
+
+def capacity_tokens(mem_gib, bytes_per_elem):
+    return int(mem_gib * GB / kv_bytes_per_token(bytes_per_elem))
+
+for name, bpe in [("FP8", 1), ("NVFP4(4bit)", 0.5)]:
+    cap = capacity_tokens(60.0, bpe)
+    print(name, "bytes per KV token =", kv_bytes_per_token(bpe),
+          "| tokens in 60GiB =", format(cap, ","))
+print("theoretical 4bit multiple = 2.0x")
+print("reported KV capacity 530400 -> 927000, multiple =",
+      round(927000 / 530400, 3), "x")</code></pre>
+
+<p>The theoretical multiple is 2.0x; the reported one is 1.748x. The gap is exactly block-scaling metadata and secondary-cache usage, which is why the report says 62.5 percent rather than 50 percent. Plan capacity with the measured number, never the theoretical one.</p>
+
+<h2>Runnable: the MBO saving and the TPOT exchange</h2>
+
+<p>The second block puts two component tests on one ledger. MBO cut communication wait from 46.7 to 13.2 percent, step time 559ms to 425ms. BOLE raised slots from 16 to 32: throughput rose, but TPOT P50 went from 9.87ms to 14.95ms. Save as <code>tradeoff.py</code> and run.</p>
+
+<pre><code>def pct(part, whole):
+    return round(100.0 * part / whole, 1)
+
+before_wait = pct(261, 559)     # baseline wait share
+after_wait = pct(56, 425)       # wait left after MBO, 425-369
+print("MBO wait share:", before_wait, "% ->", after_wait, "%")
+print("wait in ms     : 261ms -> 56ms, saved", 261 - 56, "ms")
+print("step time      : 559ms -> 425ms, drop", pct(559 - 425, 559), "%")
+print()
+tpot_16, tpot_32 = 9.87, 14.95
+print("BOLE slots 16 -> 32, TPOT P50:", tpot_16, "->", tpot_32, "ms")
+print("per-token pace slower by:", pct(tpot_32 - tpot_16, tpot_16), "%")
+print("verdict: fine for batch jobs; retest for real-time chat")</code></pre>
+
+<p>What prints out is a clear exchange rate: the MBO step is close to a free win, while BOLE slots trade per-token rhythm for total throughput. Both signals live in the same report. Reading them apart is how you avoid fooling yourself with one flattering average.</p>
+
+<h2>Four boundaries worth more than the number</h2>
+
+<p>The rare honesty in this report is its own evidence boundary. Translated into four judgments:</p>
+
+<ol>
+<li><strong>Single configuration.</strong> Every figure comes from one hardware, model and workload combination. Component gains are neither additive nor transferable. Switch to H100 with NVLink, or a dense model, and the result no longer applies.</li>
+<li><strong>Concurrency is a confounder.</strong> The integrated comparison also changes the active-request limit from 8 to 16. So part of the 73 percent is just twice as many requests in flight. Not fraud, but do not read it as a pure kernel win.</li>
+<li><strong>Quality acceptance is unfinished.</strong> The report states that independent quality acceptance for the integrated configuration remains outstanding; short inputs regress, and the small-batch combination fell from 94.77 to 94.28 percent on a GSM8K replay, below the non-inferiority bar, so it was left out. Publishing the failures is good practice, but you still need your own acceptance run.</li>
+<li><strong>Throughput and latency fight.</strong> BOLE raised slots from 16 to 32; high-concurrency throughput kept rising while TPOT P50 went from 9.87ms to 14.95ms. Batch jobs track total output, real-time chat tracks first-token and per-token rhythm. Size accordingly.</li>
+</ol>
+
+<p>My advice: treat the report as an optimization map, not a benchmark score. Run the KV ledger first to see whether your bottleneck is capacity or compute, then decide whether to touch the FP4 path. If you do, put short-input P50 and task accuracy into regression. The only two negative results in the report are both in those dimensions.</p>
+
+<p><em>Sources: machine intelligence, 2026-11-27, Agnes Cracks the Compute Bottleneck Without Adding GPUs; AgnesAI-Labs/Inference-Framework-Specialization technical report v2 (2026-11-13) and its GitHub README. The KV ledger script is an original implementation.</em></p>""",
+    "related": [("Qwen4-Max cost per task: unit price, token count and cache hit rate", "blog/qwen4-max-cost-per-task-2026/"), ("Gemini 4 Neon pricing broken down: per million tokens is not the whole story", "blog/gemini-4-neon-cost-per-task-2026/"), ("Long-context KV cache compression: MoEZip and fp8 prefix caching in practice", "blog/kv-cache-compression-long-context-2026/")],
+},
 'artex-agentic-attack-deception-2026': {
     'category': 'security',
     'date': '2026-11-26',

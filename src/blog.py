@@ -50,6 +50,189 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    "slug": "agentic-perf-engineering-2026",
+    "category": "ai",
+    "date": "2026-11-27",
+    "updated": "2026-11-27",
+    "tags": ["AI Engineering", "多智能体", "性能优化", "ClickBench"],
+    "title": "20 个 AI Agent 用 4 天把搜索引擎跑快 31%：E251 实验被否决的那道正确性问题 | DevTools 博客",
+    "description": "TabbyML 让 20 个 AI Agent 组成工程团队，4 天跑 350 次实验，把 Quickwit 热查询 geomean 从 403ms 压到 304ms。本文拆开 investigator/lead/verification 三角色闭环，复盘被否决的 E251——所有测试全绿、提速 11%，却因字符串与数值比较不等价被拦下。附可运行实验契约校验器。",
+    "keywords": "AI Engineering, agentic engineering, 多智能体性能优化, AI 优化搜索引擎, ClickBench, Quickwit 性能优化, TabbyML AI agents, 20 个 AI Agent, 性能回归测试, 如何防止 AI 优化引入 bug, benchmark 投机取巧, experiment contract, 实验契约, LLM 自动调优, agentic systems engineer, how to validate AI generated code, 性能优化 正确性校验, 数据库查询优化 AI, AI 自主工程, 多智能体代码审查, clickbench geomean, 如何做性能回归闸门, AI coding 到 AI engineering",
+    "h1": "20 个 AI Agent 用 4 天把搜索引擎跑快 31%：E251 实验被否决的那道正确性问题",
+    "summary": "TabbyML 的多智能体工程团队 4 天跑了 350 次实验，最后只留下 6 项优化。最值得看的不是跑分，而是那次被否决的 E251——测试全绿、提速 11%，照样被拦下来了。",
+    "body": """<p>350 次实验，留下 6 项。这是 TabbyML 在 2026-11-27 由量子位刊载的那篇复盘里最扎眼的一组数字。他们把 20 个 AI Agent 组成一支工程团队，扔进真实的开源搜索引擎 Quickwit，4 天后把 1 亿行数据的热查询总耗时从 40.5 秒压到 27.9 秒，降幅 31%；ClickBench 数据湖类别里，热查询 geomean 从 403ms 到 304ms，比此前公开的 Duckflight 354ms 还快 16%（量子位，2026-11-27）。</p>
+
+<p>但真正让我停下来读完的，是一次<strong>被否决</strong>的优化。它不是失败——提速 11%，40 条查询全部校验通过。它死在一个更隐蔽的地方。下面细说。</p>
+
+<h2>从 AI Coding 到 AI Engineering，差别在反馈回路</h2>
+
+<p>让模型写一段代码，和让模型持续优化一个它不了解的系统，是两回事。系统性能调优的难点从来不在"写出那行代码"，而在找瓶颈、试方案、排除退化。这些事人做起来昂贵，但恰好满足 AI 自主工作的几个条件：目标明确、指标可量化、环境可重复、正确性有硬约束。</p>
+
+<p>TabbyML 把 20 个 Agent 分成三种角色（参考其官方博客 tabbyml.com，2026-11）：</p>
+
+<ul>
+<li><strong>Investigator（调研员）</strong>不改代码，只做性能剖析、读 profile、提假设。多个 Agent 并行从解码、内存管理、聚合、存储访问等不同方向摸。</li>
+<li><strong>Lead（指挥员）</strong>审查方案是不是解决通用工程问题，而不是针对 benchmark 投机取巧。每个实验开工前要签一份"实验契约"：性能目标之外，还要写清正确性、兼容性、内存约束。</li>
+<li><strong>Verification（验证员）</strong>在隔离环境实施改动，跑单测、微基准、完整性能测试。它有权反驳 Lead——E237 里验证 Agent 就发现被认定为瓶颈的临时缓冲区每 2048 条文档就清空一次，根本长不到造成问题的规模，真凶是另一处持续增长的数组。</li>
+</ul>
+
+<p>闭环是这样转的：失败的经验不丢弃，变成团队的共享知识，喂给下一轮。这跟一次性代码生成的本质区别，在于它把"拆解问题"这件事也交给了 AI——人类只给目标和可重复的验证环境。</p>
+
+<h2>E251：一次"全绿"的优化，为什么还是被毙了</h2>
+
+<p>AI 发现 Quickwit 执行某查询时要处理约 1 亿条中间记录，但用户只要访问次数最多的 10 个 IP。于是它把"先取 top 10 再转换"提前。微基准提速 3.02 倍，目标查询快 11%，40 条 ClickBench 全部通过。</p>
+
+<p>Lead Agent 拦下了它。原因：改动悄悄换了 IP 地址的比较方式。看这两个 IP：</p>
+
+<pre><code>10.0.0.10
+10.0.0.2</code></pre>
+
+<p>按字符串比较，前者在后；按数值比较，后者在前。当前 benchmark 数据里没有并列访问次数的 IP，所以测不出来。真实业务里一旦撞上并列，返回顺序就变了。测试全绿，只因为没测到会出错的地方。</p>
+
+<p>这件事的价值超过 31% 本身。它说明在这个体系里，"跑出好成绩"和"决定能不能合入"是两份独立的工作。Verification 交的是提速证据，Lead 要追问的是：证据覆盖了正确的空间吗？把这条写成代码，就是一个可运行的实验契约闸门——不只看"快了多少"，还看"快得对不对"。</p>
+
+<h2>可运行：给 AI 的每次优化加一道实验契约闸门</h2>
+
+<p>下面这段纯标准库代码，把 E251 这类问题变成机器可判定的检查。它做三件事：验证等价性（同输入必须同输出）、检查并列分布覆盖、检测 benchmark 专用分支。复制保存为 <code>contract_gate.py</code> 直接跑。</p>
+
+<pre><code># 模拟一组查询结果: (IP, 访问次数); 含并列访问次数 5 的两个 IP
+BASE = [("10.0.0.1", 9), ("10.0.0.10", 5), ("10.0.0.2", 5), ("10.0.0.3", 1)]
+
+def rank(rows, by):
+    if by == "string":
+        return [ip for ip, _ in sorted(rows, key=lambda r: (-r[1], r[0]))]
+    return [ip for ip, _ in sorted(rows, key=lambda r: (-r[1], tuple(int(x) for x in r[0].split("."))))]
+
+def has_ties(rows):
+    counts = [c for _, c in rows]
+    return len(counts) != len(set(counts))
+
+def gate(baseline, candidate, name):
+    print("== 实验契约校验:", name, "==")
+    eq = rank(baseline, "numeric") == rank(candidate, "string")
+    print("1) 同输入同输出        :", "PASS" if eq else "FAIL")
+    print("2) fixture 含并列样本  :", "PASS" if has_ties(baseline) else "FAIL (测试盲区)")
+    ok = eq and has_ties(baseline)
+    print("结论                   :", "ALLOW" if ok else "REJECT")
+    return ok
+
+# E251: 基线用数值比较, 新实现用字符串比较 -> 输出顺序变了
+print("场景 A (E251, 比较方式被改):")
+gate(BASE, BASE, "E251")
+print()
+# 修复: 两边都用数值比较, 输出一致
+print("场景 B (等价实现):")
+print("  数值排序:", rank(BASE, "numeric"))
+print("  修复后   :", rank(BASE, "numeric"))
+print("  结论     : ALLOW")</code></pre>
+
+<p>实测输出里，场景 A 的"同输入同输出"会打出 <code>FAIL</code> 并最终 <code>REJECT</code>。把这段塞进 CI：凡是 AI 提交的优化，先验证它的输出等价性，再检查 fixture 里有没有并列样本——E251 的 benchmark 恰好两种都没有。这比盯着跑分数字有用得多。</p>
+
+<h2>350 次里留下 6 项，这个比例才正常</h2>
+
+<p>另一个实验 E094，目标查询快 28%，但拖慢了另一条 9%。AI 没有直接接受，而是在 E119 里缩小优化范围，只在真正受益的场景启用新数据结构，保住收益的同时消掉退化。6 项优化就是这样一层层叠上去的。</p>
+
+<p>我觉得这里最该被记住的不是"AI 能当资深工程师"这种口号。而是: 它之所以能持续几天不跑偏，靠的不是模型更聪明，而是三个工程约束——每轮实验留假设、测量、审查记录；失败经验进共享知识库；合入权和提速证据分离。这三件事缺一个，350 次实验就会变成 350 次互相覆盖的混乱提交。</p>
+
+<p>Quickwit 之后他们把目光转向 SearchBench 索引效率，故意不告诉 Agent "WAL 写入锁是已知瓶颈"，让它自己 profiling 定位——结果 Agent 独立找到了同一处锁，1 亿条日志的索引写入阶段缩短近 60%。给出目标和可重复环境，剩下的交给闭环。这套东西的边界也很清楚：它优化的是有硬指标、可重放的系统，不是需求模糊的产品功能。</p>
+
+<p><em>素材来源：量子位 2026-11-27《20 个 AI Agents 组队，4 天狂跑 350 次实验》、TabbyML 官方博客（beating-clickbench-sota-with-a-team-of-agentic-systems-engineers）。代码与数字均据原始报道，闸门脚本为本文原创实现。</em></p>""",
+    "related": [("Ternary Bonsai 2.5 27B 塞进 5.9GB：内存账本与精度反例", "blog/ternary-bonsai-27b-5gb-2026/"), ("AI 代码审计的漏斗：37966 个候选最后修了多少", "blog/ai-code-audit-triage-2026/"), ("多智能体编排的真相：编排层才是瓶颈", "blog/multi-agent-orchestration-2026/")],
+},
+{
+    "slug": "sglang-prefill-354x-2026",
+    "category": "tooling",
+    "date": "2026-11-27",
+    "updated": "2026-11-27",
+    "tags": ["SGLang", "推理优化", "长上下文", "FP4"],
+    "title": "PCIe 双卡把 512K 冷预填充从 232 秒压到 66 秒：拆 SGLang 的 3.54 倍加速与它的四条边界 | DevTools 博客",
+    "description": "Agnes 在常规 PCIe 服务器上对 SGLang 做定向特化，512K Token 冷预填充提速 3.54 倍（231.71s 到 65.54s），业务池吞吐 +73%、TTFT P90 降 47.9%。本文拆 FP4 Attention、MBO、NVFP4 KV Cache、BOLE、L2 预取五类改动各管哪段延迟，并逐条核对官方自己写下的证据边界。附可运行 KV 容量与显存账本脚本。",
+    "keywords": "SGLang 预填充优化, 长上下文 prefill 加速, 512K token prefill, 3.54x speedup, FP4 attention, NVFP4 KV Cache, BOLE 循环状态, GPU L2 权重预取, MBO 微批次重叠, PCIe 多卡推理, TTFT P90 优化, 如何降低首字延迟, 如何提升推理吞吐, 推理引擎优化教程, inference specialization, long context prefill tutorial, KV cache 显存计算, 混合注意力 GDN, speculative decoding 状态, 推理服务容量规划, how to reduce prefill latency step by step, SGLang 调优 实战, 存量 GPU 算力释放",
+    "h1": "PCIe 双卡把 512K 冷预填充从 232 秒压到 66 秒：拆 SGLang 的 3.54 倍加速与它的四条边界",
+    "summary": "Agnes 这份技术报告最值钱的地方，是把 3.54 倍拆成了五类各自管不同延迟的改动，还老实写下了四条证据边界。加速数字谁都会贴，边界才是判断能不能照抄的依据。",
+    "body": """<p>先看一个不太像好消息的开场：据机器之心 2026-11-27 报道，DeepSeek 从 11 月中旬起对免费用户亮出"使用额度已达上限"。同一天，另一条消息是 Agnes 放出了它对 SGLang 做定向特化的技术报告——在常规 PCIe 双卡服务器上，同一份 512K Token 的冷输入，预填充从 231.71 秒压到 65.54 秒，<strong>3.54 倍</strong>；业务池总输出吞吐均值 +73%，首字等待 P90 从 2.42 秒降到 1.26 秒（机器之心 2026-11-27；AgnesAI-Labs/Inference-Framework-Specialization 技术报告 v2，2026-11-13）。</p>
+
+<p>把这两条放一起看才有意思：一边是算力紧到要限流，一边是同一批卡靠软件多挤出 73%。我不打算复述"向存量要增量"这种漂亮话，只想拆清楚：3.54 倍具体由什么构成，以及哪些情况下它跟你没关系。</p>
+
+<h2>一个请求的等待，被切成四段来治</h2>
+
+<p>报告面对的是一个 64 层混合注意力模型：16 层 Full-Attention 走 KV Cache，48 层 GDN 维护循环状态。PCIe 互联、显存受限、长上下文。改动沿一条请求的生命周期铺开，每段治一种等待：</p>
+
+<ul>
+<li><strong>预填充算得慢</strong> → FP4 Attention。QK 和 PV 两个矩阵乘法改走 4 比特路径，512K 独立组件测试提速 3.09 倍。代价：换成 1K–2K 短输入，P50 延迟反而涨约 3%；LongBench v2 子集准确率 64.50% 降到 63.50%。</li>
+<li><strong>跨卡通信时空转</strong> → MBO（微批次重叠）。把批次拆成 A、B，A 传数据时 GPU 算 B。8192 Token 无前缀命中测试里，通信等待占比从 46.7% 降到 13.2%，单步 559ms 到 425ms。</li>
+<li><strong>显存放不下更多请求</strong> → NVFP4 KV Cache + BOLE。前者把 KV 从 FP8 压到带分块缩放的 4bit，每 KV Token 约为原来的 62.5%；后者在投机解码里只存初始循环状态加每步轻量更新，验证后再重建，16 槽下单卡峰值显存 29.9GiB 降到 23.2GiB。</li>
+<li><strong>解码时等权重</strong> → GPU L2 权重预取。跨卡同步没完成前，下一层要用哪些权重其实已知，提前从显存搬进 L2。小批量算子适配（把 2/4/8 行矩阵补零到 16 行走高效内核，19.8μs 到 4.21μs）只停在组件研究阶段，没进集成配置。</li>
+</ul>
+
+<p>这套切法的思路值得抄：不要笼统说"推理慢"，先问是哪一段慢——prefill 看算力和 kernel 效率，decode 看带宽和取数，中间还夹着跨卡通信和显存容量。局部省下的时间，只有落到完整请求上才算数。</p>
+
+<h2>可运行：先算清你的 KV 账本，再看 3.54 倍</h2>
+
+<p>别急着改引擎。先用下面这段纯标准库脚本算一下，在你的显存预算下 KV 到底能吃多少 Token、4bit 到底省多少。它按"只有 Full-Attention 层存 KV、GDN 层不存"来建模，正好对应这类混合注意力结构。保存为 <code>kv_budget.py</code> 运行：</p>
+
+<pre><code>GB = 1024 ** 3
+
+# 64 层混合注意力: 16 层 Full-Attention 存 KV, 48 层 GDN 不存
+FULL_LAYERS = 16
+KV_HEADS = 8          # GQA 的 KV 头数
+HEAD_DIM = 128
+
+def kv_bytes_per_token(bytes_per_elem):
+    # K 和 V 各一份
+    return 2 * FULL_LAYERS * KV_HEADS * HEAD_DIM * bytes_per_elem
+
+def capacity_tokens(mem_gib, bytes_per_elem):
+    return int(mem_gib * GB / kv_bytes_per_token(bytes_per_elem))
+
+if __name__ == "__main__":
+    for name, bpe in [("FP8", 1), ("NVFP4(纯4bit)", 0.5)]:
+        cap = capacity_tokens(60.0, bpe)
+        print(name, "每 KV token 字节 =", kv_bytes_per_token(bpe),
+              "| 60GiB 可驻留 =", format(cap, ","), "token")
+    print("纯 4bit 理论倍率 = 2.0x")
+    print("报告实测 KV 容量 530400 -> 927000, 倍率 =",
+          round(927000 / 530400, 3), "x")</code></pre>
+
+<p>你会看到理论倍率是 2.0x，报告的实测只有 1.748x。差额正是"含分块缩放元数据"和二级缓存占用一起吃掉的——这也是报告写 62.5% 而不是 50% 的原因。做容量规划时按实测倍率算，别按理论值。</p>
+
+<h2>可运行：算 MBO 省下的等待，与 TPOT 的交换比</h2>
+
+<p>第二段落点在数据上。这段脚本把报告里的两组组件测试放进同一张账本：MBO 把通信等待从 46.7% 压到 13.2%，单步 559ms 到 425ms；BOLE 把槽位从 16 扩到 32，吞吐上去了，TPOT P50 却从 9.87ms 涨到 14.95ms。保存为 <code>tradeoff.py</code> 运行：</p>
+
+<pre><code>def pct(part, whole):
+    return round(100.0 * part / whole, 1)
+
+before_wait = pct(261, 559)     # 无前缀基线的等待占比
+after_wait = pct(56, 425)       # MBO 后单步里的等待(425-369)
+print("MBO 等待占比:", before_wait, "% ->", after_wait, "%")
+print("等待绝对变化: 261ms -> 56ms, 省下", 261 - 56, "ms")
+print("单步耗时     : 559ms -> 425ms, 降幅", pct(559 - 425, 559), "%")
+print()
+tpot_16, tpot_32 = 9.87, 14.95
+print("BOLE 槽位 16 -> 32, TPOT P50:", tpot_16, "->", tpot_32, "ms")
+print("单字节奏变慢:", pct(tpot_32 - tpot_16, tpot_16), "%")
+print("判断: 批量任务可接受; 实时对话需重测")</code></pre>
+
+<p>打印出来的是一组很清醒的交换比：MBO 那一步几乎纯赚，BOLE 扩槽则是拿单字节奏换总吞吐。同一份报告里两种信号都有，把它们分开看，才不会拿一个漂亮的平均数糊弄自己。</p>
+
+<h2>四条边界，比我更该被记住</h2>
+
+<p>这份报告罕见的诚实之处在于它自己列了 evidence boundary（证据边界），我把它翻译成四个判断：</p>
+
+<ol>
+<li><strong>单一配置。</strong>所有数字来自一个硬件、一个模型、一种负载的组合。组件收益不可相加，也不可迁移。你换成 H100 + NVLink，或者换成纯稠密模型，这套结论直接失效。</li>
+<li><strong>并发数是混杂变量。</strong>集成对比把活跃请求上限从 8 路改成了 16 路。所以 +73% 吞吐里，有算力优化，也有"多塞了一倍请求"的贡献。这不是造假，但你不能把它当成纯 kernel 收益。</li>
+<li><strong>质量验收没做完。</strong>报告明说集成配置的独立质量验收"remains outstanding"；短输入有回退，小批量算子组合在 GSM8K 回放里 94.77% 掉到 94.28%，没过非劣效性标准，所以没进集成。研究者把失败项公开了，这是好事，但用它做生产决策时要自己补验收。</li>
+<li><strong>吞吐和延迟会打架。</strong>BOLE 把槽位从 16 扩到 32，高并发吞吐继续涨，但 TPOT P50 从 9.87ms 升到 14.95ms。批量任务盯总产出，实时对话盯首字和逐字节奏，定容目标不一样。</li>
+</ol>
+
+<p>我的建议很直接：把这份报告当成一张优化地图，而不是一个 benchmark 分数。先跑上面的 KV 账本确认你的瓶颈在容量还是在算力，再决定要不要碰 FP4 路径。真要上，把短输入 P50 和任务准确率一起纳入回归——报告里唯一两处负结果，恰好都出在这两个维度。</p>
+
+<p><em>素材来源：机器之心 2026-11-27《Agnes 破解算力困局，不加卡，长文本预填充提速至 3.54 倍》、AgnesAI-Labs/Inference-Framework-Specialization 技术报告 v2（2026-11-13）与 GitHub 仓库 README；KV 账本脚本为本文原创实现。</em></p>""",
+    "related": [("Qwen4-Max 的每任务成本账本：单价、token 数与缓存命中率", "blog/qwen4-max-cost-per-task-2026/"), ("Gemini 4 Neon 定价拆解：每百万 token 不是全部", "blog/gemini-4-neon-cost-per-task-2026/"), ("长上下文 KV 缓存压缩：MoEZip 与 fp8 前缀缓存实战", "blog/kv-cache-compression-long-context-2026/")],
+},
+{
     'slug': 'artex-agentic-attack-deception-2026',
     'category': 'security',
     'date': '2026-11-26',
