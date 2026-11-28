@@ -6,6 +6,284 @@
 """
 
 ARTICLES_EN = {
+'glm-5-4-loop-transformer-2026': {
+    "slug": "glm-5-4-loop-transformer-2026",
+    "category": "ai",
+    "date": "2026-11-28",
+    "updated": "2026-11-28",
+    "tags": ["GLM-5.4", "Loop Transformer", "KV cache", "inference cost"],
+    "title": "What GLM-5.4 Loop Transformer Actually Saves: The KV, Token and Latency Ledger | DevTools Blog",
+    "description": "Zhipu GLM-5.4 runs 28 shared layers twice and claims 750B intelligence at the 2T-3T level. Reproducible scripts unpack gated updates, hybrid KV cache and sparse index reuse, then price the context snowball behind 107 model requests.",
+    "keywords": "GLM-5.4, how to use GLM-5.4, GLM-5.4 benchmark, GLM-5.4 open weights, Loop Transformer, loop transformer tutorial, recurrent depth, 28 layers run twice, GLM-5.4 KV cache budget, gated progressive updates, sparse attention index reuse, context caching for agents, how to reduce LLM latency, GLM-5.4 API pricing, GLM-5.4 vs Kimi K3.1, long context inference cost, agentic coding cost, token budget gate, model routing for hard tasks, transformer inference economics, 1M context KV cache, AI coding model selection",
+    "h1": "What GLM-5.4 Loop Transformer Actually Saves: The KV, Token and Latency Ledger",
+    "summary": "GLM-5.4 runs 28 shared layers twice. Parameters stay flat while compute depth rises. The KV cache saving is real; the request snowball in long agent runs is the other half of the bill.",
+    "body": """<p>Start with numbers that do not look like a model launch post. In a test published by QbitAI on 2026-11-28, the same task set took GLM-5.3 28 minutes 2 seconds and GLM-5.4 1 hour 19 minutes 9 seconds. The 43 minutes 14 seconds of difference came almost entirely from one Blender task, where one round issued 107 model requests that returned usage data against 28 for GLM-5.3. Zhipu calls the behavior marathon thinking in its 2026-11-23 technical post.</p>
+
+<p>The other set of numbers is about savings. The official post says a second loop at 1M context costs one sliding window of KV cache instead of another full copy. In a 30B iso-parameter control, about 10% more training compute produced clear gains and average output length fell 10% to 14% on most benchmarks. The Hacker News thread on 2026-11-28 reached 1186 points and 388 comments; the argument was about whether the depth is free.</p>
+
+<p>My take: the saved part and the spent part are separate ledgers. The saved part is KV memory and indexing. The spent part is request count in long tasks. Mix them and you get two wrong conclusions: that looping is free, or that looping is slow.</p>
+
+<h2>Loop Transformer is not just running the same weights twice</h2>
+
+<p>The official path (z.ai, 2026-11-23) starts from a pretrained GLM-5 base and turns the middle 28 layers into a two-pass weight-shared loop. Training a looped model from scratch is explicitly rejected: under the same pretraining compute it loses to ordinary stacking.</p>
+
+<p>Three side effects have to be handled:</p>
+
+<ul>
+<li><strong>Gated progressive updates.</strong> Overwriting the residual stream with the second-pass candidate blows up activation norms across iterations, so downstream layers see out-of-distribution inputs. Each token and each pass gets its own write gate. Pass one writes conservatively to build global context; pass two opens wider to refine. Harder tokens get a wider first-pass gate so they benefit earlier.</li>
+<li><strong>Hybrid KV cache.</strong> The naive version stores a full KV copy per iteration. Instead, pass two reuses the global sparse KV selected in pass one and keeps only its own local sliding window. One position can therefore hold two representations at different depths.</li>
+<li><strong>Sparse attention index reuse.</strong> The base model already has an indexer. Pass two reuses its selected indices instead of rescanning the full context. The official experiments report near-identical quality to recomputing indices every pass.</li>
+</ul>
+
+<p>A community teardown on 2026-11-28 sketches the forward pass as first 26 layers, middle 28 layers twice, last 24 layers, or 106 layer applications. It also assumes a 128-token sliding window. Those are not official parameters; the calculation below treats them as inputs, not conclusions.</p>
+
+<h2>KV ledger: the second pass adds one window</h2>
+
+<p>Translated into arithmetic, a naive second pass stores N more tokens of KV while the hybrid design stores W more, where N is context length and W is window size. Standard library only, no network.</p>
+
+<pre><code># stdlib only; run: python kv_budget.py
+CONTEXT = 1000000
+WINDOW = 128
+KV_PER_TOKEN = 64 * 1024
+
+full_cache = CONTEXT * KV_PER_TOKEN / (1024 ** 3)
+extra_cache = WINDOW * KV_PER_TOKEN / (1024 ** 2)
+ratio_pct = WINDOW / CONTEXT * 100
+factor = full_cache * 1024 / extra_cache
+
+print("GLM-5.4 hybrid KV budget (assumed per-token KV = 64 KiB)")
+print("context tokens         :", CONTEXT)
+print("naive second pass full :", f"{full_cache:.2f} GiB")
+print("hybrid sliding window  :", f"{extra_cache:.2f} MiB")
+print("extra ratio            :", f"{ratio_pct:.4f}%")
+print("saving factor          :", f"{factor:.1f}x")</code></pre>
+
+<p>Output:</p>
+
+<pre><code>GLM-5.4 hybrid KV budget (assumed per-token KV = 64 KiB)
+context tokens         : 1000000
+naive second pass full : 61.04 GiB
+hybrid sliding window  : 8.00 MiB
+extra ratio            : 0.0128%
+saving factor          : 7812.5x</code></pre>
+
+<p>64 KiB per token is an example, since the real value depends on MLA compression and implementation details. Swap in your own measured number and the direction holds: at 1M context a sliding window and a full cache are not in the same league. That is how Zhipu can add depth while quoting 70 to 80 tokens per second at peak and 200 off peak.</p>
+
+<h2>Latency ledger: 107 requests are the marathon thinking</h2>
+
+<p>KV memory was saved. Time was not. In the QbitAI test, GLM-5.4 saved both animation sizes and then kept adjusting the maintenance rig and door clearance, issuing 107 usage-bearing model requests in one round. Each tool turn pulls prior code and check results back into context, so later inputs grow.</p>
+
+<p>A deliberately simple model: if every new output re-enters input on the next call, cumulative input units over n requests are n(n+1)/2. The script also splits the measured wall time.</p>
+
+<pre><code># stdlib only; run: python snowball.py
+def cumulative_units(requests):
+    return requests * (requests + 1) // 2
+
+base_req, loop_req = 28, 107
+base_units = cumulative_units(base_req)
+loop_units = cumulative_units(loop_req)
+base_sec = 28 * 60 + 2
+loop_sec = 3600 + 19 * 60 + 9
+extra_sec = loop_sec - base_sec
+blender_sec = 43 * 60 + 14
+
+print("Request snowball model: each new output re-enters all later calls")
+print("baseline requests      :", base_req, "-> units", base_units)
+print("loop requests          :", loop_req, "-> units", loop_units)
+print("input amplification    :", f"{loop_units / base_units:.2f}x")
+print("total time             :", f"{base_sec}s -> {loop_sec}s (+{extra_sec}s)")
+print("Blender share of extra :", f"{blender_sec / extra_sec * 100:.2f}% ({blender_sec}s)")</code></pre>
+
+<p>Output:</p>
+
+<pre><code>Request snowball model: each new output re-enters all later calls
+baseline requests      : 28 -> units 406
+loop requests          : 107 -> units 5778
+input amplification    : 14.23x
+total time             : 1682s -> 4749s (+3067s)
+Blender share of extra : 84.58% (2594s)</code></pre>
+
+<p>14.23x is an estimate, not vendor telemetry, but it explains the counterintuitive result: remove the Blender task and the remaining jobs only cost slightly more time while using fewer output tokens. The loop itself does not make each forward pass drastically slower. Repeated self-check plus history replay does. arXiv:2611.34112, listed on 2026-11-28, frames the same issue as not every input needing everything and proposes unifying expert gating, model cascades and agent orchestration. GLM-5.4 token-level gates are the weight-side version of that idea.</p>
+
+<h2>How to use it today, and three traps</h2>
+
+<p>As of 2026-11-28 the z.ai model API page still lists GLM-5.3 as flagship at 1.4 dollars per million input tokens and 4.4 per million output tokens. GLM-5.4 is available through ZCode and Coding Plan, and the official post says open weights wait for safety hardening. Do not point production at a model name that is not on the API page yet.</p>
+
+<ul>
+<li><strong>Route by task.</strong> Short answers, format conversion and deterministic extraction stay on a fast model. Multi-file refactors and long causal chains get the deep loop. Make depth a routing decision, not a global default.</li>
+<li><strong>Put a hard gate on tool rounds.</strong> 107 requests can mean careful verification or a loop that edits in a blocking bug. In the same test the first 3D web run ended after 704.5 seconds and five retries with no HTML, and the next output failed to parse on duplicate declarations. Cap rounds and cumulative input tokens, then hand off to a human at the limit.</li>
+<li><strong>Do not treat 2T-3T class as a benchmark result.</strong> It is an extrapolation from an iso-parameter control and Zhipu has not published full GLM-5.4 scores. Use it as a hypothesis for evaluation, not as a procurement number.</li>
+</ul>
+
+<p>Depth is a real new axis. It replaces stacking parameters, not engineering constraints. Watch the KV ledger and the request ledger separately and the savings become visible.</p>""",
+    "related": [("Agent Skills standard and cross-agent skill bundle audit", "blog/agent-skills-standard-2026/"), ("Inkling 2 Mini: looped transformers trade bandwidth for depth", "blog/inkling-2-mini-looped-transformer-2026/")],
+},
+'webrtc-checkout-skimmer-2026': {
+    "slug": "webrtc-checkout-skimmer-2026",
+    "category": "security",
+    "date": "2026-11-28",
+    "updated": "2026-11-28",
+    "tags": ["WebRTC", "payment security", "CSP", "supply chain"],
+    "title": "WebRTC Card Skimmer Hits Five Retailers Before Black Friday: Why connect-src Cannot Stop a Data Channel | DevTools Blog",
+    "description": "InfoHawk disclosed on 2026-11-27 that mobile checkout pages at Lascana, Samsonite, American Tourister, Revolve and FWRD ran a skimmer that exfiltrated card data over a WebRTC data channel through Cloudflare TURN. Only one of seven steps is a normal HTTP request. Includes runnable page and log audits.",
+    "keywords": "WebRTC skimmer, WebRTC card theft, checkout skimming, Black Friday ecommerce security, connect-src bypass, CSP allowlist, TURN relay exfiltration, Insds.js, gtage.js, northbridgeads.com, how to detect WebRTC skimmer, how to audit checkout page, third party script audit, Seers cookie banner attack, Quorum pixel compromise, digital skimming tutorial, how to detect card skimmer, WebRTC data channel security, checkout CSP step by step, supply chain attack fix, ecommerce payment security checklist, isolated payment iframe",
+    "h1": "WebRTC Card Skimmer Hits Five Retailers Before Black Friday: Why connect-src Cannot Stop a Data Channel",
+    "summary": "Five retailers, three delivery routes, one attacker infrastructure. The skimmer ran only on mobile checkout pages and sent card data over a WebRTC data channel. CSP connect-src covers only the two bootstrap requests in front of it.",
+    "body": """<p>Five retailers, three delivery routes, one attacker infrastructure. On 2026-11-27 InfoHawk reported that checkout pages at Lascana, Samsonite, American Tourister, Revolve and FWRD carried a card skimmer in the week before Black Friday. At Lascana the team used a test card and watched card number, expiry, security code, name, address, phone and email leave the site. Theft happened before payment validation, so a declined order did not protect the card. All five removed the code on November 24 or 25. The story reached 542 points on Hacker News the same day.</p>
+
+<p>The interesting part is not which store was hit. It is the transport choice that made ordinary defenses miss it: the WebRTC data channel.</p>
+
+<h2>Only one of seven steps is a normal HTTP request</h2>
+
+<p>InfoHawk maps seven steps. The first two are delivery: an altered Quorum marketing pixel, an edited Seers cookie banner configuration, or a file on Revolve own CDN. The loader fetches Insds.js or gtage.js from an S3 bucket and activates only on small or touch screens on checkout pages. The Samsonite version ran only on /checkout.</p>
+
+<ol>
+<li>The page requests /_cf/ice from northbridgeads[.]com to obtain relay details, then POSTs /_cf/rel with a WebRTC offer. These two are ordinary web requests, and a CSP connect-src allowlist can block them.</li>
+<li>Everything after that runs over a WebRTC data channel with turn.cloudflare.com relay addresses. Attack code arrives in chunks, is checked against a SHA-256 digest, and runs through eval. Stolen data returns on the same channel.</li>
+<li>The traffic is wrapped in legitimate TURN relay infrastructure, hiding the real endpoint. Most front-end monitoring watches fetch and XHR, not data channels.</li>
+</ol>
+
+<p>So the first recommendation from InfoHawk, tightening connect-src on payment pages to hosts you actually use, breaks step four. Without it the remaining six steps have no starting point. But it is not a complete defense: once a third-party script can execute in your page, WebRTC itself is outside connect-src.</p>
+
+<h2>Why desktop scans saw nothing</h2>
+
+<p>This was not bad luck. The attackers gated the script on viewport size and touch capability, and the server enabled it only on checkout. A security team checking the homepage in a desktop browser or crawling the site front page would always see a clean result. InfoHawk is explicit about this: phone-sized checkout pages are the place to look.</p>
+
+<p>The same chain also reused the same infrastructure: S3 buckets, northbridgeads[.]com and Cloudflare relays. Three delivery routes pointing at one backend means this is a hunting exercise across retailers, not a single-store cleanup. InfoHawk notified retailers, AWS, Cloudflare, the pixel vendor and the consent vendor on November 24. Lascana removed the Quorum pixel at 15:48 UTC that day and the clean pixel was restored at 21:09 UTC. Samsonite and American Tourister lost the code at 14:25 UTC. Revolve confirmed removal on November 25.</p>
+
+<h2>Audit the page: third-party scripts, onerror and CSP</h2>
+
+<p>This standard-library script scans script sources, inline event handlers, the CSP connect-src directive and a few known strings in one pass. The sample HTML reproduces three features of the case: a Seers configuration host, pscript.js from S3, and a loader hidden in onerror. Save as checkout_audit.py and run it.</p>
+
+<pre><code># stdlib only; run: python checkout_audit.py
+from html.parser import HTMLParser
+from urllib.parse import urlparse
+
+PAGE = "&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta http-equiv='Content-Security-Policy' content='connect-src https://pay.example.com'&gt;&lt;script src='https://cdn.seersco.com/banners/acme/shop/cb.js'&gt;&lt;/script&gt;&lt;/head&gt;&lt;body&gt;&lt;img src='/privacy.png' onerror='loadSkimmer(Insds.js)'&gt;&lt;script src='https://qscripts.s3.amazonaws.com/pscript.js'&gt;&lt;/script&gt;&lt;script&gt;var stage = '/_cf/rel';&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"
+
+ALLOWED = {"pay.example.com"}
+SUSPICIOUS = ["Insds.js", "gtage.js", "/_cf/ice", "/_cf/rel", "northbridgeads"]
+
+
+class Audit(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.scripts = []
+        self.handlers = []
+        self.csp = ""
+        self.hits = []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "script" and a.get("src"):
+            self.scripts.append(a["src"])
+        if tag == "meta" and "content-security-policy" in str(a.get("http-equiv", "")).lower():
+            self.csp = a.get("content", "")
+        for key, value in attrs:
+            if key.startswith("on") and value:
+                self.handlers.append((tag, key, value))
+
+
+a = Audit()
+a.feed(PAGE)
+hosts = set()
+for directive in a.csp.split(";"):
+    if directive.strip().startswith("connect-src"):
+        hosts = {h for h in directive.strip().split()[1:] if h}
+
+external = []
+for src in a.scripts:
+    host = urlparse(src).hostname or ""
+    if host and host not in hosts:
+        external.append(host)
+
+for token in SUSPICIOUS:
+    if token in PAGE:
+        a.hits.append(token)
+
+print("checkout supply-chain audit")
+print("connect-src hosts     :", ",".join(sorted(hosts)) or "(none)")
+print("third-party scripts   :", ",".join(sorted(set(external))) or "(none)")
+print("inline event handlers :", len(a.handlers))
+print("suspicious strings    :", ",".join(a.hits) or "(none)")
+verdict = "BLOCK" if external or a.handlers or a.hits else "ALLOW"
+print("verdict               :", verdict)</code></pre>
+
+<p>Output:</p>
+
+<pre><code>checkout supply-chain audit
+connect-src hosts     : https://pay.example.com
+third-party scripts   : cdn.seersco.com,qscripts.s3.amazonaws.com
+inline event handlers : 1
+suspicious strings    : Insds.js,/_cf/rel
+verdict               : BLOCK</code></pre>
+
+<p>In production, replace PAGE with HTML fetched from the checkout URL and replace SUSPICIOUS with your own IOCs. Note that the allowlist covers connect-src only. The scripts themselves are governed by script-src, and inline onerror needs script-src-attr or a nonce policy that blocks inline handlers.</p>
+
+<h2>Audit logs: /_cf/ice appears before the payload</h2>
+
+<p>What stays in your logs is not the WebRTC data but the two bootstrap requests. InfoHawk IOC values are /_cf/ice and /_cf/rel against *.northbridgeads[.]com. If those requests reach your edge logs or client telemetry, grouping by IP plus mobile user agent can surface the campaign before the payload does.</p>
+
+<pre><code># stdlib only; run: python rtc_trace.py
+LOG = [
+    "2026-11-27T14:25:01Z POST /_cf/ice 200 12 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:02Z POST /_cf/rel 200 381 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:03Z GET /checkout 200 8421 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:04Z POST /_cf/rel 200 402 ip=198.51.100.9 ua=Mozilla-iPad",
+    "2026-11-27T14:25:05Z GET /checkout 200 8120 ip=198.51.100.9 ua=Mozilla-Macintosh",
+    "2026-11-27T14:25:06Z GET /checkout 200 9010 ip=192.0.2.41 ua=Mozilla-Macintosh",
+]
+SIGNALS = ("/_cf/ice", "/_cf/rel")
+MOBILE = ("iPhone", "iPad", "Android")
+sessions = {}
+
+for line in LOG:
+    parts = line.split()
+    if len(parts) < 7:
+        continue
+    path = parts[2]
+    ip = parts[5].split("=", 1)[1]
+    ua = parts[6].split("=", 1)[1]
+    rec = sessions.setdefault(ip, {"signals": 0, "mobile": False})
+    if any(m in ua for m in MOBILE):
+        rec["mobile"] = True
+    if path in SIGNALS:
+        rec["signals"] += 1
+
+suspects = {ip: r for ip, r in sessions.items() if r["signals"] and r["mobile"]}
+print("WebRTC bootstrap signal triage")
+print("suspect sessions      :", len(suspects))
+for ip in sorted(suspects):
+    r = suspects[ip]
+    print(ip, "signals=" + str(r["signals"]), "mobile=" + str(r["mobile"]).lower())
+clean = [(ip, r) for ip, r in sessions.items() if ip not in suspects]
+print("non-suspect sessions  :", len(clean))</code></pre>
+
+<p>Output:</p>
+
+<pre><code>WebRTC bootstrap signal triage
+suspect sessions      : 2
+198.51.100.9 signals=1 mobile=true
+203.0.113.7 signals=2 mobile=true
+non-suspect sessions  : 1</code></pre>
+
+<p>This is triage, not a verdict. VPNs and legitimate video support can touch ICE endpoints too. Stacking mobile user agent, checkout path and an unknown signaling domain gives a low enough false-positive rate to send straight to a human queue.</p>
+
+<h2>Treat the payment page as its own trust zone</h2>
+
+<p>This case is the same class as the Optimizely Web Experimentation compromise on 2026-11-16: the attacker never touches your repository, changes a vendor file, and lets your page execute it (InfoHawk, 2026-11-27; Optimizely notice, 2026-11-16). In decreasing order of value:</p>
+
+<ul>
+<li>Allowlist connect-src on the payment page down to your gateway and required first-party hosts. Remove every marketing and analytics endpoint. That alone cuts step four of this campaign.</li>
+<li>Put card number, expiry and CVV in the gateway provided isolated iframe. Your own JavaScript should never touch those fields, and third-party tags need vendor change review before they reach the page.</li>
+<li>Pin SRI hashes for vendor scripts and treat hash changes as security events. Check every URL field in Seers configuration so a privacy policy link cannot hide an onerror image.</li>
+<li>Instrument RTCPeerConnection, createDataChannel and setRemoteDescription in the browser. Report any non-business ICE server seen on checkout, and capture /_cf/ice and /_cf/rel style requests.</li>
+<li>Run a real checkout flow with a phone-sized viewport and touch user agent. Homepage and desktop scans are not coverage.</li>
+</ul>
+
+<p>Where the script came from matters less than what it can read on your payment page. Answer that question and you are ahead of chasing any single malicious domain.</p>""",
+    "related": [("Optimizely third-party script hijack: why CSP only stopped 15 percent", "blog/optimizely-third-party-script-hijack-2026/"), ("AI code audit triage: deciding which vulnerability reports deserve a fix", "blog/ai-code-audit-triage-2026/")],
+},
 'agentic-perf-engineering-2026': {
     "slug": "agentic-perf-engineering-2026",
     "category": "ai",

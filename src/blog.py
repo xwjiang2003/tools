@@ -50,6 +50,286 @@ def category_label(slug, lang):
 
 ARTICLES = [
 {
+    "slug": "glm-5-4-loop-transformer-2026",
+    "category": "ai",
+    "date": "2026-11-28",
+    "updated": "2026-11-28",
+    "tags": ["GLM-5.4", "Loop Transformer", "KV cache", "推理成本"],
+    "title": "GLM-5.4 的 Loop Transformer 到底省了什么：28 层跑两遍的显存、token 与延迟账本 | DevTools 博客",
+    "description": "智谱 GLM-5.4 把中间 28 层跑两遍，官方称 750B 达到 2T-3T 级智能。本文用可复算脚本拆开门控写回、混合 KV cache 与稀疏索引复用三件事，再用 107 次模型请求的实测日志算清雷霆大思考的上下文滚雪球成本。",
+    "keywords": "GLM-5.4, GLM-5.4 如何部署, GLM-5.4 实测, Loop Transformer, Loop Transformer 原理, 循环 Transformer, 28 层跑两遍, GLM-5.4 KV cache 显存计算, GLM-5.4 API, GLM-5.4 开放权重, 门控渐进更新, 稀疏注意力索引复用, 雷霆大思考, GLM-5.4 vs Kimi K3.1, 长上下文推理成本, 如何降低 LLM 延迟, how to use GLM-5.4, loop transformer tutorial, KV cache budget calculator, context caching for agents, AI 编码模型选型, 推理成本账本, 大模型循环深度, agentic coding 成本",
+    "h1": "GLM-5.4 的 Loop Transformer 到底省了什么：28 层跑两遍的显存、token 与延迟账本",
+    "summary": "GLM-5.4 把 28 层共享权重跑两遍，参数没涨而算力涨了。省下来的是 KV cache，花掉的是长任务里的上下文滚雪球——两笔账得分开算。",
+    "body": """<p>先看一组不太像模型发布稿的数字。机器之心 2026-11-28 刊载的实测里，同一组任务 GLM-5.3 花了 28 分 02 秒，GLM-5.4 花了 1 小时 19 分 09 秒；差出来的 43 分 14 秒几乎全在 Blender 那一题，那一轮返回用量的模型请求是 107 次，GLM-5.3 只有 28 次。官方博客把这种状态调侃成"雷霆大思考"（z.ai，2026-11-23）。</p>
+
+<p>另一组数字是省下来的：官方说 1M 上下文下，多跑一遍只多一个滑动窗口的 KV cache，而不是再存一整份；30B 等参对照只多约 10% 训练算力，多数基准的输出 token 反而短了 10%–14%。同一天 Hacker News 上那条 GLM-5.4 帖子拿到 1186 分、388 条评论，讨论焦点也是"这算不算白捡的深度"。</p>
+
+<p>我的判断：省的和花的是两笔账。省的是显存与索引，花的是长任务里的请求次数。把这两笔混在一起，就会得出"循环架构免费"或者"循环架构太慢"两种都错的结论。</p>
+
+<h2>Loop Transformer 不是把同一段权重跑两遍就完事</h2>
+
+<p>z.ai 官方技术博客（2026-11-23）给的路径很清楚：从 GLM-5 预训练基座出发，拿中间 28 层做共享权重的两轮迭代，而不是从零训一个循环模型。后者在同等预训练算力下打不过普通堆叠，这是官方自己承认的前提。</p>
+
+<p>真正要处理的是三个副作用：</p>
+
+<ul>
+<li><strong>门控渐进更新。</strong>直接把第二遍的候选隐藏态覆盖回残差流，激活范数会跨迭代爆炸，后面的层拿到的是分布外输入。GLM-5.4 给每个 token、每一轮独立的写入门：第一遍写得保守，先搭全局上下文；第二遍门开大，做精细修正。难 token 的第一遍门反而更宽，让复杂预测更早吃到迭代收益。</li>
+<li><strong>混合 KV cache。</strong>朴素做法要为每一轮保存完整 KV，循环两次就翻倍。这里的做法是第二轮复用第一轮选出的全局稀疏 KV，只额外保留自己新生成的局部滑窗。同一个位置因此可以同时承载两版的表示。</li>
+<li><strong>稀疏注意力索引复用。</strong>基座本来就有索引器，第二轮直接沿用第一轮选出的重点索引，不重扫全文。官方实验说这与每轮重算索引几乎等价。</li>
+</ul>
+
+<p>社区拆解（2026-11-28）把整体前向画成"前 26 层 + 中间 28 层跑两次 + 后 24 层"，一次前向共 106 次层遍历，并给出滑窗 128 的假设值。这部分不是官方参数，下面算账时我只把它当可调输入，不当结论。</p>
+
+<h2>显存账：第二遍只多一个滑窗</h2>
+
+<p>把上面的设计翻成算式：朴素循环第二遍要多存 N 个 token 的 KV，混合方案只多存 W 个。N 是上下文长度，W 是滑窗。脚本不联网，标准库直接跑。</p>
+
+<pre><code># stdlib only; run: python kv_budget.py
+CONTEXT = 1000000
+WINDOW = 128
+KV_PER_TOKEN = 64 * 1024
+
+full_cache = CONTEXT * KV_PER_TOKEN / (1024 ** 3)
+extra_cache = WINDOW * KV_PER_TOKEN / (1024 ** 2)
+ratio_pct = WINDOW / CONTEXT * 100
+factor = full_cache * 1024 / extra_cache
+
+print("GLM-5.4 hybrid KV budget (assumed per-token KV = 64 KiB)")
+print("context tokens         :", CONTEXT)
+print("naive second pass full :", f"{full_cache:.2f} GiB")
+print("hybrid sliding window  :", f"{extra_cache:.2f} MiB")
+print("extra ratio            :", f"{ratio_pct:.4f}%")
+print("saving factor          :", f"{factor:.1f}x")</code></pre>
+
+<p>输出：</p>
+
+<pre><code>GLM-5.4 hybrid KV budget (assumed per-token KV = 64 KiB)
+context tokens         : 1000000
+naive second pass full : 61.04 GiB
+hybrid sliding window  : 8.00 MiB
+extra ratio            : 0.0128%
+saving factor          : 7812.5x</code></pre>
+
+<p>64 KiB/token 只是示例参数，真值取决于 MLA 压缩与实现；把参数换成你部署栈里的实测值，结论的方向不变：在 1M 上下文上，滑窗和全量不在一个量级。这也解释了为什么官方能一边加循环深度，一边把峰值吞吐报在 70–80 tok/s（高峰）/ 200 tok/s（闲时）。</p>
+
+<h2>延迟账：107 次请求才是"雷霆大思考"的真身</h2>
+
+<p>显存省下来了，时间没白省。机器之心那篇实测里，GLM-5.4 在 Blender 题上保存好两种尺寸的动画后没有收工，回头调检修架位置、核舱门间隙，一轮就发出 107 次带用量的模型请求。多轮工具调用会把历史代码和检查结果重新滚进上下文，请求越多，单次输入越大。</p>
+
+<p>用一个刻意简化的模型估倍数：假设每次新输出在下一轮全部重新进入输入，n 次请求的累计输入单元就是 n(n+1)/2。代码同时把实测时长拆开。</p>
+
+<pre><code># stdlib only; run: python snowball.py
+def cumulative_units(requests):
+    return requests * (requests + 1) // 2
+
+base_req, loop_req = 28, 107
+base_units = cumulative_units(base_req)
+loop_units = cumulative_units(loop_req)
+base_sec = 28 * 60 + 2
+loop_sec = 3600 + 19 * 60 + 9
+extra_sec = loop_sec - base_sec
+blender_sec = 43 * 60 + 14
+
+print("Request snowball model: each new output re-enters all later calls")
+print("baseline requests      :", base_req, "-> units", base_units)
+print("loop requests          :", loop_req, "-> units", loop_units)
+print("input amplification    :", f"{loop_units / base_units:.2f}x")
+print("total time             :", f"{base_sec}s -> {loop_sec}s (+{extra_sec}s)")
+print("Blender share of extra :", f"{blender_sec / extra_sec * 100:.2f}% ({blender_sec}s)")</code></pre>
+
+<p>输出：</p>
+
+<pre><code>Request snowball model: each new output re-enters all later calls
+baseline requests      : 28 -> units 406
+loop requests          : 107 -> units 5778
+input amplification    : 14.23x
+total time             : 1682s -> 4749s (+3067s)
+Blender share of extra : 84.58% (2594s)</code></pre>
+
+<p>14.23 倍是模型估计，不是厂商计量；但它解释了实测里那个反直觉现象：剥离 Blender 那道题后，GLM-5.4 其余任务只多花一点时间，输出 token 反而更省。循环本身没让每次前向慢到离谱，是"反复自查 + 历史回灌"把账做大了。arXiv:2611.34112（2026-11-28）把同一问题写成"不是每个输入都需要全部算力"，提出的方向是把门控、模型级联和 agent 编排统一起来——GLM-5.4 的 token 级门控是这条线在权重层的一侧。</p>
+
+<h2>今天怎么用，以及三条别踩的坑</h2>
+
+<p>截至 2026-11-28，z.ai/model-api 页面旗舰仍是 GLM-5.3（$1.4/M 输入、$4.4/M 输出），GLM-5.4 走 ZCode 与 Coding Plan，官方说开放权重要等安全加固完成。所以别急着把生产模型名改成 glm-5.4 然后等 500。</p>
+
+<ul>
+<li><strong>按任务分档。</strong>短问答、格式转换、确定性抽取用快模型；多文件重构、跨步长链推理再进深循环。把"要不要深想"做成路由开关，而不是全局默认。</li>
+<li><strong>给工具轮次上硬闸。</strong>107 次请求的正面是死磕细节，反面是可能反复改出阻断性 bug——同一篇实测里，3D 网页首跑 704.5 秒、5 次重试没写出 HTML，第二版还因变量重复声明停在解析阶段。设最大轮次和累计输入 token 上限，到线就交人工看。</li>
+<li><strong>别把"2T–3T 级"当 benchmark 结论。</strong>那句话来自官方的等参对照外推，GLM-5.4 自己的完整榜单尚未公布。用它做选型假设可以，拿它写采购依据不行。</li>
+</ul>
+
+<p>循环深度是真正的新维度，但它替换的是"把参数堆上去"，不是"把工程约束拿掉"。把 KV 账和请求账分开盯，才看得见它到底省在哪。</p>""",
+    "related": [("Agent Skills 标准与跨代理技能包审计", "blog/agent-skills-standard-2026/"), ("Inkling 2 Mini：循环 Transformer 用带宽换深度", "blog/inkling-2-mini-looped-transformer-2026/")],
+},
+{
+    "slug": "webrtc-checkout-skimmer-2026",
+    "category": "security",
+    "date": "2026-11-28",
+    "updated": "2026-11-28",
+    "tags": ["WebRTC", "支付安全", "CSP", "供应链攻击"],
+    "title": "黑五前 5 家电商被 WebRTC 侧录：为什么 connect-src 白名单挡不住数据通道 | DevTools 博客",
+    "description": "InfoHawk 2026-11-27 披露：Lascana、Samsonite、American Tourister、Revolve、FWRD 的移动端结账页被植入侧录脚本，卡号经 WebRTC data channel 经 Cloudflare TURN 外送。七步攻击链只有一步是普通 HTTP 请求。附可运行页面审计与日志溯源脚本。",
+    "keywords": "WebRTC 侧录, WebRTC 信用卡窃取, 结账页侧录, 黑五 电商 安全, connect-src 绕过, CSP 白名单, TURN 中继 数据外传, Insds.js, gtage.js, northbridgeads.com, 如何检测 WebRTC 侧录, 如何自查结账页被投毒, 支付页 第三方脚本 审计, Seers cookie banner 攻击, Quorum 像素 投毒, digital skimming tutorial, how to detect card skimmer, WebRTC data channel security, checkout page CSP step-by-step, supply chain attack fix, ecommerce payment security checklist, 前端供应链安全, 支付页隔离 iframe",
+    "h1": "黑五前 5 家电商被 WebRTC 侧录：为什么 connect-src 白名单挡不住数据通道",
+    "summary": "五家电商、三种投毒入口、同一套攻击基础设施。侧录脚本只在手机结账页启动，把卡号经 WebRTC data channel 送出去——CSP 的 connect-src 只管得到前面那两次握手请求。",
+    "body": """<p>五家电商，三种投毒入口，一套攻击基础设施。InfoHawk 在 2026-11-27 披露：黑五前一周，Lascana、Samsonite、American Tourister、Revolve、FWRD 的结账页被植入信用卡侧录脚本；在 Lascana，研究者用测试卡实测到卡号、有效期、安全码连同姓名、地址、电话、邮箱被送出站外。数据是在支付校验之前走的，订单被拒也不影响窃取结果。五家在 11 月 24 或 25 日接报后已移除。这条新闻当天在 Hacker News 拿到 542 分。</p>
+
+<p>我想拆的不是"哪家店倒霉"，而是那个让常规防线失效的传输选择：WebRTC data channel。</p>
+
+<h2>七步攻击链里，只有一步是普通 HTTP 请求</h2>
+
+<p>InfoHawk 把流程拆成七步。前两步是入口：被改过的 Quorum 营销像素、被编辑的 Seers Cookie 横幅配置，或者 Revolve 自家 CDN 上的文件。加载器从 S3 桶取 <code>Insds.js</code> 或 <code>gtage.js</code>，然后只在小屏或触屏、且位于结账页时激活——Samsonite 的版本只在 <code>/checkout</code> 跑。</p>
+
+<p>接下来是这套东西最聪明的地方：</p>
+
+<ol>
+<li>页面向 <code>northbridgeads[.]com</code> 请求 <code>/_cf/ice</code> 拿中继信息，再 POST <code>/_cf/rel</code> 送出 WebRTC offer。这两次是普通 web 请求，<code>CSP connect-src</code> 白名单能拦。</li>
+<li>后续通信全部走 WebRTC data channel，中继地址全是 <code>turn.cloudflare.com</code>。攻击代码分片进来，验 SHA-256 后 <code>eval</code>；偷到的数据沿同一条通道回去。</li>
+<li>流量裹在合法 TURN 中继里，真实终点藏在后面；大多数前端监控只看 fetch/XHR，不看 data channel。</li>
+</ol>
+
+<p>换句话说，InfoHawk 给站长的首要建议——在收款页把 <code>connect-src</code> 收到只剩自己用的 host——打的是第 4 步。只要这一步断了，后面六步根本没有起点。但它不是万能的：一旦页面里已经有能执行代码的第三方脚本，WebRTC 通道本身不受 <code>connect-src</code> 约束。</p>
+
+<h2>桌面扫描为什么看不见</h2>
+
+<p>这不是"刚好没扫到"。攻击者按视口尺寸和触屏能力开关脚本，服务端也只在结账页启用。安全团队在办公室用桌面 Chrome 打开首页做手工检查，或者跑一遍全站首页爬虫，结果必然干净。InfoHawk 明确说：手机尺寸的结账页才有意义。</p>
+
+<p>同一条链还重复使用同一批基础设施：S3 桶、<code>northbridgeads[.]com</code>、Cloudflare 中继。三种入口指向同一个后台，说明这不是单点事故，需要按"同一攻击者跨多家零售商"去做狩猎。InfoHawk 11 月 24 日通知了零售商、AWS、Cloudflare、像素厂商和 Cookie 横幅厂商，Lascana 的 Quorum 像素当天 15:48 UTC 移除，干净版本 21:09 UTC 恢复；Samsonite 与 American Tourister 的代码 14:25 UTC 消失；Revolve 11 月 25 日确认清除。</p>
+
+<h2>先查页面：三方脚本、onerror 与 CSP 白名单</h2>
+
+<p>下面这个标准库脚本把页面里的 script src、内联事件处理器、CSP 的 <code>connect-src</code> 和几个已知字符串一次扫完。示例 HTML 故意复刻了本次事件的三种特征：Seers 配置域名、S3 上的 pscript.js、藏在 onerror 里的加载器。保存为 <code>checkout_audit.py</code> 直接跑。</p>
+
+<pre><code># stdlib only; run: python checkout_audit.py
+from html.parser import HTMLParser
+from urllib.parse import urlparse
+
+PAGE = "&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;meta http-equiv='Content-Security-Policy' content='connect-src https://pay.example.com'&gt;&lt;script src='https://cdn.seersco.com/banners/acme/shop/cb.js'&gt;&lt;/script&gt;&lt;/head&gt;&lt;body&gt;&lt;img src='/privacy.png' onerror='loadSkimmer(Insds.js)'&gt;&lt;script src='https://qscripts.s3.amazonaws.com/pscript.js'&gt;&lt;/script&gt;&lt;script&gt;var stage = '/_cf/rel';&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"
+
+ALLOWED = {"pay.example.com"}
+SUSPICIOUS = ["Insds.js", "gtage.js", "/_cf/ice", "/_cf/rel", "northbridgeads"]
+
+
+class Audit(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.scripts = []
+        self.handlers = []
+        self.csp = ""
+        self.hits = []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "script" and a.get("src"):
+            self.scripts.append(a["src"])
+        if tag == "meta" and "content-security-policy" in str(a.get("http-equiv", "")).lower():
+            self.csp = a.get("content", "")
+        for key, value in attrs:
+            if key.startswith("on") and value:
+                self.handlers.append((tag, key, value))
+
+
+a = Audit()
+a.feed(PAGE)
+hosts = set()
+for directive in a.csp.split(";"):
+    if directive.strip().startswith("connect-src"):
+        hosts = {h for h in directive.strip().split()[1:] if h}
+
+external = []
+for src in a.scripts:
+    host = urlparse(src).hostname or ""
+    if host and host not in hosts:
+        external.append(host)
+
+for token in SUSPICIOUS:
+    if token in PAGE:
+        a.hits.append(token)
+
+print("checkout supply-chain audit")
+print("connect-src hosts     :", ",".join(sorted(hosts)) or "(none)")
+print("third-party scripts   :", ",".join(sorted(set(external))) or "(none)")
+print("inline event handlers :", len(a.handlers))
+print("suspicious strings    :", ",".join(a.hits) or "(none)")
+verdict = "BLOCK" if external or a.handlers or a.hits else "ALLOW"
+print("verdict               :", verdict)</code></pre>
+
+<p>输出：</p>
+
+<pre><code>checkout supply-chain audit
+connect-src hosts     : https://pay.example.com
+third-party scripts   : cdn.seersco.com,qscripts.s3.amazonaws.com
+inline event handlers : 1
+suspicious strings    : Insds.js,/_cf/rel
+verdict               : BLOCK</code></pre>
+
+<p>生产环境把 <code>PAGE</code> 换成从 checkout URL 抓到的 HTML，把 <code>SUSPICIOUS</code> 换成自己的 IOC 即可。注意白名单只覆盖 <code>connect-src</code>；脚本本身来自 <code>script-src</code>，内联 onerror 要靠 <code>script-src-attr</code> 或禁内联的 nonce 策略挡住。</p>
+
+<h2>再查日志：/_cf/ice 比 payload 更早暴露</h2>
+
+<p>真正会留在你服务器上的不是 WebRTC 内容，而是那两次握手请求。InfoHawk 给的 IOC 是 <code>/_cf/ice</code> 与 <code>/_cf/rel</code> 打到 <code>*.northbridgeads[.]com</code>；如果这些请求经过你的边缘日志，或者你能拿到客户端上报，按 IP + 移动 UA 聚合就能先于 payload 发现异常。</p>
+
+<pre><code># stdlib only; run: python rtc_trace.py
+LOG = [
+    "2026-11-27T14:25:01Z POST /_cf/ice 200 12 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:02Z POST /_cf/rel 200 381 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:03Z GET /checkout 200 8421 ip=203.0.113.7 ua=Mozilla-iPhone",
+    "2026-11-27T14:25:04Z POST /_cf/rel 200 402 ip=198.51.100.9 ua=Mozilla-iPad",
+    "2026-11-27T14:25:05Z GET /checkout 200 8120 ip=198.51.100.9 ua=Mozilla-Macintosh",
+    "2026-11-27T14:25:06Z GET /checkout 200 9010 ip=192.0.2.41 ua=Mozilla-Macintosh",
+]
+SIGNALS = ("/_cf/ice", "/_cf/rel")
+MOBILE = ("iPhone", "iPad", "Android")
+sessions = {}
+
+for line in LOG:
+    parts = line.split()
+    if len(parts) < 7:
+        continue
+    path = parts[2]
+    ip = parts[5].split("=", 1)[1]
+    ua = parts[6].split("=", 1)[1]
+    rec = sessions.setdefault(ip, {"signals": 0, "mobile": False})
+    if any(m in ua for m in MOBILE):
+        rec["mobile"] = True
+    if path in SIGNALS:
+        rec["signals"] += 1
+
+suspects = {ip: r for ip, r in sessions.items() if r["signals"] and r["mobile"]}
+print("WebRTC bootstrap signal triage")
+print("suspect sessions      :", len(suspects))
+for ip in sorted(suspects):
+    r = suspects[ip]
+    print(ip, "signals=" + str(r["signals"]), "mobile=" + str(r["mobile"]).lower())
+clean = [(ip, r) for ip, r in sessions.items() if ip not in suspects]
+print("non-suspect sessions  :", len(clean))</code></pre>
+
+<p>输出：</p>
+
+<pre><code>WebRTC bootstrap signal triage
+suspect sessions      : 2
+198.51.100.9 signals=1 mobile=true
+203.0.113.7 signals=2 mobile=true
+non-suspect sessions  : 1</code></pre>
+
+<p>这段只做 triage，不做定性：VPN、正常视频客服也可能碰到 ICE 端点。但把"移动端 + 结账路径 + 未知信令域名"三个条件叠起来，误报足够低，值得直接送人工队列。</p>
+
+<h2>把支付页当独立信任域</h2>
+
+<p>这次事件和 11 月 16 日 Optimizely Web Experimentation 被投毒是同一类问题：攻击者不碰你的代码仓库，改的是供应商那份文件，然后让你的页面自己跑起来（InfoHawk，2026-11-27；Optimizely 公告，2026-11-16）。按下面的顺序做，收益从高到低：</p>
+
+<ul>
+<li>收款页 <code>connect-src</code> 只列支付网关与自己必需的 host，删掉所有营销与统计端点；这一步直接切断本次攻击的第 4 步。</li>
+<li>卡号、有效期、CVV 放进支付网关提供的隔离 iframe，自己的 JS 不碰这些字段，第三方标签上支付页之前先过一遍供应商变更评审。</li>
+<li>给所有 vendor 脚本上 SRI 哈希并把变更当安全事件处理；Seers 配置里的 URL 字段逐个核，别让隐私政策链接位置藏 <code>onerror</code> 图片。</li>
+<li>在浏览器侧给 <code>RTCPeerConnection</code>、<code>createDataChannel</code>、<code>setRemoteDescription</code> 打点，结账页出现非业务 ICE server 直接上报；同时抓 <code>/_cf/ice</code> 与 <code>/_cf/rel</code> 类请求。</li>
+<li>用手机尺寸 + 触屏 UA 跑真实结账流程，别只扫首页和桌面端。</li>
+</ul>
+
+<p>脚本来自哪里不重要，重要的是它在支付页上有没有权限读到你的输入框。把这个问题答清楚，比追着某一个恶意域名封禁有用得多。</p>""",
+    "related": [("Optimizely 第三方脚本劫持：CSP 为什么只拦住 15%", "blog/optimizely-third-party-script-hijack-2026/"), ("AI Code Audit 分流：如何判断漏洞报告值不值得修", "blog/ai-code-audit-triage-2026/")],
+},
+{
     "slug": "agentic-perf-engineering-2026",
     "category": "ai",
     "date": "2026-11-27",
